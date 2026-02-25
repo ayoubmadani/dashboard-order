@@ -27,6 +27,14 @@ import Update from './pages/dashboard/stores/update';
 import Show from './pages/dashboard/stores/Show';
 import CreateProduct from './pages/dashboard/products/Create';
 import FakeProductDetails from './pages/site/FakeProductDetails';
+import ProtectedRouteDashboard from './components/ProtectedRouteDashboard';
+import ProtectedRouteAuth from './components/ProtectedRouteAuth';
+import AuthCallback from './pages/auth/success/AuthCallback';
+import CreateCategory from './pages/dashboard/categories/CreateCategory';
+import CreateLandingPage from './pages/dashboard/landing-pages/CreateLandingPage';
+import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
+import EditProduct from './pages/dashboard/products/edit';
+import ProductShow from './pages/dashboard/products/show';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -60,49 +68,74 @@ const App = () => {
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
           <Route path="cookies" element={<Cookies />} />
-          
+
 
         </Route>
 
         <Route path="fake-product" element={<FakeProductDetails />} />
 
         {/* 2. قسم لوحة التحكم */}
-        <Route path="/dashboard" element={<LayoutDashboard />}>
-          <Route index element={<DashboardHome />} />
+        <Route element={<ProtectedRouteDashboard />}>
+          <Route path="/dashboard" element={<LayoutDashboard />}>
+            <Route index element={<DashboardHome />} />
 
-          {/* مسارات المتاجر */}
-          <Route path="stores">
-            <Route index element={<Stores />} />
-            <Route path="create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/stores/create */}
-            <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
-            <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
+            {/* مسارات المتاجر */}
+            <Route path="stores">
+              <Route index element={<Stores />} />
+              <Route path="create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/stores/create */}
+              <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
+              <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
+            </Route>
+          
+
+            <Route path="category" >
+              <Route index element={<Categories />} />
+              <Route path='create' element={<CreateCategory />} />
+            </Route>
+
+
+            <Route path="products">
+              <Route index element={<Products />} />
+              <Route path="create" element={<CreateProduct />} />
+              <Route path="edit/:id" element={<EditProduct />} />
+              <Route path=":id" element={<ProductShow />} />
+
+            </Route>
+
+
+            <Route path="landing-pages"  >
+              <Route index element={<LandingPages />} />
+              <Route path='create' element={<CreateLandingPage />} />
+            </Route>
+
+
+            <Route path="orders">
+              <Route index  element={<Orders />} />
+            </Route>
+
+
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="shipping" element={<Shipping />} />
           </Route>
-
-          <Route path="category" element={<Categories />} />
-
-
-          <Route path="products">
-            <Route index element={<Products />} />
-            <Route path="create" element={<CreateProduct />} /> {/* <-- المسار: /dashboard/products/create */}
-
-          </Route>
-
-
-          <Route path="landing-pages" element={<LandingPages />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="shipping" element={<Shipping />} />
         </Route>
+
 
         {/* 3. قسم التوثيق */}
-        <Route path="/auth" element={<LayoutAuth />} >
-          <Route index element={<Login />} />
-          <Route path="register" element={<Register />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />
-          <Route path="new-password" element={<NewPassword />} />
-          <Route path="otp" element={<Otp />} />
+        <Route element={<ProtectedRouteAuth />}>
+          <Route path="/auth" element={<LayoutAuth />} >
+            <Route index element={<Login />} />
+            <Route path='login' element={<Login />} />
+            <Route path="register" element={<Register />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="new-password" element={<NewPassword />} />
+            <Route path="otp" element={<Otp />} />
+            <Route path="callback" element={<AuthCallback />} />
+            <Route path="otp-forgot-password" element={<OtpForgotPassword />} />
+          </Route>
         </Route>
+
+
       </Routes>
     </BrowserRouter>
   );

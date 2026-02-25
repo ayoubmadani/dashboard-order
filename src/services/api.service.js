@@ -1,4 +1,6 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
+import { getAccessToken } from './access-token'; // تأكد أن الاسم متطابق مع 'token' داخل الملف
 
 class ApiService {
   constructor(baseURL) {
@@ -6,78 +8,69 @@ class ApiService {
       baseURL: baseURL || 'https://api.mdstore.dz/v1',
       headers: {
         'Content-Type': 'application/json',
+        // أزلنا Authorization من هنا لأنه سيُضاف ديناميكياً في الـ Interceptor
       },
+      withCredentials: true, 
     });
 
-    // إضافة Interceptors لمعالجة التوكين والأخطاء تلقائياً
+    // إضافة Interceptors لمعالجة التوكين عند كل طلب
     this.api.interceptors.request.use(
       (config) => {
-        const token = localStorage.getItem('token');
+        // نستخدم الدالة التي استوردتها لجلب التوكن
+        const token = getAccessToken(); 
+        
         if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
+          // إضافة كلمة Bearer بشكل صحيح
+          config.headers.Authorization = `bearer ${token}`;
         }
         return config;
       },
       (error) => Promise.reject(error)
     );
+
+    // إنترسبتور لمعالجة الأخطاء (مثل 401)
+    this.api.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response && error.response.status === 401) {
+          this.logout(); // نستخدم دالة الـ logout الخاصة بنا لتنظيف المتصفح
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
-  // --- عمليات CRUD الأساسية ---
+  // حفظ التوكن في الكوكيز
+  setToken(token) {
+    Cookies.set('token', token, { 
+      expires: 7, 
+      secure: true, 
+      sameSite: 'strict' 
+    });
+  }
 
-  // GET: جلب البيانات
+  // حذف التوكن
+  logout() {
+    Cookies.remove('token');
+    // إذا كنت تستخدم React Router، يمكنك عمل redirect هنا
+  }
+
+  // --- عمليات CRUD (احترافية ومختصرة) ---
+
   async getAll(endpoint, params = {}) {
-    try {
-      const response = await this.api.get(endpoint, { params });
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
+    const response = await this.api.get(endpoint, { params });
+    return response.data;
   }
 
-  // GET BY ID: جلب عنصر واحد
-  async getOne(endpoint, id) {
-    try {
-      const response = await this.api.get(`${endpoint}/${id}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  // POST: إضافة عنصر جديد
   async create(endpoint, data) {
-    try {
-      const response = await this.api.post(endpoint, data);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
+    const response = await this.api.post(endpoint, data);
+    return response.data;
   }
 
-  // PUT: تحديث عنصر بالكامل
-  async update(endpoint, id, data) {
-    try {
-      const response = await this.api.put(`${endpoint}/${id}`, data);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
+  // ... (getOne, update, delete)
 
-  // DELETE: حذف عنصر
-  async delete(endpoint, id) {
-    try {
-      const response = await this.api.delete(`${endpoint}/${id}`);
-      return response.data;
-    } catch (error) {
-      this.handleError(error);
-    }
-  }
-
-  // معالجة الأخطاء بشكل موحد
   handleError(error) {
     const message = error.response?.data?.message || 'حدث خطأ غير متوقع';
-    // يمكنك هنا إضافة Toast notification
     console.error('API Error:', message);
     throw error;
   }

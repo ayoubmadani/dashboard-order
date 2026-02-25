@@ -4,8 +4,10 @@ import { useTranslation } from "react-i18next";
 import { ShieldCheck, ArrowRight, RefreshCcw, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from "../../constents/const.";
+import Cookies from 'js-cookie';
 
-const Otp = () => {
+
+const OtpForgotPassword = () => {
     const { t } = useTranslation();
     const [otp, setOtp] = useState(new Array(5).fill(""));
     const [loading, setLoading] = useState(false); // إضافة حالة التحميل
@@ -25,7 +27,7 @@ const Otp = () => {
         const newOtp = [...otp];
         newOtp[index] = element.value;
         setOtp(newOtp);
-        
+
         // الانتقال للمربع التالي تلقائياً
         if (element.value !== "" && index < 4) {
             inputRefs.current[index + 1].focus();
@@ -48,18 +50,22 @@ const Otp = () => {
         try {
             // تحويل مصفوفة الـ OTP إلى نص واحد
             const otpString = otp.join('');
-            
-            const response = await axios.post(baseURL+'/auth/verify-email', {
+
+            const response = await axios.post(baseURL + '/auth/verify-otp', {
                 email,
                 otp: +otpString // إرساله كنص
             });
 
-            console.log(response.data);
-            
 
             if (response.data.success) {
+                Cookies.set('otp', otpString, {
+                    expires: new Date(new Date().getTime() + 10 * 60 * 1000),
+                    secure: true,
+                    sameSite: 'strict'
+                });
                 // إذا كان التحقق لتفعيل الحساب بعد التسجيل:
-                navigate('/auth');
+                navigate('/auth/new-password?email='+email);
+
                 // أما إذا كان لنسيان كلمة المرور، فالتوجيه يكون لصفحة كلمة المرور الجديدة:
                 // navigate(`/auth/new-password?email=${email}&otp=${otpString}`);
             }
@@ -82,7 +88,7 @@ const Otp = () => {
                 Code de Vérification
             </h1>
             <p className="text-gray-500 text-sm text-center mb-4">
-                Entrez le code envoyé à <br/>
+                Entrez le code envoyé à <br />
                 <span className="text-indigo-600 font-semibold">{email}</span>
             </p>
 
@@ -127,9 +133,9 @@ const Otp = () => {
             </form>
 
             <div className="text-center mt-10">
-                <button 
+                <button
                     type="button"
-                    onClick={() => {/* استدعاء دالة resend-otp */}}
+                    onClick={() => {/* استدعاء دالة resend-otp */ }}
                     className="text-indigo-600 font-bold text-sm hover:underline flex items-center gap-2 mx-auto">
                     <RefreshCcw size={16} /> Renvoyer le Code
                 </button>
@@ -141,4 +147,4 @@ const Otp = () => {
     );
 };
 
-export default Otp;
+export default OtpForgotPassword;

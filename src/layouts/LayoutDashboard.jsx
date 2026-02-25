@@ -1,22 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     Home, Database, Settings, BarChart3, Menu, X, ChevronDown,
     Search, Bell, Store, Box, Layers, ShoppingCart, Layout, Truck, LogOut, Sun, Moon
 } from 'lucide-react';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import { getAccessToken, removeAccessToken } from '../services/access-token';
+import { baseURL } from '../constents/const.';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation();
     const location = useLocation();
+    const navigate = useNavigate();
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
-    const dropdownRef = useRef(null);
+    const [myStores, setMyStores] = useState(localStorage.getItem([]))
 
+    // حالة المستخدم: تبدأ ببيانات مؤقتة حتى يتم الجلب
+    const [user, setUser] = useState({ name: '...', initial: '..' });
+
+    const dropdownRef = useRef(null);
     const isRtl = i18n.language === 'ar';
 
-    // إدارة تبديل الثيم
+    // 1. إدارة تبديل الثيم (Dark/Light Mode)
     useEffect(() => {
         if (isDark) {
             document.documentElement.classList.add('dark');
@@ -26,6 +36,70 @@ export default function LayoutDashboard() {
             localStorage.setItem('theme', 'light');
         }
     }, [isDark]);
+
+    // 2. جلب بيانات المستخدم والتحقق من التوكن
+    useEffect(() => {
+        const verifyAndFetchUser = async () => {
+            const URL = import.meta.env.REACT_APP_API_URL;
+            const token = Cookies.get('access_token');
+
+            if (!token) {
+                navigate('/auth/');
+                return;
+            }
+
+          
+
+
+            try {
+                const response = await axios.get(`http://localhost:7000/user/current-user`, {
+                    headers: {
+                        "Authorization": `bearer ${token}`
+                    }
+                });
+
+
+                const currentUser = response.data;
+                currentUser.name = currentUser.username;
+
+                // استخراج الأحرف الأولى بشكل احترافي (مثال: "John Doe" -> "JD")
+                const initials = currentUser.name
+                    ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+                    : '??';
+
+                setUser({
+                    name: currentUser.name,
+                    initial: initials
+                });
+
+            } catch (error) {
+                console.error("Auth Error:", error);
+                // إذا انتهت الصلاحية أو حدث خطأ في التوكن، امسحه وحول المستخدم للوجين
+                if (error.response?.status === 401) {
+                    removeAccessToken();
+                    navigate('/auth/login');
+                }
+            }
+        };
+
+        verifyAndFetchUser();
+    }, [navigate]);
+
+    // 3. إغلاق القوائم المنسدلة عند النقر خارجها
+    useEffect(() => {
+        const handleMouseUp = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setProjectDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mouseup", handleMouseUp);
+        return () => document.removeEventListener("mouseup", handleMouseUp);
+    }, []);
+
+    const handleLogout = () => {
+        removeAccessToken();
+        navigate('/auth/login');
+    };
 
     const navigation = [
         { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home },
@@ -39,27 +113,65 @@ export default function LayoutDashboard() {
         { name: t('dashboard.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings }
     ];
 
-    const projects = [
-        { id: 1, name: "MdStore Main", short: "MS" },
-        { id: 2, name: "Electronics Shop", short: "ES" },
-    ];
+    const [selectedProject, setSelectedProject] = useState();
 
-    const [selectedProject, setSelectedProject] = useState(projects[0]);
+    const fetchStores = async () => {
+        try {
+
+            const token = getAccessToken();
+            const response = await axios.get(`${baseURL}/stores/user/me`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+
+
+
+            if (response.data.success) {
+                setMyStores(response.data.data || []);
+            }
+        } catch (err) {
+            console.error('Error fetching stores:', err);
+
+        } finally {
+
+        }
+    }
+
+    useEffect(()=>{
+        
+        fetchStores()
+    },[])
 
     useEffect(() => {
-        const handleMouseUp = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setProjectDropdownOpen(false);
+    // ✅ أضفنا التحقق من أن myStores موجودة وليست null قبل قراءة length
+    if (myStores && myStores.length > 0) {
+        const savedStoreId = localStorage.getItem('storeId');
+
+        if (savedStoreId) {
+            // ملاحظة: تأكد هل المعرف في قاعدة بياناتك هو id أم _id
+            const savedStore = myStores.find(s => 
+                (s.id?.toString() === savedStoreId.toString()) || 
+                (s._id?.toString() === savedStoreId.toString())
+            );
+
+            if (savedStore) {
+                setSelectedProject(savedStore);
+            } else {
+                setSelectedProject(myStores[0]);
             }
-        };
-        document.addEventListener("mouseup", handleMouseUp);
-        return () => document.removeEventListener("mouseup", handleMouseUp);
-    }, []);
+        } else {
+            setSelectedProject(myStores[0]);
+        }
+    }
+}, [myStores]);// يعمل عندما تكتمل عملية جلب المتاجر
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#09090b] font-sans transition-colors duration-300" dir={isRtl ? 'rtl' : 'ltr'}>
 
-            {/* Sidebar Desktop - دائماً داكن */}
+            {/* Sidebar Desktop */}
             <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col ${isRtl ? 'right-0 border-l' : 'left-0 border-r'} border-zinc-800 bg-zinc-900 shadow-2xl transition-all`}>
                 <div className="flex flex-col flex-grow overflow-y-auto">
                     <div className="flex items-center flex-shrink-0 px-5 py-3 border-b border-zinc-800/50">
@@ -71,6 +183,7 @@ export default function LayoutDashboard() {
                         </span>
                     </div>
 
+                    {/* Project Selector */}
                     <div className="px-3 py-3 relative" ref={dropdownRef}>
                         <button
                             onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
@@ -78,30 +191,44 @@ export default function LayoutDashboard() {
                         >
                             <div className="flex items-center gap-2.5">
                                 <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center text-[9px] font-black text-white uppercase shadow-sm shrink-0">
-                                    {selectedProject.short}
+                                    {/* ✅ الحماية باستخدام علامة الاستفهام ?. والقيمة البديلة */}
+                                    {selectedProject?.short || (selectedProject?.name ? selectedProject.name.charAt(0) : '...')}
                                 </div>
-                                <span className="font-bold truncate max-w-[100px]">{selectedProject.name}</span>
+                                <span className="font-bold truncate max-w-[100px]">
+                                    {/* ✅ عرض اسم المشروع أو كلمة "تحميل" مؤقتاً */}
+                                    {selectedProject?.name || t('common.loading', 'جاري التحميل...')}
+                                </span>
                             </div>
                             <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
                         </button>
 
                         {projectDropdownOpen && (
-                            <div className={`absolute top-14 left-3 right-3 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 py-1 animate-in fade-in zoom-in-95 duration-200`}>
-                                {projects.map(project => (
-                                    <button
-                                        key={project.id}
-                                        onClick={() => {
-                                            setSelectedProject(project);
-                                            setProjectDropdownOpen(false);
-                                        }}
-                                        className="w-full px-3 py-2 text-[13px] text-zinc-300 hover:bg-zinc-700/50 flex items-center gap-2.5 transition-colors"
-                                    >
-                                        <div className="w-5 h-5 bg-zinc-700 rounded flex items-center justify-center text-[8px] font-bold text-zinc-400">
-                                            {project.short}
-                                        </div>
-                                        <span className="font-medium">{project.name}</span>
-                                    </button>
-                                ))}
+                            <div className="absolute top-14 left-3 right-3 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
+                                {myStores && myStores.length > 0 ? (
+                                    myStores.map(store => (
+                                        <button
+                                            key={store.id} // تأكد أن store.id موجود، أو استخدم store._id حسب السيرفر
+                                            onClick={() => {
+                                                localStorage.setItem('storeId', store.id)
+                                                setSelectedProject(store);
+                                                setProjectDropdownOpen(false);
+                                            }}
+                                            className="w-full px-3 py-2 text-[13px] text-zinc-300 hover:bg-zinc-700/50 flex items-center gap-2.5 transition-colors"
+                                        >
+                                            {/* المربع الصغير: يعرض أول حرف من اسم المتجر */}
+                                            <div className="w-5 h-5 bg-zinc-700 rounded flex items-center justify-center text-[10px] font-bold text-zinc-400 uppercase">
+                                                {store.name ? store.name.charAt(0) : 'S'}
+                                            </div>
+
+                                            {/* اسم المتجر الكامل: تم تغيير project.name إلى store.name */}
+                                            <span className="font-medium">{store.name}</span>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="px-3 py-2 text-zinc-500 text-[12px] text-center">
+                                        لا توجد متاجر متاحة
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -127,10 +254,8 @@ export default function LayoutDashboard() {
                 </div>
             </div>
 
-            {/* Main Content Area */}
+            {/* Main Content */}
             <div className={`${isRtl ? 'lg:pr-64' : 'lg:pl-64'} flex flex-col flex-1`}>
-
-                {/* Header - متفاعل مع Dark Mode */}
                 <header className="sticky top-0 z-40 flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-4 lg:px-8 transition-colors">
                     <button
                         className="text-zinc-500 lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
@@ -139,7 +264,6 @@ export default function LayoutDashboard() {
                         <Menu className="h-6 w-6" />
                     </button>
 
-                    {/* Search Bar - متفاعل */}
                     <div className="flex flex-1 items-center max-w-xl mx-4">
                         <div className="w-full relative group">
                             <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
@@ -154,8 +278,7 @@ export default function LayoutDashboard() {
                     </div>
 
                     <div className="flex items-center gap-1 sm:gap-2">
-                        {/* زر تبديل الثيم - الجديد */}
-                        <button 
+                        <button
                             onClick={() => setIsDark(!isDark)}
                             className="p-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-all active:scale-90"
                         >
@@ -169,15 +292,18 @@ export default function LayoutDashboard() {
 
                         <div className="h-8 w-px bg-gray-200 dark:bg-zinc-800 mx-1 sm:mx-2"></div>
 
-                        {/* الملف الشخصي */}
-                        <button className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all group">
+                        {/* User Profile Info */}
+                        <div className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all group">
                             <div className="w-8 h-8 bg-zinc-900 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-[10px] font-black text-white shadow-md group-hover:bg-emerald-600 transition-colors">
-                                JD
+                                {user.initial}
                             </div>
-                            <span className="hidden sm:inline text-sm font-bold text-gray-700 dark:text-zinc-300">جون دو</span>
-                        </button>
+                            <span className="hidden sm:inline text-sm font-bold text-gray-700 dark:text-zinc-300">
+                                {user.name}
+                            </span>
+                        </div>
 
                         <button
+                            onClick={handleLogout}
                             className="flex items-center justify-center p-2.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all group active:scale-90"
                             title={t('common.logout')}
                         >
@@ -186,13 +312,12 @@ export default function LayoutDashboard() {
                     </div>
                 </header>
 
-                {/* Page Content */}
                 <main className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
                     <Outlet />
                 </main>
             </div>
 
-            {/* Mobile Sidebar - متوافق مع Dark Mode */}
+            {/* Mobile Sidebar */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
                     <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />

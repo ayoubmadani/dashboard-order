@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
-  Info, Palette, ImageIcon, Check, Plus, Trash2,
+  Info, Palette, ImageIcon, Plus, Trash2,
   Tag, Bold, Italic, List, CheckCircle, AlertCircle,
   Loader2, Sparkles, Package, Rocket, Ruler,
-  Type as TypeIcon, Save, ArrowRight, Settings2, Grid3x3,
-  FolderTree, ChevronDown, X
+  Type as TypeIcon, Save, ArrowRight, Grid3x3,
+  FolderTree, ChevronDown, X, Check, RefreshCw
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -60,6 +60,7 @@ const Section = ({ icon: Icon, title, color = 'indigo', children }) => {
     teal: 'text-teal-500 bg-teal-50 dark:bg-teal-500/10',
     rose: 'text-rose-500 bg-rose-50 dark:bg-rose-500/10',
     blue: 'text-blue-500 bg-blue-50 dark:bg-blue-500/10',
+    amber: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10',
   };
   return (
     <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl">
@@ -74,7 +75,7 @@ const Section = ({ icon: Icon, title, color = 'indigo', children }) => {
   );
 };
 
-/* ── Label + Input helper ── */
+/* ── Field wrapper ── */
 const Field = ({ label, required, error, children }) => (
   <div>
     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
@@ -94,13 +95,30 @@ const inputCls = (err) =>
   ${err ? 'border-rose-400 focus:border-rose-500' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`;
 
 /* ══════════════════════════════════════════════════════ */
-export default function CreateProduct() {
+export default function EditProduct() {
   const { t: translate, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { id } = useParams();
   const isRtl = i18n.dir() === 'rtl';
   const t = (key) => translate(`translation:products.${key}`);
 
-  const [formData, setFormData] = useState({ name: '', desc: '', price: '', originalPrice: '', storeId: '', sku: '', stock: '', status: 'active', categoryId: '' });
+  /* ── state ── */
+  const [formData, setFormData] = useState({
+    name: '', desc: '', price: '', originalPrice: '',
+    storeId: '', sku: '', stock: '', status: 'active', categoryId: ''
+  });
+  const [attributes, setAttributes] = useState([]);
+  const [variantDetails, setVariantDetails] = useState([]);
+  const [offers, setOffers] = useState([]);
+  const [images, setImages] = useState([]);
+  const [isOpenModelImage, setIsOpenModelImage] = useState(false);
+  const [selectingImageFor, setSelectingImageFor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [errors, setErrors] = useState({});
+  const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+
+  /* ── categories ── */
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState('');
@@ -116,18 +134,15 @@ export default function CreateProduct() {
     axios.get(`${baseURL}/stores/${storeId}/categories`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         const raw = res.data;
-        console.log('[Categories raw]', raw);
         let list = [];
         if (Array.isArray(raw)) list = raw;
         else if (Array.isArray(raw?.data)) list = raw.data;
         else if (Array.isArray(raw?.categories)) list = raw.categories;
         else if (Array.isArray(raw?.items)) list = raw.items;
         else if (Array.isArray(raw?.result)) list = raw.result;
-        else console.warn('[Categories] unexpected shape', raw);
         setCategories(list);
       })
       .catch(err => {
-        console.error('[Categories]', err);
         setCategoriesError(err.response?.data?.message || err.message || 'خطأ في جلب التصنيفات');
         setCategories([]);
       })
@@ -136,7 +151,6 @@ export default function CreateProduct() {
 
   useEffect(() => { loadCategories(); }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!categoryDropdownOpen) return;
     const handler = (e) => {
@@ -145,22 +159,86 @@ export default function CreateProduct() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [categoryDropdownOpen]);
-  const [attributes, setAttributes] = useState([]);
-  const [variantDetails, setVariantDetails] = useState([]);
-  const [offers, setOffers] = useState([]);
-  const [images, setImages] = useState([]);
-  const [isOpenModelImage, setIsOpenModelImage] = useState(false);
-  const [selectingImageFor, setSelectingImageFor] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [notification, setNotification] = useState({ show: false, type: '', message: '' });
 
+  /* ── fetch product ── */
+  useEffect(() => {
+    if (!id) { navigate('/dashboard/products'); return; }
+    const fetchProduct = async () => {
+      try {
+        setIsFetching(true);
+        const token = getAccessToken();
+        const storeId = localStorage.getItem('storeId');
+        if (!storeId) { navigate('/dashboard/products'); return; }
+
+        const res = await axios.get(`${baseURL}/stores/${storeId}/products/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const product = res.data?.data || res.data;
+        if (!product) { navigate('/dashboard/products'); return; }
+
+        // Basic info
+        setFormData({
+          name: product.name || '',
+          desc: product.desc || '',
+          price: product.price?.toString() || '',
+          originalPrice: product.priceOriginal?.toString() || '',
+          storeId: storeId,
+          sku: product.sku || '',
+          stock: product.stock?.toString() || '',
+          status: product.isActive !== false ? 'active' : 'inactive',
+          categoryId: product.category?.id || product.categoryId || ''
+        });
+
+        // Attributes
+        if (Array.isArray(product.attributes)) {
+          setAttributes(product.attributes.map(attr => ({ ...attr, variants: attr.variants || [] })));
+        }
+
+        // Variant Details
+        if (Array.isArray(product.variantDetails)) {
+          setVariantDetails(product.variantDetails.map(vd => {
+            let parsedName = vd.name;
+            try {
+              if (typeof vd.name === 'string' && (vd.name.startsWith('{') || vd.name.startsWith('['))) {
+                parsedName = JSON.parse(vd.name);
+              }
+            } catch { parsedName = vd.name; }
+            return { ...vd, name: parsedName, price: vd.price?.toString() || '', stock: vd.stock?.toString() || '' };
+          }));
+        }
+
+        // Offers
+        if (Array.isArray(product.offers) && product.offers.length > 0) {
+          setOffers(product.offers.map(o => ({
+            ...o, price: o.price?.toString() || '', quantity: o.quantity?.toString() || ''
+          })));
+        }
+
+        // Images
+        if (Array.isArray(product.imagesProduct) && product.imagesProduct.length > 0) {
+          setImages(product.imagesProduct.map(img => img.imageUrl || img.url).filter(Boolean));
+        } else if (product.productImage) {
+          setImages([product.productImage]);
+        }
+
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        showNotification('error', t('Failed.to.load.product'));
+      } finally {
+        setIsFetching(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  /* ── helpers ── */
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
   };
 
-  /* ── Attributes ── */
+  /* ── attributes ── */
   const addAttribute = (type, name = '') => {
     if ((type === ATTRIBUTE_TYPES.COLOR || type === ATTRIBUTE_TYPES.SIZE) && attributes.some(a => a.type === type)) {
       showNotification('error', t('Attribute.already.exists')); return;
@@ -184,13 +262,13 @@ export default function CreateProduct() {
     setVariantDetails([]);
   };
 
-  const updateVariantValue = (attrId, variantId, value, id = null) => {
+  const updateVariantValue = (attrId, variantId, value, imgId = null) => {
     setAttributes(prev => prev.map(a => {
       if (a.id !== attrId) return a;
       return {
         ...a, variants: a.variants.map(v => {
           if (v.id !== variantId) return v;
-          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: id };
+          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: imgId };
           return { ...v, value, name: value };
         })
       };
@@ -203,7 +281,7 @@ export default function CreateProduct() {
     setVariantDetails([]);
   };
 
-  /* ── Variant combinations ── */
+  /* ── variant combinations ── */
   const generateVariantCombinations = () => {
     if (!attributes.length) { showNotification('error', t('Add.attributes.first')); return; }
     if (attributes.some(a => !a.variants.length)) { showNotification('error', t('Some.attributes.have.no.variants')); return; }
@@ -220,27 +298,25 @@ export default function CreateProduct() {
   const removeVariantDetail = (id) => setVariantDetails(prev => prev.filter(d => d.id !== id));
   const updateVDPrice = (id, price) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, price } : d));
   const updateVDStock = (id, stock) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, stock } : d));
-  const updateVDAttr = (id, attr, val) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, name: { ...d.name, [attr]: val } } : d));
 
-  /* ── Offers ── */
+  /* ── offers ── */
   const addOffer = () => setOffers(prev => [...prev, { id: `off-${Date.now()}`, name: '', quantity: '', price: '' }]);
   const removeOffer = (id) => setOffers(prev => prev.filter(o => o.id !== id));
   const updateOffer = (id, field, val) => setOffers(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
 
-  /* ── Images ── */
+  /* ── images ── */
   const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setIsOpenModelImage(true); };
   const handleImageSelect = (imageData) => {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
       setSelectingImageFor(null);
-      showNotification('success', t('Image.added.successfully'));
     } else {
       setImages(prev => [...prev, imageData.url]);
-      showNotification('success', t('Image.added.successfully'));
     }
+    showNotification('success', t('Image.added.successfully'));
   };
 
-  /* ── Submit ── */
+  /* ── validate + submit ── */
   const validate = () => {
     const e = {};
     const hasText = /[a-zA-Z0-9\u0600-\u06FF]/.test(formData.name || '');
@@ -259,21 +335,50 @@ export default function CreateProduct() {
     if (!validate()) { showNotification('error', t('Please.fix.errors.first')); return; }
     setLoading(true);
     try {
-      const data = { id: `product-${Date.now()}`, name: formData.name, price: Number(formData.price), desc: formData.desc, storeId: formData.storeId, categoryId: formData.categoryId || undefined, attributes, variantDetails, offers, images };
-      const token = getAccessToken();
       const storeId = localStorage.getItem('storeId');
-      const response = await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `bearer ${token}` } });
-      if (response.data.success) console.log(response.data.data);
-      showNotification('success', t('Product.created.successfully!'));
+      const token = getAccessToken();
+      const data = {
+        name: formData.name,
+        price: Number(formData.price),
+        desc: formData.desc,
+        sku: formData.sku,
+        stock: Number(formData.stock) || 0,
+        isActive: formData.status === 'active',
+        priceOriginal: formData.originalPrice ? Number(formData.originalPrice) : null,
+        categoryId: formData.categoryId || null,
+        attributes,
+        variantDetails,
+        offers,
+        images
+      };
+      const res = await axios.patch(`${baseURL}/stores/${storeId}/products/${id}`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.data) {
+        showNotification('success', t('Product.updated.successfully!'));
+        setTimeout(() => navigate('/dashboard/products'), 1500);
+      }
     } catch (err) {
       console.error(err);
-      showNotification('error', t('Error.creating.product'));
+      showNotification('error', t('Error.updating.product'));
     } finally {
       setLoading(false);
     }
   };
 
-  const marketingEmojis = ["🔥","⭐","✨","⚡","💎","🚀","🎯","🛍️","💥","👑","🌟","🎁","💖","🏆"];
+  /* ── loading screen ── */
+  if (isFetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-zinc-950">
+        <div className="text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center mx-auto">
+            <Loader2 size={28} className="text-indigo-500 animate-spin" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t('Loading.product...')}</p>
+        </div>
+      </div>
+    );
+  }
 
   /* ══ RENDER ══ */
   return (
@@ -303,47 +408,35 @@ export default function CreateProduct() {
           </button>
           <div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Package size={20} className="text-indigo-500" />
-              {t('Create.New.Product')}
+              <Package size={20} className="text-amber-500" />
+              {t('Edit.Product')}
             </h1>
-            <p className="text-xs text-gray-400">{t('Basic.Information')}</p>
+            <p className="text-xs text-gray-400 font-mono"># {id}</p>
           </div>
         </div>
         <button onClick={handleSubmit} disabled={loading}
-          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-sm">
+          className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-sm">
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('Creating...') : t('Save.Product')}
+          {loading ? t('Updating...') : t('Update.Product')}
         </button>
       </div>
 
       {/* ── SECTION 1: Basic Info ── */}
       <Section icon={Info} title={t('Basic.Information')} color="indigo">
 
-        {/* Emoji bar + name */}
         <Field label={t('Product.Name')} required error={errors.name}>
-          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
-            {marketingEmojis.map((e, i) => (
-              <button key={i} type="button"
-                onClick={() => setFormData(p => ({ ...p, name: (p.name || '') + e }))}
-                className="min-w-[34px] h-8 rounded-lg text-base bg-gray-100 dark:bg-zinc-800 flex items-center justify-center hover:scale-110 hover:bg-indigo-500 hover:text-white transition-all">
-                {e}
-              </button>
-            ))}
-          </div>
           <input type="text" dir={isRtl ? 'rtl' : 'ltr'} value={formData.name}
             onChange={e => { setFormData(p => ({ ...p, name: e.target.value })); setErrors(p => ({ ...p, name: null })); }}
             placeholder={t('e.g.Cotton.T.Shirt')}
             className={inputCls(errors.name)} />
         </Field>
 
-        {/* Description */}
         <Field label={t('Product.Description')}>
           <div dir={isRtl ? 'rtl' : 'ltr'}>
             <TextEditor value={formData.desc} onChange={v => setFormData(p => ({ ...p, desc: v }))} />
           </div>
         </Field>
 
-        {/* Pricing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('Sale.Price')} required error={errors.price}>
             <div className="relative">
@@ -369,14 +462,44 @@ export default function CreateProduct() {
           </Field>
         </div>
 
-        {/* Category */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label={t('SKU')}>
+            <input type="text" dir="ltr" value={formData.sku}
+              onChange={e => setFormData(p => ({ ...p, sku: e.target.value }))}
+              placeholder={t('e.g.PROD-001')}
+              className={`${inputCls()} font-mono text-xs`} />
+          </Field>
+          <Field label={t('Stock.Quantity')}>
+            <input type="number" dir="ltr" value={formData.stock}
+              onChange={e => setFormData(p => ({ ...p, stock: e.target.value }))}
+              placeholder="0"
+              className={inputCls()} />
+          </Field>
+        </div>
+
+        {/* Status toggle */}
+        <Field label="الحالة">
+          <div className="flex gap-2">
+            {['active', 'inactive'].map(s => (
+              <button key={s} type="button"
+                onClick={() => setFormData(p => ({ ...p, status: s }))}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all border
+                  ${formData.status === s
+                    ? s === 'active'
+                      ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-rose-50 dark:bg-rose-500/10 border-rose-300 dark:border-rose-500/30 text-rose-500'
+                    : 'border-gray-200 dark:border-zinc-700 text-gray-400 hover:border-gray-300'}`}>
+                {s === 'active' ? '✓ نشط' : '✕ غير نشط'}
+              </button>
+            ))}
+          </div>
+        </Field>
+
+        {/* Category dropdown */}
         <Field label="التصنيف">
           <div className="relative" data-category-dropdown>
-            <button
-              type="button"
-              onClick={() => setCategoryDropdownOpen(p => !p)}
-              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 text-sm outline-none transition-all hover:border-indigo-400 focus:border-indigo-400"
-            >
+            <button type="button" onClick={() => setCategoryDropdownOpen(p => !p)}
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 text-sm outline-none transition-all hover:border-indigo-400">
               {formData.categoryId ? (() => {
                 const cat = categories.find(c => c.id === formData.categoryId);
                 return cat ? (
@@ -386,21 +509,15 @@ export default function CreateProduct() {
                       : <FolderTree size={14} className="text-indigo-400" />}
                     {cat.name}
                   </span>
-                ) : <span className="text-gray-400">اختر تصنيفاً</span>;
+                ) : <span className="text-gray-400 flex items-center gap-2"><FolderTree size={14} />اختر تصنيفاً</span>;
               })() : (
-                <span className="flex items-center gap-2 text-gray-400">
-                  <FolderTree size={14} />
-                  اختر تصنيفاً
-                </span>
+                <span className="text-gray-400 flex items-center gap-2"><FolderTree size={14} />اختر تصنيفاً</span>
               )}
               <div className="flex items-center gap-2">
                 {formData.categoryId && (
-                  <span
-                    role="button"
-                    tabIndex={0}
+                  <span role="button" tabIndex={0}
                     onClick={e => { e.stopPropagation(); setFormData(p => ({ ...p, categoryId: '' })); }}
-                    className="p-0.5 rounded text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer"
-                  >
+                    className="p-0.5 rounded text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer">
                     <X size={13} />
                   </span>
                 )}
@@ -419,42 +536,31 @@ export default function CreateProduct() {
                   <div className="py-5 px-4 text-center space-y-2">
                     <p className="text-xs text-rose-500 font-medium">{categoriesError}</p>
                     <button type="button" onClick={loadCategories}
-                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
-                      إعادة المحاولة
-                    </button>
+                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">إعادة المحاولة</button>
                   </div>
                 ) : !categories.length ? (
                   <div className="py-5 px-4 text-center space-y-2">
                     <p className="text-xs text-gray-400">لا توجد تصنيفات</p>
                     <button type="button" onClick={loadCategories}
-                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
-                      تحديث
-                    </button>
+                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">تحديث</button>
                   </div>
                 ) : (
                   <>
-                    {/* none option */}
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => { setFormData(p => ({ ...p, categoryId: '' })); setCategoryDropdownOpen(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-100 dark:border-zinc-800"
-                    >
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-100 dark:border-zinc-800">
                       <X size={13} /> بدون تصنيف
                     </button>
                     {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        type="button"
+                      <button key={cat.id} type="button"
                         onClick={() => { setFormData(p => ({ ...p, categoryId: cat.id })); setCategoryDropdownOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
-                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}
-                      >
+                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}>
                         {cat.imageUrl
                           ? <img src={cat.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
                           : <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
                               <FolderTree size={13} className="text-gray-400" />
-                            </div>
-                        }
+                            </div>}
                         <div className="text-left rtl:text-right flex-1 overflow-hidden">
                           <p className="font-medium truncate">{cat.name}</p>
                           <p className="text-[10px] text-gray-400 font-mono truncate">{cat.slug}</p>
@@ -471,16 +577,12 @@ export default function CreateProduct() {
             )}
           </div>
 
-          {/* Selected category badge */}
           {formData.categoryId && (() => {
             const cat = categories.find(c => c.id === formData.categoryId);
             return cat ? (
               <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg w-fit">
                 <FolderTree size={12} className="text-indigo-500" />
                 <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">{cat.name}</span>
-                {cat.children?.length > 0 && (
-                  <span className="text-[10px] text-indigo-400">({cat.children.length} فرعي)</span>
-                )}
               </div>
             ) : null;
           })()}
@@ -497,23 +599,19 @@ export default function CreateProduct() {
         {attributes.map((attr) => (
           <div key={attr.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950 space-y-3">
 
-            {/* Header row */}
             <div className="flex items-center gap-2">
               <div className={`p-1.5 rounded-lg ${attr.type === ATTRIBUTE_TYPES.COLOR ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-500' : attr.type === ATTRIBUTE_TYPES.SIZE ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-500' : 'bg-gray-200 dark:bg-zinc-700 text-gray-500'}`}>
                 {attr.type === ATTRIBUTE_TYPES.COLOR ? <Palette size={14} /> : attr.type === ATTRIBUTE_TYPES.SIZE ? <Ruler size={14} /> : <TypeIcon size={14} />}
               </div>
-              <input type="text" value={attr.name}
-                onChange={e => updateAttributeName(attr.id, e.target.value)}
+              <input type="text" value={attr.name} onChange={e => updateAttributeName(attr.id, e.target.value)}
                 className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`}
-              />
+                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
               <button type="button" onClick={() => removeAttribute(attr.id)}
                 className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
                 <Trash2 size={14} />
               </button>
             </div>
 
-            {/* Color display mode toggle */}
             {attr.type === ATTRIBUTE_TYPES.COLOR && (
               <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg w-fit">
                 {['color', 'image'].map(mode => (
@@ -525,7 +623,6 @@ export default function CreateProduct() {
               </div>
             )}
 
-            {/* Variants */}
             <div className="space-y-2">
               {attr.variants.map(variant => (
                 <div key={variant.id} className="flex items-center gap-2">
@@ -585,7 +682,6 @@ export default function CreateProduct() {
           </div>
         ))}
 
-        {/* Quick add buttons */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
           <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.COLOR, t('Color'))}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-all">
@@ -606,12 +702,10 @@ export default function CreateProduct() {
       {attributes.length > 0 && (
         <Section icon={Grid3x3} title={t('Variant.Details')} color="teal">
 
-          {/* Generate button */}
           <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-500/5 border border-purple-100 dark:border-purple-500/20 rounded-xl">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-purple-500" />
               <span className="text-sm font-semibold text-purple-800 dark:text-purple-300">{t('Auto.Generate')}</span>
-              <span className="text-xs text-purple-500/70">{t('All.possible.combinations.will.be.generated.automatically')}</span>
             </div>
             <button type="button" onClick={generateVariantCombinations}
               className="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white text-xs font-bold rounded-lg hover:bg-purple-600 transition-all">
@@ -619,7 +713,6 @@ export default function CreateProduct() {
             </button>
           </div>
 
-          {/* Bulk update */}
           {variantDetails.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {['Price', 'Stock'].map(field => (
@@ -640,7 +733,6 @@ export default function CreateProduct() {
             </div>
           )}
 
-          {/* Variants list */}
           {!variantDetails.length ? (
             <p className="text-center text-sm text-gray-400 py-4">{t('No.variant.details.added.yet')}</p>
           ) : (
@@ -668,9 +760,11 @@ export default function CreateProduct() {
                           ? <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 bg-cover" style={{ backgroundImage: `url(${detail.name[attr.name]})` }} />
                           : (
                             <div className="relative">
-                              <input readOnly value={detail.name[attr.name] || ''} className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 outline-none" />
+                              <input readOnly value={detail.name[attr.name] || ''}
+                                className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 outline-none" />
                               {detail.name[attr.name]?.startsWith('#') && (
-                                <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded ${isRtl ? 'left-2' : 'right-2'}`} style={{ backgroundColor: detail.name[attr.name] }} />
+                                <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded ${isRtl ? 'left-2' : 'right-2'}`}
+                                  style={{ backgroundColor: detail.name[attr.name] }} />
                               )}
                             </div>
                           )
@@ -775,9 +869,9 @@ export default function CreateProduct() {
       {/* ── Bottom Save ── */}
       <div className="flex justify-end pt-2">
         <button onClick={handleSubmit} disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-md">
+          className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-md">
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('Creating...') : t('Save.Product')}
+          {loading ? t('Updating...') : t('Update.Product')}
         </button>
       </div>
     </div>
