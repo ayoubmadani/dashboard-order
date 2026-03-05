@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Google Cloud Credentials
+vertex-*.json
+*.json
+vertex-488906-b07b17471ded.json
+
+# Secrets and Credentials
+*.json
+!package.json
+!nest-cli.json
+!tsconfig*.json
+vertex-*.json

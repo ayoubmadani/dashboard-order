@@ -1,36 +1,225 @@
 {
-    "desc": "Gérez toutes vos boutiques, succursales et domaines personnalisés à partir d'un seul tableau de bord.",
-    "add_new": "Créer une nouvelle boutique",
-    "search_placeholder": "Rechercher une boutique par nom ou URL...",
-    "manage": "Gérer la boutique",
-    "visit": "Visiter la boutique",
-    "create_new": "Créer une Nouvelle Boutique",
-    "branding_title": "Identité Visuelle",
-    "upload_logo": "Télécharger le Logo",
-    "change_logo": "Changer le Logo",
-    "primary_color": "Couleur Primaire de la Boutique",
-    "base_info": "Informations de Base",
-    "name_label": "Nom de la Boutique",
-    "name_placeholder": "ex: Boutique Everlane",
-    "domain_label": "URL de la Boutique (Sous-domaine)",
-    "domain_placeholder": "ma-boutique",
-    "location_label": "Emplacement Officiel de l'Entreprise",
-    "location_hint": "Ces informations seront utilisées dans les factures de la boutique et la page contactez-nous.",
-    "niche_title": "Niche de la Boutique",
-    "niche_subtitle": "Que vendrez-vous dans cette boutique ?",
-    "hero_section": "Section Hero de la Boutique (Slider Hero)",
-    "hero_title_label": "Titre de l'Offre Principale",
-    "hero_subtitle_label": "Courte Description de l'Offre",
-    "hero_upload_hint": "Cliquez pour télécharger l'image hero large",
-    "live_preview": "Aperçu de la Boutique en Direct",
-    "launch": "Lancer la Boutique Maintenant",
+  "common": {
+    "loading": "Chargement...",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "visit": "Visiter",
+    "yes": "Oui",
+    "no": "Non",
     "back": "Retour",
-    "top_bar": "Barre d'Annonce Supérieure",
-    "top_bar_text": "Texte de l'annonce (ex: Livraison Gratuite)",
-    "niches": {
-        "fashion": "Mode & Vêtements",
-        "electronics": "Électronique",
-        "home": "Maison & Déco",
-        "beauty": "Beauté & Soins"
+    "refresh": "Actualiser",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "enabling": "Traitement...",
+    "currency": "DA"
+  },
+
+  "stores": {
+    "title": "Mes Boutiques",
+    "subtitle": "Gérez toutes vos boutiques et succursales depuis un seul endroit",
+    "desc": "Gérez toutes vos boutiques, succursales et domaines personnalisés à partir d'un tableau de bord unique.",
+    "new_store": "Nouvelle boutique",
+    "search_placeholder": "Rechercher une boutique, un domaine ou un lieu...",
+    "clear_search": "Effacer la recherche",
+    "loading_stores": "Chargement des boutiques...",
+    "load_failed": "Échec du chargement des boutiques",
+    "stats": {
+      "stores": "Boutiques",
+      "active_count": "{{count}} Actives",
+      "products": "Produits",
+      "products_sub": "Dans toutes les boutiques",
+      "orders": "Commandes",
+      "orders_sub": "Total des commandes",
+      "customers": "Clients",
+      "customers_sub": "Clients actifs"
+    },
+    "card": {
+      "orders": "Commande",
+      "products": "Produit",
+      "customers": "Client",
+      "visit": "Visiter",
+      "edit": "Modifier"
+    },
+    "table": {
+      "store": "Boutique",
+      "status": "Statut",
+      "location": "Emplacement",
+      "products": "Produits",
+      "orders": "Commandes",
+      "actions": "Actions"
+    },
+    "toggle": {
+      "enable": "Activer la boutique",
+      "disable": "Désactiver la boutique",
+      "failed": "Échec du changement de statut"
+    },
+    "delete": {
+      "confirm": "Êtes-vous sûr de vouloir supprimer cette boutique ? Cette action est irréversible.",
+      "success": "Boutique supprimée avec succès",
+      "failed": "Échec de la suppression de la boutique"
+    },
+    "empty": {
+      "title": "Aucune boutique trouvée",
+      "subtitle": "Commencez par créer votre première boutique",
+      "create": "Créer une nouvelle boutique",
+      "no_results": "Aucun résultat",
+      "no_results_sub": "Aucune boutique ne correspond à votre recherche"
+    },
+    "add_card": {
+      "title": "Créer une boutique",
+      "subtitle": "Lancez votre aventure commerciale"
     }
+  },
+
+  "create": {
+    "title": "Créer une boutique",
+    "subtitle": "Configurez votre boutique en ligne en quelques minutes",
+    "submitting": "Création en cours...",
+    "submit": "Créer la boutique",
+    "success": "Boutique créée avec succès ! 🎉",
+    "failed": "Une erreur est survenue lors de la création",
+    "form_errors": "Veuillez corriger les erreurs dans le formulaire"
+  },
+
+  "update": {
+    "title": "Modifier la boutique",
+    "subtitle": "Mettez à jour les informations et le design de votre boutique",
+    "submitting": "Mise à jour...",
+    "submit": "Enregistrer les modifications",
+    "success": "Boutique mise à jour avec succès ! ✅",
+    "failed": "Une erreur est survenue lors de la mise à jour",
+    "load_failed": "Échec du chargement des données",
+    "loading": "Chargement des données de la boutique...",
+    "form_errors": "Veuillez corriger les erreurs dans le formulaire"
+  },
+
+  "form": {
+    "basic_info": "Informations de base",
+    "name_label": "Nom de la boutique",
+    "name_placeholder": "Ex: Boutique de mode",
+    "domain_label": "Domaine",
+    "domain_placeholder": "maboutique",
+    "wilaya_label": "Wilaya",
+    "niche_label": "Catégorie",
+    "phone_label": "Numéro de téléphone",
+    "email_label": "Adresse e-mail",
+    "design": "Design et Couleurs",
+    "logo_label": "Logo",
+    "logo_upload": "Choisir un logo",
+    "primary_color": "Couleur primaire",
+    "secondary_color": "Couleur secondaire",
+    "hero_section": "Section principale (Hero)",
+    "hero_image": "Image principale",
+    "hero_image_btn": "Choisir une image",
+    "hero_title_label": "Titre principal",
+    "hero_subtitle_label": "Sous-titre",
+    "top_bar": "Barre supérieure",
+    "top_bar_enable": "Activer",
+    "top_bar_text": "Texte",
+    "top_bar_color": "Couleur",
+    "top_bar_placeholder": "Livraison gratuite pour toute commande > 5000 DA ! 🎉",
+    "preview": "Aperçu rapide",
+    "preview_name": "Nom de la boutique",
+    "preview_domain": "Domaine",
+    "preview_wilaya": "Wilaya",
+    "required": "*",
+    "validation": {
+      "name_required": "Le nom de la boutique est requis",
+      "name_short": "Le nom est trop court (min 2 caractères)",
+      "domain_required": "Le domaine est requis",
+      "domain_invalid": "Le domaine ne doit contenir que des lettres minuscules, chiffres et tirets",
+      "domain_short": "Le domaine est trop court (min 3 caractères)",
+      "phone_invalid": "Numéro de téléphone invalide (Ex: 0557123456)",
+      "email_invalid": "Adresse e-mail invalide"
+    }
+  },
+
+  "niches": {
+    "fashion": "Mode",
+    "electronics": "Électronique",
+    "home": "Maison & Déco",
+    "beauty": "Beauté"
+  },
+
+  "show": {
+    "loading": "Chargement...",
+    "not_found": {
+      "title": "Boutique non trouvée",
+      "subtitle": "La boutique demandée n'existe pas",
+      "back": "Retour aux boutiques"
+    },
+    "copy_url": "Copier le lien",
+    "copied": "Copié",
+    "tabs": {
+      "overview": "Aperçu",
+      "orders": "Commandes",
+      "products": "Produits",
+      "settings": "Paramètres"
+    },
+    "stats": {
+      "orders": "Total Commandes",
+      "revenue": "Chiffre d'affaires",
+      "products": "Produits",
+      "customers": "Clients"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif",
+      "suspended": "Suspendu"
+    },
+    "order_status": {
+      "completed": "Terminé",
+      "pending": "En attente",
+      "processing": "En cours",
+      "cancelled": "Annulé"
+    },
+    "recent_orders": {
+      "title": "Commandes récentes",
+      "view_all": "Voir tout"
+    },
+    "performance": {
+      "title": "Performance",
+      "coming_soon": "Bientôt disponible - Graphiques"
+    },
+    "orders_tab": {
+      "full_list": "Liste complète des commandes",
+      "redirect": "Vous allez être redirigé vers la page des commandes"
+    },
+    "products_tab": {
+      "manage": "Gérer les produits",
+      "redirect": "Vous allez être redirigé vers la page des produits"
+    },
+    "settings_tab": {
+      "title": "Paramètres de la boutique",
+      "currency": "Devise",
+      "language": "Langue",
+      "cash_on_delivery": "Paiement à la livraison",
+      "online_payment": "Paiement en ligne"
+    },
+    "sidebar": {
+      "info": {
+        "title": "Informations boutique",
+        "location": "Emplacement",
+        "phone": "Téléphone",
+        "email": "E-mail",
+        "created": "Date de création"
+      },
+      "actions": {
+        "title": "Actions rapides",
+        "qr_code": "Code QR",
+        "share": "Partager la boutique",
+        "export": "Exporter les données"
+      },
+      "description": "Description de la boutique"
+    },
+    "delete_modal": {
+      "title": "Supprimer la boutique",
+      "subtitle": "Cette action est irréversible. Toutes les données liées seront supprimées.",
+      "confirm": "Oui, supprimer la boutique",
+      "cancel": "Annuler"
+    }
+  }
 }

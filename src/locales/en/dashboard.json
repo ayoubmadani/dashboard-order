@@ -32,5 +32,6 @@
     "store_bio": "Store Description",
     "bio_placeholder": "Tell your customers a little about your store...",
     "contact_links": "Contact Links",
-    "my_stores": "Stores"
+    "my_stores": "Stores",
+    "theme":"Theme"
 }

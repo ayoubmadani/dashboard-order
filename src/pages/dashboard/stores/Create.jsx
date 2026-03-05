@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowRight, Store, Upload, Save, Loader2,
+  ArrowLeft, ArrowRight, Store, Upload, Save, Loader2,
   Image as ImageIcon, Palette, MapPin, Mail,
   Phone, Type, CheckCircle, AlertCircle,
   Shirt, Smartphone, Home, Sparkles, ExternalLink,
@@ -14,14 +14,13 @@ import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 
 const CreateStore = () => {
-  const { t, i18n } = useTranslation();
+const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });  
   const navigate = useNavigate();
   const isRtl = i18n.dir() === 'rtl';
+  const BackIcon = isRtl ? ArrowRight : ArrowLeft;
 
-  // Modal state - مبسط
   const [activeModal, setActiveModal] = useState(null); // 'logo' | 'hero' | null
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     domain: '',
@@ -31,12 +30,12 @@ const CreateStore = () => {
     logo: null,
     primaryColor: '#000000',
     secondaryColor: '#f59e0b',
-    niche: '5754b555-a53f-4f50-b8cc-58996e744dec',
+    niche: '403aaa3c-6c1d-4a22-9901-b7185a31e4a1',
     heroImage: null,
     heroTitle: 'Your Cozy Era',
     heroSubtitle: 'Get peak comfy-chic with new winter essentials.',
     showTopBar: true,
-    topBarText: 'شحن مجاني للطلبات أكثر من 5000 دج 🎉',
+    topBarText: t('form.top_bar_placeholder'),
     topBarColor: '#6366f1',
     currency: 'DZD',
     language: 'ar',
@@ -49,26 +48,22 @@ const CreateStore = () => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
 
   const niches = [
-    { id: '5754b555-a53f-4f50-b8cc-58996e744dec', label: 'أزياء', icon: <Shirt size={20} /> },
-    { id: 'electronics', label: 'إلكترونيات', icon: <Smartphone size={20} /> },
-    { id: 'home', label: 'منزل وديكور', icon: <Home size={20} /> },
-    { id: 'beauty', label: 'تجميل', icon: <Sparkles size={20} /> },
+    { id: '403aaa3c-6c1d-4a22-9901-b7185a31e4a1', label: t('niches.fashion'), icon: <Shirt size={20} /> },
+    { id: 'electronics', label: t('niches.electronics'), icon: <Smartphone size={20} /> },
+    { id: 'home', label: t('niches.home'), icon: <Home size={20} /> },
+    { id: 'beauty', label: t('niches.beauty'), icon: <Sparkles size={20} /> },
   ];
 
   const wilayas = [
     'Algiers', 'Oran', 'Constantine', 'Setif', 'Annaba', 'Blida',
-    'Batna', 'Tlemcen', 'Béjaïa', 'Tizi Ouzou'
+    'Batna', 'Tlemcen', 'Béjaïa', 'Tizi Ouzou',
   ];
 
-  // 🔔 Notification - محسن بـ useCallback
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
-    setTimeout(() => {
-      setNotification(prev => ({ ...prev, show: false }));
-    }, 4000);
+    setTimeout(() => setNotification(prev => ({ ...prev, show: false })), 4000);
   }, []);
 
-  // 🖼️ Handle image selection - محسن
   const handleSelectImage = useCallback((image) => {
     if (activeModal === 'hero') {
       setHeroImagePreview(image.url);
@@ -80,7 +75,6 @@ const CreateStore = () => {
     setActiveModal(null);
   }, [activeModal]);
 
-  // 🗑️ Remove images - محسن
   const removeLogo = useCallback(() => {
     setLogoPreview(null);
     setFormData(prev => ({ ...prev, logo: null }));
@@ -91,68 +85,38 @@ const CreateStore = () => {
     setFormData(prev => ({ ...prev, heroImage: null }));
   }, []);
 
-  // ✅ Validation - محسن
   const validateForm = useCallback(() => {
     const newErrors = {};
+    if (!formData.name.trim()) newErrors.name = t('form.validation.name_required');
+    else if (formData.name.trim().length < 2) newErrors.name = t('form.validation.name_short');
 
-    // اسم المتجر
-    if (!formData.name.trim()) {
-      newErrors.name = 'اسم المتجر مطلوب';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'الاسم قصير جداً (حرفين على الأقل)';
-    }
+    if (!formData.domain.trim()) newErrors.domain = t('form.validation.domain_required');
+    else if (!/^[a-z0-9-]+$/.test(formData.domain)) newErrors.domain = t('form.validation.domain_invalid');
+    else if (formData.domain.length < 3) newErrors.domain = t('form.validation.domain_short');
 
-    // الدومين
-    if (!formData.domain.trim()) {
-      newErrors.domain = 'الدومين مطلوب';
-    } else if (!/^[a-z0-9-]+$/.test(formData.domain)) {
-      newErrors.domain = 'الدومين يجب أن يحتوي على حروف صغيرة وأرقام وشرطات فقط';
-    } else if (formData.domain.length < 3) {
-      newErrors.domain = 'الدومين قصير جداً (3 أحرف على الأقل)';
-    }
-
-    // الهاتف (اختياري لكن يجب أن يكون صحيحاً)
     const phone = formData.phone?.trim();
-    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) {
-      newErrors.phone = 'رقم الهاتف غير صحيح (مثال: 0557123456)';
-    }
+    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) newErrors.phone = t('form.validation.phone_invalid');
 
-    // البريد (اختياري لكن يجب أن يكون صحيحاً)
     const email = formData.email?.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'البريد الإلكتروني غير صحيح';
-    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t('form.validation.email_invalid');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData.name, formData.domain, formData.phone, formData.email]);
+  }, [formData.name, formData.domain, formData.phone, formData.email, t]);
 
-  // 📝 Handle input change - محسن
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-
-    // مسح الخطأ عند الكتابة
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   }, [errors]);
 
-  // 🚀 Submit - محسن
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
-      showNotification('error', 'يرجى تصحيح الأخطاء في النموذج');
+      showNotification('error', t('create.form_errors'));
       return;
     }
-
     setLoading(true);
-
     try {
       const payload = {
         store: {
@@ -175,7 +139,7 @@ const CreateStore = () => {
         contact: {
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
-          wilaya: formData.wilaya, // ✅ إرسال الاسم بدلاً من رقم
+          wilaya: formData.wilaya,
         },
         hero: {
           imageUrl: formData.heroImage,
@@ -185,101 +149,98 @@ const CreateStore = () => {
       };
 
       const token = getAccessToken();
-      const response = await axios.post(
-        `${baseURL}/stores/create-full`,
-        payload,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post(`${baseURL}/stores/create-full`, payload, {
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      });
 
       if (response.data.success) {
-        showNotification('success', 'تم إنشاء المتجر بنجاح! 🎉');
+        showNotification('success', t('create.success'));
         setTimeout(() => navigate('/dashboard/stores'), 2000);
       }
     } catch (error) {
       console.error('Error creating store:', error);
-      const message = error.response?.data?.message || 
-                      error.response?.data?.error || 
-                      'حدث خطأ في إنشاء المتجر';
-      showNotification('error', message);
+      showNotification('error', error.response?.data?.message || t('create.failed'));
     } finally {
       setLoading(false);
     }
-  }, [formData, navigate, showNotification, validateForm]);
+  }, [formData, navigate, showNotification, validateForm, t]);
 
-  // 🎯 Open modals - محسن
   const openLogoModal = useCallback(() => setActiveModal('logo'), []);
   const openHeroModal = useCallback(() => setActiveModal('hero'), []);
   const closeModal = useCallback(() => setActiveModal(null), []);
 
+  // ─── Shared input class ───────────────────────────────────────────────────────
+  const inputClass = (hasError) =>
+    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
+      hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
+    } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white`;
+
+  const sectionClass = 'bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6';
+  const sectionTitle = 'text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2';
+  const labelClass = 'block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2';
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-8" dir={isRtl ? 'rtl' : 'ltr'}>
-      {/* Notification */}
+
+      {/* ── Notification ── */}
       {notification.show && (
-        <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${
-            notification.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
-          }`}
-        >
-          {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${
+          notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+        } text-white`}>
+          {notification.type === 'success'
+            ? <CheckCircle size={20} />
+            : <AlertCircle size={20} />}
           <span className="font-bold text-sm">{notification.message}</span>
         </div>
       )}
 
-      {/* Header */}
+      {/* ── Page Header ── */}
       <div className="flex items-center gap-4 mb-8">
         <button
           onClick={() => navigate('/dashboard/stores')}
           className="p-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:scale-105 transition-all"
         >
-          <ArrowRight className={isRtl ? 'rotate-180' : ''} size={20} />
+          <BackIcon size={20} />
         </button>
         <div>
-          <h1 className="text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-            <Store size={28} className="text-indigo-600" />
-            إنشاء متجر جديد
+          <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+            <Store size={24} className="text-indigo-600" />
+            {t('create.title')}
           </h1>
-          <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">
-            أنشئ متجرك الإلكتروني في دقائق
-          </p>
+          <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">{t('create.subtitle')}</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* معلومات أساسية */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+
+        {/* ── Basic Information ── */}
+        <div className={sectionClass}>
+          <h2 className={sectionTitle}>
             <Store size={20} className="text-indigo-600" />
-            معلومات المتجر الأساسية
+            {t('form.basic_info')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* اسم المتجر */}
+            {/* Store Name */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                اسم المتجر *
+              <label className={labelClass}>
+                {t('form.name_label')} <span className="text-rose-500">{t('form.required')}</span>
               </label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="مثال: متجر الأزياء"
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-                  errors.name ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
-                } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all`}
+                placeholder={t('form.name_placeholder')}
+                className={inputClass(errors.name)}
               />
               {errors.name && <p className="text-rose-500 text-xs mt-1">{errors.name}</p>}
             </div>
 
-            {/* الدومين */}
+            {/* Domain */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                الدومين *
+              <label className={labelClass}>
+                {t('form.domain_label')} <span className="text-rose-500">{t('form.required')}</span>
               </label>
               <div className="relative">
                 <input
@@ -287,59 +248,51 @@ const CreateStore = () => {
                   name="domain"
                   value={formData.domain}
                   onChange={handleInputChange}
-                  placeholder="mystore"
-                  className={`w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-                    errors.domain ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
-                  } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ltr`}
+                  placeholder={t('form.domain_placeholder')}
+                  className={`${inputClass(errors.domain)} ${isRtl ? 'pl-28' : 'pr-28'}`}
                   dir="ltr"
                 />
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>
                   .mdstore.dz
                 </span>
               </div>
               {errors.domain && <p className="text-rose-500 text-xs mt-1">{errors.domain}</p>}
             </div>
 
-            {/* الولاية */}
+            {/* Wilaya */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                <MapPin size={16} className="inline mx-1" />
-                الولاية
+              <label className={labelClass}>
+                <MapPin size={14} className="inline me-1" />
+                {t('form.wilaya_label')}
               </label>
               <select
                 name="wilaya"
                 value={formData.wilaya}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputClass(false)}
               >
-                {wilayas.map((wilaya) => (
-                  <option key={wilaya} value={wilaya}>{wilaya}</option>
-                ))}
+                {wilayas.map((w) => <option key={w} value={w}>{w}</option>)}
               </select>
             </div>
 
-            {/* التصنيف */}
+            {/* Niche */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                التصنيف
-              </label>
+              <label className={labelClass}>{t('form.niche_label')}</label>
               <select
                 name="niche"
                 value={formData.niche}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className={inputClass(false)}
               >
-                {niches.map((niche) => (
-                  <option key={niche.id} value={niche.id}>{niche.label}</option>
-                ))}
+                {niches.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
               </select>
             </div>
 
-            {/* الهاتف */}
+            {/* Phone */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                <Phone size={16} className="inline mx-1" />
-                رقم الهاتف
+              <label className={labelClass}>
+                <Phone size={14} className="inline me-1" />
+                {t('form.phone_label')}
               </label>
               <input
                 type="tel"
@@ -347,19 +300,17 @@ const CreateStore = () => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 placeholder="0557123456"
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-                  errors.phone ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
-                } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-left ltr`}
+                className={inputClass(errors.phone)}
                 dir="ltr"
               />
               {errors.phone && <p className="text-rose-500 text-xs mt-1">{errors.phone}</p>}
             </div>
 
-            {/* البريد الإلكتروني */}
+            {/* Email */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                <Mail size={16} className="inline mx-1" />
-                البريد الإلكتروني
+              <label className={labelClass}>
+                <Mail size={14} className="inline me-1" />
+                {t('form.email_label')}
               </label>
               <input
                 type="email"
@@ -367,9 +318,7 @@ const CreateStore = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="example@email.com"
-                className={`w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-                  errors.email ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
-                } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-left ltr`}
+                className={inputClass(errors.email)}
                 dir="ltr"
               />
               {errors.email && <p className="text-rose-500 text-xs mt-1">{errors.email}</p>}
@@ -377,19 +326,19 @@ const CreateStore = () => {
           </div>
         </div>
 
-        {/* التصميم */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        {/* ── Design & Colors ── */}
+        <div className={sectionClass}>
+          <h2 className={sectionTitle}>
             <Palette size={20} className="text-indigo-600" />
-            التصميم والألوان
+            {t('form.design')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Logo */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                <ImageIcon size={16} className="inline mx-1" />
-                اللوغو
+              <label className={labelClass}>
+                <ImageIcon size={14} className="inline me-1" />
+                {t('form.logo_label')}
               </label>
               {logoPreview ? (
                 <div className="relative group">
@@ -401,7 +350,7 @@ const CreateStore = () => {
                   <button
                     type="button"
                     onClick={removeLogo}
-                    className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -413,71 +362,51 @@ const CreateStore = () => {
                   className="w-full h-32 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-800"
                 >
                   <Upload size={24} className="text-gray-400" />
-                  <span className="text-sm text-gray-500">اختر لوغو</span>
+                  <span className="text-sm text-gray-500">{t('form.logo_upload')}</span>
                 </button>
               )}
             </div>
 
-            {/* الألوان */}
+            {/* Colors */}
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  اللون الأساسي
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    name="primaryColor"
-                    value={formData.primaryColor}
-                    onChange={handleInputChange}
-                    className="h-12 w-20 rounded-xl cursor-pointer border-0"
-                  />
-                  <input
-                    type="text"
-                    value={formData.primaryColor}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
-                  />
+              {[
+                { name: 'primaryColor', label: t('form.primary_color') },
+                { name: 'secondaryColor', label: t('form.secondary_color') },
+              ].map(({ name, label }) => (
+                <div key={name}>
+                  <label className={labelClass}>{label}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      name={name}
+                      value={formData[name]}
+                      onChange={handleInputChange}
+                      className="h-12 w-20 rounded-xl cursor-pointer border-0"
+                    />
+                    <input
+                      type="text"
+                      value={formData[name]}
+                      readOnly
+                      className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  اللون الثانوي
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    name="secondaryColor"
-                    value={formData.secondaryColor}
-                    onChange={handleInputChange}
-                    className="h-12 w-20 rounded-xl cursor-pointer border-0"
-                  />
-                  <input
-                    type="text"
-                    value={formData.secondaryColor}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
-                  />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+        {/* ── Hero Section ── */}
+        <div className={sectionClass}>
+          <h2 className={sectionTitle}>
             <ImageIcon size={20} className="text-indigo-600" />
-            القسم الرئيسي (Hero)
+            {t('form.hero_section')}
           </h2>
 
           <div className="space-y-6">
             {/* Hero Image */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                الصورة الرئيسية
-              </label>
+              <label className={labelClass}>{t('form.hero_image')}</label>
               {heroImagePreview ? (
                 <div className="relative group">
                   <img
@@ -488,7 +417,7 @@ const CreateStore = () => {
                   <button
                     type="button"
                     onClick={removeHeroImage}
-                    className="absolute top-2 right-2 p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -500,17 +429,16 @@ const CreateStore = () => {
                   className="w-full h-48 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-800"
                 >
                   <Upload size={32} className="text-gray-400" />
-                  <span className="text-sm text-gray-500">اختر صورة رئيسية</span>
+                  <span className="text-sm text-gray-500">{t('form.hero_image_btn')}</span>
                 </button>
               )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Hero Title */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  <Type size={16} className="inline mx-1" />
-                  العنوان الرئيسي
+                <label className={labelClass}>
+                  <Type size={14} className="inline me-1" />
+                  {t('form.hero_title_label')}
                 </label>
                 <input
                   type="text"
@@ -518,33 +446,29 @@ const CreateStore = () => {
                   value={formData.heroTitle}
                   onChange={handleInputChange}
                   placeholder="Your Cozy Era"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className={inputClass(false)}
                 />
               </div>
-
-              {/* Hero Subtitle */}
               <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  العنوان الفرعي
-                </label>
+                <label className={labelClass}>{t('form.hero_subtitle_label')}</label>
                 <input
                   type="text"
                   name="heroSubtitle"
                   value={formData.heroSubtitle}
                   onChange={handleInputChange}
                   placeholder="Get peak comfy-chic..."
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className={inputClass(false)}
                 />
               </div>
             </div>
           </div>
         </div>
 
-        {/* الشريط العلوي */}
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
+        {/* ── Top Bar ── */}
+        <div className={sectionClass}>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              الشريط العلوي
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              {t('form.top_bar')}
             </h2>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -555,7 +479,7 @@ const CreateStore = () => {
                 className="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">
-                تفعيل
+                {t('form.top_bar_enable')}
               </span>
             </label>
           </div>
@@ -563,68 +487,76 @@ const CreateStore = () => {
           {formData.showTopBar && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-top-2">
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  النص
-                </label>
+                <label className={labelClass}>{t('form.top_bar_text')}</label>
                 <input
                   type="text"
                   name="topBarText"
                   value={formData.topBarText}
                   onChange={handleInputChange}
-                  placeholder="شحن مجاني للطلبات أكثر من 5000 دج 🎉"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder={t('form.top_bar_placeholder')}
+                  className={inputClass(false)}
                 />
+              </div>
+              <div>
+                <label className={labelClass}>{t('form.top_bar_color')}</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    name="topBarColor"
+                    value={formData.topBarColor}
+                    onChange={handleInputChange}
+                    className="h-12 w-20 rounded-xl cursor-pointer border-0"
+                  />
+                  <input
+                    type="text"
+                    value={formData.topBarColor}
+                    readOnly
+                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
+                  />
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* معاينة */}
+        {/* ── Quick Preview ── */}
         <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-200 dark:border-indigo-800 p-6">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            معاينة سريعة
+            {t('form.preview')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
-              <p className="text-xs text-gray-500 mb-1">اسم المتجر</p>
-              <p className="font-bold text-gray-900 dark:text-white truncate">
-                {formData.name || '-'}
-              </p>
-            </div>
-            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
-              <p className="text-xs text-gray-500 mb-1">الدومين</p>
-              <p className="font-bold text-indigo-600 truncate flex items-center gap-1">
-                {formData.domain ? `${formData.domain}.mdstore.dz` : '-'}
-                {formData.domain && <ExternalLink size={12} />}
-              </p>
-            </div>
-            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
-              <p className="text-xs text-gray-500 mb-1">الولاية</p>
-              <p className="font-bold text-gray-900 dark:text-white truncate">
-                {formData.wilaya}
-              </p>
-            </div>
+            {[
+              { label: t('form.preview_name'), val: formData.name || '—' },
+              {
+                label: t('form.preview_domain'),
+                val: formData.domain ? `${formData.domain}.mdstore.dz` : '—',
+                extra: formData.domain ? <ExternalLink size={12} /> : null,
+                highlight: true,
+              },
+              { label: t('form.preview_wilaya'), val: formData.wilaya },
+            ].map(({ label, val, extra, highlight }) => (
+              <div key={label} className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
+                <p className="text-xs text-gray-500 mb-1">{label}</p>
+                <p className={`font-bold truncate flex items-center gap-1 ${highlight ? 'text-indigo-600' : 'text-gray-900 dark:text-white'}`}>
+                  {val}{extra}
+                </p>
+              </div>
+            ))}
             <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl flex items-center gap-2">
-              <div
-                className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                style={{ backgroundColor: formData.primaryColor }}
-              />
-              <div
-                className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
-                style={{ backgroundColor: formData.secondaryColor }}
-              />
+              <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: formData.primaryColor }} />
+              <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: formData.secondaryColor }} />
             </div>
           </div>
         </div>
 
-        {/* أزرار */}
-        <div className="flex justify-end gap-4">
+        {/* ── Action Buttons ── */}
+        <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} gap-4`}>
           <button
             type="button"
             onClick={() => navigate('/dashboard/stores')}
-            className="px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl font-bold hover:scale-105 transition-all"
+            className="px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl font-bold text-gray-700 dark:text-zinc-300 hover:scale-105 transition-all"
           >
-            إلغاء
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -632,21 +564,15 @@ const CreateStore = () => {
             className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
           >
             {loading ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                جاري الإنشاء...
-              </>
+              <><Loader2 size={20} className="animate-spin" />{t('create.submitting')}</>
             ) : (
-              <>
-                <Save size={20} />
-                إنشاء المتجر
-              </>
+              <><Save size={20} />{t('create.submit')}</>
             )}
           </button>
         </div>
       </form>
 
-      {/* Modal - مبسط */}
+      {/* ── Image Modal ── */}
       <ModelImages
         isOpen={!!activeModal}
         onSelectImage={handleSelectImage}

@@ -1,1 +1,0 @@
-'Add.attributes.first' 'Some.attributes.have.no.variants'

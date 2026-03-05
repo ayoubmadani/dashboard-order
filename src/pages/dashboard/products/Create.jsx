@@ -5,7 +5,7 @@ import {
   Info, Palette, ImageIcon, Check, Plus, Trash2,
   Tag, Bold, Italic, List, CheckCircle, AlertCircle,
   Loader2, Sparkles, Package, Rocket, Ruler,
-  Type as TypeIcon, Save, ArrowRight, Settings2, Grid3x3,
+  Type as TypeIcon, Save, ArrowRight, Grid3x3,
   FolderTree, ChevronDown, X
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -18,21 +18,17 @@ import { getAccessToken } from '../../../services/access-token';
 const ATTRIBUTE_TYPES = { COLOR: 'color', SIZE: 'size', TEXT: 'text' };
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
-/* ── Text Editor ── */
+/* ── Rich Text Editor ── */
 const TextEditor = ({ value, onChange }) => {
   const editor = useEditor({
     extensions: [StarterKit],
     content: value,
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
-      attributes: {
-        class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[120px] p-3 dark:text-white text-sm',
-      },
+      attributes: { class: 'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[120px] p-3 dark:text-white text-sm' },
     },
   });
-
   if (!editor) return null;
-
   return (
     <div className="border border-gray-200 dark:border-zinc-700 rounded-xl overflow-hidden bg-white dark:bg-zinc-900">
       <div className="flex gap-1 p-2 border-b border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
@@ -52,7 +48,7 @@ const TextEditor = ({ value, onChange }) => {
   );
 };
 
-/* ── Section Card ── */
+/* ── Section wrapper ── */
 const Section = ({ icon: Icon, title, color = 'indigo', children }) => {
   const colors = {
     indigo: 'text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10',
@@ -64,9 +60,7 @@ const Section = ({ icon: Icon, title, color = 'indigo', children }) => {
   return (
     <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
-        <div className={`p-2 rounded-lg ${colors[color]}`}>
-          <Icon size={16} />
-        </div>
+        <div className={`p-2 rounded-lg ${colors[color]}`}><Icon size={16} /></div>
         <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200 tracking-wide uppercase">{title}</h2>
       </div>
       <div className="p-5 space-y-4 overflow-visible">{children}</div>
@@ -74,7 +68,7 @@ const Section = ({ icon: Icon, title, color = 'indigo', children }) => {
   );
 };
 
-/* ── Label + Input helper ── */
+/* ── Field wrapper ── */
 const Field = ({ label, required, error, children }) => (
   <div>
     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
@@ -95,56 +89,18 @@ const inputCls = (err) =>
 
 /* ══════════════════════════════════════════════════════ */
 export default function CreateProduct() {
-  const { t: translate, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'products' });
   const navigate = useNavigate();
   const isRtl = i18n.dir() === 'rtl';
-  const t = (key) => translate(`translation:products.${key}`);
 
-  const [formData, setFormData] = useState({ name: '', desc: '', price: '', originalPrice: '', storeId: '', sku: '', stock: '', status: 'active', categoryId: '' });
+  const [formData, setFormData] = useState({
+    name: '', desc: '', price: '', originalPrice: '',
+    storeId: '', sku: '', stock: '', status: 'active', categoryId: ''
+  });
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState('');
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-
-  const loadCategories = () => {
-    const storeId = localStorage.getItem('storeId');
-    if (!storeId) { setCategoriesError('storeId غير موجود في localStorage'); return; }
-    const token = getAccessToken();
-    if (!token) { setCategoriesError('token غير موجود'); return; }
-    setCategoriesLoading(true);
-    setCategoriesError('');
-    axios.get(`${baseURL}/stores/${storeId}/categories`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => {
-        const raw = res.data;
-        console.log('[Categories raw]', raw);
-        let list = [];
-        if (Array.isArray(raw)) list = raw;
-        else if (Array.isArray(raw?.data)) list = raw.data;
-        else if (Array.isArray(raw?.categories)) list = raw.categories;
-        else if (Array.isArray(raw?.items)) list = raw.items;
-        else if (Array.isArray(raw?.result)) list = raw.result;
-        else console.warn('[Categories] unexpected shape', raw);
-        setCategories(list);
-      })
-      .catch(err => {
-        console.error('[Categories]', err);
-        setCategoriesError(err.response?.data?.message || err.message || 'خطأ في جلب التصنيفات');
-        setCategories([]);
-      })
-      .finally(() => setCategoriesLoading(false));
-  };
-
-  useEffect(() => { loadCategories(); }, []);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!categoryDropdownOpen) return;
-    const handler = (e) => {
-      if (!e.target.closest('[data-category-dropdown]')) setCategoryDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [categoryDropdownOpen]);
   const [attributes, setAttributes] = useState([]);
   const [variantDetails, setVariantDetails] = useState([]);
   const [offers, setOffers] = useState([]);
@@ -160,12 +116,47 @@ export default function CreateProduct() {
     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
   };
 
+  /* ── Categories ── */
+  const loadCategories = () => {
+    const storeId = localStorage.getItem('storeId');
+    if (!storeId) { setCategoriesError(t('form.category_error_store')); return; }
+    const token = getAccessToken();
+    if (!token) { setCategoriesError(t('form.category_error_token')); return; }
+    setCategoriesLoading(true);
+    setCategoriesError('');
+    axios.get(`${baseURL}/stores/${storeId}/categories`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        const raw = res.data;
+        let list = [];
+        if (Array.isArray(raw)) list = raw;
+        else if (Array.isArray(raw?.data)) list = raw.data;
+        else if (Array.isArray(raw?.categories)) list = raw.categories;
+        else if (Array.isArray(raw?.items)) list = raw.items;
+        else if (Array.isArray(raw?.result)) list = raw.result;
+        setCategories(list);
+      })
+      .catch(err => {
+        setCategoriesError(err.response?.data?.message || err.message || t('form.category_error_fetch'));
+        setCategories([]);
+      })
+      .finally(() => setCategoriesLoading(false));
+  };
+
+  useEffect(() => { loadCategories(); }, []);
+
+  useEffect(() => {
+    if (!categoryDropdownOpen) return;
+    const handler = (e) => { if (!e.target.closest('[data-category-dropdown]')) setCategoryDropdownOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [categoryDropdownOpen]);
+
   /* ── Attributes ── */
   const addAttribute = (type, name = '') => {
     if ((type === ATTRIBUTE_TYPES.COLOR || type === ATTRIBUTE_TYPES.SIZE) && attributes.some(a => a.type === type)) {
-      showNotification('error', t('Attribute.already.exists')); return;
+      showNotification('error', t('attributes.already_exists')); return;
     }
-    const base = { id: `att-${Date.now()}`, type, name: name || (type === ATTRIBUTE_TYPES.COLOR ? t('Colors') : type === ATTRIBUTE_TYPES.SIZE ? t('Add.Size') : '') };
+    const base = { id: `att-${Date.now()}`, type, name: name || (type === ATTRIBUTE_TYPES.COLOR ? t('attributes.colors_label') : type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_label') : '') };
     const attr = type === ATTRIBUTE_TYPES.COLOR
       ? { ...base, displayMode: 'color', variants: [] }
       : type === ATTRIBUTE_TYPES.SIZE
@@ -175,7 +166,7 @@ export default function CreateProduct() {
     setVariantDetails([]);
   };
 
-  const removeAttribute = (id) => { setAttributes(prev => prev.filter(a => a.id !== id)); };
+  const removeAttribute = (id) => { setAttributes(prev => prev.filter(a => a.id !== id)); setVariantDetails([]); };
   const updateAttributeName = (id, name) => { setAttributes(prev => prev.map(a => a.id === id ? { ...a, name } : a)); setVariantDetails([]); };
   const updateDisplayMode = (id, mode) => { setAttributes(prev => prev.map(a => a.id === id && a.type === ATTRIBUTE_TYPES.COLOR ? { ...a, displayMode: mode, variants: [] } : a)); setVariantDetails([]); };
 
@@ -187,13 +178,11 @@ export default function CreateProduct() {
   const updateVariantValue = (attrId, variantId, value, id = null) => {
     setAttributes(prev => prev.map(a => {
       if (a.id !== attrId) return a;
-      return {
-        ...a, variants: a.variants.map(v => {
-          if (v.id !== variantId) return v;
-          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: id };
-          return { ...v, value, name: value };
-        })
-      };
+      return { ...a, variants: a.variants.map(v => {
+        if (v.id !== variantId) return v;
+        if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: id };
+        return { ...v, value, name: value };
+      })};
     }));
     setVariantDetails([]);
   };
@@ -205,22 +194,25 @@ export default function CreateProduct() {
 
   /* ── Variant combinations ── */
   const generateVariantCombinations = () => {
-    if (!attributes.length) { showNotification('error', t('Add.attributes.first')); return; }
-    if (attributes.some(a => !a.variants.length)) { showNotification('error', t('Some.attributes.have.no.variants')); return; }
+    if (!attributes.length) { showNotification('error', t('variants.add_attrs_first')); return; }
+    if (attributes.some(a => !a.variants.length)) { showNotification('error', t('variants.attrs_no_variants')); return; }
     const combinations = [];
     const gen = (combo, idx) => {
-      if (idx === attributes.length) { combinations.push({ ...combo }); return; }
-      attributes[idx].variants.forEach(v => gen({ ...combo, [attributes[idx].name]: v.name }, idx + 1));
+      if (idx === attributes.length) { combinations.push([...combo]); return; }
+      const attr = attributes[idx];
+      const displayMode = attr.type === ATTRIBUTE_TYPES.COLOR ? attr.displayMode : 'text';
+      attr.variants.forEach(v => gen([...combo, { attrId: attr.id, attrName: attr.name, displayMode, value: v.value }], idx + 1));
     };
-    gen({}, 0);
-    setVariantDetails(combinations.map((c, i) => ({ id: `vd-${Date.now()}-${i}`, name: c, price: formData.price || '', stock: '' })));
-    showNotification('success', `${t('Generated')} ${combinations.length} ${t('combinations')}`);
+    gen([], 0);
+    setVariantDetails(combinations.map((attrs, i) => ({
+      id: `vd-${Date.now()}-${i}`, attributes: attrs, price: formData.price || '', stock: '',
+    })));
+    showNotification('success', t('variants.generated', { count: combinations.length }));
   };
 
   const removeVariantDetail = (id) => setVariantDetails(prev => prev.filter(d => d.id !== id));
   const updateVDPrice = (id, price) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, price } : d));
   const updateVDStock = (id, stock) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, stock } : d));
-  const updateVDAttr = (id, attr, val) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, name: { ...d.name, [attr]: val } } : d));
 
   /* ── Offers ── */
   const addOffer = () => setOffers(prev => [...prev, { id: `off-${Date.now()}`, name: '', quantity: '', price: '' }]);
@@ -233,41 +225,39 @@ export default function CreateProduct() {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
       setSelectingImageFor(null);
-      showNotification('success', t('Image.added.successfully'));
     } else {
       setImages(prev => [...prev, imageData.url]);
-      showNotification('success', t('Image.added.successfully'));
     }
+    showNotification('success', t('images.added_success'));
   };
 
   /* ── Submit ── */
   const validate = () => {
     const e = {};
     const hasText = /[a-zA-Z0-9\u0600-\u06FF]/.test(formData.name || '');
-    if (!formData.name?.trim() || !hasText) e.name = t('Product.name.must.contain.text');
-    if (!formData.price || Number(formData.price) <= 0) e.price = t('Please.enter.a.valid.price');
+    if (!formData.name?.trim() || !hasText) e.name = t('create.name_invalid');
+    if (!formData.price || Number(formData.price) <= 0) e.price = t('create.price_invalid');
     attributes.forEach(a => {
-      if (!a.name?.trim()) e[`attr_${a.id}`] = t('Attribute.name.required');
-      if (!a.variants.length) e[`attr_empty_${a.id}`] = t('Add.at.least.one.variant');
-      a.variants.forEach(v => { if (!v.name?.trim()) e[`variant_${v.id}`] = t('Variant.value.required'); });
+      if (!a.name?.trim()) e[`attr_${a.id}`] = t('attributes.name_required');
+      if (!a.variants.length) e[`attr_empty_${a.id}`] = t('attributes.one_variant_required');
+      a.variants.forEach(v => { if (!v.name?.trim()) e[`variant_${v.id}`] = t('attributes.variant_value_required'); });
     });
     setErrors(e);
     return !Object.keys(e).length;
   };
 
   const handleSubmit = async () => {
-    if (!validate()) { showNotification('error', t('Please.fix.errors.first')); return; }
+    if (!validate()) { showNotification('error', t('create.fix_errors')); return; }
     setLoading(true);
     try {
-      const data = { id: `product-${Date.now()}`, name: formData.name, price: Number(formData.price), desc: formData.desc, storeId: formData.storeId, categoryId: formData.categoryId || undefined, attributes, variantDetails, offers, images };
       const token = getAccessToken();
       const storeId = localStorage.getItem('storeId');
-      const response = await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `bearer ${token}` } });
-      if (response.data.success) console.log(response.data.data);
-      showNotification('success', t('Product.created.successfully!'));
+      const data = { name: formData.name, price: Number(formData.price), desc: formData.desc, storeId, categoryId: formData.categoryId || undefined, attributes, variantDetails, offers, images };
+      await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
+      showNotification('success', t('create.success'));
     } catch (err) {
       console.error(err);
-      showNotification('error', t('Error.creating.product'));
+      showNotification('error', t('create.error'));
     } finally {
       setLoading(false);
     }
@@ -275,10 +265,8 @@ export default function CreateProduct() {
 
   const marketingEmojis = ["🔥","⭐","✨","⚡","💎","🚀","🎯","🛍️","💥","👑","🌟","🎁","💖","🏆"];
 
-  /* ══ RENDER ══ */
   return (
     <div className="max-w-5xl mx-auto pb-20 px-4 space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
-
       <ModelImages
         isOpen={isOpenModelImage}
         close={() => { setIsOpenModelImage(false); setSelectingImageFor(null); }}
@@ -287,8 +275,7 @@ export default function CreateProduct() {
 
       {/* Notification */}
       {notification.show && (
-        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-white text-sm font-semibold
-          ${notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
+        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-lg text-white text-sm font-semibold ${notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
           {notification.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
           {notification.message}
         </div>
@@ -304,23 +291,23 @@ export default function CreateProduct() {
           <div>
             <h1 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <Package size={20} className="text-indigo-500" />
-              {t('Create.New.Product')}
+              {t('create.title')}
             </h1>
-            <p className="text-xs text-gray-400">{t('Basic.Information')}</p>
+            <p className="text-xs text-gray-400">{t('form.basic_info')}</p>
           </div>
         </div>
         <button onClick={handleSubmit} disabled={loading}
           className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-sm">
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('Creating...') : t('Save.Product')}
+          {loading ? t('create.saving') : t('create.save')}
         </button>
       </div>
 
       {/* ── SECTION 1: Basic Info ── */}
-      <Section icon={Info} title={t('Basic.Information')} color="indigo">
+      <Section icon={Info} title={t('form.basic_info')} color="indigo">
 
         {/* Emoji bar + name */}
-        <Field label={t('Product.Name')} required error={errors.name}>
+        <Field label={t('form.product_name')} required error={errors.name}>
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
             {marketingEmojis.map((e, i) => (
               <button key={i} type="button"
@@ -332,20 +319,18 @@ export default function CreateProduct() {
           </div>
           <input type="text" dir={isRtl ? 'rtl' : 'ltr'} value={formData.name}
             onChange={e => { setFormData(p => ({ ...p, name: e.target.value })); setErrors(p => ({ ...p, name: null })); }}
-            placeholder={t('e.g.Cotton.T.Shirt')}
+            placeholder={t('form.product_name_placeholder')}
             className={inputCls(errors.name)} />
         </Field>
 
-        {/* Description */}
-        <Field label={t('Product.Description')}>
+        <Field label={t('form.description')}>
           <div dir={isRtl ? 'rtl' : 'ltr'}>
             <TextEditor value={formData.desc} onChange={v => setFormData(p => ({ ...p, desc: v }))} />
           </div>
         </Field>
 
-        {/* Pricing */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label={t('Sale.Price')} required error={errors.price}>
+          <Field label={t('form.sale_price')} required error={errors.price}>
             <div className="relative">
               <input type="number" dir="ltr" value={formData.price}
                 onChange={e => setFormData(p => ({ ...p, price: e.target.value }))}
@@ -356,7 +341,7 @@ export default function CreateProduct() {
               </span>
             </div>
           </Field>
-          <Field label={t('Original.Price')}>
+          <Field label={t('form.original_price')}>
             <div className="relative">
               <input type="number" dir="ltr" value={formData.originalPrice}
                 onChange={e => setFormData(p => ({ ...p, originalPrice: e.target.value }))}
@@ -369,38 +354,29 @@ export default function CreateProduct() {
           </Field>
         </div>
 
-        {/* Category */}
-        <Field label="التصنيف">
+        {/* Category dropdown */}
+        <Field label={t('form.category_label')}>
           <div className="relative" data-category-dropdown>
-            <button
-              type="button"
-              onClick={() => setCategoryDropdownOpen(p => !p)}
-              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 text-sm outline-none transition-all hover:border-indigo-400 focus:border-indigo-400"
-            >
+            <button type="button" onClick={() => setCategoryDropdownOpen(p => !p)}
+              className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 text-sm outline-none transition-all hover:border-indigo-400 focus:border-indigo-400">
               {formData.categoryId ? (() => {
                 const cat = categories.find(c => c.id === formData.categoryId);
                 return cat ? (
                   <span className="flex items-center gap-2 text-gray-800 dark:text-white font-medium">
-                    {cat.imageUrl
-                      ? <img src={cat.imageUrl} alt="" className="w-5 h-5 rounded-md object-cover" />
-                      : <FolderTree size={14} className="text-indigo-400" />}
+                    {cat.imageUrl ? <img src={cat.imageUrl} alt="" className="w-5 h-5 rounded-md object-cover" /> : <FolderTree size={14} className="text-indigo-400" />}
                     {cat.name}
                   </span>
-                ) : <span className="text-gray-400">اختر تصنيفاً</span>;
+                ) : <span className="text-gray-400">{t('form.category_placeholder')}</span>;
               })() : (
                 <span className="flex items-center gap-2 text-gray-400">
-                  <FolderTree size={14} />
-                  اختر تصنيفاً
+                  <FolderTree size={14} />{t('form.category_placeholder')}
                 </span>
               )}
               <div className="flex items-center gap-2">
                 {formData.categoryId && (
-                  <span
-                    role="button"
-                    tabIndex={0}
+                  <span role="button" tabIndex={0}
                     onClick={e => { e.stopPropagation(); setFormData(p => ({ ...p, categoryId: '' })); }}
-                    className="p-0.5 rounded text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer"
-                  >
+                    className="p-0.5 rounded text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer">
                     <X size={13} />
                   </span>
                 )}
@@ -413,54 +389,43 @@ export default function CreateProduct() {
                 {categoriesLoading ? (
                   <div className="flex items-center justify-center gap-2 py-6 text-gray-400">
                     <Loader2 size={16} className="animate-spin" />
-                    <span className="text-sm">جاري التحميل...</span>
+                    <span className="text-sm">{t('form.category_loading')}</span>
                   </div>
                 ) : categoriesError ? (
                   <div className="py-5 px-4 text-center space-y-2">
                     <p className="text-xs text-rose-500 font-medium">{categoriesError}</p>
-                    <button type="button" onClick={loadCategories}
-                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
-                      إعادة المحاولة
+                    <button type="button" onClick={loadCategories} className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
+                      {t('form.category_retry')}
                     </button>
                   </div>
                 ) : !categories.length ? (
                   <div className="py-5 px-4 text-center space-y-2">
-                    <p className="text-xs text-gray-400">لا توجد تصنيفات</p>
-                    <button type="button" onClick={loadCategories}
-                      className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
-                      تحديث
+                    <p className="text-xs text-gray-400">{t('form.category_empty')}</p>
+                    <button type="button" onClick={loadCategories} className="text-xs font-semibold text-indigo-500 hover:text-indigo-600 underline">
+                      {t('form.category_refresh')}
                     </button>
                   </div>
                 ) : (
                   <>
-                    {/* none option */}
-                    <button
-                      type="button"
+                    <button type="button"
                       onClick={() => { setFormData(p => ({ ...p, categoryId: '' })); setCategoryDropdownOpen(false); }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-100 dark:border-zinc-800"
-                    >
-                      <X size={13} /> بدون تصنيف
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors border-b border-gray-100 dark:border-zinc-800">
+                      <X size={13} /> {t('form.category_none')}
                     </button>
                     {categories.map(cat => (
-                      <button
-                        key={cat.id}
-                        type="button"
+                      <button key={cat.id} type="button"
                         onClick={() => { setFormData(p => ({ ...p, categoryId: cat.id })); setCategoryDropdownOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
-                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}
-                      >
+                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}>
                         {cat.imageUrl
                           ? <img src={cat.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
-                          : <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                              <FolderTree size={13} className="text-gray-400" />
-                            </div>
-                        }
-                        <div className="text-left rtl:text-right flex-1 overflow-hidden">
+                          : <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><FolderTree size={13} className="text-gray-400" /></div>}
+                        <div className={`flex-1 overflow-hidden ${isRtl ? 'text-right' : 'text-left'}`}>
                           <p className="font-medium truncate">{cat.name}</p>
                           <p className="text-[10px] text-gray-400 font-mono truncate">{cat.slug}</p>
                         </div>
                         {cat.products?.length > 0 && (
-                          <span className="text-[10px] text-gray-400 shrink-0">{cat.products.length} منتج</span>
+                          <span className="text-[10px] text-gray-400 shrink-0">{t('form.category_products', { count: cat.products.length })}</span>
                         )}
                         {formData.categoryId === cat.id && <Check size={14} className="text-indigo-500 shrink-0" />}
                       </button>
@@ -470,17 +435,13 @@ export default function CreateProduct() {
               </div>
             )}
           </div>
-
-          {/* Selected category badge */}
           {formData.categoryId && (() => {
             const cat = categories.find(c => c.id === formData.categoryId);
             return cat ? (
               <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg w-fit">
                 <FolderTree size={12} className="text-indigo-500" />
                 <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">{cat.name}</span>
-                {cat.children?.length > 0 && (
-                  <span className="text-[10px] text-indigo-400">({cat.children.length} فرعي)</span>
-                )}
+                {cat.children?.length > 0 && <span className="text-[10px] text-indigo-400">({t('form.category_sub', { count: cat.children.length })})</span>}
               </div>
             ) : null;
           })()}
@@ -488,44 +449,35 @@ export default function CreateProduct() {
       </Section>
 
       {/* ── SECTION 2: Attributes ── */}
-      <Section icon={Palette} title={t('Product.Attributes')} color="purple">
-
-        {!attributes.length && (
-          <p className="text-center text-sm text-gray-400 py-4">{t('No.attributes.added.yet')}</p>
-        )}
+      <Section icon={Palette} title={t('attributes.section_title')} color="purple">
+        {!attributes.length && <p className="text-center text-sm text-gray-400 py-4">{t('attributes.none_yet')}</p>}
 
         {attributes.map((attr) => (
           <div key={attr.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950 space-y-3">
-
-            {/* Header row */}
             <div className="flex items-center gap-2">
               <div className={`p-1.5 rounded-lg ${attr.type === ATTRIBUTE_TYPES.COLOR ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-500' : attr.type === ATTRIBUTE_TYPES.SIZE ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-500' : 'bg-gray-200 dark:bg-zinc-700 text-gray-500'}`}>
                 {attr.type === ATTRIBUTE_TYPES.COLOR ? <Palette size={14} /> : attr.type === ATTRIBUTE_TYPES.SIZE ? <Ruler size={14} /> : <TypeIcon size={14} />}
               </div>
-              <input type="text" value={attr.name}
-                onChange={e => updateAttributeName(attr.id, e.target.value)}
+              <input type="text" value={attr.name} onChange={e => updateAttributeName(attr.id, e.target.value)}
                 className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`}
-              />
+                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
               <button type="button" onClick={() => removeAttribute(attr.id)}
                 className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
                 <Trash2 size={14} />
               </button>
             </div>
 
-            {/* Color display mode toggle */}
             {attr.type === ATTRIBUTE_TYPES.COLOR && (
               <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg w-fit">
                 {['color', 'image'].map(mode => (
                   <button key={mode} type="button" onClick={() => updateDisplayMode(attr.id, mode)}
                     className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${attr.displayMode === mode ? 'bg-white dark:bg-zinc-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500'}`}>
-                    {mode === 'color' ? t('Colors') : t('Images')}
+                    {mode === 'color' ? t('attributes.display_color') : t('attributes.display_image')}
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Variants */}
             <div className="space-y-2">
               {attr.variants.map(variant => (
                 <div key={variant.id} className="flex items-center gap-2">
@@ -544,20 +496,20 @@ export default function CreateProduct() {
                     variant.value ? (
                       <div className="flex-1 flex items-center gap-3 px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg">
                         <img src={variant.value} alt="" className="w-9 h-9 object-cover rounded-lg" />
-                        <span className="flex-1 text-xs text-gray-400 truncate">{t('Image.selected')}</span>
+                        <span className="flex-1 text-xs text-gray-400 truncate">{t('attributes.image_selected')}</span>
                         <button type="button" onClick={() => openImageSelectorForVariant(attr.id, variant.id)}
-                          className="text-xs font-semibold text-indigo-500 hover:text-indigo-600">{t('Change')}</button>
+                          className="text-xs font-semibold text-indigo-500 hover:text-indigo-600">{t('attributes.change_image')}</button>
                       </div>
                     ) : (
                       <button type="button" onClick={() => openImageSelectorForVariant(attr.id, variant.id)}
                         className="flex-1 py-2.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition-all flex items-center justify-center gap-1">
-                        <ImageIcon size={14} />{t('Select.Image')}
+                        <ImageIcon size={14} />{t('attributes.select_image')}
                       </button>
                     )
                   ) : (
                     <input type="text" value={variant.name}
                       onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
-                      placeholder={attr.type === ATTRIBUTE_TYPES.SIZE ? t('e.g.XL') : t('Value')}
+                      placeholder={attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_placeholder') : t('attributes.value_placeholder')}
                       className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
                         ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
                   )}
@@ -570,84 +522,79 @@ export default function CreateProduct() {
 
               {errors[`attr_empty_${attr.id}`] && (
                 <p className="text-xs text-rose-500 font-medium flex items-center gap-1">
-                  <AlertCircle size={11} />{t('Add.at.least.one.variant')}
+                  <AlertCircle size={11} />{t('attributes.one_variant_required')}
                 </p>
               )}
 
               <button type="button" onClick={() => addVariant(attr.id)}
                 className="w-full py-2 border border-dashed border-gray-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-gray-400 hover:text-indigo-500 hover:border-indigo-400 transition-all">
                 <Plus size={12} className="inline mr-1" />
-                {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? t('Add.Color') :
-                  attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? t('Add.Image') :
-                  attr.type === ATTRIBUTE_TYPES.SIZE ? t('Add.Size') : t('Add.Value')}
+                {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? t('attributes.add_color_value') :
+                  attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? t('attributes.add_image_value') :
+                  attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
               </button>
             </div>
           </div>
         ))}
 
-        {/* Quick add buttons */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
-          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.COLOR, t('Color'))}
+          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.COLOR, t('attributes.color_label'))}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-all">
-            <Palette size={13} />{t('Add.Color.Attribute')}
+            <Palette size={13} />{t('attributes.add_color')}
           </button>
-          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.SIZE, t('Size'))}
+          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.SIZE, t('attributes.size_label'))}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-lg transition-all">
-            <Ruler size={13} />{t('Add.Size.Attribute')}
+            <Ruler size={13} />{t('attributes.add_size')}
           </button>
           <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.TEXT, '')}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg transition-all">
-            <TypeIcon size={13} />{t('Add.Custom.Attribute')}
+            <TypeIcon size={13} />{t('attributes.add_custom')}
           </button>
         </div>
       </Section>
 
       {/* ── SECTION 3: Variant Combinations ── */}
       {attributes.length > 0 && (
-        <Section icon={Grid3x3} title={t('Variant.Details')} color="teal">
-
-          {/* Generate button */}
+        <Section icon={Grid3x3} title={t('variants.section_title')} color="teal">
           <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-500/5 border border-purple-100 dark:border-purple-500/20 rounded-xl">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-purple-500" />
-              <span className="text-sm font-semibold text-purple-800 dark:text-purple-300">{t('Auto.Generate')}</span>
-              <span className="text-xs text-purple-500/70">{t('All.possible.combinations.will.be.generated.automatically')}</span>
+              <span className="text-sm font-semibold text-purple-800 dark:text-purple-300">{t('variants.auto_generate')}</span>
+              <span className="text-xs text-purple-500/70 hidden sm:inline">{t('variants.auto_generate_desc')}</span>
             </div>
             <button type="button" onClick={generateVariantCombinations}
               className="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white text-xs font-bold rounded-lg hover:bg-purple-600 transition-all">
-              <Rocket size={13} />{t('Generate.Now')}
+              <Rocket size={13} />{t('variants.generate_now')}
             </button>
           </div>
 
-          {/* Bulk update */}
           {variantDetails.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
-              {['Price', 'Stock'].map(field => (
+              {['price', 'stock'].map(field => (
                 <div key={field} className="flex gap-2">
-                  <input type="number" id={`bulk${field}`}
-                    placeholder={field === 'Price' ? '0.00' : t('e.g.100')}
+                  <input type="number" id={`bulk_${field}`}
+                    placeholder={field === 'price' ? '0.00' : t('form.stock_placeholder')}
                     className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-950 outline-none focus:border-indigo-400" />
                   <button type="button"
                     onClick={() => {
-                      const val = document.getElementById(`bulk${field}`).value;
-                      if (val) setVariantDetails(prev => prev.map(d => ({ ...d, [field.toLowerCase()]: val })));
+                      const val = document.getElementById(`bulk_${field}`).value;
+                      if (val) setVariantDetails(prev => prev.map(d => ({ ...d, [field]: val })));
                     }}
                     className="px-3 py-2 bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-bold rounded-lg hover:opacity-80 transition-all">
-                    {t('Apply')}
+                    {t('variants.apply')}
                   </button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Variants list */}
           {!variantDetails.length ? (
-            <p className="text-center text-sm text-gray-400 py-4">{t('No.variant.details.added.yet')}</p>
+            <p className="text-center text-sm text-gray-400 py-4">{t('variants.none_yet')}</p>
           ) : (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">{t('Total.Combinations')}: {variantDetails.length}</span>
-                <button type="button" onClick={() => setVariantDetails([])} className="text-xs text-rose-500 hover:text-rose-600 font-semibold">{t('Clear.All')}</button>
+                <span className="text-xs text-gray-400 font-medium">{t('variants.total', { count: variantDetails.length })}</span>
+                <button type="button" onClick={() => setVariantDetails([])} className="text-xs text-rose-500 hover:text-rose-600 font-semibold">{t('variants.clear_all')}</button>
               </div>
 
               {variantDetails.map((detail, idx) => (
@@ -659,39 +606,46 @@ export default function CreateProduct() {
                       <Trash2 size={13} />
                     </button>
                   </div>
-
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                    {attributes.map(attr => (
-                      <div key={attr.id}>
-                        <label className="text-xs text-gray-400 font-medium block mb-1">{attr.name}</label>
-                        {attr.displayMode === 'image'
-                          ? <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 bg-cover" style={{ backgroundImage: `url(${detail.name[attr.name]})` }} />
-                          : (
-                            <div className="relative">
-                              <input readOnly value={detail.name[attr.name] || ''} className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 outline-none" />
-                              {detail.name[attr.name]?.startsWith('#') && (
-                                <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded ${isRtl ? 'left-2' : 'right-2'}`} style={{ backgroundColor: detail.name[attr.name] }} />
-                              )}
-                            </div>
-                          )
-                        }
+                    {detail.attributes.map(attrVal => (
+                      <div key={attrVal.attrId}>
+                        <label className="text-xs text-gray-400 font-medium block mb-1">{attrVal.attrName}</label>
+                        {attrVal.displayMode === 'image' ? (
+                          <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 bg-cover bg-center border border-gray-200 dark:border-zinc-700"
+                            style={{ backgroundImage: `url(${attrVal.value})` }} />
+                        ) : (
+                          <div className="relative">
+                            <input readOnly value={attrVal.value || ''}
+                              className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 outline-none" />
+                            {attrVal.displayMode === 'color' && attrVal.value?.startsWith('#') && (
+                              <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded ${isRtl ? 'left-2' : 'right-2'}`}
+                                style={{ backgroundColor: attrVal.value }} />
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
-
                   <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100 dark:border-zinc-800">
                     <div>
-                      <label className="text-xs text-gray-400 font-medium block mb-1"><Tag size={11} className="inline mr-1" />{t('Price')} *</label>
+                      <label className="text-xs text-gray-400 font-medium block mb-1">
+                        <Tag size={11} className="inline mr-1" />{t('variants.price_label')} *
+                      </label>
                       <div className="relative">
                         <input type="number" dir="ltr" value={detail.price} onChange={e => updateVDPrice(detail.id, e.target.value)}
                           className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none focus:border-teal-400 border-gray-200 dark:border-zinc-700 ${isRtl ? 'pl-12' : 'pr-12'}`} />
-                        <span className={`absolute top-1/2 -translate-y-1/2 text-xs text-gray-400 ${isRtl ? 'left-3' : 'right-3'}`}>{isRtl ? 'د.ج' : 'DZD'}</span>
+                        <span className={`absolute top-1/2 -translate-y-1/2 text-xs text-gray-400 ${isRtl ? 'left-3' : 'right-3'}`}>
+                          {isRtl ? 'د.ج' : 'DZD'}
+                        </span>
                       </div>
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 font-medium block mb-1"><Package size={11} className="inline mr-1" />{t('Stock.Quantity')}</label>
+                      <label className="text-xs text-gray-400 font-medium block mb-1">
+                        <Package size={11} className="inline mr-1" />{t('form.stock')}
+                      </label>
                       <input type="number" dir="ltr" value={detail.stock} onChange={e => updateVDStock(detail.id, e.target.value)}
-                        placeholder={t('e.g.100')} className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-teal-400" />
+                        placeholder={t('form.stock_placeholder')}
+                        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-teal-400" />
                     </div>
                   </div>
                 </div>
@@ -702,15 +656,12 @@ export default function CreateProduct() {
       )}
 
       {/* ── SECTION 4: Offers ── */}
-      <Section icon={Tag} title={t('Special.Offers')} color="rose">
-        {!offers.length && (
-          <p className="text-center text-sm text-gray-400 py-4">{t('No.offers.added.yet')}</p>
-        )}
-
+      <Section icon={Tag} title={t('offers.section_title')} color="rose">
+        {!offers.length && <p className="text-center text-sm text-gray-400 py-4">{t('offers.none_yet')}</p>}
         {offers.map((offer, idx) => (
           <div key={offer.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-rose-500">{t('Offer')} {idx + 1}</span>
+              <span className="text-xs font-bold text-rose-500">{t('offers.offer_label', { num: idx + 1 })}</span>
               <button type="button" onClick={() => removeOffer(offer.id)}
                 className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
                 <Trash2 size={13} />
@@ -718,9 +669,9 @@ export default function CreateProduct() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
-                { field: 'name', label: t('Offer.Name'), type: 'text', placeholder: t('e.g.Summer.Sale') },
-                { field: 'quantity', label: t('Quantity'), type: 'text', placeholder: t('e.g.10.pcs') },
-                { field: 'price', label: t('Price'), type: 'number', placeholder: '0.00' },
+                { field: 'name', label: t('offers.offer_name'), type: 'text', placeholder: t('offers.offer_name_placeholder') },
+                { field: 'quantity', label: t('offers.quantity'), type: 'text', placeholder: t('offers.quantity_placeholder') },
+                { field: 'price', label: t('offers.price'), type: 'number', placeholder: '0.00' },
               ].map(f => (
                 <div key={f.field}>
                   <label className="text-xs text-gray-400 font-medium block mb-1">{f.label}</label>
@@ -732,22 +683,20 @@ export default function CreateProduct() {
             </div>
           </div>
         ))}
-
         <button type="button" onClick={addOffer}
           className="w-full py-2.5 border border-dashed border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-400 hover:text-rose-500 hover:border-rose-400 transition-all flex items-center justify-center gap-1">
-          <Plus size={14} />{t('Add.New.Offer')}
+          <Plus size={14} />{t('offers.add_offer')}
         </button>
       </Section>
 
       {/* ── SECTION 5: Images ── */}
-      <Section icon={ImageIcon} title={t('Product.Images')} color="blue">
+      <Section icon={ImageIcon} title={t('images.section_title')} color="blue">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
           <button type="button" onClick={() => setIsOpenModelImage(true)}
             className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
             <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
-            <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('Add.Photo')}</span>
+            <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
           </button>
-
           {images.map((img, i) => (
             <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-100 dark:bg-zinc-800">
               <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
@@ -759,25 +708,24 @@ export default function CreateProduct() {
               </div>
               {i === 0 && (
                 <div className={`absolute top-1.5 ${isRtl ? 'left-1.5' : 'right-1.5'} px-1.5 py-0.5 bg-white/90 dark:bg-zinc-900/90 rounded text-[9px] font-bold text-blue-500`}>
-                  {t('Primary')}
+                  {t('images.primary_badge')}
                 </div>
               )}
             </div>
           ))}
         </div>
-
         <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">
           <Sparkles size={12} className="text-blue-400" />
-          {t('Use.images.with.white.or.solid.backgrounds.and.high.resolution')}
+          {t('images.hint')}
         </p>
       </Section>
 
-      {/* ── Bottom Save ── */}
-      <div className="flex justify-end pt-2">
+      {/* Bottom Save */}
+      <div className={`flex pt-2 ${isRtl ? 'justify-start' : 'justify-end'}`}>
         <button onClick={handleSubmit} disabled={loading}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-md">
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('Creating...') : t('Save.Product')}
+          {loading ? t('create.saving') : t('create.save')}
         </button>
       </div>
     </div>

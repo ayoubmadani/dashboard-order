@@ -10,6 +10,7 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
     const [communes, setCommunes] = useState([]);
     const [variantOptions, setVariantOptions] = useState([]);
     const [offers, setOffers] = useState([]);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     const token = getAccessToken();
 
@@ -34,12 +35,12 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                 const { data } = await axios.get(`${baseURL}/orders/get-one/${orderId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
+                console.log(data);
 
-                // initPrice = سعر المنتج الخام (بدون شحن)
                 const initPrice = Number(data.totalPrice || 0) - Number(data.priceShip || 0);
+                console.log({ ...data, initPrice });
 
                 setEditedOrder({ ...data, initPrice });
-
                 if (data.productId) fetchProductData(data.productId);
             } catch (e) {
                 console.error("order:", e);
@@ -50,6 +51,12 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
 
         getOrder();
     }, [isOpen, orderId]);
+
+    useEffect(() => {
+        if (editedOrder && editedOrder.variantDetailId && variantOptions.length > 0) {
+            handleVariantChange(editedOrder.variantDetailId);
+        }
+    }, [variantOptions]);
 
     // 3. Fetch variants + offers
     const fetchProductData = async (productId) => {
@@ -62,6 +69,8 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                     headers: { Authorization: `Bearer ${token}` },
                 }),
             ]);
+            console.log({ vr: vRes.data });
+
             setVariantOptions(vRes.data || []);
             setOffers(oRes.data || []);
         } catch (e) {
@@ -86,7 +95,6 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
     const handleChange = (field, value) =>
         setEditedOrder((prev) => ({ ...prev, [field]: value }));
 
-    // Wilaya → reset commune + recalc shipping
     const handleWilayaChange = (wilayaId) => {
         const w = wilayasData.find((x) => x.id === parseInt(wilayaId));
         if (!w) return;
@@ -106,7 +114,6 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         }));
     };
 
-    // TypeShip → recalc shipping price
     const handleChangeTypeShip = (typeShip) => {
         const w = wilayasData.find((x) => x.id === parseInt(editedOrder.customerWilayaId));
         if (!w) {
@@ -127,13 +134,18 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         }));
     };
 
-    // Variant → update variantDetail + variantDetailId + totalPrice
     const handleVariantChange = (variantId) => {
-        // BUG FIX: variantOptions IDs may be string or int — compare both ways
         const v = variantOptions.find((x) => String(x.id) === String(variantId));
         if (!v) return;
 
-        const newInitPrice = parseFloat(v.price || 0);
+        let newInitPrice = editedOrder.initPrice ; // تعريف المتغير أولاً
+
+        if (v.price > -1) {
+            newInitPrice = parseFloat(v.price || 0);
+        }
+
+        // الآن يمكنك استخدام newInitPrice هنا بحرية
+        console.log(newInitPrice);
 
         setEditedOrder((prev) => ({
             ...prev,
@@ -144,10 +156,8 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         }));
     };
 
-    // Offer → update offerId + totalPrice
     const handleOfferChange = (offerId) => {
         if (!offerId) {
-            // Remove offer: restore initPrice from current variant price
             const baseInit = parseFloat(editedOrder.variantDetail?.price || editedOrder.initPrice || 0);
             setEditedOrder((prev) => ({
                 ...prev,
@@ -159,7 +169,6 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
             return;
         }
 
-        // BUG FIX: was missing parseInt, compare as strings for safety
         const o = offers.find((x) => String(x.id) === String(offerId));
         if (!o) return;
 
@@ -174,21 +183,20 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         }));
     };
 
-    // Save
     const handleSave = async () => {
         setLoading(true);
         const payload = {
-            variantDetailId:  editedOrder.variantDetailId,
-            offerId:          editedOrder.offerId,
-            quantity:         editedOrder.quantity,
-            typeShip:         editedOrder.typeShip,
-            priceShip:        editedOrder.priceShip,   // BUG FIX: was editedOrder.name
-            totalPrice:       editedOrder.totalPrice,
-            customerName:     editedOrder.customerName,
-            customerPhone:    editedOrder.customerPhone,
+            variantDetailId: editedOrder.variantDetailId,
+            offerId: editedOrder.offerId,
+            quantity: editedOrder.quantity,
+            typeShip: editedOrder.typeShip,
+            priceShip: editedOrder.priceShip,
+            totalPrice: editedOrder.totalPrice,
+            customerName: editedOrder.customerName,
+            customerPhone: editedOrder.customerPhone,
             customerWilayaId: editedOrder.customerWilayaId,
-            customerCommuneId:editedOrder.customerCommuneId,
-            status:           editedOrder.status,
+            customerCommuneId: editedOrder.customerCommuneId,
+            status: editedOrder.status,
         };
 
         try {
@@ -205,7 +213,6 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         }
     };
 
-    // ─── Early returns ────────────────────────────────────────────
     if (!isOpen) return null;
 
     if (!editedOrder) return (
@@ -214,7 +221,10 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
         </div>
     );
 
-    // ─── Render ───────────────────────────────────────────────────
+    // ✅ التحقق من وجود المنتج
+    const hasProduct = !!editedOrder.product;
+    const canEdit = hasProduct; // لا يمكن التعديل بدون منتج
+
     return (
         <div className="fixed inset-0 z-[100] flex justify-center items-center p-2 sm:p-4">
             <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
@@ -223,7 +233,6 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                 className="relative bg-white w-full max-w-4xl h-full max-h-[95vh] flex flex-col rounded-3xl shadow-2xl overflow-hidden font-sans"
                 dir="rtl"
             >
-                {/* Loading overlay */}
                 {loading && (
                     <div className="absolute inset-0 bg-white/80 z-50 flex items-center justify-center">
                         <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -236,63 +245,65 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                         <span className="w-2 h-6 bg-blue-600 rounded-full" />
                         تعديل طلب #{orderId}
                     </h2>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-all"
-                    >
+                    <button onClick={onClose} className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-full transition-all">
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                {/* ══ Body ══ */}
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1 bg-gray-50/50">
 
                     {/* ── Col 1: بيانات الشحن ── */}
                     <div className="space-y-4">
-                        <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-widest px-1">
+                        <h3 className={`text-[11px] font-black uppercase tracking-widest px-1 ${canEdit ? 'text-blue-600' : 'text-gray-400'}`}>
                             📍 بيانات الشحن
                         </h3>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
 
-                            {/* اسم الزبون */}
+                        {!canEdit && (
+                            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+                                <p className="text-sm text-red-600 font-bold text-center flex items-center justify-center gap-2">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    لا يمكن تعديل بيانات الطلب
+                                </p>
+                                <p className="text-xs text-red-400 text-center mt-1">المنتج غير موجود</p>
+                            </div>
+                        )}
+
+                        <div className={`bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4 ${!canEdit ? 'opacity-60' : ''}`}>
                             <div>
                                 <label className="text-[10px] font-bold text-gray-400 block mb-1">اسم الزبون</label>
                                 <input
                                     type="text"
+                                    disabled={!canEdit}
                                     value={editedOrder.customerName || ""}
                                     onChange={(e) => handleChange("customerName", e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:border-blue-500 outline-none"
+                                    className={`w-full px-4 py-2.5 rounded-xl border text-sm font-bold outline-none ${!canEdit ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-200 focus:border-blue-500'}`}
                                 />
                             </div>
-
-                            {/* رقم الهاتف */}
                             <div>
                                 <label className="text-[10px] font-bold text-gray-400 block mb-1">رقم الهاتف</label>
                                 <input
+                                    disabled
                                     type="text"
                                     value={editedOrder.customerPhone || ""}
-                                    onChange={(e) => handleChange("customerPhone", e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:border-blue-500 outline-none"
-                                    placeholder="0XXXXXXXXX"
+                                    className="w-full bg-gray-50 px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold outline-none"
                                 />
                             </div>
-
-                            {/* الولاية + البلدية */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="text-[10px] font-bold text-gray-400 block mb-1">الولاية</label>
                                     <select
                                         value={editedOrder.customerWilayaId || ""}
                                         onChange={(e) => handleWilayaChange(e.target.value)}
-                                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-white outline-none cursor-pointer"
+                                        disabled={!canEdit}
+                                        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${!canEdit ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-200 bg-white cursor-pointer'}`}
                                     >
                                         <option value="">اختر ولاية</option>
                                         {wilayasData.map((w) => (
-                                            <option key={w.id} value={w.id}>
-                                                {w.id} - {w.ar_name}
-                                            </option>
+                                            <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -301,8 +312,8 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                                     <select
                                         value={editedOrder.customerCommuneId || ""}
                                         onChange={(e) => handleChange("customerCommuneId", parseInt(e.target.value))}
-                                        disabled={!communes.length}
-                                        className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm bg-white outline-none cursor-pointer disabled:bg-gray-100"
+                                        disabled={!canEdit || !communes.length}
+                                        className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none ${!canEdit ? 'bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed' : 'border-gray-200 bg-white cursor-pointer disabled:bg-gray-100'}`}
                                     >
                                         <option value="">اختر بلدية</option>
                                         {communes.map((c) => (
@@ -311,55 +322,36 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
                                     </select>
                                 </div>
                             </div>
-
-                            {/* نوع التوصيل */}
                             <div>
                                 <label className="text-[10px] font-bold text-gray-400 block mb-1">نوع التوصيل</label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    {[
-                                        { typeShip: "home",   label: "🏠 توصيل للمنزل" },
-                                        { typeShip: "office", label: "🏢 استلام من المكتب" },
-                                    ].map((opt) => (
+                                    {[{ typeShip: "home", label: "🏠 توصيل للمنزل" }, { typeShip: "office", label: "🏢 استلام من المكتب" }].map((opt) => (
                                         <button
                                             key={opt.typeShip}
                                             type="button"
                                             onClick={() => handleChangeTypeShip(opt.typeShip)}
-                                            className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                                                editedOrder.typeShip === opt.typeShip
-                                                    ? "bg-blue-600 border-blue-600 text-white shadow-md"
-                                                    : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
-                                            }`}
+                                            disabled={!canEdit}
+                                            className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${!canEdit ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed' : editedOrder.typeShip === opt.typeShip ? "bg-blue-600 border-blue-600 text-white shadow-md" : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"}`}
                                         >
                                             {opt.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
-
-                            {/* الحالة */}
                             <div className="p-3 bg-gray-50 rounded-xl">
                                 <label className="text-[10px] font-bold text-gray-400 block mb-1">الحالة</label>
                                 <select
                                     value={editedOrder.status}
                                     onChange={(e) => handleChange("status", e.target.value)}
-                                    className={`w-full px-4 py-2 rounded-xl text-xs font-black outline-none border-none cursor-pointer ${
-                                        editedOrder.status === "confirmed" ? "bg-green-500 text-white" :
-                                        editedOrder.status === "cancelled" ? "bg-red-500 text-white"   :
-                                        editedOrder.status === "delivered" ? "bg-emerald-500 text-white":
-                                        editedOrder.status === "shipping"  ? "bg-cyan-500 text-white"  :
-                                        "bg-orange-400 text-white"
-                                    }`}
+                                    disabled={!canEdit}
+                                    className={`w-full px-4 py-2 rounded-xl text-xs font-black outline-none border-none cursor-pointer ${!canEdit ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : editedOrder.status === "confirmed" ? "bg-green-500 text-white" : editedOrder.status === "cancelled" ? "bg-red-500 text-white" : editedOrder.status === "delivered" ? "bg-emerald-500 text-white" : editedOrder.status === "shipping" ? "bg-cyan-500 text-white" : "bg-orange-400 text-white"}`}
                                 >
                                     <option value="pending">⏳ قيد الانتظار</option>
-                                    <option value="appl1">📞 محاولة 1</option>
-                                    <option value="appl2">📞 محاولة 2</option>
-                                    <option value="appl3">📞 محاولة 3</option>
                                     <option value="confirmed">✅ مؤكد</option>
                                     <option value="shipping">🚚 في الشحن</option>
                                     <option value="delivered">✓ تم التوصيل</option>
                                     <option value="cancelled">🚫 ملغى</option>
                                     <option value="returned">↩️ مرتجع</option>
-                                    <option value="postponed">⏸️ مؤجل</option>
                                 </select>
                             </div>
                         </div>
@@ -367,153 +359,194 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
 
                     {/* ── Col 2: المنتج والعروض ── */}
                     <div className="space-y-4">
-                        <h3 className="text-[11px] font-black text-purple-600 uppercase tracking-widest px-1">
+                        <h3 className={`text-[11px] font-black uppercase tracking-widest px-1 ${hasProduct ? 'text-purple-600' : 'text-gray-400'}`}>
                             📦 المنتج والعروض
                         </h3>
-                        <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
 
-                            {/* اسم المنتج */}
-                            <div>
-                                <label className="text-[10px] font-bold text-gray-400 block mb-1">المنتج</label>
-                                <div className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm font-bold text-gray-700">
-                                    {editedOrder.product?.name || editedOrder.productName || "غير محدد"}
-                                </div>
-                            </div>
-
-                            {/* الكمية */}
-                            <div>
-                                <label className="text-[10px] font-bold text-gray-400 block mb-1">الكمية</label>
-                                <input
-                                    type="number"
-                                    min="1"
-                                    value={editedOrder.quantity || 1}
-                                    onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 1)}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-black text-center outline-none focus:border-blue-500"
-                                />
-                            </div>
-
-                            {/* المتغير */}
-                            {variantOptions.length > 0 && (
+                        {hasProduct ? (
+                            // ✅ العرض العادي عند وجود منتج
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                                 <div>
-                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">
-                                        المتغير (مقاس / لون)
-                                    </label>
-                                    <select
-                                        value={editedOrder.variantDetailId || ""}
-                                        onChange={(e) => handleVariantChange(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-purple-100 bg-purple-50/30 text-sm font-bold outline-none cursor-pointer focus:border-purple-400"
-                                    >
-                                        <option value="">اختر المتغير...</option>
-                                        {variantOptions.map((v) => {
-                                            // name may be an object { Size, Color, ... } or a string
-                                            const label = typeof v.name === "object"
-                                                ? Object.values(v.name).join(" / ")
-                                                : v.name;
-                                            return (
-                                                <option key={v.id} value={v.id}>
-                                                    {label}{v.price > 0 ? ` — ${parseFloat(v.price).toLocaleString()} DA` : ""}
-                                                </option>
-                                            );
-                                        })}
-                                    </select>
+                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">المنتج</label>
+                                    <div className="px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm font-bold text-gray-700">
+                                        {editedOrder.product?.name || editedOrder.productName || "غير محدد"}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">الكمية</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={editedOrder.quantity || 1}
+                                        onChange={(e) => handleChange("quantity", parseInt(e.target.value) || 1)}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-black text-center outline-none focus:border-blue-500"
+                                    />
+                                </div>
 
-                                    {/* Variant color swatches */}
-                                    {editedOrder.variantDetail && typeof editedOrder.variantDetail.name === "object" && (
-                                        <div className="mt-2 flex flex-wrap gap-1.5">
-                                            {Object.entries(editedOrder.variantDetail.name).map(([k, v]) => (
-                                                <span
-                                                    key={k}
-                                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 border border-purple-100 text-[11px] font-bold text-purple-700"
-                                                >
-                                                    <span className="text-purple-400">{k}:</span>
-                                                    {/^#[0-9a-f]{3,8}$/i.test(v) ? (
-                                                        <>
-                                                            <span
-                                                                className="w-3 h-3 rounded-full border border-white shadow-sm inline-block"
-                                                                style={{ background: v }}
-                                                            />
-                                                            {v}
-                                                        </>
-                                                    ) : v}
-                                                </span>
+                                {variantOptions.length > 0 && (
+                                    <div className="relative">
+                                        <label className="text-[10px] font-bold text-gray-400 block mb-1">المتغير (مقاس / لون)</label>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-purple-100 bg-purple-50/30 text-sm font-bold outline-none focus:border-purple-400 transition-all"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                {editedOrder.variantDetail ? (
+                                                    <>
+                                                        {Array.isArray(editedOrder.variantDetail.name) && editedOrder.variantDetail.name.map((attr, i) => (
+                                                            <div key={i}>
+                                                                {attr.displayMode === "color" && (
+                                                                    <span className="w-8 h-8 rounded-full border border-white shadow-sm block" style={{ background: attr.value }} />
+                                                                )}
+                                                                {attr.displayMode === "image" && (
+                                                                    <img src={attr.value} className="w-8 h-8 rounded object-cover shadow-sm" alt="" />
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        <span>
+                                                            {Array.isArray(editedOrder.variantDetail.name)
+                                                                ? editedOrder.variantDetail.name
+                                                                    .filter(a => a.displayMode !== "color" && a.displayMode !== "image")
+                                                                    .map(a => a.value).join(" / ")
+                                                                : ""}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-gray-400">اختر المتغير...</span>
+                                                )}
+                                            </div>
+                                            <svg className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                        </button>
+
+                                        {isDropdownOpen && (
+                                            <div className="absolute z-50 w-full mt-1 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto p-1">
+                                                {variantOptions.map((v) => {
+                                                    const attributes = Array.isArray(v.name) ? v.name : [];
+                                                    const textLabel = attributes
+                                                        .filter(a => a.displayMode !== "color" && a.displayMode !== "image")
+                                                        .map(a => a.value)
+                                                        .join(" / ");
+
+                                                    return (
+                                                        <div
+                                                            key={v.id}
+                                                            onClick={() => {
+                                                                handleVariantChange(v.id);
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="flex items-center justify-between p-2.5 hover:bg-purple-50 rounded-lg cursor-pointer transition-colors group"
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex -space-x-1.5">
+                                                                    {attributes.map((attr, idx) => (
+                                                                        <div key={idx}>
+                                                                            {attr.displayMode === "color" ? (
+                                                                                <div className="w-6 h-6 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: attr.value }} />
+                                                                            ) : attr.displayMode === "image" ? (
+                                                                                <img src={attr.value} className="w-6 h-6 rounded-md border-2 border-white shadow-sm object-cover" alt="" />
+                                                                            ) : null}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+
+                                                                <div className="flex gap-3">
+                                                                    {textLabel && <span className="text-sm font-bold border px-2 flex justify-center rounded text-gray-700">{textLabel}</span>}
+                                                                    {v.price > 0 && <span className="text-[10px] text-purple-500 font-bold">{parseFloat(v.price).toLocaleString()} DA</span>}
+                                                                </div>
+                                                            </div>
+
+                                                            {String(editedOrder.variantDetailId) === String(v.id) && (
+                                                                <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {offers.length > 0 && (
+                                    <div>
+                                        <label className="text-[10px] font-bold text-gray-400 block mb-1">العرض الترويجي</label>
+                                        <select
+                                            value={editedOrder.offerId || ""}
+                                            onChange={(e) => handleOfferChange(e.target.value)}
+                                            className="w-full px-3 py-2.5 rounded-xl border border-orange-100 bg-orange-50/30 text-sm outline-none cursor-pointer focus:border-orange-400"
+                                        >
+                                            <option value="">بدون عرض</option>
+                                            {offers.map((o) => (
+                                                <option key={o.id} value={o.id}>{o.name} — {parseFloat(o.price).toLocaleString()} DA</option>
                                             ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+                                        </select>
+                                    </div>
+                                )}
 
-                            {/* العرض */}
-                            {offers.length > 0 && (
-                                <div>
-                                    <label className="text-[10px] font-bold text-gray-400 block mb-1">
-                                        العرض الترويجي
-                                    </label>
-                                    <select
-                                        value={editedOrder.offerId || ""}
-                                        onChange={(e) => handleOfferChange(e.target.value)}
-                                        className="w-full px-3 py-2.5 rounded-xl border border-orange-100 bg-orange-50/30 text-sm outline-none cursor-pointer focus:border-orange-400"
-                                    >
-                                        <option value="">بدون عرض</option>
-                                        {offers.map((o) => (
-                                            <option key={o.id} value={o.id}>
-                                                {o.name}
-                                                {o.quantity ? ` — ${o.quantity} قطعة` : ""}
-                                                {o.price ? ` — ${parseFloat(o.price).toLocaleString()} DA` : ""}
-                                            </option>
-                                        ))}
-                                    </select>
-
-                                    {editedOrder.offer && (
-                                        <div className="mt-2 p-2 bg-amber-50 rounded-lg text-xs text-amber-700 flex justify-between font-bold">
-                                            <span>{editedOrder.offer.name}</span>
-                                            <span>{parseFloat(editedOrder.offer.price || 0).toLocaleString()} DA</span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Price summary */}
-                            <div className="mt-4 p-4 bg-gray-900 rounded-2xl space-y-2">
-                                <div className="flex justify-between text-xs text-gray-400">
-                                    <span>التكلفة الأولية:</span>
-                                    <span>{parseFloat(editedOrder.initPrice || 0).toLocaleString()} DA</span>
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-400">
-                                    <span>سعر الشحن:</span>
-                                    <span>{parseFloat(editedOrder.priceShip || 0).toLocaleString()} DA</span>
-                                </div>
-                                <div className="border-t border-gray-700 pt-2 flex justify-between items-center">
-                                    <span className="text-[10px] font-bold text-gray-400">الإجمالي:</span>
-                                    <span className="text-green-400 text-xl font-black">
-                                        {parseFloat(editedOrder.totalPrice || 0).toLocaleString()} DA
-                                    </span>
+                                {/* ملخص السعر */}
+                                <div className="mt-4 p-4 bg-gray-900 rounded-2xl space-y-2">
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>سعر المنتج:</span>
+                                        <span>{parseFloat(editedOrder.initPrice || 0).toLocaleString()} DA</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>سعر الشحن:</span>
+                                        <span>{parseFloat(editedOrder.priceShip || 0).toLocaleString()} DA</span>
+                                    </div>
+                                    <div className="border-t border-gray-700 pt-2 flex justify-between items-center">
+                                        <span className="text-[10px] font-bold text-gray-400">الإجمالي:</span>
+                                        <span className="text-green-400 text-xl font-black">{parseFloat(editedOrder.totalPrice || 0).toLocaleString()} DA</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            // ✅ عرض بديل عند عدم وجود منتج
+                            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 space-y-4">
+                                <div className="text-center py-6">
+                                    <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-sm font-bold text-gray-600 mb-1">المنتج غير متوفر</p>
+                                    <p className="text-xs text-gray-400 mb-2">ربما تم حذف المنتج الأصلي</p>
+                                    <p className="text-[10px] text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg inline-block">
+                                        لا يمكن تعديل الكمية أو المتغيرات
+                                    </p>
+                                </div>
+
+                                {/* ملخص السعر فقط */}
+                                <div className="p-4 bg-gray-900 rounded-2xl space-y-2">
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>سعر المنتج الأصلي:</span>
+                                        <span>{parseFloat(editedOrder.initPrice || 0).toLocaleString()} DA</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-400">
+                                        <span>سعر الشحن:</span>
+                                        <span>{parseFloat(editedOrder.priceShip || 0).toLocaleString()} DA</span>
+                                    </div>
+                                    <div className="border-t border-gray-700 pt-2 flex justify-between items-center">
+                                        <span className="text-[10px] font-bold text-gray-400">الإجمالي:</span>
+                                        <span className="text-green-400 text-xl font-black">
+                                            {parseFloat(editedOrder.totalPrice || 0).toLocaleString()} DA
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
                 {/* ══ Footer ══ */}
                 <div className="p-5 bg-white border-t border-gray-100 flex justify-end items-center gap-3 z-10">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2.5 text-gray-400 font-bold text-sm hover:text-gray-600 transition-all"
-                    >
-                        إغلاق
-                    </button>
+                    <button onClick={onClose} className="px-6 py-2.5 text-gray-400 font-bold text-sm hover:text-gray-600">إغلاق</button>
                     <button
                         onClick={handleSave}
-                        disabled={loading}
-                        className="px-10 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm hover:bg-blue-700 shadow-xl shadow-blue-100 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50"
+                        disabled={loading || !canEdit}
+                        className={`px-10 py-3 rounded-2xl font-bold text-sm shadow-xl active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 ${canEdit ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-100' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                     >
-                        {loading ? (
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        )}
-                        حفظ التعديلات
+                        {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : "حفظ التعديلات"}
                     </button>
                 </div>
             </div>

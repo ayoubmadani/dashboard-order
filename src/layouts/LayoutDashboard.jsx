@@ -9,6 +9,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
+import { Palette } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation();
@@ -47,10 +48,6 @@ export default function LayoutDashboard() {
                 navigate('/auth/');
                 return;
             }
-
-          
-
-
             try {
                 const response = await axios.get(`http://localhost:7000/user/current-user`, {
                     headers: {
@@ -60,6 +57,7 @@ export default function LayoutDashboard() {
 
 
                 const currentUser = response.data;
+
                 currentUser.name = currentUser.username;
 
                 // استخراج الأحرف الأولى بشكل احترافي (مثال: "John Doe" -> "JD")
@@ -104,6 +102,7 @@ export default function LayoutDashboard() {
     const navigation = [
         { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home },
         { name: t('dashboard.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store },
+        { name: t('dashboard.theme', 'Theme'), href: '/dashboard/theme', icon: Palette },
         { name: t('dashboard.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers },
         { name: t('dashboard.products', 'المنتجات'), href: '/dashboard/products', icon: Box },
         { name: t('dashboard.landing', 'صفحة الهبوط'), href: '/dashboard/landing-pages', icon: Layout },
@@ -126,7 +125,9 @@ export default function LayoutDashboard() {
             });
 
 
-
+            if (response.data.data.length === 0) {
+                navigate('/dashboard/stores/create')
+            }
 
             if (response.data.success) {
                 setMyStores(response.data.data || []);
@@ -139,33 +140,42 @@ export default function LayoutDashboard() {
         }
     }
 
-    useEffect(()=>{
-        
-        fetchStores()
-    },[])
+    // useEffect(()=>{
+    //    if (!myStores) {
+    //         navigate('/dashboard/stores/create')
+    //    } 
+
+    // },[myStores])
+
 
     useEffect(() => {
-    // ✅ أضفنا التحقق من أن myStores موجودة وليست null قبل قراءة length
-    if (myStores && myStores.length > 0) {
-        const savedStoreId = localStorage.getItem('storeId');
 
-        if (savedStoreId) {
-            // ملاحظة: تأكد هل المعرف في قاعدة بياناتك هو id أم _id
-            const savedStore = myStores.find(s => 
-                (s.id?.toString() === savedStoreId.toString()) || 
-                (s._id?.toString() === savedStoreId.toString())
-            );
+        fetchStores()
+    }, [])
 
-            if (savedStore) {
-                setSelectedProject(savedStore);
+    useEffect(() => {
+        // ✅ أضفنا التحقق من أن myStores موجودة وليست null قبل قراءة length
+        if (myStores && myStores.length > 0) {
+            const savedStoreId = localStorage.getItem('storeId');
+
+            if (savedStoreId) {
+                // ملاحظة: تأكد هل المعرف في قاعدة بياناتك هو id أم _id
+                const savedStore = myStores.find(s =>
+                    (s.id?.toString() === savedStoreId.toString()) ||
+                    (s._id?.toString() === savedStoreId.toString())
+                );
+
+                if (savedStore) {
+                    setSelectedProject(savedStore);
+                } else {
+                    setSelectedProject(myStores[0]);
+                }
+
             } else {
                 setSelectedProject(myStores[0]);
             }
-        } else {
-            setSelectedProject(myStores[0]);
         }
-    }
-}, [myStores]);// يعمل عندما تكتمل عملية جلب المتاجر
+    }, [myStores]);// يعمل عندما تكتمل عملية جلب المتاجر
 
 
     return (
@@ -196,7 +206,7 @@ export default function LayoutDashboard() {
                                 </div>
                                 <span className="font-bold truncate max-w-[100px]">
                                     {/* ✅ عرض اسم المشروع أو كلمة "تحميل" مؤقتاً */}
-                                    {selectedProject?.name || t('common.loading', 'جاري التحميل...')}
+                                    {selectedProject?.name || ' لا توجد متاجر'}
                                 </span>
                             </div>
                             <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
@@ -212,6 +222,7 @@ export default function LayoutDashboard() {
                                                 localStorage.setItem('storeId', store.id)
                                                 setSelectedProject(store);
                                                 setProjectDropdownOpen(false);
+                                                navigate('/dashboard/stores')
                                             }}
                                             className="w-full px-3 py-2 text-[13px] text-zinc-300 hover:bg-zinc-700/50 flex items-center gap-2.5 transition-colors"
                                         >
@@ -235,7 +246,8 @@ export default function LayoutDashboard() {
 
                     <nav className="flex-1 px-3 py-1.5 space-y-0.5">
                         {navigation.map((item) => {
-                            const isActive = location.pathname === item.href;
+                            const isActive = location.pathname.startsWith(item.href) && 
+                    (item.href !== '/dashboard' || location.pathname === '/dashboard');
                             return (
                                 <Link
                                     key={item.href}

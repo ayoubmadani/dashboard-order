@@ -1,36 +1,225 @@
 {
-    "desc": "أدر جميع متاجرك، فروعك، ونطاقاتك المخصصة من لوحة تحكم واحدة.",
-    "add_new": "إنشاء متجر جديد",
-    "search_placeholder": "ابحث عن متجر بالاسم أو الرابط...",
-    "manage": "إدارة المتجر",
-    "visit": "زيارة المتجر",
-    "create_new": "إنشاء متجر جديد",
-    "branding_title": "الهوية البصرية",
-    "upload_logo": "رفع الشعار",
-    "change_logo": "تغيير الشعار",
-    "primary_color": "لون المتجر الأساسي",
-    "base_info": "المعلومات الأساسية",
-    "name_label": "اسم المتجر",
-    "name_placeholder": "مثال: متجر إيفرلين",
-    "domain_label": "رابط المتجر (نطاق فرعي)",
-    "domain_placeholder": "my-store",
-    "location_label": "موقع العمل الرسمي",
-    "location_hint": "سيتم استخدام هذه المعلومات في فواتير المتجر وصفحة اتصل بنا.",
-    "niche_title": "مجال المتجر",
-    "niche_subtitle": "ماذا ستبيع في هذا المتجر؟",
-    "hero_section": "قسم الواجهة (شريط العرض)",
-    "hero_title_label": "عنوان العرض الرئيسي",
-    "hero_subtitle_label": "وصف قصير للعرض",
-    "hero_upload_hint": "اضغط لرفع صورة الواجهة العريضة",
-    "live_preview": "معاينة حية للمتجر",
-    "launch": "إطلاق المتجر الآن",
+  "common": {
+    "loading": "جاري التحميل...",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "visit": "زيارة",
+    "yes": "نعم",
+    "no": "لا",
     "back": "رجوع",
-    "top_bar": "شريط الإعلانات العلوي",
-    "top_bar_text": "نص الإعلان (مثال: شحن مجاني)",
-    "niches": {
-        "fashion": "موضة وملابس",
-        "electronics": "إلكترونيات",
-        "home": "منزل وديكور",
-        "beauty": "جمال وعناية"
+    "refresh": "تحديث",
+    "active": "نشط",
+    "inactive": "معطل",
+    "enabling": "جاري...",
+    "currency": "دج"
+  },
+
+  "stores": {
+    "title": "متاجري",
+    "subtitle": "إدارة كافة متاجرك وفروعك من مكان واحد",
+    "desc": "أدر جميع متاجرك وفروعك ونطاقاتك المخصصة من لوحة تحكم واحدة.",
+    "new_store": "متجر جديد",
+    "search_placeholder": "ابحث عن متجر، دومين، أو موقع...",
+    "clear_search": "مسح البحث",
+    "loading_stores": "جاري تحميل المتاجر...",
+    "load_failed": "فشل تحميل المتاجر",
+    "stats": {
+      "stores": "المتاجر",
+      "active_count": "{{count}} نشط",
+      "products": "المنتجات",
+      "products_sub": "في كل المتاجر",
+      "orders": "الطلبات",
+      "orders_sub": "إجمالي الطلبات",
+      "customers": "العملاء",
+      "customers_sub": "عميل نشط"
+    },
+    "card": {
+      "orders": "طلب",
+      "products": "منتج",
+      "customers": "عميل",
+      "visit": "زيارة",
+      "edit": "تعديل"
+    },
+    "table": {
+      "store": "المتجر",
+      "status": "الحالة",
+      "location": "الموقع",
+      "products": "المنتجات",
+      "orders": "الطلبات",
+      "actions": "إجراءات"
+    },
+    "toggle": {
+      "enable": "تفعيل المتجر",
+      "disable": "تعطيل المتجر",
+      "failed": "فشل تغيير حالة المتجر"
+    },
+    "delete": {
+      "confirm": "هل أنت متأكد من حذف هذا المتجر؟ لا يمكن التراجع عن هذا الإجراء.",
+      "success": "تم حذف المتجر بنجاح",
+      "failed": "فشل حذف المتجر"
+    },
+    "empty": {
+      "title": "لا توجد متاجر",
+      "subtitle": "ابدأ بإنشاء متجرك الأول",
+      "create": "إنشاء متجر جديد",
+      "no_results": "لا توجد نتائج",
+      "no_results_sub": "لم يتم العثور على متاجر مطابقة لبحثك"
+    },
+    "add_card": {
+      "title": "إنشاء متجر جديد",
+      "subtitle": "ابدأ رحلتك التجارية"
     }
+  },
+
+  "create": {
+    "title": "إنشاء متجر جديد",
+    "subtitle": "أنشئ متجرك الإلكتروني في دقائق",
+    "submitting": "جاري الإنشاء...",
+    "submit": "إنشاء المتجر",
+    "success": "تم إنشاء المتجر بنجاح! 🎉",
+    "failed": "حدث خطأ في إنشاء المتجر",
+    "form_errors": "يرجى تصحيح الأخطاء في النموذج"
+  },
+
+  "update": {
+    "title": "تعديل المتجر",
+    "subtitle": "تحديث معلومات وتصميم متجرك",
+    "submitting": "جاري التحديث...",
+    "submit": "حفظ التعديلات",
+    "success": "تم تحديث المتجر بنجاح! ✅",
+    "failed": "حدث خطأ في تحديث المتجر",
+    "load_failed": "فشل تحميل بيانات المتجر",
+    "loading": "جاري تحميل بيانات المتجر...",
+    "form_errors": "يرجى تصحيح الأخطاء في النموذج"
+  },
+
+  "form": {
+    "basic_info": "معلومات المتجر الأساسية",
+    "name_label": "اسم المتجر",
+    "name_placeholder": "مثال: متجر الأزياء",
+    "domain_label": "الدومين",
+    "domain_placeholder": "mystore",
+    "wilaya_label": "الولاية",
+    "niche_label": "التصنيف",
+    "phone_label": "رقم الهاتف",
+    "email_label": "البريد الإلكتروني",
+    "design": "التصميم والألوان",
+    "logo_label": "اللوغو",
+    "logo_upload": "اختر لوغو",
+    "primary_color": "اللون الأساسي",
+    "secondary_color": "اللون الثانوي",
+    "hero_section": "القسم الرئيسي (Hero)",
+    "hero_image": "الصورة الرئيسية",
+    "hero_image_btn": "اختر صورة رئيسية",
+    "hero_title_label": "العنوان الرئيسي",
+    "hero_subtitle_label": "العنوان الفرعي",
+    "top_bar": "الشريط العلوي",
+    "top_bar_enable": "تفعيل",
+    "top_bar_text": "النص",
+    "top_bar_color": "اللون",
+    "top_bar_placeholder": "شحن مجاني للطلبات أكثر من 5000 دج 🎉",
+    "preview": "معاينة سريعة",
+    "preview_name": "اسم المتجر",
+    "preview_domain": "الدومين",
+    "preview_wilaya": "الولاية",
+    "required": "*",
+    "validation": {
+      "name_required": "اسم المتجر مطلوب",
+      "name_short": "الاسم قصير جداً (حرفين على الأقل)",
+      "domain_required": "الدومين مطلوب",
+      "domain_invalid": "الدومين يجب أن يحتوي على حروف صغيرة وأرقام وشرطات فقط",
+      "domain_short": "الدومين قصير جداً (3 أحرف على الأقل)",
+      "phone_invalid": "رقم الهاتف غير صحيح (مثال: 0557123456)",
+      "email_invalid": "البريد الإلكتروني غير صحيح"
+    }
+  },
+
+  "niches": {
+    "fashion": "أزياء",
+    "electronics": "إلكترونيات",
+    "home": "منزل وديكور",
+    "beauty": "تجميل"
+  },
+
+  "show": {
+    "loading": "جاري التحميل...",
+    "not_found": {
+      "title": "المتجر غير موجود",
+      "subtitle": "لم يتم العثور على المتجر المطلوب",
+      "back": "العودة للمتاجر"
+    },
+    "copy_url": "نسخ الرابط",
+    "copied": "تم النسخ",
+    "tabs": {
+      "overview": "نظرة عامة",
+      "orders": "الطلبات",
+      "products": "المنتجات",
+      "settings": "الإعدادات"
+    },
+    "stats": {
+      "orders": "إجمالي الطلبات",
+      "revenue": "إجمالي الإيرادات",
+      "products": "المنتجات",
+      "customers": "العملاء"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "معطل",
+      "suspended": "موقوف"
+    },
+    "order_status": {
+      "completed": "مكتمل",
+      "pending": "معلّق",
+      "processing": "قيد المعالجة",
+      "cancelled": "ملغي"
+    },
+    "recent_orders": {
+      "title": "آخر الطلبات",
+      "view_all": "عرض الكل"
+    },
+    "performance": {
+      "title": "الأداء",
+      "coming_soon": "قريباً - مخططات الأداء"
+    },
+    "orders_tab": {
+      "full_list": "قائمة الطلبات الكاملة",
+      "redirect": "سيتم توجيهك لصفحة الطلبات"
+    },
+    "products_tab": {
+      "manage": "إدارة المنتجات",
+      "redirect": "سيتم توجيهك لصفحة المنتجات"
+    },
+    "settings_tab": {
+      "title": "إعدادات المتجر",
+      "currency": "العملة",
+      "language": "اللغة",
+      "cash_on_delivery": "الدفع عند الاستلام",
+      "online_payment": "الدفع الإلكتروني"
+    },
+    "sidebar": {
+      "info": {
+        "title": "معلومات المتجر",
+        "location": "الموقع",
+        "phone": "الهاتف",
+        "email": "البريد",
+        "created": "تاريخ الإنشاء"
+      },
+      "actions": {
+        "title": "إجراءات سريعة",
+        "qr_code": "رمز QR",
+        "share": "مشاركة المتجر",
+        "export": "تصدير البيانات"
+      },
+      "description": "وصف المتجر"
+    },
+    "delete_modal": {
+      "title": "حذف المتجر",
+      "subtitle": "هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع البيانات المرتبطة بالمتجر.",
+      "confirm": "نعم، احذف المتجر",
+      "cancel": "إلغاء"
+    }
+  }
 }

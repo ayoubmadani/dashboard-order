@@ -35,6 +35,7 @@ import CreateLandingPage from './pages/dashboard/landing-pages/CreateLandingPage
 import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
 import ProductShow from './pages/dashboard/products/show';
+import Theme from './pages/dashboard/theme/Theme';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -85,6 +86,10 @@ const App = () => {
               <Route path="create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/stores/create */}
               <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
+            </Route>
+
+            <Route path='theme'>
+              <Route index element={<Theme />} />
             </Route>
           
 
