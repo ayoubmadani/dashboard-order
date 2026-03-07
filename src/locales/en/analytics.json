@@ -1,15 +1,78 @@
 {
-    "desc": "Analyze your sales data, visitor behavior, and product performance in detail.",
-    "visitors": "Total Visitors",
-    "sessions": "Active Sessions",
-    "bounce_rate": "Bounce Rate",
-    "avg_order": "Average Order",
-    "sales_overview": "Sales & Profit Chart",
-    "this_month": "This Month",
-    "last_month": "Last Month",
-    "chart_placeholder": "Charts will appear here when data is connected",
-    "top_source": "Top Traffic Source",
-    "source_desc": "Facebook is currently the main driver of your sales, continue your campaigns there.",
-    "view_details": "View Details",
-    "best_sellers": "Best Selling Products"
+  "title": "Statistics Dashboard",
+  "subtitle": "Track your store performance and order analytics",
+  "refresh": "Refresh",
+  "last_updated": "Last updated: {{time}}",
+  "no_data": "No data available",
+  "no_returns": "No returns found",
+
+  "error": "Failed to fetch data. Check your server connection.",
+
+  "range": {
+    "week": "Week",
+    "month": "Month",
+    "year": "Year"
+  },
+
+  "stats": {
+    "total_orders": "Total Orders",
+    "today_orders": "{{count}} Today",
+    "revenue": "Total Revenue",
+    "month_revenue": "{{amount}} DA this month",
+    "shipping": "In Shipping",
+    "shipping_sub": "Orders on the way",
+    "delivered": "Delivered",
+    "today_revenue": "{{amount}} DA Today",
+    "returned_loss": "Return Losses",
+    "returned_sub": "{{count}} returns · {{amount}} DA this month",
+    "trend": "{{pct}}% vs last week"
+  },
+
+  "chart": {
+    "orders_revenue": "Orders & Revenue Growth",
+    "orders": "Orders",
+    "revenue": "Revenue",
+    "delivery_type": "Delivery Type",
+    "home": "Home",
+    "office": "Office"
+  },
+
+  "status": {
+    "title": "Order Status Distribution",
+    "total": "Total {{count}} orders",
+    "pending":   "Pending",
+    "appl1":     "Confirm 1",
+    "appl2":     "Confirm 2",
+    "appl3":     "Confirm 3",
+    "confirmed": "Confirmed",
+    "shipping":  "Shipping",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "returned":  "Returned",
+    "postponed": "Postponed"
+  },
+
+  "products": {
+    "title": "Top Selling Products",
+    "orders_count": "{{count}} orders",
+    "unknown": "Unknown Product"
+  },
+
+  "wilayas": {
+    "title": "Top Ordering Wilayas",
+    "subtitle": "Top 6 Wilayas",
+    "orders_tooltip": "{{count}} orders",
+    "orders_label": "Count",
+    "wilaya_prefix": "Wilaya {{id}}"
+  },
+
+  "returned_wilayas": {
+    "title": "Top Returning Wilayas",
+    "total": "Total {{count}} returns"
+  },
+
+  "returned_phones": {
+    "title": "Returners Phone Numbers",
+    "total": "{{count}} returned orders"
+  }
 }
