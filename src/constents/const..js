@@ -1,3 +1,2 @@
-export const baseURL = 'http://localhost:7000';
-//export const baseURL = 'https://md-store-api.vercel.app';
-export const storeURL = 'http://localhost:3000';
+export const baseURL = process.env.VITE_STORE_URL;
+export const storeURL = process.env.VITE_API_URL;
