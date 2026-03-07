@@ -72,7 +72,7 @@ export default function LayoutDashboard() {
                 return;
             }
             try {
-                const response = await axios.get(`http://localhost:7000/user/current-user`, {
+                const response = await axios.get(`${baseURL}/user/current-user`, {
                     headers: { "Authorization": `bearer ${token}` }
                 });
 
