@@ -196,7 +196,7 @@ const Skeleton = ({ rows = 5, h = 'h-10' }) => (
 //  Main Component
 // ─────────────────────────────────────────────
 export default function Analytics() {
-  const { t, i18n } = useTranslation('analytics');
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'analytics' });
   const isRtl = i18n.dir() === 'rtl';
   const navigate  = useNavigate();
   const storeId   = localStorage.getItem('storeId');
