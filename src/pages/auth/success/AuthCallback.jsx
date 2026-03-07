@@ -14,7 +14,7 @@ const AuthCallback = () => {
             const errorValue = searchParams.get('error');
 
             // 2. إضافة تأخير لمدة 3 ثوانٍ (3000 مللي ثانية)
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             if (tokenValue) {
                 // 3. حفظ التوكن في الكوكيز
@@ -39,7 +39,7 @@ const AuthCallback = () => {
             {/* يمكنك إضافة Spinner هنا لجعل الشكل أجمل */}
             <div className="w-12 h-12 border-4 border-zinc-200 border-t-zinc-900 dark:border-zinc-800 dark:border-t-white rounded-full animate-spin mb-4"></div>
             <p className="text-lg font-bold animate-pulse text-zinc-900 dark:text-white">
-                جاري التحقق من الهوية، يرجى الانتظار...
+               
             </p>
         </div>
     );

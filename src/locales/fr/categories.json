@@ -1,8 +1,84 @@
 {
-    "manage_desc": "Organisez vos produits en groupes pour permettre aux clients de les trouver plus facilement via les menus.",
-    "add_new": "Ajouter une Nouvelle Catégorie",
-    "products_count": "Total Produits",
-    "quick_add": "Nouvelle Catégorie Rapide",
-    "name_label": "Nom de la Catégorie",
-    "slug_label": "Slug de la Catégorie"
+  "title": "Catégories",
+  "subtitle": "Gérer les catégories de produits hiérarchiques",
+
+  "loading": "Chargement des catégories...",
+
+  "error": {
+    "title": "Erreur lors du chargement des données",
+    "retry": "Réessayer"
+  },
+
+  "header": {
+    "view_grid": "Grille",
+    "view_tree": "Arborescence",
+    "new_btn": "Nouvelle catégorie",
+    "creating": "Création en cours..."
+  },
+
+  "search": {
+    "placeholder": "Rechercher des catégories...",
+    "clear": "Effacer"
+  },
+
+  "grid": {
+    "products_label": "Produits",
+    "sub_label": "Sous-catégories",
+    "view_products": "Voir produits ←",
+    "add_new": "Ajouter une catégorie"
+  },
+
+  "tree": {
+    "empty": "Aucune catégorie"
+  },
+
+  "empty": {
+    "title": "Aucune catégorie",
+    "subtitle": "Commencez par ajouter la première catégorie à votre boutique",
+    "add_btn": "Ajouter une catégorie"
+  },
+
+  "delete": {
+    "confirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?",
+    "warning_header": "\n\nAttention :",
+    "has_children": "\n- Contient {{count}} sous-catégories",
+    "has_products": "\n- Contient {{count}} produits",
+    "warning_footer": "\n\nLa suppression échouera si les données sont liées !",
+    "success": "Catégorie supprimée avec succès"
+  },
+
+  "modal": {
+    "title_create": "Nouvelle catégorie",
+    "title_edit": "Modifier la catégorie",
+    "image_label": "Image de la catégorie",
+    "image_change": "Changer l'image",
+    "image_placeholder": "Choisir une image de la bibliothèque",
+    "parent_label": "Catégorie parente (Optionnel)",
+    "parent_none": "Aucun parent (Catégorie principale)",
+    "name_label": "Nom *",
+    "name_placeholder": "Ex: Électronique",
+    "slug_label": "Identifiant (Slug) *",
+    "slug_placeholder": "electronique",
+    "slug_hint": "Utilisé pour les liens, ex: /category/electronique",
+    "description_label": "Description",
+    "description_placeholder": "Brève description de la catégorie...",
+    "sort_label": "Ordre de tri",
+    "status_label": "Statut",
+    "status_active": "Actif",
+    "cancel": "Annuler",
+    "create_btn": "Créer",
+    "update_btn": "Mettre à jour",
+    "saving": "Enregistrement..."
+  },
+
+  "toast": {
+    "create_success": "Catégorie créée avec succès",
+    "update_success": "Catégorie mise à jour avec succès"
+  },
+
+  "validation": {
+    "name_required": "Le nom de la catégorie est requis",
+    "slug_required": "Le slug est requis",
+    "parent_self": "Une catégorie ne peut pas être son propre parent"
+  }
 }

@@ -11,7 +11,6 @@ import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 
-
 // ─────────────────────────────────────────────
 //  Utility – stable header builder
 // ─────────────────────────────────────────────
@@ -19,7 +18,6 @@ function useAuthHeaders() {
   const token = getAccessToken();
   return { headers: { Authorization: `Bearer ${token}` } };
 }
-
 
 // ─────────────────────────────────────────────
 //  Sub-component: price input cell
@@ -49,7 +47,6 @@ function PriceCell({ value, onChange, focusRing }) {
   );
 }
 
-
 // ─────────────────────────────────────────────
 //  Sub-component: status checkbox
 // ─────────────────────────────────────────────
@@ -62,7 +59,6 @@ function StatusToggle({ isActive, onToggle, loading }) {
         onChange={onToggle}
         className="sr-only peer"
       />
-      {/* Custom checkbox box */}
       <div
         className={`
           w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200
@@ -71,32 +67,29 @@ function StatusToggle({ isActive, onToggle, loading }) {
             : 'bg-white dark:bg-zinc-800 border-gray-300 dark:border-zinc-600'}
         `}
       >
-        {isActive && (
+        {isActive && !loading && (
           <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
             <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         )}
         {loading && (
-          <svg className="w-3 h-3 text-gray-400 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-          </svg>
+          <Loader2 className="w-3 h-3 text-gray-400 animate-spin" />
         )}
       </div>
     </label>
   );
 }
 
-
 // ─────────────────────────────────────────────
 //  Sub-component: empty state
 // ─────────────────────────────────────────────
 function EmptyState({ onInitialize, isLoading }) {
+  const { t } = useTranslation('shipping');
+
   return (
     <tr>
       <td colSpan={6}>
         <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
-          {/* Illustration */}
           <div className="relative">
             <div className="w-24 h-24 rounded-3xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shadow-inner">
               <Sparkles className="w-10 h-10 text-indigo-400 dark:text-indigo-500" />
@@ -108,10 +101,10 @@ function EmptyState({ onInitialize, isLoading }) {
 
           <div className="space-y-1">
             <p className="text-base font-bold text-gray-800 dark:text-white">
-              قائمة الولايات فارغة
+              {t('empty.title')}
             </p>
             <p className="text-sm text-gray-400 dark:text-zinc-500 max-w-xs">
-              اضغط على الزر أدناه لتهيئة أسعار الشحن لكافة الولايات الـ 58 تلقائياً.
+              {t('empty.subtitle')}
             </p>
           </div>
 
@@ -120,12 +113,8 @@ function EmptyState({ onInitialize, isLoading }) {
             disabled={isLoading}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            {isLoading ? 'جارٍ التهيئة…' : 'تهيئة كافة الولايات (58)'}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            {isLoading ? t('empty.initializing') : t('empty.init_btn')}
           </button>
         </div>
       </td>
@@ -133,11 +122,14 @@ function EmptyState({ onInitialize, isLoading }) {
   );
 }
 
-
 // ─────────────────────────────────────────────
 //  Sub-component: wilaya row
 // ─────────────────────────────────────────────
 function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, saveLoading }) {
+  const { t } = useTranslation('shipping');
+  const isSaving  = saveLoading  === wilaya.id;
+  const isToggling = toggleLoading === wilaya.id;
+
   return (
     <tr className="group border-t border-gray-100 dark:border-zinc-800 hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 transition-colors">
       {/* Code + Name */}
@@ -184,48 +176,41 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, sav
         <StatusToggle
           isActive={wilaya.isActive}
           onToggle={() => onToggle(wilaya.id)}
-          loading={toggleLoading === wilaya.id}
+          loading={isToggling}
         />
-        
       </td>
 
       {/* Row save button */}
       <td className="px-4 py-3 text-center">
         <button
           onClick={() => onSave(wilaya)}
-          disabled={saveLoading === wilaya.id}
+          disabled={isSaving}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {saveLoading === wilaya.id ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Save className="w-3.5 h-3.5" />
-          )}
-          حفظ
+          {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+          {t('save_row')}
         </button>
       </td>
     </tr>
   );
 }
 
-
 // ─────────────────────────────────────────────
 //  Main component
 // ─────────────────────────────────────────────
 export default function Shipping() {
-  const { t, i18n } = useTranslation();
-  const isRtl = i18n.language === 'ar';
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'shipping' });
+  const isRtl = i18n.dir() === 'rtl';
   const navigate = useNavigate();
-  const headers = useAuthHeaders();
+  const headers  = useAuthHeaders();
 
-  // ── State ──────────────────────────────────
-  const [wilayas, setWilayas]               = useState([]);
-  const [searchQuery, setSearchQuery]       = useState('');
-  const [isInitializing, setIsInitializing] = useState(false);   // FIX #1: boolean not string
-  const [isSavingAll, setIsSavingAll]       = useState(false);
-  const [toggleLoading, setToggleLoading]   = useState(null);    // id of row being toggled
-  const [saveLoading, setSaveLoading]       = useState(null);    // id of row being saved
-  const [toast, setToast]                   = useState(null);    // { type: 'success'|'error', msg }
+  const [wilayas,       setWilayas]       = useState([]);
+  const [searchQuery,   setSearchQuery]   = useState('');
+  const [isInitializing,setIsInitializing]= useState(false);
+  const [isSavingAll,   setIsSavingAll]   = useState(false);
+  const [toggleLoading, setToggleLoading] = useState(null);
+  const [saveLoading,   setSaveLoading]   = useState(null);
+  const [toast,         setToast]         = useState(null);
 
   // ── Toast helper ───────────────────────────
   const showToast = (type, msg) => {
@@ -240,7 +225,7 @@ export default function Shipping() {
       setWilayas(data);
     } catch (error) {
       console.error('خطأ في جلب بيانات الشحن:', error);
-      showToast('error', 'فشل في جلب بيانات الشحن');
+      showToast('error', t('toast.fetch_error'));
     }
   };
 
@@ -251,7 +236,7 @@ export default function Shipping() {
     setIsInitializing(true);
     try {
       const getResponse = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
-      let finalData = getResponse.data;  // FIX #2: was .dta
+      let finalData = getResponse.data;
 
       if (!finalData || finalData.length === 0) {
         await axios.get(`${baseURL}/shipping/create-shipping`, headers);
@@ -260,15 +245,15 @@ export default function Shipping() {
       }
 
       setWilayas(finalData);
-      showToast('success', 'تمت تهيئة الولايات بنجاح');
+      showToast('success', t('toast.init_success'));
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 409) {
         const fallback = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
         setWilayas(fallback.data);
-        showToast('success', 'تم جلب الولايات الموجودة');
+        showToast('success', t('toast.init_loaded'));
       } else {
         console.error('خطأ في تهيئة الشحن:', error);
-        showToast('error', 'حدث خطأ أثناء التهيئة');
+        showToast('error', t('toast.init_error'));
       }
     } finally {
       setIsInitializing(false);
@@ -284,31 +269,31 @@ export default function Shipping() {
         [{ wilayaId: wilaya.id, priceHome: wilaya.livraisonHome, priceOffice: wilaya.livraisonOfice, priceReturn: wilaya.livraisonReturn, isActive: wilaya.isActive }],
         headers
       );
-      showToast('success', `تم حفظ ${wilaya.name} بنجاح`);
+      showToast('success', t('toast.save_success', { name: wilaya.name }));
     } catch (error) {
       console.error('خطأ في الحفظ:', error);
-      showToast('error', `فشل حفظ ${wilaya.name}`);
+      showToast('error', t('toast.save_error', { name: wilaya.name }));
     } finally {
       setSaveLoading(null);
     }
   };
 
-  // ── Save all rows  (FIX #4) ────────────────
+  // ── Save all rows ──────────────────────────
   const handleSaveAll = async () => {
     setIsSavingAll(true);
     try {
       const payload = wilayas.map((w) => ({
-        wilayaId:        w.id,
+        wilayaId:    w.id,
         priceHome:   w.livraisonHome,
-        priceOffice:  w.livraisonOfice,
+        priceOffice: w.livraisonOfice,
         priceReturn: w.livraisonReturn,
-        isActive:        w.isActive,
+        isActive:    w.isActive,
       }));
       await axios.post(`${baseURL}/shipping/update-shipping`, payload, headers);
-      showToast('success', 'تم حفظ كافة التغييرات بنجاح');
+      showToast('success', t('toast.save_all_success'));
     } catch (error) {
       console.error('خطأ في الحفظ:', error);
-      showToast('error', 'فشل في حفظ التغييرات');
+      showToast('error', t('toast.save_all_error'));
     } finally {
       setIsSavingAll(false);
     }
@@ -316,16 +301,13 @@ export default function Shipping() {
 
   // ── Price change ───────────────────────────
   const handlePriceChange = (id, field, value) => {
-    setWilayas((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
-    );
+    setWilayas((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   };
 
-  // ── Toggle status (FIX #5) ─────────────────
+  // ── Toggle status ──────────────────────────
   const toggleStatus = async (id) => {
-    const wilaya = wilayas.find((w) => w.id === id); // FIX: use .find + guard
+    const wilaya = wilayas.find((w) => w.id === id);
     if (!wilaya) return;
-
     setToggleLoading(id);
     try {
       await axios.post(
@@ -336,34 +318,33 @@ export default function Shipping() {
       await getShipping();
     } catch (error) {
       console.error('خطأ في تغيير الحالة:', error);
-      showToast('error', 'فشل في تغيير حالة الولاية');
+      showToast('error', t('toast.toggle_error'));
     } finally {
       setToggleLoading(null);
     }
   };
 
-  // ── Filtered list (FIX #3) ─────────────────
+  // ── Filtered list ──────────────────────────
   const filteredWilayas = wilayas.filter(
     (w) =>
       w.name.includes(searchQuery) ||
-      String(w.code ?? w.id).includes(searchQuery) // FIX: stringify code
+      String(w.code ?? w.id).includes(searchQuery)
   );
-
 
   // ─────────────────────────────────────────────
   //  Render
   // ─────────────────────────────────────────────
   return (
-    <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-4 md:p-8 font-sans">
+    <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 p-4 md:p-8 font-sans">
 
-      {/* ── Toast notification ── */}
+      {/* ── Toast ── */}
       {toast && (
         <div
           className={`
             fixed top-5 ${isRtl ? 'left-5' : 'right-5'} z-50
             flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl
             text-sm font-semibold text-white
-            transition-all animate-fade-in
+            transition-all animate-in fade-in slide-in-from-top-2 duration-300
             ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}
           `}
         >
@@ -376,48 +357,42 @@ export default function Shipping() {
 
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        {/* Left: back + title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
             className="p-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-zinc-400" />
+            <ArrowLeft className={`w-5 h-5 text-gray-600 dark:text-zinc-400 ${isRtl ? 'rotate-180' : ''}`} />
           </button>
-
           <div>
             <h1 className="text-lg font-black text-gray-900 dark:text-white">
-              {t('shipping.title', 'أسعار شحن الولايات')}
+              {t('title')}
             </h1>
             <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-              {t('shipping.subtitle', 'تخصيص تكاليف التوصيل للمنزل والمكتب لكل ولاية')}
+              {t('subtitle')}
             </p>
           </div>
         </div>
 
-        {/* Right: save all */}
         {wilayas.length > 0 && (
           <button
             onClick={handleSaveAll}
             disabled={isSavingAll}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-500/25 transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSavingAll
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <Save className="w-4 h-4" />}
-            {t('common.save_all', 'حفظ كافة التغييرات')}
+            {isSavingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {t('save_all')}
           </button>
         )}
       </div>
 
       {/* ── Search & Filter bar ── */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        {/* Search input */}
         <div className="relative flex-1">
           <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-zinc-500 pointer-events-none ${isRtl ? 'right-4' : 'left-4'}`} />
           <input
             type="text"
-            placeholder={t('shipping.search_placeholder', 'ابحث باسم الولاية أو الرمز...')}
+            placeholder={t('search_placeholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={`
@@ -425,7 +400,7 @@ export default function Shipping() {
               border border-gray-100 dark:border-zinc-800
               rounded-xl py-3
               ${isRtl ? 'pr-12 pl-4' : 'pl-12 pr-4'}
-              outline-none focus:ring-4 focus:ring-indigo-500/10
+              outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-300 dark:focus:border-indigo-600
               dark:text-white text-sm font-medium
               placeholder:text-gray-400 dark:placeholder:text-zinc-600
               transition-all shadow-sm
@@ -433,17 +408,15 @@ export default function Shipping() {
           />
         </div>
 
-        {/* Filter button (visual only – extend as needed) */}
         <button className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl text-sm font-semibold text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all">
           <Filter className="w-4 h-4" />
-          {t('shipping.filter_region', 'تصفية حسب المنطقة')}
+          {t('filter_region')}
         </button>
 
-        {/* Refresh button */}
         <button
           onClick={getShipping}
           className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl text-sm font-semibold text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all"
-          title="تحديث"
+          title={t('refresh')}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
@@ -454,50 +427,47 @@ export default function Shipping() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
 
-            {/* Table head */}
+            {/* Head */}
             <thead className="bg-gray-50/80 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
               <tr>
                 <th className="px-5 py-3 text-start text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                  {t('shipping.state', 'الولاية')}
+                  {t('col_state')}
                 </th>
                 <th className="px-4 py-3 text-start text-xs font-bold text-indigo-500 uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
                     <Home className="w-3.5 h-3.5" />
-                    {t('shipping.home', 'للمنزل')}
+                    {t('col_home')}
                   </div>
                 </th>
                 <th className="px-4 py-3 text-start text-xs font-bold text-emerald-500 uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
                     <Building2 className="w-3.5 h-3.5" />
-                    {t('shipping.office', 'للمكتب')}
+                    {t('col_office')}
                   </div>
                 </th>
                 <th className="px-4 py-3 text-start text-xs font-bold text-rose-500 uppercase tracking-wider">
                   <div className="flex items-center gap-1.5">
                     <RefreshCcw className="w-3.5 h-3.5" />
-                    {t('shipping.return', 'الإرجاع')}
+                    {t('col_return')}
                   </div>
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                  {t('status', 'الحالة')}
+                  {t('col_status')}
                 </th>
                 <th className="px-4 py-3 text-center text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                  {t('action', 'إجراء')}
+                  {t('col_action')}
                 </th>
               </tr>
             </thead>
 
-            {/* Table body */}
+            {/* Body */}
             <tbody>
               {wilayas.length === 0 ? (
-                <EmptyState
-                  onInitialize={handleCreateAll}
-                  isLoading={isInitializing}
-                />
+                <EmptyState onInitialize={handleCreateAll} isLoading={isInitializing} />
               ) : filteredWilayas.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-16 text-center text-gray-400 dark:text-zinc-600 text-sm font-medium">
-                    لا توجد ولايات تطابق بحثك
+                    {t('no_results')}
                   </td>
                 </tr>
               ) : (
@@ -521,7 +491,7 @@ export default function Shipping() {
         {wilayas.length > 0 && (
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 py-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/30">
             <p className="text-xs text-gray-400 dark:text-zinc-500">
-              {t('shipping.note', 'ملاحظة: هذه الأسعار تظهر للزبائن عند اختيار الولاية في المتجر.')}
+              {t('note')}
             </p>
             <button
               onClick={handleSaveAll}
@@ -529,7 +499,7 @@ export default function Shipping() {
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-zinc-700 hover:bg-gray-200 dark:hover:bg-zinc-600 text-gray-600 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60"
             >
               {isSavingAll ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-              {t('shipping.bulk_edit', 'حفظ جماعي')}
+              {t('bulk_save')}
             </button>
           </div>
         )}
@@ -538,10 +508,9 @@ export default function Shipping() {
       {/* Count badge */}
       {wilayas.length > 0 && (
         <p className="text-xs text-gray-400 dark:text-zinc-600 mt-3 text-center">
-          {filteredWilayas.length} من {wilayas.length} ولاية
+          {t('count', { filtered: filteredWilayas.length, total: wilayas.length })}
         </p>
       )}
-
     </div>
   );
 }

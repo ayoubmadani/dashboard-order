@@ -1,13 +1,14 @@
 'use client';
 import React from 'react';
 import { FcGoogle } from 'react-icons/fc';
+import { baseURL } from '../constents/const.';
 
 const CustomBtnGoogleProvider = () => {
   
   const handleGoogleLogin = () => {
     // توجيه المستخدم مباشرة إلى رابط السيرفر الذي يبدأ عملية جوجل
     // السيرفر سيقوم بعمل Redirect لصفحة جوجل، وبعد النجاح سيعود للـ Callback
-    window.location.href = 'http://localhost:7000/auth/google';
+    window.location.href = `${baseURL}/auth/google`;
   };
 
   return (

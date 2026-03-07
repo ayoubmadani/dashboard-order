@@ -12,9 +12,10 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
+import { useEffect } from 'react';
 
 const CreateStore = () => {
-const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });  
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
   const navigate = useNavigate();
   const isRtl = i18n.dir() === 'rtl';
   const BackIcon = isRtl ? ArrowRight : ArrowLeft;
@@ -30,7 +31,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
     logo: null,
     primaryColor: '#000000',
     secondaryColor: '#f59e0b',
-    niche: '403aaa3c-6c1d-4a22-9901-b7185a31e4a1',
+    niche: null,
     heroImage: null,
     heroTitle: 'Your Cozy Era',
     heroSubtitle: 'Get peak comfy-chic with new winter essentials.',
@@ -46,8 +47,19 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+  const [niches, setNiche] = useState([]);
 
-  const niches = [
+  useEffect(() => {
+    async function getNiches() {
+      const res = await axios.get(`${baseURL}/admin/niches`)
+      console.log(res.data);
+      setNiche(res.data)
+    }
+    getNiches()
+  }, [])
+
+
+  const niches1 = [
     { id: '403aaa3c-6c1d-4a22-9901-b7185a31e4a1', label: t('niches.fashion'), icon: <Shirt size={20} /> },
     { id: 'electronics', label: t('niches.electronics'), icon: <Smartphone size={20} /> },
     { id: 'home', label: t('niches.home'), icon: <Home size={20} /> },
@@ -124,7 +136,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
           subdomain: formData.domain.trim().toLowerCase(),
           currency: formData.currency,
           language: formData.language,
-          nicheId: formData.niche,
+          nicheId: formData.niche || null,
         },
         design: {
           primaryColor: formData.primaryColor,
@@ -171,8 +183,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
   // ─── Shared input class ───────────────────────────────────────────────────────
   const inputClass = (hasError) =>
-    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-      hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
+    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
     } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white`;
 
   const sectionClass = 'bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6';
@@ -184,9 +195,8 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
       {/* ── Notification ── */}
       {notification.show && (
-        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${
-          notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
-        } text-white`}>
+        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+          } text-white`}>
           {notification.type === 'success'
             ? <CheckCircle size={20} />
             : <AlertCircle size={20} />}
@@ -284,7 +294,15 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                 onChange={handleInputChange}
                 className={inputClass(false)}
               >
-                {niches.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+                {/* الخيار الافتراضي: نستخدم قيمة فارغة إذا لم يكن هناك تخصص */}
+                <option value="">🏪 {t("create.No.Specific.Niche")}</option>
+
+                {/* عرض قائمة التخصصات */}
+                {niches && niches.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.icon} {n.name}
+                  </option>
+                ))}
               </select>
             </div>
 

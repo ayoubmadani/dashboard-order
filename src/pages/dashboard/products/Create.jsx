@@ -253,6 +253,7 @@ export default function CreateProduct() {
       const token = getAccessToken();
       const storeId = localStorage.getItem('storeId');
       const data = { name: formData.name, price: Number(formData.price), desc: formData.desc, storeId, categoryId: formData.categoryId || undefined, attributes, variantDetails, offers, images };
+      
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
       showNotification('success', t('create.success'));
     } catch (err) {

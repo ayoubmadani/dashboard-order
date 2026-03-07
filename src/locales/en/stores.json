@@ -76,12 +76,15 @@
 
   "create": {
     "title": "Create New Store",
+    "first-title": "Create Your First Store",
     "subtitle": "Set up your online store in minutes",
     "submitting": "Creating...",
     "submit": "Create Store",
     "success": "Store created successfully! 🎉",
     "failed": "An error occurred while creating the store",
-    "form_errors": "Please correct the errors in the form"
+    "form_errors": "Please correct the errors in the form",
+    "switch_account_hint": "Switch to another store account",
+    "No.Specific.Niche": "General Store (No Niche)"
   },
 
   "update": {
@@ -93,7 +96,8 @@
     "failed": "An error occurred while updating the store",
     "load_failed": "Failed to load store data",
     "loading": "Loading store data...",
-    "form_errors": "Please correct the errors in the form"
+    "form_errors": "Please correct the errors in the form",
+    "No.Specific.Niche": "General Store (No Niche)"
   },
 
   "form": {

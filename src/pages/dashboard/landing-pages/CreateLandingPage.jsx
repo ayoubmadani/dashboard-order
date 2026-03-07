@@ -82,9 +82,12 @@ const CreateLandingPage = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      console.log(data);
+      
+
       if (data.success) {
         // الباك إند يرجع صورة واحدة الآن (HTML → PNG)
-        setSelectedImage(data.image); // 👈 مباشرة بدون base64 prefix لأنها تأتي كاملة
+        setSelectedImage(data.imageUrl); // 👈 مباشرة بدون base64 prefix لأنها تأتي كاملة
         setAiGeneratedOptions({
           marketingContent: data.marketingContent, // للعرض إذا أردت
           image: data.image,

@@ -36,6 +36,7 @@ import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
 import ProductShow from './pages/dashboard/products/show';
 import Theme from './pages/dashboard/theme/Theme';
+import CreateFerstStore from './pages/dashboard/stores/Create-First';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -84,6 +85,7 @@ const App = () => {
             <Route path="stores">
               <Route index element={<Stores />} />
               <Route path="create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/stores/create */}
+              <Route path="create-first" element={<CreateFerstStore />} /> {/* <-- المسار: /dashboard/stores/create */}
               <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
             </Route>
@@ -135,10 +137,12 @@ const App = () => {
             <Route path="forgot-password" element={<ForgotPassword />} />
             <Route path="new-password" element={<NewPassword />} />
             <Route path="otp" element={<Otp />} />
-            <Route path="callback" element={<AuthCallback />} />
+            
             <Route path="otp-forgot-password" element={<OtpForgotPassword />} />
           </Route>
         </Route>
+
+        <Route path="auth/callback" element={<AuthCallback />} />
 
 
       </Routes>

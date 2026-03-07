@@ -1,8 +1,84 @@
 {
-    "manage_desc": "Organize your products into groups to make it easier for customers to find them through menus.",
-    "add_new": "Add New Category",
-    "products_count": "Total Products",
-    "quick_add": "Quick New Category",
-    "name_label": "Category Name",
-    "slug_label": "Category Slug"
+  "title": "Categories",
+  "subtitle": "Manage hierarchical product categories",
+
+  "loading": "Loading categories...",
+
+  "error": {
+    "title": "Error loading data",
+    "retry": "Retry"
+  },
+
+  "header": {
+    "view_grid": "Grid",
+    "view_tree": "Tree",
+    "new_btn": "New Category",
+    "creating": "Creating..."
+  },
+
+  "search": {
+    "placeholder": "Search categories...",
+    "clear": "Clear"
+  },
+
+  "grid": {
+    "products_label": "Products",
+    "sub_label": "Sub-categories",
+    "view_products": "View products ←",
+    "add_new": "Add new category"
+  },
+
+  "tree": {
+    "empty": "No categories"
+  },
+
+  "empty": {
+    "title": "No categories found",
+    "subtitle": "Start by adding the first category to your store",
+    "add_btn": "Add Category"
+  },
+
+  "delete": {
+    "confirm": "Are you sure you want to delete \"{{name}}\"?",
+    "warning_header": "\n\nWarning:",
+    "has_children": "\n- Contains {{count}} sub-categories",
+    "has_products": "\n- Contains {{count}} products",
+    "warning_footer": "\n\nDeletion will fail if data is linked!",
+    "success": "Category deleted successfully"
+  },
+
+  "modal": {
+    "title_create": "New Category",
+    "title_edit": "Edit Category",
+    "image_label": "Category Image",
+    "image_change": "Change Image",
+    "image_placeholder": "Select image from library",
+    "parent_label": "Parent Category (Optional)",
+    "parent_none": "No parent (Main category)",
+    "name_label": "Name *",
+    "name_placeholder": "e.g., Electronics",
+    "slug_label": "Slug *",
+    "slug_placeholder": "electronics",
+    "slug_hint": "Used for URLs, e.g., /category/electronics",
+    "description_label": "Description",
+    "description_placeholder": "Short category description...",
+    "sort_label": "Sort Order",
+    "status_label": "Status",
+    "status_active": "Active",
+    "cancel": "Cancel",
+    "create_btn": "Create",
+    "update_btn": "Update",
+    "saving": "Saving..."
+  },
+
+  "toast": {
+    "create_success": "Category created successfully",
+    "update_success": "Category updated successfully"
+  },
+
+  "validation": {
+    "name_required": "Category name is required",
+    "slug_required": "Slug is required",
+    "parent_self": "A category cannot be its own parent"
+  }
 }

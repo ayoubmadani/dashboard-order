@@ -1,8 +1,84 @@
 {
-    "manage_desc": "نظم منتجاتك في مجموعات ليسهل على العملاء العثور عليها عبر القوائم.",
-    "add_new": "أضف فئة جديدة",
-    "products_count": "إجمالي المنتجات",
-    "quick_add": "فئة جديدة سريعة",
-    "name_label": "اسم الفئة",
-    "slug_label": "رابط الفئة (Slug)"
+  "title": "التصنيفات",
+  "subtitle": "إدارة تصنيفات المنتجات الهرمية",
+
+  "loading": "جاري تحميل التصنيفات...",
+
+  "error": {
+    "title": "خطأ في تحميل البيانات",
+    "retry": "إعادة المحاولة"
+  },
+
+  "header": {
+    "view_grid": "شبكة",
+    "view_tree": "شجري",
+    "new_btn": "تصنيف جديد",
+    "creating": "جاري الإنشاء..."
+  },
+
+  "search": {
+    "placeholder": "البحث في التصنيفات...",
+    "clear": "مسح"
+  },
+
+  "grid": {
+    "products_label": "المنتجات",
+    "sub_label": "فرعية",
+    "view_products": "عرض المنتجات ←",
+    "add_new": "إضافة تصنيف جديد"
+  },
+
+  "tree": {
+    "empty": "لا توجد تصنيفات"
+  },
+
+  "empty": {
+    "title": "لا توجد تصنيفات",
+    "subtitle": "ابدأ بإضافة أول تصنيف لمتجرك",
+    "add_btn": "إضافة تصنيف"
+  },
+
+  "delete": {
+    "confirm": "هل أنت متأكد من حذف \"{{name}}\"؟",
+    "warning_header": "\n\nتحذير:",
+    "has_children": "\n- يحتوي على {{count}} تصنيفات فرعية",
+    "has_products": "\n- يحتوي على {{count}} منتجات",
+    "warning_footer": "\n\nسيفشل الحذف إذا كانت البيانات مرتبطة!",
+    "success": "تم حذف التصنيف بنجاح"
+  },
+
+  "modal": {
+    "title_create": "تصنيف جديد",
+    "title_edit": "تعديل التصنيف",
+    "image_label": "صورة التصنيف",
+    "image_change": "تغيير الصورة",
+    "image_placeholder": "اختر صورة من المكتبة",
+    "parent_label": "التصنيف الأب (اختياري)",
+    "parent_none": "بدون تصنيف أب (تصنيف رئيسي)",
+    "name_label": "الاسم *",
+    "name_placeholder": "مثال: إلكترونيات",
+    "slug_label": "المعرف (Slug) *",
+    "slug_placeholder": "electronics",
+    "slug_hint": "يستخدم للروابط والبحث، مثل: /category/electronics",
+    "description_label": "الوصف",
+    "description_placeholder": "وصف مختصر للتصنيف...",
+    "sort_label": "الترتيب",
+    "status_label": "الحالة",
+    "status_active": "نشط",
+    "cancel": "إلغاء",
+    "create_btn": "إنشاء",
+    "update_btn": "تحديث",
+    "saving": "جاري الحفظ..."
+  },
+
+  "toast": {
+    "create_success": "تم إنشاء التصنيف بنجاح",
+    "update_success": "تم تحديث التصنيف بنجاح"
+  },
+
+  "validation": {
+    "name_required": "اسم التصنيف مطلوب",
+    "slug_required": "المعرف مطلوب",
+    "parent_self": "لا يمكن جعل التصنيف أباً لنفسه"
+  }
 }

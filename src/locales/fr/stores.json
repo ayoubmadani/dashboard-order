@@ -76,12 +76,15 @@
 
   "create": {
     "title": "Créer une boutique",
+    "first-title": "Créer votre première boutique",
     "subtitle": "Configurez votre boutique en ligne en quelques minutes",
     "submitting": "Création en cours...",
     "submit": "Créer la boutique",
     "success": "Boutique créée avec succès ! 🎉",
     "failed": "Une erreur est survenue lors de la création",
-    "form_errors": "Veuillez corriger les erreurs dans le formulaire"
+    "form_errors": "Veuillez corriger les erreurs dans le formulaire",
+    "switch_account_hint": "Passer à un autre compte de boutique",
+    "store.not.niche": "Boutique générale (Sans niche)"
   },
 
   "update": {

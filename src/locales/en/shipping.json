@@ -1,12 +1,41 @@
 {
-        "title": "State Shipping Rates",
-        "subtitle": "Customize home and office delivery costs for each state across the country.",
-        "search": "Search for a state by name or number...",
-        "filter_region": "Filter by Region",
-        "state": "State",
-        "home": "Home",
-        "office": "Office",
-        "return": "Return",
-        "note": "Note: These prices are automatically displayed to customers when selecting the state on the checkout page.",
-        "bulk_edit": "Bulk Edit All States"
-    }
+  "title": "Shipping Rates by State",
+  "subtitle": "Customize home and office delivery costs for each state",
+  "search_placeholder": "Search by name or code...",
+  "filter_region": "Filter by region",
+  "refresh": "Refresh",
+
+  "col_state": "State/Wilaya",
+  "col_home": "Home",
+  "col_office": "Office",
+  "col_return": "Return",
+  "col_status": "Status",
+  "col_action": "Action",
+
+  "save_row": "Save",
+  "save_all": "Save All Changes",
+  "bulk_save": "Bulk Save",
+
+  "note": "Note: These rates are shown to customers when selecting their state in the store.",
+  "count": "{{filtered}} of {{total}} states",
+  "no_results": "No states match your search",
+
+  "empty": {
+    "title": "State list is empty",
+    "subtitle": "Click the button below to automatically initialize shipping rates for all 58 states.",
+    "init_btn": "Initialize All States (58)",
+    "initializing": "Initializing…"
+  },
+
+  "toast": {
+    "fetch_error": "Failed to fetch shipping data",
+    "init_success": "States initialized successfully",
+    "init_loaded": "Existing states fetched",
+    "init_error": "Error during initialization",
+    "save_success": "{{name}} saved successfully",
+    "save_error": "Failed to save {{name}}",
+    "save_all_success": "All changes saved successfully",
+    "save_all_error": "Failed to save changes",
+    "toggle_error": "Failed to change state status"
+  }
+}

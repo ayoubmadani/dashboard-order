@@ -1,12 +1,41 @@
 {
-    "title": "Tarifs d'Expédition par État",
-    "subtitle": "Personnalisez les coûts de livraison à domicile et au bureau pour chaque état à travers le pays.",
-    "search": "Rechercher un état par nom ou numéro...",
-    "filter_region": "Filtrer par Région",
-    "state": "État",
-    "home": "Domicile",
-    "office": "Bureau",
-    "return": "Retour",
-    "note": "Note : Ces prix sont automatiquement affichés aux clients lors de la sélection de l'état sur la page de paiement.",
-    "bulk_edit": "Modification Groupée de Tous les États"
+  "title": "Tarifs de livraison par Wilaya",
+  "subtitle": "Personnalisez les frais de livraison à domicile et au bureau pour chaque wilaya",
+  "search_placeholder": "Rechercher par nom ou code...",
+  "filter_region": "Filtrer par région",
+  "refresh": "Actualiser",
+
+  "col_state": "Wilaya",
+  "col_home": "À domicile",
+  "col_office": "Bureau",
+  "col_return": "Retour",
+  "col_status": "Statut",
+  "col_action": "Action",
+
+  "save_row": "Enregistrer",
+  "save_all": "Enregistrer toutes les modifications",
+  "bulk_save": "Enregistrement groupé",
+
+  "note": "Note: Ces tarifs seront affichés aux clients lors du choix de la wilaya sur la boutique.",
+  "count": "{{filtered}} sur {{total}} wilayas",
+  "no_results": "Aucune wilaya ne correspond à votre recherche",
+
+  "empty": {
+    "title": "La liste des wilayas est vide",
+    "subtitle": "Cliquez sur le bouton ci-dessous pour initialiser automatiquement les tarifs de livraison pour les 58 wilayas.",
+    "init_btn": "Initialiser les 58 wilayas",
+    "initializing": "Initialisation en cours…"
+  },
+
+  "toast": {
+    "fetch_error": "Échec de la récupération des données de livraison",
+    "init_success": "Wilayas initialisées avec succès",
+    "init_loaded": "Wilayas existantes récupérées",
+    "init_error": "Erreur lors de l'initialisation",
+    "save_success": "{{name}} enregistré avec succès",
+    "save_error": "Échec de l'enregistrement de {{name}}",
+    "save_all_success": "Toutes les modifications ont été enregistrées",
+    "save_all_error": "Échec de l'enregistrement des modifications",
+    "toggle_error": "Échec du changement de statut de la wilaya"
+  }
 }

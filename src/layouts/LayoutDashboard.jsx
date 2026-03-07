@@ -3,7 +3,8 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     Home, Database, Settings, BarChart3, Menu, X, ChevronDown,
-    Search, Bell, Store, Box, Layers, ShoppingCart, Layout, Truck, LogOut, Sun, Moon
+    Search, Bell, Store, Box, Layers, ShoppingCart, Layout, Truck, 
+    LogOut, Sun, Moon, Sparkles, ChevronRight, User
 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -18,16 +19,31 @@ export default function LayoutDashboard() {
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
+    const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
-    const [myStores, setMyStores] = useState(localStorage.getItem([]))
+    const [myStores, setMyStores] = useState([]);
+    const [scrolled, setScrolled] = useState(false);
 
-    // حالة المستخدم: تبدأ ببيانات مؤقتة حتى يتم الجلب
-    const [user, setUser] = useState({ name: '...', initial: '..' });
+    const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
 
     const dropdownRef = useRef(null);
+    const userDropdownRef = useRef(null);
     const isRtl = i18n.language === 'ar';
 
-    // 1. إدارة تبديل الثيم (Dark/Light Mode)
+    // Theme management with system preference detection
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+            setIsDark(true);
+            document.documentElement.classList.add('dark');
+        } else {
+            setIsDark(false);
+            document.documentElement.classList.remove('dark');
+        }
+    }, []);
+
     useEffect(() => {
         if (isDark) {
             document.documentElement.classList.add('dark');
@@ -38,56 +54,59 @@ export default function LayoutDashboard() {
         }
     }, [isDark]);
 
-    // 2. جلب بيانات المستخدم والتحقق من التوكن
+    // Scroll detection for header styling
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 10);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // User authentication and data fetching
     useEffect(() => {
         const verifyAndFetchUser = async () => {
-            const URL = import.meta.env.REACT_APP_API_URL;
             const token = Cookies.get('access_token');
-
             if (!token) {
                 navigate('/auth/');
                 return;
             }
             try {
                 const response = await axios.get(`http://localhost:7000/user/current-user`, {
-                    headers: {
-                        "Authorization": `bearer ${token}`
-                    }
+                    headers: { "Authorization": `bearer ${token}` }
                 });
 
-
                 const currentUser = response.data;
-
                 currentUser.name = currentUser.username;
 
-                // استخراج الأحرف الأولى بشكل احترافي (مثال: "John Doe" -> "JD")
                 const initials = currentUser.name
                     ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
                     : '??';
 
                 setUser({
                     name: currentUser.name,
-                    initial: initials
+                    initial: initials,
+                    email: currentUser.email || ''
                 });
-
             } catch (error) {
                 console.error("Auth Error:", error);
-                // إذا انتهت الصلاحية أو حدث خطأ في التوكن، امسحه وحول المستخدم للوجين
                 if (error.response?.status === 401) {
                     removeAccessToken();
                     navigate('/auth/login');
                 }
             }
         };
-
         verifyAndFetchUser();
     }, [navigate]);
 
-    // 3. إغلاق القوائم المنسدلة عند النقر خارجها
+    // Close dropdowns on outside click
     useEffect(() => {
         const handleMouseUp = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setProjectDropdownOpen(false);
+            }
+            if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+                setUserDropdownOpen(false);
             }
         };
         document.addEventListener("mouseup", handleMouseUp);
@@ -112,21 +131,17 @@ export default function LayoutDashboard() {
         { name: t('dashboard.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings }
     ];
 
-    const [selectedProject, setSelectedProject] = useState();
+    const [selectedProject, setSelectedProject] = useState(null);
 
     const fetchStores = async () => {
         try {
-
             const token = getAccessToken();
             const response = await axios.get(`${baseURL}/stores/user/me`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                headers: { Authorization: `Bearer ${token}` },
             });
 
-
             if (response.data.data.length === 0) {
-                navigate('/dashboard/stores/create')
+                navigate('/dashboard/stores/create-first');
             }
 
             if (response.data.success) {
@@ -134,229 +149,328 @@ export default function LayoutDashboard() {
             }
         } catch (err) {
             console.error('Error fetching stores:', err);
-
-        } finally {
-
         }
-    }
-
-    // useEffect(()=>{
-    //    if (!myStores) {
-    //         navigate('/dashboard/stores/create')
-    //    } 
-
-    // },[myStores])
-
+    };
 
     useEffect(() => {
-
-        fetchStores()
-    }, [])
+        fetchStores();
+    }, []);
 
     useEffect(() => {
-        // ✅ أضفنا التحقق من أن myStores موجودة وليست null قبل قراءة length
         if (myStores && myStores.length > 0) {
             const savedStoreId = localStorage.getItem('storeId');
-
             if (savedStoreId) {
-                // ملاحظة: تأكد هل المعرف في قاعدة بياناتك هو id أم _id
                 const savedStore = myStores.find(s =>
                     (s.id?.toString() === savedStoreId.toString()) ||
                     (s._id?.toString() === savedStoreId.toString())
                 );
-
-                if (savedStore) {
-                    setSelectedProject(savedStore);
-                } else {
-                    setSelectedProject(myStores[0]);
-                }
-
+                setSelectedProject(savedStore || myStores[0]);
             } else {
                 setSelectedProject(myStores[0]);
             }
         }
-    }, [myStores]);// يعمل عندما تكتمل عملية جلب المتاجر
+    }, [myStores]);
 
+    // Get gradient based on store name for visual variety
+    const getStoreGradient = (name) => {
+        const gradients = [
+            'from-violet-500 to-purple-600',
+            'from-blue-500 to-cyan-600',
+            'from-emerald-500 to-teal-600',
+            'from-orange-500 to-amber-600',
+            'from-pink-500 to-rose-600',
+            'from-indigo-500 to-blue-600',
+        ];
+        const index = name ? name.charCodeAt(0) % gradients.length : 0;
+        return gradients[index];
+    };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-[#09090b] font-sans transition-colors duration-300" dir={isRtl ? 'rtl' : 'ltr'}>
-
-            {/* Sidebar Desktop */}
-            <div className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col ${isRtl ? 'right-0 border-l' : 'left-0 border-r'} border-zinc-800 bg-zinc-900 shadow-2xl transition-all`}>
-                <div className="flex flex-col flex-grow overflow-y-auto">
-                    <div className="flex items-center flex-shrink-0 px-5 py-3 border-b border-zinc-800/50">
-                        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <span className="text-[12px] font-black text-white">MD</span>
-                        </div>
-                        <span className={`${isRtl ? 'mr-2.5' : 'ml-2.5'} text-lg font-black text-white tracking-tight`}>
+        <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0b] font-sans transition-colors duration-300" dir={isRtl ? 'rtl' : 'ltr'}>
+            
+            {/* Desktop Sidebar */}
+            <aside className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col ${isRtl ? 'right-0' : 'left-0'} bg-white dark:bg-[#0f0f10] border-${isRtl ? 'l' : 'r'} border-gray-200 dark:border-white/5 shadow-xl shadow-black/5 transition-all`}>
+                
+                {/* Logo Section */}
+                <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-white/5">
+                    <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden group">
+                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <Sparkles className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
                             MdStore
                         </span>
+                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Dashboard</span>
                     </div>
+                </div>
 
-                    {/* Project Selector */}
-                    <div className="px-3 py-3 relative" ref={dropdownRef}>
-                        <button
-                            onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
-                            className="w-full flex items-center justify-between px-2.5 py-2 bg-zinc-800/40 text-[13px] text-zinc-300 hover:bg-zinc-800 rounded-lg transition-all border border-white/5"
-                        >
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-6 h-6 bg-indigo-500 rounded flex items-center justify-center text-[9px] font-black text-white uppercase shadow-sm shrink-0">
-                                    {/* ✅ الحماية باستخدام علامة الاستفهام ?. والقيمة البديلة */}
-                                    {selectedProject?.short || (selectedProject?.name ? selectedProject.name.charAt(0) : '...')}
-                                </div>
-                                <span className="font-bold truncate max-w-[100px]">
-                                    {/* ✅ عرض اسم المشروع أو كلمة "تحميل" مؤقتاً */}
-                                    {selectedProject?.name || ' لا توجد متاجر'}
-                                </span>
+                {/* Store Selector */}
+                <div className="px-4 py-4 relative" ref={dropdownRef}>
+                    <button
+                        onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
+                        className="w-full group relative overflow-hidden rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-3 hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-300"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}>
+                                {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
                             </div>
-                            <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                            <div className="flex-1 text-left">
+                                <p className="text-xs text-gray-400 font-medium mb-0.5">Current Store</p>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                    {selectedProject?.name || 'Select Store'}
+                                </p>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                    </button>
 
-                        {projectDropdownOpen && (
-                            <div className="absolute top-14 left-3 right-3 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 py-1 animate-in fade-in zoom-in-95 duration-200">
-                                {myStores && myStores.length > 0 ? (
-                                    myStores.map(store => (
+                    {/* Dropdown Menu */}
+                    {projectDropdownOpen && (
+                        <div className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl shadow-black/20 border border-gray-100 dark:border-white/10 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                            <div className="p-2 space-y-1">
+                                {myStores.length > 0 ? (
+                                    myStores.map((store, idx) => (
                                         <button
-                                            key={store.id} // تأكد أن store.id موجود، أو استخدم store._id حسب السيرفر
+                                            key={store.id || idx}
                                             onClick={() => {
-                                                localStorage.setItem('storeId', store.id)
+                                                localStorage.setItem('storeId', store.id);
                                                 setSelectedProject(store);
                                                 setProjectDropdownOpen(false);
-                                                navigate('/dashboard/stores')
+                                                navigate('/dashboard/stores');
                                             }}
-                                            className="w-full px-3 py-2 text-[13px] text-zinc-300 hover:bg-zinc-700/50 flex items-center gap-2.5 transition-colors"
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
                                         >
-                                            {/* المربع الصغير: يعرض أول حرف من اسم المتجر */}
-                                            <div className="w-5 h-5 bg-zinc-700 rounded flex items-center justify-center text-[10px] font-bold text-zinc-400 uppercase">
-                                                {store.name ? store.name.charAt(0) : 'S'}
+                                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getStoreGradient(store.name)} flex items-center justify-center text-xs font-bold text-white`}>
+                                                {store.name.charAt(0).toUpperCase()}
                                             </div>
-
-                                            {/* اسم المتجر الكامل: تم تغيير project.name إلى store.name */}
-                                            <span className="font-medium">{store.name}</span>
+                                            <span className="font-medium flex-1 text-left">{store.name}</span>
+                                            {selectedProject?.id === store.id && (
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                            )}
                                         </button>
                                     ))
                                 ) : (
-                                    <div className="px-3 py-2 text-zinc-500 text-[12px] text-center">
-                                        لا توجد متاجر متاحة
+                                    <div className="px-3 py-4 text-center text-sm text-gray-400">
+                                        No stores available
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
-
-                    <nav className="flex-1 px-3 py-1.5 space-y-0.5">
-                        {navigation.map((item) => {
-                            const isActive = location.pathname.startsWith(item.href) && 
-                    (item.href !== '/dashboard' || location.pathname === '/dashboard');
-                            return (
-                                <Link
-                                    key={item.href}
-                                    to={item.href}
-                                    className={`group flex items-center px-2.5 py-2.5 text-[13px] font-bold rounded-lg transition-all ${isActive
-                                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/10'
-                                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800/40'
-                                        }`}
+                            <div className="border-t border-gray-100 dark:border-white/5 p-2">
+                                <button 
+                                    onClick={() => navigate('/dashboard/stores/create')}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors font-medium"
                                 >
-                                    <item.icon className={`${isRtl ? 'ml-2.5' : 'mr-2.5'} h-4.5 w-4.5 flex-shrink-0 transition-transform group-hover:scale-105`} />
-                                    <span className="truncate">{item.name}</span>
-                                </Link>
-                            );
-                        })}
-                    </nav>
+                                    <Store className="w-4 h-4" />
+                                    Create New Store
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            </div>
 
-            {/* Main Content */}
-            <div className={`${isRtl ? 'lg:pr-64' : 'lg:pl-64'} flex flex-col flex-1`}>
-                <header className="sticky top-0 z-40 flex h-16 flex-shrink-0 items-center justify-between border-b border-gray-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md px-4 lg:px-8 transition-colors">
+                {/* Navigation */}
+                <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+                    <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Menu
+                    </div>
+                    {navigation.map((item) => {
+                        const isActive = location.pathname === item.href || 
+                            (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+                        
+                        return (
+                            <Link
+                                key={item.href}
+                                to={item.href}
+                                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden ${isActive
+                                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10'
+                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
+                                }`}
+                            >
+                                {isActive && (
+                                    <div className={`absolute ${isRtl ? 'right-0' : 'left-0'} top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-500 rounded-full`} />
+                                )}
+                                <item.icon className={`w-5 h-5 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                                <span className="relative z-10">{item.name}</span>
+                                {isActive && (
+                                    <ChevronRight className={`w-4 h-4 ml-auto opacity-50 ${isRtl ? 'rotate-180' : ''}`} />
+                                )}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Bottom Section */}
+                {/* <div className="p-4 border-t border-gray-100 dark:border-white/5">
+                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-white/10 dark:to-white/5 rounded-2xl p-4 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/20 rounded-full blur-2xl -mr-10 -mt-10" />
+                        <h4 className="text-white font-semibold text-sm mb-1 relative z-10">Pro Plan</h4>
+                        <p className="text-gray-300 text-xs mb-3 relative z-10">Get more features</p>
+                        <button className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg transition-colors relative z-10">
+                            Upgrade Now
+                        </button>
+                    </div>
+                </div> */}
+            </aside>
+
+            {/* Main Content Area */}
+            <div className={`${isRtl ? 'lg:pr-72' : 'lg:pl-72'} min-h-screen flex flex-col`}>
+                
+                {/* Header */}
+                <header className={`sticky top-0 z-40 flex h-16 items-center justify-between px-4 lg:px-8 transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#0a0a0b]/80 backdrop-blur-xl shadow-sm' : 'bg-transparent'}`}>
+                    
+                    {/* Mobile Menu Button */}
                     <button
-                        className="text-zinc-500 lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+                        className="lg:hidden p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors"
                         onClick={() => setSidebarOpen(true)}
                     >
-                        <Menu className="h-6 w-6" />
+                        <Menu className="h-5 w-5" />
                     </button>
 
-                    <div className="flex flex-1 items-center max-w-xl mx-4">
-                        <div className="w-full relative group">
-                            <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center`}>
-                                <Search className="h-4 w-4 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" />
-                            </div>
+                    {/* Search Bar */}
+                    <div className="flex-1 max-w-md mx-4 hidden sm:block">
+                        <div className="relative group">
+                            <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 transition-colors ${isRtl ? 'right-3' : 'left-3'} group-focus-within:text-emerald-500`} />
                             <input
-                                className={`block w-full rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 py-2 ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-gray-900 dark:text-white focus:bg-white dark:focus:bg-zinc-900 focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all outline-none placeholder:text-zinc-400`}
-                                placeholder={t('common.search', 'البحث...')}
                                 type="search"
+                                placeholder={t('common.search', 'Search anything...')}
+                                className={`w-full bg-gray-100/50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-white/5 focus:border-emerald-500/30 rounded-xl py-2.5 ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-gray-900 dark:text-white placeholder:text-gray-400 transition-all outline-none`}
                             />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1 sm:gap-2">
+                    {/* Right Actions */}
+                    <div className="flex items-center gap-2">
+                        {/* Theme Toggle */}
                         <button
                             onClick={() => setIsDark(!isDark)}
-                            className="p-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-all active:scale-90"
+                            className="relative p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                         >
-                            {isDark ? <Sun className="h-5 w-5 text-amber-500" /> : <Moon className="h-5 w-5" />}
-                        </button>
-
-                        <button className="relative rounded-xl p-2.5 text-zinc-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all active:scale-90">
-                            <Bell className="h-5 w-5" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white dark:border-zinc-950"></span>
-                        </button>
-
-                        <div className="h-8 w-px bg-gray-200 dark:bg-zinc-800 mx-1 sm:mx-2"></div>
-
-                        {/* User Profile Info */}
-                        <div className="flex items-center gap-2 rounded-xl p-1.5 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all group">
-                            <div className="w-8 h-8 bg-zinc-900 dark:bg-zinc-800 rounded-lg flex items-center justify-center text-[10px] font-black text-white shadow-md group-hover:bg-emerald-600 transition-colors">
-                                {user.initial}
+                            <div className="relative w-5 h-5">
+                                <Sun className={`absolute inset-0 w-5 h-5 text-amber-500 transition-all duration-300 ${isDark ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}`} />
+                                <Moon className={`absolute inset-0 w-5 h-5 text-indigo-400 transition-all duration-300 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-0'}`} />
                             </div>
-                            <span className="hidden sm:inline text-sm font-bold text-gray-700 dark:text-zinc-300">
-                                {user.name}
-                            </span>
-                        </div>
-
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center justify-center p-2.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all group active:scale-90"
-                            title={t('common.logout')}
-                        >
-                            <LogOut className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                         </button>
+
+                        {/* Notifications */}
+                        <button className="relative p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95">
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-[#0a0a0b]" />
+                        </button>
+
+                        <div className="w-px h-8 bg-gray-200 dark:border-white/10 mx-1" />
+
+                        {/* User Menu */}
+                        <div className="relative" ref={userDropdownRef}>
+                            <button 
+                                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                                className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                                    {user.initial}
+                                </div>
+                                <div className="hidden md:block text-left">
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{user.name}</p>
+                                    <p className="text-xs text-gray-400">Admin</p>
+                                </div>
+                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* User Dropdown */}
+                            {userDropdownOpen && (
+                                <div className={`absolute top-full ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl shadow-black/20 border border-gray-100 dark:border-white/10 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
+                                    <div className="p-4 border-b border-gray-100 dark:border-white/5">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-white">{user.name}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
+                                    </div>
+                                    <div className="p-2">
+                                        <button 
+                                            onClick={() => navigate('/dashboard/settings')}
+                                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+                                        >
+                                            <Settings className="w-4 h-4" />
+                                            Settings
+                                        </button>
+                                        <button 
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors mt-1"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            Sign Out
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </header>
 
-                <main className="p-4 md:p-8 animate-in fade-in slide-in-from-bottom-3 duration-500">
-                    <Outlet />
+                {/* Page Content */}
+                <main className="flex-1 p-4 lg:p-8">
+                    <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <Outlet />
+                    </div>
                 </main>
             </div>
 
-            {/* Mobile Sidebar */}
+            {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
-                    <div className="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />
-                    <div className={`fixed inset-y-0 ${isRtl ? 'right-0' : 'left-0'} flex w-72 flex-col bg-zinc-900 shadow-2xl animate-in ${isRtl ? 'slide-in-from-right' : 'slide-in-from-left'} duration-300`}>
-                        <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800">
-                            <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                    <Database className="w-5 h-5 text-white" />
+                    <div 
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+                        onClick={() => setSidebarOpen(false)} 
+                    />
+                    <div className={`absolute inset-y-0 ${isRtl ? 'right-0' : 'left-0'} w-80 bg-white dark:bg-[#0f0f10] shadow-2xl transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full'}`}>
+                        
+                        {/* Mobile Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
+                                    <Sparkles className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="text-lg font-black text-white tracking-tighter uppercase">MdStore</span>
+                                <span className="text-lg font-bold text-gray-900 dark:text-white">MdStore</span>
                             </div>
-                            <button onClick={() => setSidebarOpen(false)} className="text-zinc-400 p-2 hover:bg-zinc-800 rounded-lg transition-colors">
-                                <X className="w-6 h-6" />
+                            <button 
+                                onClick={() => setSidebarOpen(false)}
+                                className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors"
+                            >
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.href}
-                                    to={item.href}
-                                    onClick={() => setSidebarOpen(false)}
-                                    className="flex items-center px-4 py-3 text-sm font-bold text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
-                                >
-                                    <item.icon className={`${isRtl ? 'ml-4' : 'mr-4'} h-5 w-5`} />
-                                    {item.name}
-                                </Link>
-                            ))}
+
+                        {/* Mobile Store Selector */}
+                        <div className="p-4 border-b border-gray-100 dark:border-white/5">
+                            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-xl">
+                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white`}>
+                                    {selectedProject?.name?.charAt(0).toUpperCase() || 'S'}
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-xs text-gray-400">Current Store</p>
+                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedProject?.name || 'No Store'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Navigation */}
+                        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-180px)]">
+                            {navigation.map((item) => {
+                                const isActive = location.pathname === item.href || 
+                                    (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        to={item.href}
+                                        onClick={() => setSidebarOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
+                                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                        }`}
+                                    >
+                                        <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
                         </nav>
                     </div>
                 </div>

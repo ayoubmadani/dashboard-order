@@ -14,7 +14,7 @@ import axios from 'axios';
 import { PixelManager } from '../../../components/PixelManager';
 
 const UpdateStore = () => {
-const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });  
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
   const navigate = useNavigate();
   const { id: storeId } = useParams();
   const isRtl = i18n.dir() === 'rtl';
@@ -50,13 +50,16 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
   const [fetchingStore, setFetchingStore] = useState(true);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+  const [niches, setNiche] = useState([]);
 
-  const niches = [
-    { id: '87e5264c-627c-44ea-92e5-7363cf6efc3b', label: t('niches.fashion'), icon: <Shirt size={20} /> },
-    { id: 'electronics', label: t('niches.electronics'), icon: <Smartphone size={20} /> },
-    { id: 'home', label: t('niches.home'), icon: <Home size={20} /> },
-    { id: 'beauty', label: t('niches.beauty'), icon: <Sparkles size={20} /> },
-  ];
+  useEffect(() => {
+    async function getNiches() {
+      const res = await axios.get(`${baseURL}/admin/niches`)
+      console.log(res.data);
+      setNiche(res.data)
+    }
+    getNiches()
+  }, [])
 
   const wilayas = [
     'Algiers', 'Oran', 'Constantine', 'Setif', 'Annaba', 'Blida',
@@ -87,7 +90,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
           logo: store.design?.logoUrl || null,
           primaryColor: store.design?.primaryColor || '#000000',
           secondaryColor: store.design?.secondaryColor || '#f59e0b',
-          niche: store.niche?.id || '87e5264c-627c-44ea-92e5-7363cf6efc3b',
+          niche: store.niche?.id,
           heroImage: store.hero?.imageUrl || null,
           heroTitle: store.hero?.title || '',
           heroSubtitle: store.hero?.subtitle || '',
@@ -157,7 +160,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   }, [errors]);
 
- const handleSubmit = useCallback(async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
@@ -175,7 +178,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
           subdomain: formData.domain.trim().toLowerCase(),
           currency: formData.currency,
           language: formData.language,
-          nicheId: formData.niche,
+          nicheId: formData.niche || null,
         },
         design: {
           primaryColor: formData.primaryColor,
@@ -198,6 +201,9 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
           subtitle: formData.heroSubtitle.trim(),
         },
       };
+
+      console.log(payload);
+      
 
       const token = getAccessToken();
       const response = await axios.patch(
@@ -238,8 +244,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
   // ─── Shared classes ───────────────────────────────────────────────────────────
   const inputClass = (hasError) =>
-    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-      hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
+    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
     } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white`;
 
   const sectionClass = 'bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6';
@@ -263,9 +268,8 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
       {/* ── Notification ── */}
       {notification.show && (
-        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${
-          notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
-        } text-white`}>
+        <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-top ${notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+          } text-white`}>
           {notification.type === 'success'
             ? <CheckCircle size={20} />
             : <AlertCircle size={20} />}
@@ -352,8 +356,21 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
             {/* Niche */}
             <div>
               <label className={labelClass}>{t('form.niche_label')}</label>
-              <select name="niche" value={formData.niche} onChange={handleInputChange} className={inputClass(false)}>
-                {niches.map((n) => <option key={n.id} value={n.id}>{n.label}</option>)}
+              <select
+                name="niche"
+                value={formData.niche}
+                onChange={handleInputChange}
+                className={inputClass(false)}
+              >
+                {/* الخيار الافتراضي: نستخدم قيمة فارغة إذا لم يكن هناك تخصص */}
+                <option value="">🏪 {t("create.No.Specific.Niche")}</option>
+
+                {/* عرض قائمة التخصصات */}
+                {niches && niches.map((n) => (
+                  <option key={n.id} value={n.id}>
+                    {n.icon} {n.name}
+                  </option>
+                ))}
               </select>
             </div>
 
