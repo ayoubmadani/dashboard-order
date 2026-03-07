@@ -1,15 +1,78 @@
 {
-    "desc": "تحليل بيانات مبيعاتك، وسلوك الزوار، وأداء المنتجات بالتفصيل.",
-    "visitors": "إجمالي الزوار",
-    "sessions": "جلسات نشطة",
-    "bounce_rate": "معدل الارتداد",
-    "avg_order": "متوسط الطلب",
-    "sales_overview": "مخطط المبيعات والأرباح",
-    "this_month": "هذا الشهر",
-    "last_month": "الشهر الماضي",
-    "chart_placeholder": "ستظهر المخططات هنا عند توصيل البيانات",
-    "top_source": "أهم مصادر الزيارات",
-    "source_desc": "فيسبوك حالياً المحرك الرئيسي لمبيعاتك، استمر في حملاتك هناك.",
-    "view_details": "عرض التفاصيل",
-    "best_sellers": "أفضل المنتجات مبيعًا"
+  "title": "لوحة الإحصائيات",
+  "subtitle": "تتبع أداء متجرك وتحليل الطلبات",
+  "refresh": "تحديث",
+  "last_updated": "آخر تحديث: {{time}}",
+  "no_data": "لا توجد بيانات",
+  "no_returns": "لا توجد مرتجعات",
+
+  "error": "فشل في جلب البيانات. تأكد من الاتصال بالخادم.",
+
+  "range": {
+    "week": "أسبوع",
+    "month": "شهر",
+    "year": "سنة"
+  },
+
+  "stats": {
+    "total_orders": "إجمالي الطلبات",
+    "today_orders": "{{count}} اليوم",
+    "revenue": "الإيراد الكلي",
+    "month_revenue": "{{amount}} DA هذا الشهر",
+    "shipping": "قيد الشحن",
+    "shipping_sub": "طلب في الطريق",
+    "delivered": "تم التسليم",
+    "today_revenue": "{{amount}} DA اليوم",
+    "returned_loss": "خسائر المرتجعات",
+    "returned_sub": "{{count}} طلب مرجع · {{amount}} DA هذا الشهر",
+    "trend": "{{pct}}% مقارنة بالأسبوع الماضي"
+  },
+
+  "chart": {
+    "orders_revenue": "تطور الطلبات والإيراد",
+    "orders": "الطلبات",
+    "revenue": "الإيراد",
+    "delivery_type": "نوع التوصيل",
+    "home": "للمنزل",
+    "office": "للمكتب"
+  },
+
+  "status": {
+    "title": "توزيع حالات الطلبات",
+    "total": "إجمالي {{count}} طلب",
+    "pending":   "معلق",
+    "appl1":     "تأكيد 1",
+    "appl2":     "تأكيد 2",
+    "appl3":     "تأكيد 3",
+    "confirmed": "مؤكد",
+    "shipping":  "شحن",
+    "delivered": "مسلّم",
+    "cancelled": "ملغى",
+    "returned":  "مرجع",
+    "postponed": "مؤجل"
+  },
+
+  "products": {
+    "title": "أكثر المنتجات طلباً",
+    "orders_count": "{{count}} طلب",
+    "unknown": "منتج غير معروف"
+  },
+
+  "wilayas": {
+    "title": "الولايات الأكثر طلباً",
+    "subtitle": "أعلى 6 ولايات",
+    "orders_tooltip": "{{count}} طلب",
+    "orders_label": "العدد",
+    "wilaya_prefix": "ولاية {{id}}"
+  },
+
+  "returned_wilayas": {
+    "title": "الولايات الأكثر إرجاعاً",
+    "total": "إجمالي {{count}} مرتجع"
+  },
+
+  "returned_phones": {
+    "title": "أرقام هواتف المرتجعين",
+    "total": "{{count}} طلب مرجع"
+  }
 }
