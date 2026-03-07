@@ -140,11 +140,24 @@ export default function LayoutDashboard() {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (response.data.data.length === 0) {
+            const dataStores = response.data.data;
+            console.log(dataStores[0].id);
+            
+
+            if (dataStores.length === 0) {
                 navigate('/dashboard/stores/create-first');
             }
 
             if (response.data.success) {
+                if (!localStorage.getItem('storeId') || localStorage.getItem('storeId') === '') {
+                    localStorage.setItem('storeId',dataStores[0].id)  
+                }else{
+                    const getStore = dataStores.find(s => s.id == localStorage.getItem('storeId'))
+                    !getStore 
+                        ? localStorage.setItem('storeId',dataStores[0].id)
+                        : localStorage.setItem('storeId',getStore.id)
+                }
+
                 setMyStores(response.data.data || []);
             }
         } catch (err) {
