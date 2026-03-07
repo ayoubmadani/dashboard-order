@@ -1,0 +1,34 @@
+{
+  "loading": "Loading themes...",
+
+  "my_themes": {
+    "title": "My Themes",
+    "default_name": "Default",
+    "activate_btn": "Activate",
+    "empty": "No themes installed"
+  },
+
+  "types": {
+    "title": "Type",
+    "all": "All"
+  },
+
+  "gallery": {
+    "title": "Theme Gallery",
+    "results_one": "1 result",
+    "results_other": "{{count}} results",
+    "empty_title": "No themes found",
+    "empty_subtitle": "Try selecting a different type",
+    "free_label": "Free",
+    "preview_btn": "Preview",
+    "install_btn": "Install"
+  },
+
+  "alerts": {
+    "install_success": "Theme installed successfully!",
+    "install_error": "Error: {{message}}",
+    "activate_success": "Theme activated successfully!",
+    "activate_error": "An error occurred while activating the theme",
+    "no_store": "No store found to activate the theme on"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "loading": "جاري تحميل القوالب...",
+
+  "my_themes": {
+    "title": "قوالبي",
+    "default_name": "افتراضي",
+    "activate_btn": "تفعيل",
+    "empty": "لا توجد قوالب مثبّتة"
+  },
+
+  "types": {
+    "title": "النوع",
+    "all": "الكل"
+  },
+
+  "gallery": {
+    "title": "معرض القوالب",
+    "results_one": "نتيجة واحدة",
+    "results_other": "{{count}} نتيجة",
+    "empty_title": "لا توجد قوالب",
+    "empty_subtitle": "جرّب اختيار نوع مختلف",
+    "free_label": "مجاني",
+    "preview_btn": "معاينة",
+    "install_btn": "تثبيت"
+  },
+
+  "alerts": {
+    "install_success": "تم تثبيت القالب بنجاح!",
+    "install_error": "خطأ: {{message}}",
+    "activate_success": "تم تفعيل القالب بنجاح!",
+    "activate_error": "حدث خطأ أثناء تفعيل القالب",
+    "no_store": "لم يتم العثور على متجر لتفعيل القالب عليه"
+  }
+}
