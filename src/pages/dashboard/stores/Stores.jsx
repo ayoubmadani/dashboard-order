@@ -316,7 +316,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                     </h3>
 
                     <a
-                      href={`${process.env.VITE_STORE_URL}/${store.subdomain}`}
+                      href={`${import.meta.env.VITE_STORE_URL}/${store.subdomain}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`flex items-center gap-2 text-sm transition-all ${
