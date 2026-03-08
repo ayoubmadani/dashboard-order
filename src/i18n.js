@@ -41,6 +41,7 @@ import arTerms from './locales/ar/terms.json';
 import arUpload from './locales/ar/upload.json';
 import arValidation from './locales/ar/validation.json';
 import arTheme from './locales/ar/theme.json';
+import arWallet from './locales/ar/wallet.json';
 
 // --- ملفات اللغة الإنجليزية ---
 import enAbout from './locales/en/about.json';
@@ -80,6 +81,8 @@ import enTerms from './locales/en/terms.json';
 import enUpload from './locales/en/upload.json';
 import enValidation from './locales/en/validation.json';
 import enTheme from './locales/en/theme.json';
+import enWallet from './locales/en/wallet.json';
+
 
 
 // --- ملفات اللغة الفرنسية ---
@@ -120,6 +123,8 @@ import frTerms from './locales/fr/terms.json';
 import frUpload from './locales/fr/upload.json';
 import frValidation from './locales/fr/validation.json';
 import frTheme from './locales/fr/theme.json';
+import frWallet from './locales/fr/wallet.json';
+
 
 
 // إعداد الموارد
@@ -163,6 +168,7 @@ const resources = {
       upload: arUpload,
       validation: arValidation,
       theme: arTheme,
+      wallet: arWallet,
     },
   },
   en: {
@@ -203,7 +209,9 @@ const resources = {
       terms: enTerms,
       upload: enUpload,
       validation: enValidation,
-            theme: enTheme,
+      theme: enTheme,
+            wallet: enWallet,
+
 
     },
   },
@@ -246,6 +254,8 @@ const resources = {
       upload: frUpload,
       validation: frValidation,
       theme: frTheme,
+            wallet: frWallet,
+
 
     },
   },

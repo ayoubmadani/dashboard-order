@@ -1,15 +1,78 @@
 {
-    "desc": "Analysez vos données de vente, le comportement des visiteurs et la performance des produits en détail.",
-    "visitors": "Total Visiteurs",
-    "sessions": "Sessions Actives",
-    "bounce_rate": "Taux de Rebond",
-    "avg_order": "Commande Moyenne",
-    "sales_overview": "Graphique des Ventes & profits",
-    "this_month": "Ce Mois",
-    "last_month": "Le Mois Dernier",
-    "chart_placeholder": "Les graphiques apparaîtront ici lorsque les données seront connectées",
-    "top_source": "Meilleures Sources de Trafic",
-    "source_desc": "Facebook est actuellement le principal moteur de vos ventes, continuez vos campagnes là-bas.",
-    "view_details": "Voir les Détails",
-    "best_sellers": "Produits les Mieux Vendus"
+  "title": "Tableau de Bord",
+  "subtitle": "Suivez les performances et l'analyse des commandes",
+  "refresh": "Actualiser",
+  "last_updated": "Dernière mise à jour: {{time}}",
+  "no_data": "Aucune donnée",
+  "no_returns": "Aucun retour",
+
+  "error": "Échec de la récupération des données. Vérifiez la connexion au serveur.",
+
+  "range": {
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année"
+  },
+
+  "stats": {
+    "total_orders": "Total des Commandes",
+    "today_orders": "{{count}} Aujourd'hui",
+    "revenue": "Revenu Total",
+    "month_revenue": "{{amount}} DA ce mois",
+    "shipping": "En Expédition",
+    "shipping_sub": "Commandes en cours",
+    "delivered": "Livré",
+    "today_revenue": "{{amount}} DA Aujourd'hui",
+    "returned_loss": "Pertes sur Retours",
+    "returned_sub": "{{count}} retours · {{amount}} DA ce mois",
+    "trend": "{{pct}}% par rapport à la semaine passée"
+  },
+
+  "chart": {
+    "orders_revenue": "Évolution des Commandes et Revenus",
+    "orders": "Commandes",
+    "revenue": "Revenu",
+    "delivery_type": "Type de Livraison",
+    "home": "À Domicile",
+    "office": "Au Bureau"
+  },
+
+  "status": {
+    "title": "Répartition des Statuts",
+    "total": "Total {{count}} commandes",
+    "pending":   "En attente",
+    "appl1":     "Confirm 1",
+    "appl2":     "Confirm 2",
+    "appl3":     "Confirm 3",
+    "confirmed": "Confirmé",
+    "shipping":  "Expédition",
+    "delivered": "Livré",
+    "cancelled": "Annulé",
+    "returned":  "Retourné",
+    "postponed": "Reporté"
+  },
+
+  "products": {
+    "title": "Produits les Plus Commandés",
+    "orders_count": "{{count}} commandes",
+    "unknown": "Produit inconnu"
+  },
+
+  "wilayas": {
+    "title": "Wilayas les Plus Actives",
+    "subtitle": "Top 6 Wilayas",
+    "orders_tooltip": "{{count}} commandes",
+    "orders_label": "Nombre",
+    "wilaya_prefix": "Wilaya {{id}}"
+  },
+
+  "returned_wilayas": {
+    "title": "Wilayas avec le Plus de Retours",
+    "total": "Total {{count}} retours"
+  },
+
+  "returned_phones": {
+    "title": "Numéros des Clients Retourneurs",
+    "total": "{{count}} commandes retournées"
+  }
 }

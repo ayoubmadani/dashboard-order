@@ -1,0 +1,40 @@
+{
+  "title": "المحفظة",
+  "subtitle": "إدارة رصيدك وعملياتك المالية",
+  "refresh": "تحديث",
+
+  "balance": "الرصيد المتاح",
+  "currency": "DA",
+  "top_up_btn": "شحن الرصيد",
+
+  "total_top_up": "إجمالي الشحن",
+  "total_spent": "إجمالي المصروف",
+
+  "transactions": "سجل العمليات",
+  "no_transactions": "لا توجد عمليات بعد",
+
+  "action": {
+    "topUp": "شحن رصيد",
+    "buy": "شراء"
+  },
+  "type": {
+    "wallet": "محفظة",
+    "sub": "اشتراك",
+    "theme": "قالب"
+  },
+
+  "modal": {
+    "title": "شحن الرصيد",
+    "preset_label": "مبالغ مقترحة",
+    "custom_label": "أو أدخل مبلغاً مخصصاً (DA)",
+    "custom_placeholder": "1000",
+    "confirm": "تأكيد الشحن",
+    "powered_by": "مدعوم بـ Chargily Pay"
+  },
+
+  "error": {
+    "fetch": "فشل تحميل بيانات المحفظة",
+    "min_amount": "الحد الأدنى للشحن هو 100 DA",
+    "top_up": "حدث خطأ أثناء إنشاء جلسة الدفع"
+  }
+}

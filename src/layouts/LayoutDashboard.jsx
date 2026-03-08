@@ -11,6 +11,7 @@ import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
 import { Palette } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation();
@@ -127,8 +128,9 @@ export default function LayoutDashboard() {
         { name: t('dashboard.landing', 'صفحة الهبوط'), href: '/dashboard/landing-pages', icon: Layout },
         { name: t('dashboard.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart },
         { name: t('dashboard.shipping', 'أسعار الشحن'), href: '/dashboard/shipping', icon: Truck },
+        { name: t('dashboard.Wallet', ' Wallet'), href: '/dashboard/Wallet', icon: Wallet },
         { name: t('dashboard.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3 },
-        { name: t('dashboard.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings }
+        { name: t('dashboard.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings },
     ];
 
     const [selectedProject, setSelectedProject] = useState(null);

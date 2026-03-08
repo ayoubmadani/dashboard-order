@@ -1,0 +1,40 @@
+{
+  "title": "Wallet",
+  "subtitle": "Manage your balance and financial transactions",
+  "refresh": "Refresh",
+
+  "balance": "Available Balance",
+  "currency": "DA",
+  "top_up_btn": "Top Up Balance",
+
+  "total_top_up": "Total Topped Up",
+  "total_spent": "Total Spent",
+
+  "transactions": "Transaction History",
+  "no_transactions": "No transactions yet",
+
+  "action": {
+    "topUp": "Top-up",
+    "buy": "Purchase"
+  },
+  "type": {
+    "wallet": "Wallet",
+    "sub": "Subscription",
+    "theme": "Template"
+  },
+
+  "modal": {
+    "title": "Top Up Balance",
+    "preset_label": "Suggested amounts",
+    "custom_label": "Or enter a custom amount (DA)",
+    "custom_placeholder": "1000",
+    "confirm": "Confirm Top-up",
+    "powered_by": "Powered by Chargily Pay"
+  },
+
+  "error": {
+    "fetch": "Failed to load wallet data",
+    "min_amount": "Minimum top-up amount is 100 DA",
+    "top_up": "Error creating payment session"
+  }
+}

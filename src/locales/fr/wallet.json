@@ -1,0 +1,40 @@
+{
+  "title": "Portefeuille",
+  "subtitle": "Gérez votre solde et vos transactions financières",
+  "refresh": "Actualiser",
+
+  "balance": "Solde Disponible",
+  "currency": "DA",
+  "top_up_btn": "Recharger le solde",
+
+  "total_top_up": "Total Rechargé",
+  "total_spent": "Total Dépensé",
+
+  "transactions": "Historique des Transactions",
+  "no_transactions": "Aucune transaction pour le moment",
+
+  "action": {
+    "topUp": "Rechargement",
+    "buy": "Achat"
+  },
+  "type": {
+    "wallet": "Portefeuille",
+    "sub": "Abonnement",
+    "theme": "Thème"
+  },
+
+  "modal": {
+    "title": "Recharger le solde",
+    "preset_label": "Montants suggérés",
+    "custom_label": "Ou entrez un montant personnalisé (DA)",
+    "custom_placeholder": "1000",
+    "confirm": "Confirmer le rechargement",
+    "powered_by": "Propulsé par Chargily Pay"
+  },
+
+  "error": {
+    "fetch": "Échec du chargement du portefeuille",
+    "min_amount": "Le montant minimum de recharge est de 100 DA",
+    "top_up": "Erreur lors de la création de la session de paiement"
+  }
+}

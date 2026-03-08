@@ -37,6 +37,7 @@ import EditProduct from './pages/dashboard/products/edit';
 import ProductShow from './pages/dashboard/products/show';
 import Theme from './pages/dashboard/theme/Theme';
 import CreateFerstStore from './pages/dashboard/stores/Create-First';
+import Wallet from './pages/dashboard/wallet/wallet';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -108,6 +109,8 @@ const App = () => {
               <Route path=":id" element={<ProductShow />} />
 
             </Route>
+
+            <Route path='Wallet' element={<Wallet />} />
 
 
             <Route path="landing-pages"  >
