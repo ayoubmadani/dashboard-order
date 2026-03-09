@@ -33,11 +33,10 @@ const CreateStore = () => {
     secondaryColor: '#f59e0b',
     niche: null,
     heroImage: null,
-    heroTitle: 'Your Cozy Era',
-    heroSubtitle: 'Get peak comfy-chic with new winter essentials.',
+    heroTitle: '',
+    heroSubtitle: '',
     showTopBar: true,
-    topBarText: t('form.top_bar_placeholder'),
-    topBarColor: '#6366f1',
+    topBarText: '',
     currency: 'DZD',
     language: 'ar',
   });
@@ -50,32 +49,26 @@ const CreateStore = () => {
   const [niches, setNiche] = useState([]);
   const [wilayas, setWilayas] = useState([]);
 
-  useEffect(() => {
-    async function getNiches() {
-      const res = await axios.get(`${baseURL}/admin/niches`)
-      console.log(res.data);
-      setNiche(res.data)
-    }
-    getNiches()
-  }, [])
+   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // تنفيذ الطلبين في وقت واحد لسرعة الأداء
+        const [nichesRes, wilayasRes] = await Promise.all([
+          axios.get(`${baseURL}/admin/niches`),
+          axios.get(`${baseURL}/shipping/wilayas`)
+        ]);
 
+        setNiche(nichesRes.data);
+        setWilayas(wilayasRes.data);
 
-  const niches1 = [
-    { id: '403aaa3c-6c1d-4a22-9901-b7185a31e4a1', label: t('niches.fashion'), icon: <Shirt size={20} /> },
-    { id: 'electronics', label: t('niches.electronics'), icon: <Smartphone size={20} /> },
-    { id: 'home', label: t('niches.home'), icon: <Home size={20} /> },
-    { id: 'beauty', label: t('niches.beauty'), icon: <Sparkles size={20} /> },
-  ];
+        console.log("Data loaded successfully");
+      } catch (error) {
+        console.error("Something went wrong:", error);
+      }
+    };
 
-  async function getWilayas() {
-    try {
-      const res = await axios.get(`${baseURL}/shipping/wilayas`)
-      console.log(res);
-      
-    } catch (error) {
-      
-    }
-  }
+    fetchData();
+  }, []);
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
