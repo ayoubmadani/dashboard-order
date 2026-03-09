@@ -86,7 +86,7 @@ const CreateFirstStore = () => {
         ]);
 
         console.log(nichesRes.data, wilayasRes.data);
-        
+
 
         setNiche(nichesRes.data);
         setWilayas(wilayasRes.data);
@@ -346,13 +346,11 @@ const CreateFirstStore = () => {
                   onChange={handleInputChange}
                   className={inputClass(false)}
                 >
-                  {/* الخيار الافتراضي: نستخدم قيمة فارغة إذا لم يكن هناك تخصص */}
                   <option value="">🏪 {t("create.No.Specific.Niche")}</option>
 
-                  {/* عرض قائمة التخصصات */}
                   {niches && niches.map((n) => (
                     <option key={n.id} value={n.id}>
-                      {n.icon} {n.name}
+                      {n.icon} {i18n.language === 'ar' ? n.name_ar : i18n.language === 'fr' ? n.name_fr : n.name_en}
                     </option>
                   ))}
                 </select>
