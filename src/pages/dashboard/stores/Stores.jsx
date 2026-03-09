@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Store, Plus, Search, MapPin, 
+import {
+  Store, Plus, Search, MapPin,
   ExternalLink, Globe, LayoutGrid, X,
   Package, Users,
   Edit2, Trash2, Eye,
@@ -14,7 +14,7 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
 const Stores = () => {
-const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });  
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
   const navigate = useNavigate();
   const isRtl = i18n.language === 'ar';
 
@@ -218,7 +218,13 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                 sub: t('stores.stats.customers_sub'),
               },
             ].map(({ key, icon: Icon, color, value, sub }) => (
-              <div key={key} className={`bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-500/10 dark:to-${color}-500/5 p-5 rounded-2xl border border-${color}-100 dark:border-${color}-500/20`}>
+              <div
+                key={key}
+                className={`bg-gradient-to-br from-${color}-50 to-${color}-100/50 
+                 dark:from-gray-800 dark:to-gray-900 
+                 p-5 rounded-2xl border border-${color}-100 
+                 dark:border-gray-700 shadow-sm`}
+              >
                 <div className="flex items-center gap-3 mb-3">
                   <div className={`p-2 bg-${color}-500 rounded-lg`}>
                     <Icon size={16} className="text-white" />
@@ -228,7 +234,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                   </span>
                 </div>
                 <p className="text-xl font-black text-gray-900 dark:text-white">{value}</p>
-                <p className={`text-xs text-${color}-600/70 dark:text-${color}-400/70 mt-1`}>{sub}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{sub}</p>
               </div>
             ))}
           </div>
@@ -287,11 +293,10 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
               return (
                 <div
                   key={store.id}
-                  className={`group bg-white dark:bg-zinc-900 border rounded-2xl overflow-hidden transition-all duration-300 ${
-                    store.isActive
+                  className={`group bg-white dark:bg-zinc-900 border rounded-2xl overflow-hidden transition-all duration-300 ${store.isActive
                       ? 'border-gray-200 dark:border-zinc-800 hover:shadow-xl hover:border-amber-300 dark:hover:border-amber-500/30'
                       : 'border-gray-200 dark:border-zinc-800 opacity-75 hover:opacity-100'
-                  }`}
+                    }`}
                 >
                   {/* Card Header */}
                   <div className="p-6 border-b border-gray-100 dark:border-zinc-800">
@@ -319,9 +324,8 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                       href={`${import.meta.env.VITE_STORE_URL}/${store.subdomain}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`flex items-center gap-2 text-sm transition-all ${
-                        store.isActive ? 'text-indigo-600 dark:text-indigo-400 hover:underline' : 'text-gray-400 pointer-events-none'
-                      }`}
+                      className={`flex items-center gap-2 text-sm transition-all ${store.isActive ? 'text-indigo-600 dark:text-indigo-400 hover:underline' : 'text-gray-400 pointer-events-none'
+                        }`}
                       onClick={(e) => !store.isActive && e.preventDefault()}
                     >
                       <Globe size={14} />
@@ -358,11 +362,10 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => !store.isActive && e.preventDefault()}
-                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-colors ${
-                        store.isActive
+                      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-colors ${store.isActive
                           ? 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
                           : 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 cursor-not-allowed'
-                      }`}
+                        }`}
                     >
                       <Eye size={16} />
                       {t('stores.card.visit')}
@@ -481,11 +484,10 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => !store.isActive && e.preventDefault()}
-                            className={`p-2 rounded-lg transition-colors ${
-                              store.isActive
+                            className={`p-2 rounded-lg transition-colors ${store.isActive
                                 ? 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'
                                 : 'text-gray-300 cursor-not-allowed'
-                            }`}
+                              }`}
                           >
                             <Eye size={16} />
                           </a>
