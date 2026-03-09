@@ -280,7 +280,7 @@ const CreateStore = () => {
                 onChange={handleInputChange}
                 className={inputClass(false)}
               >
-                {wilayas.map((w) => <option key={w} value={w}>{w}</option>)}
+                {wilayas.map((w) => <option key={w.id} value={w.name}>({w.id}) {w.name}</option>)}
               </select>
             </div>
 

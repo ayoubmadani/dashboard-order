@@ -83,7 +83,7 @@
     "success": "Boutique créée avec succès ! 🎉",
     "failed": "Une erreur est survenue lors de la création",
     "form_errors": "Veuillez corriger les erreurs dans le formulaire",
-    "switch_account_hint": "Passer à un autre compte de boutique",
+    "switch_account_hint": "Passer à un autre compte",
     "store.not.niche": "Boutique générale (Sans niche)"
   },
 

@@ -83,7 +83,7 @@
     "success": "Store created successfully! 🎉",
     "failed": "An error occurred while creating the store",
     "form_errors": "Please correct the errors in the form",
-    "switch_account_hint": "Switch to another store account",
+    "switch_account_hint": "Switch to another account",
     "No.Specific.Niche": "General Store (No Niche)"
   },
 
