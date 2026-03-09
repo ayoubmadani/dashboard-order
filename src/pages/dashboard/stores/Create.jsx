@@ -48,6 +48,7 @@ const CreateStore = () => {
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiche] = useState([]);
+  const [wilayas, setWilayas] = useState([]);
 
   useEffect(() => {
     async function getNiches() {
@@ -66,10 +67,15 @@ const CreateStore = () => {
     { id: 'beauty', label: t('niches.beauty'), icon: <Sparkles size={20} /> },
   ];
 
-  const wilayas = [
-    'Algiers', 'Oran', 'Constantine', 'Setif', 'Annaba', 'Blida',
-    'Batna', 'Tlemcen', 'Béjaïa', 'Tizi Ouzou',
-  ];
+  async function getWilayas() {
+    try {
+      const res = await axios.get(`${baseURL}/shipping/wilayas`)
+      console.log(res);
+      
+    } catch (error) {
+      
+    }
+  }
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });

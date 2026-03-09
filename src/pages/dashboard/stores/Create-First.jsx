@@ -75,20 +75,29 @@ const CreateFirstStore = () => {
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiche] = useState([]);
+  const [wilayas, setWilayas] = useState([]);
 
   useEffect(() => {
-    async function getNiches() {
-      const res = await axios.get(`${baseURL}/admin/niches`)
-      console.log(res.data);
-      setNiche(res.data)
-    }
-    getNiches()
-  }, [])
+    const fetchData = async () => {
+      try {
+        // تنفيذ الطلبين في وقت واحد لسرعة الأداء
+        const [nichesRes, wilayasRes] = await Promise.all([
+          axios.get(`${baseURL}/admin/niches`),
+          axios.get(`${baseURL}/shipping/wilayas`)
+        ]);
 
-  const wilayas = [
-    'Algiers', 'Oran', 'Constantine', 'Setif', 'Annaba', 'Blida',
-    'Batna', 'Tlemcen', 'Béjaïa', 'Tizi Ouzou',
-  ];
+        setNiche(nichesRes.data);
+        setWilayas(wilayasRes.data);
+
+        console.log("Data loaded successfully");
+      } catch (error) {
+        console.error("Something went wrong:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
@@ -178,8 +187,8 @@ const CreateFirstStore = () => {
           subtitle: formData.heroSubtitle.trim(),
         },
       };
-      
-      
+
+
 
       const token = getAccessToken();
       const response = await axios.post(`${baseURL}/stores/create-full`, payload, {
