@@ -146,7 +146,7 @@ const CreateStore = () => {
         topBar: {
           enabled: formData.showTopBar,
           text: formData.topBarText.trim(),
-          color: formData.topBarColor,
+          color: formData.primaryColor,
         },
         contact: {
           email: formData.email?.trim() || null,
@@ -514,24 +514,6 @@ const CreateStore = () => {
                   placeholder={t('form.top_bar_placeholder')}
                   className={inputClass(false)}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>{t('form.top_bar_color')}</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    name="topBarColor"
-                    value={formData.topBarColor}
-                    onChange={handleInputChange}
-                    className="h-12 w-20 rounded-xl cursor-pointer border-0"
-                  />
-                  <input
-                    type="text"
-                    value={formData.topBarColor}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
-                  />
-                </div>
               </div>
             </div>
           )}
