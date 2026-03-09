@@ -35,7 +35,9 @@
     "ship_home": "🏠 منزل",
     "ship_fee": "+{{price}} توصيل",
     "prev_page": "السابق",
-    "next_page": "التالي"
+    "next_page": "التالي",
+    "edit" : "تعديل",
+    "delete" : "مسح"
   },
 
   "export": {

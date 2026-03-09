@@ -42,6 +42,7 @@ import arUpload from './locales/ar/upload.json';
 import arValidation from './locales/ar/validation.json';
 import arTheme from './locales/ar/theme.json';
 import arWallet from './locales/ar/wallet.json';
+import arLayout from './locales/ar/layout.json';
 
 // --- ملفات اللغة الإنجليزية ---
 import enAbout from './locales/en/about.json';
@@ -82,6 +83,7 @@ import enUpload from './locales/en/upload.json';
 import enValidation from './locales/en/validation.json';
 import enTheme from './locales/en/theme.json';
 import enWallet from './locales/en/wallet.json';
+import enLayout from './locales/en/layout.json';
 
 
 
@@ -124,6 +126,7 @@ import frUpload from './locales/fr/upload.json';
 import frValidation from './locales/fr/validation.json';
 import frTheme from './locales/fr/theme.json';
 import frWallet from './locales/fr/wallet.json';
+import frLayout from './locales/fr/layout.json';
 
 
 
@@ -169,6 +172,7 @@ const resources = {
       validation: arValidation,
       theme: arTheme,
       wallet: arWallet,
+      layout: arLayout,
     },
   },
   en: {
@@ -210,7 +214,8 @@ const resources = {
       upload: enUpload,
       validation: enValidation,
       theme: enTheme,
-            wallet: enWallet,
+      wallet: enWallet,
+      layout: enLayout,
 
 
     },
@@ -254,9 +259,8 @@ const resources = {
       upload: frUpload,
       validation: frValidation,
       theme: frTheme,
-            wallet: frWallet,
-
-
+      wallet: frWallet,
+      layout: frLayout,
     },
   },
 };

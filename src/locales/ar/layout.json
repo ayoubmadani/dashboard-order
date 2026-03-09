@@ -1,0 +1,38 @@
+{
+  "nav": {
+    "home":       "الرئيسية",
+    "stores":     "المتاجر",
+    "theme":      "القوالب",
+    "categories": "التصنيفات",
+    "products":   "المنتجات",
+    "landing":    "صفحة الهبوط",
+    "orders":     "الطلبات",
+    "shipping":   "أسعار الشحن",
+    "wallet":     "المحفظة",
+    "analytics":  "الإحصائيات",
+    "settings":   "الإعدادات",
+    "menu_label": "القائمة"
+  },
+
+  "store_selector": {
+    "current_store": "المتجر الحالي",
+    "select_store":  "اختر متجراً",
+    "no_stores":     "لا توجد متاجر",
+    "create_store":  "إنشاء متجر جديد"
+  },
+
+  "header": {
+    "search_placeholder": "ابحث عن أي شيء…",
+    "notifications":      "الإشعارات",
+    "theme_toggle":       "تغيير المظهر",
+    "dark":               "داكن",
+    "light":              "فاتح"
+  },
+
+  "user_menu": {
+    "role":     "مدير",
+    "settings": "الإعدادات",
+    "logout":   "تسجيل الخروج"
+  }
+  
+}

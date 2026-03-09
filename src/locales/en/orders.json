@@ -34,7 +34,9 @@
     "ship_home": "🏠 Home",
     "ship_fee": "+{{price}} shipping",
     "prev_page": "Previous",
-    "next_page": "Next"
+    "next_page": "Next",
+    "edit" : "Edite",
+    "delete" : "Delete"
   },
   "export": {
     "customer_name": "Customer Name",

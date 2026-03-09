@@ -329,7 +329,7 @@ export default function Orders() {
       </div>
 
       {/* ── Orders List ── */}
-      <div className="max-w-[1400px] mx-auto py-6 space-y-2.5">
+      <div className="max-w-[1400px] mx-auto py-6 space-y-2.5 ">
         {paginated.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-14 text-center">
             <Package size={40} className="mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
@@ -341,24 +341,8 @@ export default function Orders() {
             <div
               key={order.id}
               onDoubleClick={() => openModal(order.id)}
-              className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-sm transition-all cursor-default"
+              className={` ${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-sm transition-all cursor-default`}
             >
-              {/* Hover actions */}
-              <div className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10`}>
-                <button
-                  onClick={(e) => { e.stopPropagation(); openModal(order.id); }}
-                  title={t('list.edit_order')}
-                  className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
-                  <Edit2 size={14} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(order); }}
-                  title={t('list.delete_order')}
-                  className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-
               {/* Row number + Customer */}
               <div className="flex flex-col w-full md:w-1/4 gap-0.5">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
@@ -408,7 +392,7 @@ export default function Orders() {
               </div>
 
               {/* Price + Status */}
-              <div className={`flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2 border-t md:border-t-0 border-gray-100 dark:border-zinc-800 pt-3 md:pt-0 ${isRtl ? 'md:border-l md:pl-5' : 'md:border-r md:pr-5'}`}>
+              <div className={`flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2 border-t md:border-t-0 border-gray-100 dark:border-zinc-800 pt-3 md:pt-0`}>
                 <div className={`flex flex-col ${isRtl ? 'items-start' : 'items-end'}`}>
                   <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none">
                     {parseFloat(order.totalPrice || 0).toLocaleString()} DA
@@ -420,6 +404,25 @@ export default function Orders() {
                 <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${statusStyle}`}>
                   {t(`status.${order.status}`) || order.status}
                 </span>
+              </div>
+
+              {/* Hover actions */}
+              <div className={`flex md:flex-col gap-2`}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); openModal(order.id); }}
+                  title={t('list.edit_order')}
+                  className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                  <Edit2 size={14} />
+                  <span >{t('list.edit')}</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setDeleteTarget(order); }}
+                  title={t('list.delete_order')}
+                  className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                  <Trash2 size={14} />
+                  <span >{t('list.delete')}</span>
+                </button>
+                
               </div>
             </div>
           );

@@ -34,7 +34,9 @@
     "ship_home": "🏠 Domicile",
     "ship_fee": "+{{price}} livraison",
     "prev_page": "Précédent",
-    "next_page": "Suivant"
+    "next_page": "Suivant",
+    "edit" : "Éditer",
+    "delete" : "Supprimer"
   },
   "export": {
     "customer_name": "Nom du Client",
