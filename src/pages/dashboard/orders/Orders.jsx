@@ -394,7 +394,7 @@ export default function Orders() {
               {/* Price + Status */}
               <div className={`flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2 border-t md:border-t-0 border-gray-100 dark:border-zinc-800 pt-3 md:pt-0`}>
                 <div className={`flex flex-col ${isRtl ? 'items-start' : 'items-end'}`}>
-                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none">
+                  <span dir='ltr' className="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none">
                     {parseFloat(order.totalPrice || 0).toLocaleString()} DA
                   </span>
                   <span className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">
