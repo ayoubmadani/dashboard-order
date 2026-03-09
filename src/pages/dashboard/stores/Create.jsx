@@ -285,25 +285,23 @@ const CreateStore = () => {
             </div>
 
             {/* Niche */}
-            <div>
-              <label className={labelClass}>{t('form.niche_label')}</label>
-              <select
-                name="niche"
-                value={formData.niche}
-                onChange={handleInputChange}
-                className={inputClass(false)}
-              >
-                {/* الخيار الافتراضي: نستخدم قيمة فارغة إذا لم يكن هناك تخصص */}
-                <option value="">🏪 {t("create.No.Specific.Niche")}</option>
+              <div>
+                <label className={labelClass}>{t('form.niche_label')}</label>
+                <select
+                  name="niche"
+                  value={formData.niche}
+                  onChange={handleInputChange}
+                  className={inputClass(false)}
+                >
+                  <option value="">🏪 {t("create.No.Specific.Niche")}</option>
 
-                {/* عرض قائمة التخصصات */}
-                {niches && niches.map((n) => (
-                  <option key={n.id} value={n.id}>
-                    {n.icon} {n.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                  {niches && niches.map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.icon} {i18n.language === 'ar' ? n.name_ar : i18n.language === 'fr' ? n.name_fr : n.name_en}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
             {/* Phone */}
             <div>
