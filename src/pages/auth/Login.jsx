@@ -27,11 +27,8 @@ const Login = () => {
             // جرب كتابة الرابط مباشرة للتأكد
             const response = await axios.post(baseURL+'/auth/login', formData);
             if (response.data.success) {
-                // حفظ التوكن في LocalStorage أو Cookies
-                //localStorage.setItem('token', response.data.access_token);
-                setAccessToken(response.data.access_token)
                 // التوجيه للرئيسية
-                navigate('/dashboard');
+                navigate(`/auth/callback?token=${response.data.access_token}`);
             } else {
                 navigate(`/auth/otp?email=${formData.email}`)
             }
