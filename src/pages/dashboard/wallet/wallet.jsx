@@ -82,11 +82,10 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
               <button
                 key={preset}
                 onClick={() => { setAmount(String(preset)); clearError(); }}
-                className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${
-                  amount === String(preset)
+                className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${amount === String(preset)
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
                     : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-300 border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-600'
-                }`}
+                  }`}
               >
                 {preset.toLocaleString('ar-DZ')}
               </button>
@@ -142,19 +141,19 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
 //  Main Component
 // ─────────────────────────────────────────────
 export default function WalletPage() {
-      const { t, i18n } = useTranslation('translation', { keyPrefix: 'wallet' });
-    
-  const isRtl  = i18n.dir() === 'rtl';
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'wallet' });
+
+  const isRtl = i18n.dir() === 'rtl';
   const headers = useAuthHeaders();
 
-  const [walletData,    setWalletData]    = useState(null);
-  const [loading,       setLoading]       = useState(true);
-  const [error,         setError]         = useState(null);
+  const [walletData, setWalletData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [showTopUp,     setShowTopUp]     = useState(false);
-  const [topUpAmount,   setTopUpAmount]   = useState('');
-  const [topUpLoading,  setTopUpLoading]  = useState(false);
-  const [topUpError,    setTopUpError]    = useState(null);
+  const [showTopUp, setShowTopUp] = useState(false);
+  const [topUpAmount, setTopUpAmount] = useState('');
+  const [topUpLoading, setTopUpLoading] = useState(false);
+  const [topUpError, setTopUpError] = useState(null);
 
   /* ── Fetch ── */
   const fetchWallet = async () => {
@@ -162,6 +161,8 @@ export default function WalletPage() {
     setError(null);
     try {
       const res = await axios.get(`${baseURL}/payment/balance`, headers);
+      console.log({data : res.data});
+      
       setWalletData(res.data);
     } catch {
       setError(t('error.fetch'));
@@ -192,14 +193,17 @@ export default function WalletPage() {
   const closeModal = () => { setShowTopUp(false); setTopUpError(null); setTopUpAmount(''); };
 
   /* ── Derived values ── */
-  const balance      = walletData?.balance ?? 0;
+  const balance = walletData?.balance ?? 0;
   const transactions = (walletData?.user?.transactions ?? [])
     .slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-  const totalTopUp = transactions.filter(tx => tx.action === 'topUp').reduce((s, tx) => s + Number(tx.amount), 0);
-  const totalSpent = transactions.filter(tx => tx.action === 'buy').reduce((s, tx)  => s + Number(tx.amount), 0);
+    console.log(transactions);
+    
 
-  const txIcon  = (action) => action === 'buy' ? ShoppingBag : ArrowUpCircle;
+  const totalTopUp = transactions.filter(tx => tx.action === 'topUp').reduce((s, tx) => s + Number(tx.amount), 0);
+  const totalSpent = transactions.filter(tx => tx.action === 'buy').reduce((s, tx) => s + Number(tx.amount), 0);
+
+  const txIcon = (action) => action === 'buy' ? ShoppingBag : ArrowUpCircle;
   const txColor = (action) => action === 'buy'
     ? { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-500' }
     : { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-500' };
@@ -335,10 +339,14 @@ export default function WalletPage() {
           ) : (
             <div className="divide-y divide-gray-50 dark:divide-zinc-800/60">
               {transactions.map((tx) => {
-                const Icon   = txIcon(tx.action);
+                const Icon = txIcon(tx.action);
                 const colors = txColor(tx.action);
                 const typeLbl = tx.type !== 'wallet' ? t(`type.${tx.type}`, tx.type) : null;
-                const isCredit = tx.action !== 'buy';
+
+                // التعديل هنا: نتحقق إذا كان الأكشن هو شحن رصيد (TOP_UP)
+                // افترضنا أن TransactionAction.TOP_UP ترسل من السيرفر كـ 'top_up'
+                const isCredit = tx.action === 'deposit';
+
                 return (
                   <div key={tx.id} className="px-5 py-4 flex items-center gap-3 hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 transition-colors">
                     {/* Icon */}
@@ -349,6 +357,7 @@ export default function WalletPage() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {/* ترجمة الأكشن: top_up -> شحن، withdraw -> دفع/خصم */}
                         {t(`action.${tx.action}`, tx.action)}
                         {typeLbl && (
                           <span className="ms-1.5 text-xs text-gray-400 dark:text-zinc-500 font-normal">
@@ -366,6 +375,7 @@ export default function WalletPage() {
                       className={`text-sm font-black tabular-nums ${isCredit ? 'text-emerald-500' : 'text-rose-500'}`}
                       dir="ltr"
                     >
+                      {/* إذا كان شحن يظهر + باللون الأخضر، وإذا كان خصم يظهر - باللون الأحمر */}
                       {isCredit ? '+' : '-'}{fmt(tx.amount)} {t('currency')}
                     </span>
                   </div>
