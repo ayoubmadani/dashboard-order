@@ -1,0 +1,13 @@
+{
+  "badge": "Plans & Pricing",
+  "title": "Choose the right plan for you",
+  "subtitle": "Pay directly from your wallet, no credit card required",
+  "recommended": "Most Popular",
+  "monthly": "Monthly",
+  "annual": "Annual",
+  "no_plans": "No plans available at the moment",
+  "error_load": "Failed to load plans",
+  "free": "Free",
+  "pro": "Pro",
+  "sub_auto_renew": "Auto-renew"
+}

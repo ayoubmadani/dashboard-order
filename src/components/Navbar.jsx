@@ -69,7 +69,7 @@ export default function NavBar() {
 
             {/* الروابط */}
             <div className="hidden md:flex items-center gap-8">
-                {['home', 'about', 'contact'].map((item) => (
+                {['home', 'about', 'contact','plan'].map((item) => (
                     <Link key={item} to={item === 'home' ? '/' : `/${item}`} className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors">
                         {t(`nav.${item}`)}
                     </Link>

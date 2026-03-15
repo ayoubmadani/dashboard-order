@@ -38,6 +38,7 @@ import ProductShow from './pages/dashboard/products/show';
 import Theme from './pages/dashboard/theme/Theme';
 import CreateFerstStore from './pages/dashboard/stores/Create-First';
 import Wallet from './pages/dashboard/wallet/wallet';
+import Plan from './pages/site/plan';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -71,6 +72,7 @@ const App = () => {
           <Route path="privacy" element={<Privacy />} />
           <Route path="terms" element={<Terms />} />
           <Route path="cookies" element={<Cookies />} />
+          <Route path="plan" element={<Plan />} />
 
 
         </Route>

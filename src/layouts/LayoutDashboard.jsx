@@ -11,9 +11,10 @@ import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
 import { Palette } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 export default function LayoutDashboard() {
-    const { t, i18n } = useTranslation();
+    const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -119,17 +120,19 @@ export default function LayoutDashboard() {
     };
 
     const navigation = [
-        { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: 'emerald', iconColor: '#10b981' },
-        { name: t('dashboard.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: 'blue', iconColor: '#3b82f6' },
-        { name: t('dashboard.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: 'violet', iconColor: '#8b5cf6' },
-        { name: t('dashboard.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: 'amber', iconColor: '#f59e0b' },
-        { name: t('dashboard.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: 'indigo', iconColor: '#6366f1' },
-        { name: t('dashboard.landing', 'صفحة الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: 'pink', iconColor: '#ec4899' },
-        { name: t('dashboard.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: 'orange', iconColor: '#f97316' },
-        { name: t('dashboard.shipping', 'أسعار الشحن'), href: '/dashboard/shipping', icon: Truck, color: 'cyan', iconColor: '#06b6d4' },
-        { name: t('dashboard.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: 'purple', iconColor: '#a855f7' },
-        { name: t('dashboard.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: 'slate', iconColor: '#64748b' }
-    ];
+    { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: 'emerald', iconColor: '#10b981' },
+    { name: t('nav.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: 'blue', iconColor: '#3b82f6' },
+    { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: 'violet', iconColor: '#8b5cf6' },
+    { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: 'amber', iconColor: '#f59e0b' },
+    { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: 'indigo', iconColor: '#6366f1' },
+    { name: t('nav.landing', 'صفحة الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: 'pink', iconColor: '#ec4899' },
+    { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: 'orange', iconColor: '#f97316' },
+    { name: t('nav.shipping', 'أسعار الشحن'), href: '/dashboard/shipping', icon: Truck, color: 'cyan', iconColor: '#06b6d4' },
+    // إضافة المحفظة هنا
+    { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: 'teal', iconColor: '#14b8a6' },
+    { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: 'purple', iconColor: '#a855f7' },
+    { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: 'slate', iconColor: '#64748b' }
+];
 
     const [selectedProject, setSelectedProject] = useState(null);
 

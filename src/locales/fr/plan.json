@@ -1,0 +1,12 @@
+{
+  "badge": "Tarifs et Forfaits",
+  "title": "Choisissez le forfait qui vous convient",
+  "subtitle": "Payez directement depuis votre portefeuille, sans carte bancaire",
+  "recommended": "Le plus populaire",
+  "monthly": "Mensuel",
+  "annual": "Annuel",
+  "no_plans": "Aucun forfait disponible pour le moment",
+  "error_load": "Échec du chargement des forfaits",
+  "free": "Gratuit",
+  "pro": "Professionnel"
+}

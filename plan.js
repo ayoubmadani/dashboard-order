@@ -16,7 +16,8 @@
  * no gere ntfy
  * * order
  * cometion 12DA
- * pixle 1 pixle tiktok and facbook
+ * 1 pixle tiktok
+ * 1 pixle facbook
  * no domain
  * no theme
  */
