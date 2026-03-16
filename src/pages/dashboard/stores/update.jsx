@@ -11,7 +11,6 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
-import { PixelManager } from '../../../components/PixelManager';
 
 const UpdateStore = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -603,9 +602,6 @@ const UpdateStore = () => {
             </div>
           )}
         </div>
-
-        {/* ── Pixel Manager ── */}
-        <PixelManager storeId={storeId} />
 
         {/* ── Action Buttons ── */}
         <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} gap-4`}>

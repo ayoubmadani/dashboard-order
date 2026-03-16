@@ -39,6 +39,7 @@ import Theme from './pages/dashboard/theme/Theme';
 import CreateFerstStore from './pages/dashboard/stores/Create-First';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Plan from './pages/site/plan';
+import Pixels from './pages/dashboard/pixels/pixels';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -92,6 +93,8 @@ const App = () => {
               <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
             </Route>
+
+            <Route path='pixels'  element={<Pixels />}/>
 
             <Route path='theme'>
               <Route index element={<Theme />} />
