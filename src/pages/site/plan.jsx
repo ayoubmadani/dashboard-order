@@ -1,18 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckCircle2, Zap, Loader2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Zap, Loader2, Sparkles, Store, Package, FileText, Bell, TrendingUp } from 'lucide-react';
 import axios from 'axios';
-// import { baseURL } from '../../constents/const.';
 
-const baseURL = "http://localhost:7000"
+const baseURL = "http://localhost:7000";
 
+// ─── Feature row builder من FeaturesEntity ───────────────────────────────────
+const buildFeatureRows = (features, t) => {
+  if (!features) return [];
+  const rows = [
+    { icon: Store,      label: t('feat_stores'),   value: features.storeNumber },
+    { icon: Package,    label: t('feat_products'),  value: features.productNumber },
+    { icon: FileText,   label: t('feat_pages'),     value: features.landingPageNumber },
+    { icon: TrendingUp, label: t('feat_commission'),value: `${Number(features.commission ?? 0).toFixed(1)}%` },
+  ];
+  if (features.isNtfy)
+    rows.push({ icon: Bell, label: t('feat_notifications'), value: '✓' });
+  if (features.pixelFacebookNumber > 0 || features.pixelTiktokNumber > 0)
+    rows.push({ icon: null, label: `FB ×${features.pixelFacebookNumber} · TT ×${features.pixelTiktokNumber}`, value: null });
+  return rows;
+};
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 const PlanPage = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'plans' });
   const isRtl = i18n.dir() === 'rtl';
 
-  const [plans,   setPlans]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(false);
+  const [plans,    setPlans]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(false);
+  const [interval, setInterval] = useState('month'); // 'month' | 'year'
 
   useEffect(() => {
     axios
@@ -27,8 +44,8 @@ const PlanPage = () => {
   return (
     <div className="min-h-screen py-20 px-4 bg-white dark:bg-brand-dark" dir={isRtl ? 'rtl' : 'ltr'}>
 
-      {/* ── Header ── */}
-      <div className="text-center max-w-xl mx-auto mb-14 space-y-3">
+      {/* Header */}
+      <div className="text-center max-w-xl mx-auto mb-10 space-y-3">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full text-xs font-black tracking-wider">
           <Sparkles size={13} /> {t('badge')}
         </div>
@@ -40,7 +57,48 @@ const PlanPage = () => {
         </p>
       </div>
 
-      {/* ── States ── */}
+      {/* Interval toggle */}
+      {!loading && !error && plans.length > 0 && (
+        <div className="flex justify-center mb-10">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 rounded-2xl p-1">
+            <button
+              onClick={() => setInterval('month')}
+              className={`px-5 py-2 text-sm font-bold rounded-xl transition-colors ${
+                interval === 'month'
+                  ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-400 dark:text-zinc-500'
+              }`}
+            >
+              {t('monthly')}
+            </button>
+            <button
+              onClick={() => setInterval('year')}
+              className={`px-5 py-2 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 ${
+                interval === 'year'
+                  ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-400 dark:text-zinc-500'
+              }`}
+            >
+              {t('annual')}
+              {/* savings badge — يحسب متوسط التوفير على جميع الخطط */}
+              {(() => {
+                const paid = plans.filter(p => p.monthlyPrice > 0 && p.yearlyPrice > 0);
+                if (!paid.length) return null;
+                const avg = Math.round(
+                  paid.reduce((acc, p) =>
+                    acc + (1 - Number(p.yearlyPrice) / (Number(p.monthlyPrice) * 12)), 0
+                  ) / paid.length * 100
+                );
+                return avg > 0
+                  ? <span className="text-[10px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full">{t('save_up_to', { pct: avg })}</span>
+                  : null;
+              })()}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* States */}
       {loading ? (
         <div className="flex justify-center py-24">
           <Loader2 size={28} className="animate-spin text-gray-400" />
@@ -57,6 +115,18 @@ const PlanPage = () => {
         }`}>
           {plans.map((plan, idx) => {
             const isFeatured = idx === featuredIndex;
+            const price = interval === 'year'
+              ? Number(plan.yearlyPrice)
+              : Number(plan.monthlyPrice);
+
+            // حساب التوفير لهذه الخطة تحديداً
+            const savings = plan.monthlyPrice > 0 && plan.yearlyPrice > 0
+              ? Math.round((1 - Number(plan.yearlyPrice) / (Number(plan.monthlyPrice) * 12)) * 100)
+              : 0;
+
+            const featureRows = buildFeatureRows(plan.features, t);
+            const isFree = plan.monthlyPrice === 0 && plan.yearlyPrice === 0;
+
             return (
               <div
                 key={plan.id}
@@ -75,52 +145,59 @@ const PlanPage = () => {
                   </div>
                 )}
 
-                {/* Name + interval */}
+                {/* Name */}
                 <div className="mb-5 mt-1">
                   <p className={`text-xl font-black mb-2 ${isFeatured ? 'text-white dark:text-zinc-900' : 'text-gray-900 dark:text-white'}`}>
                     {t(plan.name)}
                   </p>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full ${
-                    isFeatured
-                      ? 'bg-white/10 dark:bg-zinc-900/10 text-white dark:text-zinc-600'
-                      : plan.interval === 'month'
-                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                      : 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400'
-                  }`}>
-                    {plan.interval === 'month' ? t('monthly') : t('annual')}
-                  </span>
                 </div>
 
                 {/* Price */}
-                <div className="mb-6">
+                <div className="mb-2">
                   <div className="flex items-baseline gap-1">
-                    <span className={`text-4xl font-black leading-none ${isFeatured ? 'text-white dark:text-zinc-900' : 'text-gray-900 dark:text-white'}`}>
-                      {Number(plan.price).toLocaleString()}
-                    </span>
-                    <span className={`text-sm font-medium ms-1 ${isFeatured ? 'text-white/60 dark:text-zinc-500' : 'text-gray-400 dark:text-zinc-500'}`}>
-                      {plan.currency} / {plan.interval}
-                    </span>
+                    {isFree ? (
+                      <span className={`text-4xl font-black leading-none ${isFeatured ? 'text-white dark:text-zinc-900' : 'text-gray-900 dark:text-white'}`}>
+                        {t('free')}
+                      </span>
+                    ) : (
+                      <>
+                        <span className={`text-4xl font-black leading-none ${isFeatured ? 'text-white dark:text-zinc-900' : 'text-gray-900 dark:text-white'}`}>
+                          {price.toLocaleString()}
+                        </span>
+                        <span className={`text-sm font-medium ms-1 ${isFeatured ? 'text-white/60 dark:text-zinc-500' : 'text-gray-400 dark:text-zinc-500'}`}>
+                          {plan.currency} / {interval === 'year' ? t('yr') : t('mo')}
+                        </span>
+                      </>
+                    )}
                   </div>
+
+                  {/* Savings badge (yearly only) */}
+                  {interval === 'year' && savings > 0 && (
+                    <p className="mt-2 text-[11px] font-bold text-emerald-500">
+                      {t('save_pct', { pct: savings })}
+                    </p>
+                  )}
                 </div>
 
-                {/* Divider */}
-                <div className={`border-t mb-5 ${isFeatured ? 'border-white/10 dark:border-zinc-200' : 'border-gray-100 dark:border-zinc-800'}`} />
+                <div className={`border-t my-5 ${isFeatured ? 'border-white/10 dark:border-zinc-200' : 'border-gray-100 dark:border-zinc-800'}`} />
 
-                {/* Features */}
-                <ul className="space-y-3">
-                  {plan.features?.length > 0 ? (
-                    plan.features.map(f => (
-                      <li key={f} className="flex items-start gap-2.5">
-                        <CheckCircle2
-                          size={15}
-                          className={`mt-0.5 shrink-0 ${isFeatured ? 'text-emerald-400' : 'text-emerald-500'}`}
-                        />
-                        <span className={`text-sm leading-snug ${isFeatured ? 'text-white/80 dark:text-zinc-700' : 'text-gray-600 dark:text-zinc-400'}`}>
-                          {f}
-                        </span>
-                      </li>
-                    ))
-                  ) : (
+                {/* Feature rows */}
+                <ul className="space-y-3 flex-1">
+                  {featureRows.length > 0 ? featureRows.map((row, i) => (
+                    <li key={i} className="flex items-center gap-2.5">
+                      {row.icon ? (
+                        <row.icon size={14} className={`shrink-0 ${isFeatured ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                      ) : (
+                        <CheckCircle2 size={14} className={`shrink-0 ${isFeatured ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                      )}
+                      <span className={`text-sm leading-snug ${isFeatured ? 'text-white/80 dark:text-zinc-700' : 'text-gray-600 dark:text-zinc-400'}`}>
+                        {row.value !== null && row.value !== '✓'
+                          ? <><strong>{row.value}</strong> {row.label}</>
+                          : row.label
+                        }
+                      </span>
+                    </li>
+                  )) : (
                     <li className={`text-sm ${isFeatured ? 'text-white/30' : 'text-gray-300 dark:text-zinc-700'}`}>—</li>
                   )}
                 </ul>

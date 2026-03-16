@@ -42,5 +42,6 @@
   
   "sub_auto_renew": "Renouvellement automatique",
   "sub_auto_renew_on": "Votre abonnement sera renouvelé automatiquement",
-  "sub_auto_renew_off": "Votre abonnement ne sera pas renouvelé automatiquement"
+  "sub_auto_renew_off": "Votre abonnement ne sera pas renouvelé automatiquement",
+  "free": "gratuit"
 }

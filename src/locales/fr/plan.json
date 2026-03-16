@@ -8,5 +8,15 @@
   "no_plans": "Aucun forfait disponible pour le moment",
   "error_load": "Échec du chargement des forfaits",
   "free": "Gratuit",
-  "pro": "Professionnel"
+  "pro": "Professionnel",
+  "sub_auto_renew": "Renouvellement automatique",
+  "mo": "Mois",
+  "yr": "An",
+  "save_up_to": "Économisez jusqu'à {{pct}}%",
+  "save_pct": "Économisez {{pct}}% par rapport au mensuel",
+  "feat_stores": "Boutiques",
+  "feat_products": "Produits",
+  "feat_pages": "Pages de destination",
+  "feat_commission": "Commission",
+  "feat_notifications": "Notifications instantanées"
 }

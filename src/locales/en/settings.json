@@ -41,5 +41,6 @@
   "sub_error": "Subscription failed",
   "sub_auto_renew": "Auto-renew",
   "sub_auto_renew_on": "Your subscription will be renewed automatically",
-  "sub_auto_renew_off": "Your subscription will not be renewed automatically"
+  "sub_auto_renew_off": "Your subscription will not be renewed automatically",
+  "free": "free"
 }

@@ -9,5 +9,14 @@
   "error_load": "فشل تحميل الخطط",
   "free" : "مجاني",
   "pro" : "الاحترافي",
-  "sub_auto_renew": "تجديد تلقائي"
+  "sub_auto_renew": "تجديد تلقائي",
+  "mo": "شهر",
+  "yr": "سنة",
+  "save_up_to": "وفّر حتى {{pct}}%",
+  "save_pct": "توفير {{pct}}% مقارنة بالشهري",
+  "feat_stores": "متاجر",
+  "feat_products": "منتجات",
+  "feat_pages": "صفحات هبوط",
+  "feat_commission": "عمولة",
+  "feat_notifications": "إشعارات فورية"
 }

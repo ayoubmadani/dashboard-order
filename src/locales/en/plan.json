@@ -9,5 +9,14 @@
   "error_load": "Failed to load plans",
   "free": "Free",
   "pro": "Pro",
-  "sub_auto_renew": "Auto-renew"
+  "sub_auto_renew": "Auto-renew",
+  "mo": "Month",
+  "yr": "Year",
+  "save_up_to": "Save up to {{pct}}%",
+  "save_pct": "Save {{pct}}% compared to monthly",
+  "feat_stores": "Stores",
+  "feat_products": "Products",
+  "feat_pages": "Landing Pages",
+  "feat_commission": "Commission",
+  "feat_notifications": "Instant Notifications"
 }
