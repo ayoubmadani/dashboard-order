@@ -21,9 +21,9 @@ const getPlanPrice = (plan, interval) =>
 const buildFeatureSummary = (features, t) => {
   if (!features) return [];
   const rows = [];
-  if (features.storeNumber)       rows.push({ icon: Store,      text: `${features.storeNumber} ${t('feat_stores')}` });
-  if (features.productNumber)     rows.push({ icon: Package,    text: `${features.productNumber} ${t('feat_products')}` });
-  if (features.landingPageNumber) rows.push({ icon: FileText,   text: `${features.landingPageNumber} ${t('feat_pages')}` });
+  if (features.storeNumber) rows.push({ icon: Store, text: `${features.storeNumber} ${t('feat_stores')}` });
+  if (features.productNumber) rows.push({ icon: Package, text: `${features.productNumber} ${t('feat_products')}` });
+  if (features.landingPageNumber) rows.push({ icon: FileText, text: `${features.landingPageNumber} ${t('feat_pages')}` });
   if (Number(features.commission) > 0)
     rows.push({ icon: TrendingUp, text: `${Number(features.commission).toFixed(1)}% ${t('feat_commission')}` });
   return rows;
@@ -34,20 +34,23 @@ const buildFeatureSummary = (features, t) => {
 const Settings = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'settings' });
   const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading]     = useState(false);
+  const [loading, setLoading] = useState(false);
   const token = getAccessToken();
 
   const [userData, setUserData] = useState({
     username: '', email: '', provider: '', topic: '', isNtfy: true,
   });
 
-  const [subscription,  setSubscription]  = useState(null);
-  const [subLoading,    setSubLoading]    = useState(false);
-  const [plans,         setPlans]         = useState([]);
-  const [subscribing,   setSubscribing]   = useState(null);
-  const [subInterval,   setSubInterval]   = useState('month'); // interval picker for upgrade modal
-  const [subToast,      setSubToast]      = useState(null);
-  const [showSubModal,  setShowSubModal]  = useState(false);
+  const [subscription, setSubscription] = useState(null);
+  const [subLoading, setSubLoading] = useState(false);
+  const [plans, setPlans] = useState([]);
+  const [subscribing, setSubscribing] = useState(null);
+  const [subInterval, setSubInterval] = useState('month'); // interval picker for upgrade modal
+  const [subToast, setSubToast] = useState(null);
+  const [showSubModal, setShowSubModal] = useState(false);
+  const [loadSaveChange, setLoadSaveChange] = useState(false);
+  const [loadToggle, setLoadToggle] = useState(false);
+
 
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   const isRtl = i18n.dir() === 'rtl';
@@ -85,7 +88,7 @@ const Settings = () => {
   /* ── Fetch plans (lazy, once) ── */
   useEffect(() => {
     if (activeTab !== 'subscription' || plans.length > 0) return;
-    axios.get(`${baseURL}/plans?active=true`).then(r => setPlans(r.data)).catch(() => {});
+    axios.get(`${baseURL}/plans?active=true`).then(r => setPlans(r.data)).catch(() => { });
   }, [activeTab, plans.length]);
 
   /* ── Subscribe ── */
@@ -140,25 +143,50 @@ const Settings = () => {
 
   /* ── Save ── */
   const handleSave = async () => {
-    setLoading(true);
+    setLoadSaveChange(true);
     try {
       await axios.patch(
         `${baseURL}/user`,
-        { topic: userData.topic, isNtfy: userData.isNtfy },
+        { topic: userData.topic },
         { headers: { Authorization: `Bearer ${token}` } },
       );
     } catch (error) {
       console.error('Save error:', error);
     } finally {
-      setLoading(false);
+      setLoadSaveChange(false);
+    }
+  };
+
+  const toggleNtfy = async () => {
+    setLoadToggle(true)
+    try {
+      // لاحظ إضافة {} كباراميتر ثاني للبيانات (Body)
+      const res = await axios.post(
+        `${baseURL}/user/toggle-ntfy`,
+        {}, // البيانات المرسلة في الجسم (فارغة في حالتك)
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      setUserData({ ...userData, isNtfy: res.data })
+      console.log("Response:", res.data);
+      // يمكنك هنا تحديث حالة الواجهة (UI) بناءً على النتيجة
+
+    } catch (error) {
+      confirm(error.response?.data.message)
+    } finally {
+      setLoadToggle(false)
     }
   };
 
   const tabs = [
-    { id: 'profile',       label: t('tab_profile'),       icon: <User       size={18} /> },
-    { id: 'store',         label: t('tab_preferences'),   icon: <Globe      size={18} /> },
-    { id: 'notifications', label: t('tab_notifications'), icon: <Bell       size={18} /> },
-    { id: 'subscription',  label: t('tab_subscription'),  icon: <CreditCard size={18} /> },
+    { id: 'profile', label: t('tab_profile'), icon: <User size={18} /> },
+    { id: 'store', label: t('tab_preferences'), icon: <Globe size={18} /> },
+    { id: 'notifications', label: t('tab_notifications'), icon: <Bell size={18} /> },
+    { id: 'subscription', label: t('tab_subscription'), icon: <CreditCard size={18} /> },
   ];
 
   const inputCls = 'w-full px-5 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-2xl text-sm outline-none focus:border-indigo-400 transition-all dark:text-white';
@@ -196,11 +224,10 @@ const Settings = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all ${
-                activeTab === tab.id
-                  ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl'
-                  : 'bg-white dark:bg-zinc-900/50 text-gray-500 dark:text-zinc-400 border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === tab.id
+                ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-xl'
+                : 'bg-white dark:bg-zinc-900/50 text-gray-500 dark:text-zinc-400 border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800'
+                }`}
             >
               {tab.icon}{tab.label}
             </button>
@@ -268,11 +295,44 @@ const Settings = () => {
                 <label className="flex items-center gap-2 text-sm font-bold dark:text-zinc-300">
                   <Bell size={15} className="dark:text-white" />{t('notif_topic_label')}
                 </label>
-                <input
-                  type="text" placeholder={t('notif_topic_placeholder')} value={userData.topic} dir="ltr"
-                  onChange={(e) => setUserData({ ...userData, topic: e.target.value })}
-                  className="w-full px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl outline-none focus:border-indigo-400 dark:text-white font-mono text-sm transition-all"
-                />
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder={t('notif_topic_placeholder')}
+                      value={userData.topic}
+                      dir="ltr"
+                      onChange={(e) => setUserData({ ...userData, topic: e.target.value })}
+                      className="w-full px-5 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-2xl outline-none focus:border-indigo-400 dark:text-white font-mono text-sm transition-all pr-10"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSave}
+                    disabled={loadSaveChange}
+                    className={`
+                    relative px-8 py-3 text-sm font-black rounded-2xl transition-all duration-200
+                    flex items-center justify-center gap-2 w-[170px] 
+                    ${loadSaveChange
+                                        ? 'bg-blue-400 dark:bg-blue-800/40 text-white/80 cursor-not-allowed'
+                                        : 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20 active:scale-95'
+                                      }
+                  `}
+                  >
+                    {loadSaveChange ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </>
+                    ) : (
+                      t('save')
+                    )}
+                  </button>
+                </div>
+
                 <p className="text-[11px] text-gray-500 dark:text-zinc-400 leading-relaxed">
                   {t('notif_hint')}{' '}
                   <a href="https://ntfy.sh" target="_blank" rel="noreferrer" className="text-blue-500 underline inline-flex items-center gap-0.5 hover:text-blue-700 transition-colors">
@@ -282,18 +342,40 @@ const Settings = () => {
               </div>
               <div className="space-y-3">
                 <label className="block text-xs font-black text-gray-400 dark:text-zinc-500 uppercase tracking-widest px-1">{t('notif_send_pref')}</label>
-                <div
-                  onClick={() => setUserData({ ...userData, isNtfy: !userData.isNtfy })}
-                  className="group flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/30 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-2 h-2 rounded-full bg-emerald-500 transition-opacity ${userData.isNtfy ? 'opacity-100' : 'opacity-30'}`} />
-                    <p className={`font-bold text-sm ${userData.isNtfy ? 'dark:text-white text-gray-800' : 'text-gray-400 line-through'}`}>{t('notif_new_order')}</p>
+                {loadToggle ? (
+                  /* تصميم حالة التحميل (Loading State) */
+                  <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-zinc-800/10 rounded-2xl border border-transparent opacity-60 cursor-not-allowed">
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-gray-300 animate-pulse" />
+                      <p className="font-bold text-sm text-gray-400">{t('notif_new_order')}</p>
+                    </div>
+
+                    {/* مؤشر التحميل (Spinner) مكان المفتاح */}
+                    <div className="w-10 h-6 flex items-center justify-center">
+                      <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
                   </div>
-                  <div className={`w-10 h-6 rounded-full relative transition-all duration-300 ${userData.isNtfy ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
-                    <div className={`w-4 h-4 bg-white rounded-full absolute top-1 shadow-md transition-all duration-300 ${userData.isNtfy ? (isRtl ? 'right-5' : 'left-5') : (isRtl ? 'right-1' : 'left-1')}`} />
+                ) : (
+                  /* تصميم الحالة العادية (Active State) */
+                  <div
+                    onClick={toggleNtfy}
+                    className="group flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/30 rounded-2xl border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 transition-all cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-2 h-2 rounded-full bg-emerald-500 transition-opacity ${userData.isNtfy ? 'opacity-100' : 'opacity-30'}`} />
+                      <p className={`font-bold text-sm transition-all ${userData.isNtfy ? 'dark:text-white text-gray-800' : 'text-gray-400 line-through'}`}>
+                        {t('notif_new_order')}
+                      </p>
+                    </div>
+
+                    <div className={`w-10 h-6 rounded-full relative transition-all duration-300 ${userData.isNtfy ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
+                      <div className={`w-4 h-4 bg-white rounded-full absolute top-1 shadow-md transition-all duration-300 ${userData.isNtfy ? (isRtl ? 'right-5' : 'left-5') : (isRtl ? 'right-1' : 'left-1')}`} />
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -375,11 +457,11 @@ const Settings = () => {
                         {isFree(subscription.plan)
                           ? <span className="text-emerald-500">{t('free')}</span>
                           : <>
-                              {getPlanPrice(subscription.plan, subscription.interval).toLocaleString()}
-                              <span className="text-sm font-medium text-gray-400 dark:text-zinc-500 ms-1">
-                                {subscription.plan.currency} / {subscription.interval === 'year' ? t('sub_annual_short') : t('sub_monthly_short')}
-                              </span>
-                            </>
+                            {getPlanPrice(subscription.plan, subscription.interval).toLocaleString()}
+                            <span className="text-sm font-medium text-gray-400 dark:text-zinc-500 ms-1">
+                              {subscription.plan.currency} / {subscription.interval === 'year' ? t('sub_annual_short') : t('sub_monthly_short')}
+                            </span>
+                          </>
                         }
                       </p>
                       {isFree(subscription.plan) && upgradeablePlans.length > 0 && (
@@ -397,7 +479,7 @@ const Settings = () => {
                   <div className="grid grid-cols-2 gap-4">
                     {[
                       { label: t('sub_start_date'), value: formatDate(subscription.startDate) },
-                      { label: t('sub_end_date'),   value: formatDate(subscription.endDate) },
+                      { label: t('sub_end_date'), value: formatDate(subscription.endDate) },
                     ].map(item => (
                       <div key={item.label} className="p-4 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
                         <p className="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -410,10 +492,10 @@ const Settings = () => {
 
                   {/* Days left progress */}
                   {(() => {
-                    const total   = new Date(subscription.endDate) - new Date(subscription.startDate);
+                    const total = new Date(subscription.endDate) - new Date(subscription.startDate);
                     const elapsed = new Date() - new Date(subscription.startDate);
-                    const pct     = Math.min(100, Math.round((elapsed / total) * 100));
-                    const left    = daysLeft(subscription.endDate);
+                    const pct = Math.min(100, Math.round((elapsed / total) * 100));
+                    const left = daysLeft(subscription.endDate);
                     return (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-xs font-bold text-gray-400 dark:text-zinc-500">
@@ -462,11 +544,10 @@ const Settings = () => {
               )}
 
               {subToast && (
-                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold mt-2 ${
-                  subToast.type === 'success'
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
-                    : 'bg-red-50 dark:bg-red-900/20 text-red-500'
-                }`}>
+                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold mt-2 ${subToast.type === 'success'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-red-50 dark:bg-red-900/20 text-red-500'
+                  }`}>
                   {subToast.type === 'success' ? <CheckCircle2 size={15} /> : <span>✕</span>}
                   {subToast.msg}
                 </div>
@@ -515,8 +596,8 @@ const Settings = () => {
 
                 <div className="px-6 pb-6 space-y-3">
                   {upgradeablePlans.map(plan => {
-                    const price    = getPlanPrice(plan, subInterval);
-                    const savings  = plan.monthlyPrice > 0
+                    const price = getPlanPrice(plan, subInterval);
+                    const savings = plan.monthlyPrice > 0
                       ? Math.round((1 - Number(plan.yearlyPrice) / (Number(plan.monthlyPrice) * 12)) * 100)
                       : 0;
                     const featureRows = buildFeatureSummary(plan.features, t);
@@ -555,19 +636,6 @@ const Settings = () => {
                   })}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Save button */}
-          {showSaveButton && (
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={handleSave} disabled={loading}
-                className="flex items-center gap-2 px-8 py-3.5 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black rounded-2xl shadow-xl hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-70"
-              >
-                {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                {t('save')}
-              </button>
             </div>
           )}
         </div>
