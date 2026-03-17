@@ -11,7 +11,8 @@
     "wallet":     "Portefeuille",
     "analytics":  "Statistiques",
     "settings":   "Paramètres",
-    "menu_label": "Menu"
+    "menu_label": "Menu",
+    "pixels": "pixels"
   },
 
   "store_selector": {

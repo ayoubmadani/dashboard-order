@@ -11,7 +11,8 @@
     "wallet":     "Wallet",
     "analytics":  "Analytics",
     "settings":   "Settings",
-    "menu_label": "Menu"
+    "menu_label": "Menu",
+    "pixels": "pixels"
   },
 
   "store_selector": {

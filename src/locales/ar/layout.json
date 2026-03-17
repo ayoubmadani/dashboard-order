@@ -11,7 +11,8 @@
     "wallet":     "المحفظة",
     "analytics":  "الإحصائيات",
     "settings":   "الإعدادات",
-    "menu_label": "القائمة"
+    "menu_label": "القائمة",
+    "pixels":"بيكسل"
   },
 
   "store_selector": {
