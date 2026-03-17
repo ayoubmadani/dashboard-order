@@ -40,6 +40,7 @@ import CreateFerstStore from './pages/dashboard/stores/Create-First';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Plan from './pages/site/plan';
 import Pixels from './pages/dashboard/pixels/pixels';
+import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -121,6 +122,7 @@ const App = () => {
             <Route path="landing-pages"  >
               <Route index element={<LandingPages />} />
               <Route path='create' element={<CreateLandingPage />} />
+              <Route path='edit/:id' element={<UpdateLandingPage />} />
             </Route>
 
 
