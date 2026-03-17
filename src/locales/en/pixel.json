@@ -1,0 +1,45 @@
+{
+  "title": "Pixels & Analytics",
+  "subtitle": "Facebook Pixel, TikTok Pixel and more",
+  "addNew": "Add Pixel",
+  "emptyState": "No pixels added yet. Add a pixel to track your ad performance.",
+  "idLabel": "ID",
+  "eventsCount": "events",
+  "confirmDelete": "Are you sure you want to delete this pixel?",
+  "errors": {
+    "saveFailed": "Failed to save pixel"
+  },
+  "types": {
+    "facebook": "Facebook Pixel",
+    "tiktok": "TikTok Pixel"
+  },
+  "descriptions": {
+    "facebook": "Track ads and conversions on Facebook",
+    "tiktok": "Track performance on TikTok Ads"
+  },
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "actions": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "modal": {
+    "addTitle": "Add New Pixel",
+    "editTitle": "Edit Pixel"
+  },
+  "form": {
+    "typeLabel": "Pixel Type",
+    "pixelIdLabel": "Pixel ID",
+    "pixelIdPlaceholder": "e.g., 1234567890",
+    "accessTokenLabel": "Access Token (Optional)",
+    "accessTokenPlaceholder": "For Conversion API",
+    "eventsLabel": "Tracked Events",
+    "saveChanges": "Save Changes",
+    "addPixel": "Add Pixel"
+  },
+  "cancel": "Cancel"
+}

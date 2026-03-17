@@ -1,0 +1,45 @@
+{
+  "title": "Pixels et Analyses",
+  "subtitle": "Facebook Pixel, TikTok Pixel et plus",
+  "addNew": "Ajouter un Pixel",
+  "emptyState": "Aucun pixel ajouté pour le moment. Ajoutez un pixel pour suivre les performances de vos publicités.",
+  "idLabel": "ID",
+  "eventsCount": "événements",
+  "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce pixel ?",
+  "errors": {
+    "saveFailed": "Échec de l'enregistrement du pixel"
+  },
+  "types": {
+    "facebook": "Facebook Pixel",
+    "tiktok": "TikTok Pixel"
+  },
+  "descriptions": {
+    "facebook": "Suivez les publicités et les conversions sur Facebook",
+    "tiktok": "Suivez les performances sur TikTok Ads"
+  },
+  "status": {
+    "active": "Actif",
+    "inactive": "Inactif"
+  },
+  "actions": {
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "edit": "Modifier",
+    "delete": "Supprimer"
+  },
+  "modal": {
+    "addTitle": "Ajouter un nouveau Pixel",
+    "editTitle": "Modifier le Pixel"
+  },
+  "form": {
+    "typeLabel": "Type de Pixel",
+    "pixelIdLabel": "ID du Pixel",
+    "pixelIdPlaceholder": "ex: 1234567890",
+    "accessTokenLabel": "Jeton d'accès (Optionnel)",
+    "accessTokenPlaceholder": "Pour l'API de conversion",
+    "eventsLabel": "Événements suivis",
+    "saveChanges": "Enregistrer les modifications",
+    "addPixel": "Ajouter le Pixel"
+  },
+  "cancel": "Annuler"
+}

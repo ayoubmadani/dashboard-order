@@ -18,17 +18,17 @@ import { getAccessToken } from '../services/access-token';
 const PIXEL_TYPES = [
   { 
     id: 'facebook', 
-    label: 'Facebook Pixel', 
+    labelKey: 'types.facebook', 
     icon: Facebook, 
     color: '#1877F2',
-    description: 'تتبع الإعلانات والتحويلات على Facebook'
+    descriptionKey: 'descriptions.facebook'
   },
   { 
     id: 'tiktok', 
-    label: 'TikTok Pixel', 
+    labelKey: 'types.tiktok', 
     icon: Music2, 
     color: '#000000',
-    description: 'تتبع الأداء على TikTok Ads'
+    descriptionKey: 'descriptions.tiktok'
   },
 ];
 
@@ -41,12 +41,16 @@ const DEFAULT_EVENTS = [
 ];
 
 export const PixelManager = ({ storeId }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'Pixels' });
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingPixel, setEditingPixel] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+
+  const language = i18n.language
+  
+  
 
   const [formData, setFormData] = useState({
     type: 'facebook',
@@ -76,7 +80,7 @@ export const PixelManager = ({ storeId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    e.stopPropagation(); // منع انتشار الحدث للنموذج الأم
+    e.stopPropagation();
     
     try {
       const token = getAccessToken();
@@ -96,12 +100,12 @@ export const PixelManager = ({ storeId }) => {
       fetchPixels();
     } catch (error) {
       console.error('Error saving pixel:', error);
-      alert(error.response?.data?.message || 'فشل حفظ الـ Pixel');
+      alert(error.response?.data?.message || t('pixels.errors.saveFailed'));
     }
   };
 
   const handleDelete = async (pixelId) => {
-    if (!window.confirm('هل أنت متأكد من حذف هذا الـ Pixel؟')) return;
+    if (!window.confirm(t('pixels.confirmDelete'))) return;
 
     try {
       const token = getAccessToken();
@@ -177,22 +181,21 @@ export const PixelManager = ({ storeId }) => {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
+    <div  className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6" dir="auto">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Facebook size={20} className="text-indigo-600" />
-            Pixels & Analytics
+            {t('title')}
           </h2>
           <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-            Facebook Pixel, TikTok Pixel وغيرها
+            {t('subtitle')}
           </p>
         </div>
-        {/* ✅ تم الإصلاح: type="button" صريح */}
         <button
           type="button"
           onClick={(e) => {
-            e.preventDefault(); // منع أي سلوك افتراضي
+            e.preventDefault();
             resetForm();
             setEditingPixel(null);
             setShowModal(true);
@@ -200,7 +203,7 @@ export const PixelManager = ({ storeId }) => {
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
         >
           <Plus size={18} />
-          إضافة Pixel
+          {t('addNew')}
         </button>
       </div>
 
@@ -208,102 +211,104 @@ export const PixelManager = ({ storeId }) => {
         <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
           <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
           <p className="text-gray-500 dark:text-zinc-400">
-            لا توجد Pixels مضافة. أضف Pixel لتتبع أداء إعلاناتك.
+            {t('emptyState')}
           </p>
         </div>
       ) : (
         <div className="space-y-3">
-          {pixels.map((pixel) => (
-            <div
-              key={pixel.id}
-              className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                pixel.isActive
-                  ? 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700'
-                  : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-800 opacity-70'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gray-100 dark:bg-zinc-700 rounded-lg">
-                  {getPixelIcon(pixel.type)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white">
-                    {PIXEL_TYPES.find(p => p.id === pixel.type)?.label || pixel.type}
-                  </h3>
-                  <p className="text-sm text-gray-500 font-mono">
-                    ID: {pixel.pixelId}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      pixel.isActive 
-                        ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20'
-                        : 'bg-gray-100 text-gray-500 dark:bg-zinc-700'
-                    }`}>
-                      {pixel.isActive ? 'نشط' : 'معطل'}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {pixel.events?.length || 0} events
-                    </span>
+          {pixels.map((pixel) => {
+            const pixelType = PIXEL_TYPES.find(p => p.id === pixel.type);
+            return (
+              <div
+                key={pixel.id}
+                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                  pixel.isActive
+                    ? 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700'
+                    : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-800 opacity-70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 dark:bg-zinc-700 rounded-lg">
+                    {getPixelIcon(pixel.type)}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white">
+                      {t(pixelType?.labelKey) || pixel.type}
+                    </h3>
+                    <p className="text-sm text-gray-500 font-mono">
+                      {t('idLabel')}: {pixel.pixelId}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        pixel.isActive 
+                          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20'
+                          : 'bg-gray-100 text-gray-500 dark:bg-zinc-700'
+                      }`}>
+                        {pixel.isActive ? t('status.active') : t('status.inactive')}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {pixel.events?.length || 0} {t('eventsCount')}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-1">
-                {/* ✅ تم الإصلاح: type="button" */}
-                <button
-                  type="button"
-                  onClick={() => handleToggle(pixel.id)}
-                  disabled={togglingId === pixel.id}
-                  className={`p-2 rounded-lg transition-colors ${
-                    pixel.isActive
-                      ? 'text-emerald-600 hover:bg-emerald-50'
-                      : 'text-gray-400 hover:bg-gray-100'
-                  }`}
-                >
-                  {togglingId === pixel.id ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <Power size={18} />
-                  )}
-                </button>
-                {/* ✅ تم الإصلاح: onClick (بدون مسافة) و type="button" */}
-                <button
-                  type="button"
-                  onClick={() => openEdit(pixel)}
-                  className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                >
-                  <Edit2 size={18} />
-                </button>
-                {/* ✅ تم الإصلاح: type="button" */}
-                <button
-                  type="button"
-                  onClick={() => handleDelete(pixel.id)}
-                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleToggle(pixel.id)}
+                    disabled={togglingId === pixel.id}
+                    className={`p-2 rounded-lg transition-colors ${
+                      pixel.isActive
+                        ? 'text-emerald-600 hover:bg-emerald-50'
+                        : 'text-gray-400 hover:bg-gray-100'
+                    }`}
+                    title={pixel.isActive ? t('actions.deactivate') : t('actions.activate')}
+                  >
+                    {togglingId === pixel.id ? (
+                      <Loader2 size={18} className="animate-spin" />
+                    ) : (
+                      <Power size={18} />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => openEdit(pixel)}
+                    className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title={t('actions.edit')}
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(pixel.id)}
+                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                    title={t('actions.delete')}
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" dir="auto">
             <div className="p-6 border-b border-gray-200 dark:border-zinc-800">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingPixel ? 'تعديل Pixel' : 'إضافة Pixel جديد'}
+                {editingPixel ? t('modal.editTitle') : t('modal.addTitle')}
               </h3>
             </div>
 
-            {/* ✅ استخدام div بدلاً من form لتفادي تداخل النماذج */}
             <div className="p-6 space-y-4">
               {/* Type Selection */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  نوع الـ Pixel
+                  {t('form.typeLabel')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {PIXEL_TYPES.map((type) => (
@@ -318,7 +323,7 @@ export const PixelManager = ({ storeId }) => {
                       }`}
                     >
                       <type.icon size={20} style={{ color: type.color }} />
-                      <span className="text-sm font-medium">{type.label}</span>
+                      <span className="text-sm font-medium">{t(type.labelKey)}</span>
                     </button>
                   ))}
                 </div>
@@ -327,13 +332,13 @@ export const PixelManager = ({ storeId }) => {
               {/* Pixel ID */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  Pixel ID *
+                  {t('form.pixelIdLabel')} *
                 </label>
                 <input
                   type="text"
                   value={formData.pixelId}
                   onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
-                  placeholder="مثال: 1234567890"
+                  placeholder={t('form.pixelIdPlaceholder')}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
                   required
                 />
@@ -343,13 +348,13 @@ export const PixelManager = ({ storeId }) => {
               {formData.type === 'facebook' && (
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                    Access Token (اختياري)
+                    {t('form.accessTokenLabel')}
                   </label>
                   <input
                     type="password"
                     value={formData.accessToken}
                     onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
-                    placeholder="لـ Conversion API"
+                    placeholder={t('form.accessTokenPlaceholder')}
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
                   />
                 </div>
@@ -358,7 +363,7 @@ export const PixelManager = ({ storeId }) => {
               {/* Events */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  الأحداث المُتتبعة
+                  {t('form.eventsLabel')}
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {DEFAULT_EVENTS.map((event) => (
@@ -388,14 +393,14 @@ export const PixelManager = ({ storeId }) => {
                   }}
                   className="flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-800 rounded-xl font-semibold"
                 >
-                  إلغاء
+                  {t('cancel')}
                 </button>
                 <button
-                  type="button" // ✅ تغيير من submit إلى button
-                  onClick={handleSubmit} // ✅ استدعاء الدالة مباشرة
+                  type="button"
+                  onClick={handleSubmit}
                   className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
                 >
-                  {editingPixel ? 'حفظ التعديلات' : 'إضافة Pixel'}
+                  {editingPixel ? t('form.saveChanges') : t('form.addPixel')}
                 </button>
               </div>
             </div>

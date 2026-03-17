@@ -44,6 +44,7 @@ import arTheme from './locales/ar/theme.json';
 import arWallet from './locales/ar/wallet.json';
 import arLayout from './locales/ar/layout.json';
 import arPlan from './locales/ar/plan.json';
+import arPixel from './locales/ar/pixel.json';
 
 // --- ملفات اللغة الإنجليزية ---
 import enAbout from './locales/en/about.json';
@@ -86,6 +87,8 @@ import enTheme from './locales/en/theme.json';
 import enWallet from './locales/en/wallet.json';
 import enLayout from './locales/en/layout.json';
 import enPlan from './locales/en/plan.json';
+import enPixel from './locales/en/pixel.json';
+
 
 
 
@@ -131,6 +134,8 @@ import frTheme from './locales/fr/theme.json';
 import frWallet from './locales/fr/wallet.json';
 import frLayout from './locales/fr/layout.json';
 import frPlan from './locales/fr/plan.json';
+import frPixel from './locales/fr/pixel.json';
+
 
 
 
@@ -179,6 +184,7 @@ const resources = {
       wallet: arWallet,
       layout: arLayout,
       plans: arPlan,
+      Pixels: arPixel,
     },
   },
   en: {
@@ -223,7 +229,7 @@ const resources = {
       wallet: enWallet,
       layout: enLayout,
       plans: enPlan,
-
+      Pixels: enPixel,
 
     },
   },
@@ -269,6 +275,8 @@ const resources = {
       wallet: frWallet,
       layout: frLayout,
       plans: frPlan,
+      Pixels: frPixel,
+
     },
   },
 };

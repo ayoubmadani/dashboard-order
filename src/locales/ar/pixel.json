@@ -1,0 +1,45 @@
+{
+  "title": "البكسل والتحليلات",
+  "subtitle": "فيسبوك بكسل، تيك توك بكسل والمزيد",
+  "addNew": "إضافة بكسل",
+  "emptyState": "لم يتم إضافة أي بكسل بعد. أضف بكسل لتتبع أداء إعلاناتك.",
+  "idLabel": "المعرف (ID)",
+  "eventsCount": "الأحداث",
+  "confirmDelete": "هل أنت متأكد من رغبتك في حذف هذا البكسل؟",
+  "errors": {
+    "saveFailed": "فشل حفظ البكسل"
+  },
+  "types": {
+    "facebook": "فيسبوك بكسل (Facebook Pixel)",
+    "tiktok": "تيك توك بكسل (TikTok Pixel)"
+  },
+  "descriptions": {
+    "facebook": "تتبع الإعلانات والتحويلات على فيسبوك",
+    "tiktok": "تتبع الأداء على إعلانات تيك توك"
+  },
+  "status": {
+    "active": "نشط",
+    "inactive": "غير نشط"
+  },
+  "actions": {
+    "activate": "تفعيل",
+    "deactivate": "تعطيل",
+    "edit": "تعديل",
+    "delete": "حذف"
+  },
+  "modal": {
+    "addTitle": "إضافة بكسل جديد",
+    "editTitle": "تعديل البكسل"
+  },
+  "form": {
+    "typeLabel": "نوع البكسل",
+    "pixelIdLabel": "معرف البكسل (Pixel ID)",
+    "pixelIdPlaceholder": "مثال: 1234567890",
+    "accessTokenLabel": "رمز الوصول / التوكن (اختياري)",
+    "accessTokenPlaceholder": "خاص بـ Conversion API",
+    "eventsLabel": "الأحداث التي يتم تتبعها",
+    "saveChanges": "حفظ التغييرات",
+    "addPixel": "إضافة البكسل"
+  },
+  "cancel": "إلغاء"
+}
