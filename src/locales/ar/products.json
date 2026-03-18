@@ -29,7 +29,9 @@
       "stock": "المخزون",
       "status": "الحالة",
       "date": "تاريخ الإضافة",
-      "actions": "إجراءات"
+      "actions": "إجراءات",
+      "show":"مشاهدات"
+
     },
     "status_badge": {
       "disabled": "معطل",

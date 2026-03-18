@@ -36,11 +36,13 @@ const Stores = () => {
       const response = await axios.get(`${baseURL}/stores/user/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log({data : response.data});
+      
       if (response.data.success) setMyStores(response.data.data || []);
     } catch (err) {
       console.error('Error fetching stores:', err);
       setError(t('stores.load_failed'));
-    } finally {
+    } finally { 
       setLoading(false);
     }
   };
@@ -123,6 +125,7 @@ const Stores = () => {
 
   const totalProducts = myStores.reduce((acc, s) => acc + (s.products?.length || 0), 0);
   const totalOrders = myStores.reduce((acc, s) => acc + (s.orders?.length || 0), 0);
+  const totalShow = myStores.reduce((acc, s) => acc + (s.shows?.length || 0), 0);
 
   // ─── Loading State ────────────────────────────────────────────────────────────
   if (loading) {
@@ -197,7 +200,7 @@ const Stores = () => {
           </div>
 
           {/* Stats Overview */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {[
               {
                 key: 'stores', icon: Store, color: 'indigo',
@@ -213,17 +216,17 @@ const Stores = () => {
                 value: totalOrders, sub: t('stores.stats.orders_sub'),
               },
               {
-                key: 'customers', icon: Users, color: 'rose',
-                value: myStores.reduce((acc, s) => acc + (s.customers?.length || 0), 0),
-                sub: t('stores.stats.customers_sub'),
+                key: 'views', icon: Eye, color: 'blue', // اللون الأزرق للمشاهدات
+                value: totalShow,
+                sub: t('stores.stats.views_sub'), // "إجمالي زيارات المتاجر"
               },
             ].map(({ key, icon: Icon, color, value, sub }) => (
               <div
                 key={key}
                 className={`bg-gradient-to-br from-${color}-50 to-${color}-100/50 
-                 dark:from-gray-800 dark:to-gray-900 
-                 p-5 rounded-2xl border border-${color}-100 
-                 dark:border-gray-700 shadow-sm`}
+        dark:from-gray-800 dark:to-gray-900 
+        p-5 rounded-2xl border border-${color}-100 
+        dark:border-gray-700 shadow-sm transition-all hover:shadow-md`}
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className={`p-2 bg-${color}-500 rounded-lg`}>
@@ -294,8 +297,8 @@ const Stores = () => {
                 <div
                   key={store.id}
                   className={`group bg-white dark:bg-zinc-900 border rounded-2xl overflow-hidden transition-all duration-300 ${store.isActive
-                      ? 'border-gray-200 dark:border-zinc-800 hover:shadow-xl hover:border-amber-300 dark:hover:border-amber-500/30'
-                      : 'border-gray-200 dark:border-zinc-800 opacity-75 hover:opacity-100'
+                    ? 'border-gray-200 dark:border-zinc-800 hover:shadow-xl hover:border-amber-300 dark:hover:border-amber-500/30'
+                    : 'border-gray-200 dark:border-zinc-800 opacity-75 hover:opacity-100'
                     }`}
                 >
                   {/* Card Header */}
@@ -346,11 +349,23 @@ const Stores = () => {
                     {[
                       { val: store.orders?.length || 0, label: t('stores.card.orders') },
                       { val: store.products?.length || 0, label: t('stores.card.products') },
-                      { val: store.customers?.length || 0, label: t('stores.card.customers') },
-                    ].map(({ val, label }, i) => (
+                      // إضافة إحصائية المشاهدات هنا
+                      {
+                        val: store.shows?.length || 0,
+                        label: t('stores.card.views'),
+                        isViews: true
+                      },
+
+                    ].map(({ val, label, isViews }, i) => (
                       <div key={i} className="p-4 text-center">
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">{val}</p>
-                        <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">{label}</p>
+                        <div className="flex flex-col items-center justify-center">
+                          <p className={`text-lg font-bold ${isViews ? 'text-blue-600 dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
+                            {val}
+                          </p>
+                          <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-0.5 truncate w-full px-1">
+                            {label}
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -363,8 +378,8 @@ const Stores = () => {
                       rel="noopener noreferrer"
                       onClick={(e) => !store.isActive && e.preventDefault()}
                       className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-xl transition-colors ${store.isActive
-                          ? 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
-                          : 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 cursor-not-allowed'
+                        ? 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                        : 'bg-gray-50 dark:bg-zinc-800/50 text-gray-400 cursor-not-allowed'
                         }`}
                     >
                       <Eye size={16} />
@@ -485,8 +500,8 @@ const Stores = () => {
                             rel="noopener noreferrer"
                             onClick={(e) => !store.isActive && e.preventDefault()}
                             className={`p-2 rounded-lg transition-colors ${store.isActive
-                                ? 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'
-                                : 'text-gray-300 cursor-not-allowed'
+                              ? 'text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10'
+                              : 'text-gray-300 cursor-not-allowed'
                               }`}
                           >
                             <Eye size={16} />

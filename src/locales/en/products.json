@@ -29,7 +29,8 @@
       "stock": "Stock",
       "status": "Status",
       "date": "Date Added",
-      "actions": "Actions"
+      "actions": "Actions",
+      "show":"Show"
     },
     "status_badge": {
       "disabled": "Disabled",

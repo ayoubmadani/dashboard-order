@@ -12,6 +12,8 @@ import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { CopyPlus } from 'lucide-react';
 import { Loader2Icon } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 const getProductImage = (page) =>
   page.urlImage ||
@@ -52,6 +54,8 @@ const LandingPages = () => {
       const res = await axios.get(`${baseURL}/landing-page/store/${storeId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log(res.data);
+
       setPages(Array.isArray(res.data) ? res.data : res.data.data ?? []);
     } catch (err) {
       console.error('Failed to fetch landing pages:', err);
@@ -107,8 +111,9 @@ const LandingPages = () => {
         prev.map((p) => (p.id === id ? { ...p, status: newStatus, isActive: newStatus } : p))
       );
     } catch (err) {
-      console.error('Toggle error:', err);
-      alert(t('toggle_error'));
+
+
+      alert(err.response.data.message);
     } finally {
       setTogglingId(null);
     }
@@ -269,11 +274,11 @@ const LandingPages = () => {
         <div className="flex flex-wrap items-center gap-3 sm:gap-6 mb-6 sm:mb-8 text-sm">
           <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-gray-600 dark:text-zinc-400">{pages.filter(p => p.status === 'active').length} {t('status.active')}</span>
+            <span className="text-gray-600 dark:text-zinc-400">{pages.filter(p => p.isActive).length} {t('status.active')}</span>
           </div>
           <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
-            <span className="text-gray-600 dark:text-zinc-400">{pages.filter(p => p.status !== 'active').length} {t('status.inactive')}</span>
+            <span className="text-gray-600 dark:text-zinc-400">{pages.filter(p => !p.isActive).length} {t('status.inactive')}</span>
           </div>
           <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800 shadow-sm">
             <Eye size={14} className="text-rose-500" />
@@ -289,6 +294,9 @@ const LandingPages = () => {
               const fullUrl = `${storeURL}/lp/${page.domain}`;
               const isActive = page.isActive;
               const isToggling = togglingId === page.id;
+              const mockViewsCount = page.shows.length; // يمكنك تغييره لكل صفحة
+              const mockOrdersCount = page.orders.length
+
 
               return (
                 <div
@@ -335,6 +343,47 @@ const LandingPages = () => {
                           )}
                         </div>
                       </div>
+                    </div>
+
+                    {/* ✅ NEW: Views & Orders Badges Container */}
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+
+                      {/* Views Count Badge */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
+                        <Eye size={16} className="text-indigo-600 dark:text-indigo-400" />
+                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                          {mockViewsCount.toLocaleString(isRtl ? 'ar-DZ' : 'en-US')}
+                        </span>
+                        <span className="text-xs text-indigo-500 dark:text-indigo-400">
+                          {isRtl ? 'مشاهدة' : 'views'}
+                        </span>
+                      </div>
+
+                      {/* ✅ ADDED: Orders Count Badge */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg">
+                        <ShoppingBag size={16} className="text-emerald-600 dark:text-emerald-400" />
+                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                          {mockOrdersCount.toLocaleString(isRtl ? 'ar-DZ' : 'en-US')}
+                        </span>
+                        <span className="text-xs text-emerald-500 dark:text-emerald-400">
+                          {isRtl ? 'طلب' : 'orders'}
+                        </span>
+                      </div>
+
+                      {/* ✅ نسبة الشراء - مع معالجة خطأ القسمة على صفر */}
+                      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg">
+                        <TrendingUp size={16} className="text-amber-600 dark:text-amber-400" />
+                        <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
+                          {/* التحقق: إذا كانت المشاهدات أكبر من صفر احسب النسبة، وإلا اظهر 0 */}
+                          {mockViewsCount > 0
+                            ? ((mockOrdersCount / mockViewsCount) * 100).toFixed(1)
+                            : "0"}%
+                        </span>
+                        <span className="text-xs text-amber-500 dark:text-amber-400">
+                          {isRtl ? 'نسبة الشراء' : 'Conv. Rate'}
+                        </span>
+                      </div>
+
                     </div>
 
                     {/* URL & Price Row */}

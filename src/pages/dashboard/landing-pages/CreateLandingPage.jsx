@@ -117,7 +117,7 @@ const CreateLandingPage = () => {
         navigate('/dashboard/landing-pages');
       }
     } catch (error) {
-      console.error(error);
+      alert(error.response.data.message)
     } finally {
       setIsPublishing(false);
     }

@@ -16,7 +16,6 @@
     "enabling": "Processing...",
     "currency": "DZD"
   },
-
   "stores": {
     "title": "My Stores",
     "subtitle": "Manage all your stores and branches from one place",
@@ -34,14 +33,17 @@
       "orders": "Orders",
       "orders_sub": "Total orders",
       "customers": "Customers",
-      "customers_sub": "Active customers"
+      "customers_sub": "Active customers",
+      "views": "Views",
+      "views_sub": "Total number of visits to your store"
     },
     "card": {
       "orders": "Order",
       "products": "Product",
       "customers": "Customer",
       "visit": "Visit",
-      "edit": "Edit"
+      "edit": "Edit",
+      "views": "Views"
     },
     "table": {
       "store": "Store",
@@ -73,7 +75,6 @@
       "subtitle": "Start your business journey"
     }
   },
-
   "create": {
     "title": "Create New Store",
     "first-title": "Create Your First Store",
@@ -86,7 +87,6 @@
     "switch_account_hint": "Switch to another account",
     "No.Specific.Niche": "General Store (No Niche)"
   },
-
   "update": {
     "title": "Edit Store",
     "subtitle": "Update your store information and design",
@@ -99,7 +99,6 @@
     "form_errors": "Please correct the errors in the form",
     "No.Specific.Niche": "General Store (No Niche)"
   },
-
   "form": {
     "basic_info": "Basic Store Information",
     "name_label": "Store Name",
@@ -140,14 +139,12 @@
       "email_invalid": "Invalid email address"
     }
   },
-
   "niches": {
     "fashion": "Fashion",
     "electronics": "Electronics",
     "home": "Home & Decor",
     "beauty": "Beauty"
   },
-
   "show": {
     "loading": "Loading...",
     "not_found": {

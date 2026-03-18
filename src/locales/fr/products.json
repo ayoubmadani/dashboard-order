@@ -29,7 +29,8 @@
       "stock": "Stock",
       "status": "Statut",
       "date": "Date d'ajout",
-      "actions": "Actions"
+      "actions": "Actions",
+      "show": "Vue"
     },
     "status_badge": {
       "disabled": "Désactivé",
@@ -64,7 +65,6 @@
       "confirm": "Confirmer la suppression"
     }
   },
-
   "show": {
     "loading": "Chargement des détails du produit...",
     "not_found": {
@@ -188,7 +188,6 @@
     "product_options": "Options du produit",
     "qty_offers": "Offres de quantité disponibles"
   },
-
   "form": {
     "basic_info": "Informations de base",
     "product_name": "Nom du produit",
@@ -216,7 +215,6 @@
     "category_products": "{{count}} produit(s)",
     "category_sub": "({{count}} sous-cat.)"
   },
-
   "attributes": {
     "section_title": "Attributs du produit",
     "none_yet": "Aucun attribut ajouté pour le moment",
@@ -242,7 +240,6 @@
     "one_variant_required": "Ajoutez au moins une valeur",
     "variant_value_required": "La valeur de la variante est requise"
   },
-
   "variants": {
     "section_title": "Détails des variantes",
     "auto_generate": "Génération automatique",
@@ -257,7 +254,6 @@
     "attrs_no_variants": "Certains attributs n'ont pas de valeurs",
     "generated": "{{count}} combinaisons générées"
   },
-
   "offers": {
     "section_title": "Offres spéciales",
     "none_yet": "Aucune offre ajoutée pour le moment",
@@ -269,7 +265,6 @@
     "price": "Prix",
     "add_offer": "Ajouter une nouvelle offre"
   },
-
   "images": {
     "section_title": "Images du produit",
     "add_photo": "Ajouter",
@@ -277,7 +272,6 @@
     "hint": "Utilisez des images avec un fond blanc ou uni et une haute résolution",
     "added_success": "Image ajoutée avec succès"
   },
-
   "create": {
     "title": "Ajouter un nouveau produit",
     "subtitle": "Informations de base",
@@ -289,7 +283,6 @@
     "name_invalid": "Le nom du produit doit contenir du texte",
     "price_invalid": "Entrez un prix valide"
   },
-
   "edit": {
     "title": "Modifier le produit",
     "save": "Enregistrer les modifications",

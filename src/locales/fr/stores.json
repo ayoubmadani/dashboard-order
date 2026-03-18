@@ -16,7 +16,6 @@
     "enabling": "Traitement...",
     "currency": "DA"
   },
-
   "stores": {
     "title": "Mes Boutiques",
     "subtitle": "Gérez toutes vos boutiques et succursales depuis un seul endroit",
@@ -34,14 +33,17 @@
       "orders": "Commandes",
       "orders_sub": "Total des commandes",
       "customers": "Clients",
-      "customers_sub": "Clients actifs"
+      "customers_sub": "Clients actifs",
+      "views": "Vues",
+      "views_sub": "Nombre total de visites sur votre boutique"
     },
     "card": {
       "orders": "Commande",
       "products": "Produit",
       "customers": "Client",
       "visit": "Visiter",
-      "edit": "Modifier"
+      "edit": "Modifier",
+      "views": "Vues"
     },
     "table": {
       "store": "Boutique",
@@ -73,7 +75,6 @@
       "subtitle": "Lancez votre aventure commerciale"
     }
   },
-
   "create": {
     "title": "Créer une boutique",
     "first-title": "Créer votre première boutique",
@@ -86,7 +87,6 @@
     "switch_account_hint": "Passer à un autre compte",
     "store.not.niche": "Boutique générale (Sans niche)"
   },
-
   "update": {
     "title": "Modifier la boutique",
     "subtitle": "Mettez à jour les informations et le design de votre boutique",
@@ -98,7 +98,6 @@
     "loading": "Chargement des données de la boutique...",
     "form_errors": "Veuillez corriger les erreurs dans le formulaire"
   },
-
   "form": {
     "basic_info": "Informations de base",
     "name_label": "Nom de la boutique",
@@ -139,14 +138,12 @@
       "email_invalid": "Adresse e-mail invalide"
     }
   },
-
   "niches": {
     "fashion": "Mode",
     "electronics": "Électronique",
     "home": "Maison & Déco",
     "beauty": "Beauté"
   },
-
   "show": {
     "loading": "Chargement...",
     "not_found": {

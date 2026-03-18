@@ -58,6 +58,9 @@ const Products = () => {
         `${baseURL}/stores/${storeId}/products?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log(response.data);
+      
       setProducts(response.data.products || []);
       setTotalPages(response.data.totalPages || 1);
       setTotalItems(response.data.total || 0);
@@ -169,7 +172,7 @@ const Products = () => {
 
   const tableColumns = [
     { key: 'name', label: t('list.table.product'), sortable: true },
-    { key: 'sku', label: t('list.table.sku'), sortable: true },
+    { key: 'show', label: t('list.table.show'), sortable: true },
     { key: 'category', label: t('list.table.category'), sortable: false },
     { key: 'price', label: t('list.table.price'), sortable: true },
     { key: 'stock', label: t('list.table.stock'), sortable: true },
@@ -405,7 +408,7 @@ const Products = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-[10px] font-mono text-gray-600 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                          {product.sku || '-'}
+                          {product.showsCount || 0}
                         </span>
                       </td>
                       <td className="px-4 py-3">
