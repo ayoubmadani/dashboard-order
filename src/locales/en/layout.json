@@ -1,38 +1,36 @@
 {
   "nav": {
-    "home":       "Home",
-    "stores":     "Stores",
-    "theme":      "Themes",
+    "home": "Home",
+    "stores": "Stores",
+    "theme": "Themes",
     "categories": "Categories",
-    "products":   "Products",
-    "landing":    "Landing Page",
-    "orders":     "Orders",
-    "shipping":   "Shipping Rates",
-    "wallet":     "Wallet",
-    "analytics":  "Analytics",
-    "settings":   "Settings",
+    "products": "Products",
+    "landing": "Landing Page",
+    "orders": "Orders",
+    "shipping": "Shipping Rates",
+    "wallet": "Wallet",
+    "analytics": "Analytics",
+    "settings": "Settings",
     "menu_label": "Menu",
-    "pixels": "pixels"
+    "pixels": "pixels",
+    "current_store": "Current Store"
   },
-
   "store_selector": {
     "current_store": "Current Store",
-    "select_store":  "Select a store",
-    "no_stores":     "No stores found",
-    "create_store":  "Create new store"
+    "select_store": "Select a store",
+    "no_stores": "No stores found",
+    "create_store": "Create new store"
   },
-
   "header": {
     "search_placeholder": "Search for anything…",
-    "notifications":      "Notifications",
-    "theme_toggle":       "Toggle theme",
-    "dark":                "Dark",
-    "light":               "Light"
+    "notifications": "Notifications",
+    "theme_toggle": "Toggle theme",
+    "dark": "Dark",
+    "light": "Light"
   },
-
   "user_menu": {
-    "role":     "Admin",
+    "role": "Admin",
     "settings": "Settings",
-    "logout":   "Logout"
+    "logout": "Logout"
   }
 }

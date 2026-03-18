@@ -2,19 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-    Home, Database, Settings, BarChart3, Menu, X, ChevronDown,
+    Home, Settings, BarChart3, Menu, X, ChevronDown,
     Search, Bell, Store, Box, Layers, ShoppingCart, Layout, Truck,
-    LogOut, Sun, Moon, Sparkles, ChevronRight, User
+    LogOut, Sun, Moon, Sparkles, User,
+    Plus, Palette, Wallet, Code2
 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
-import { Palette } from 'lucide-react';
-import { Wallet } from 'lucide-react';
-import { Activity } from 'lucide-react';
-import { Target } from 'lucide-react';
-import { Code2 } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
@@ -27,24 +23,18 @@ export default function LayoutDashboard() {
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
     const [myStores, setMyStores] = useState([]);
     const [scrolled, setScrolled] = useState(false);
-
     const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
 
     const dropdownRef = useRef(null);
     const userDropdownRef = useRef(null);
     const isRtl = i18n.language === 'ar';
 
-    // Theme management with system preference detection
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
         if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
             setIsDark(true);
             document.documentElement.classList.add('dark');
-        } else {
-            setIsDark(false);
-            document.documentElement.classList.remove('dark');
         }
     }, []);
 
@@ -58,42 +48,27 @@ export default function LayoutDashboard() {
         }
     }, [isDark]);
 
-    // Scroll detection for header styling
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 10);
-        };
+        const handleScroll = () => setScrolled(window.scrollY > 10);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // User authentication and data fetching
     useEffect(() => {
         const verifyAndFetchUser = async () => {
             const token = Cookies.get('access_token');
-            if (!token) {
-                navigate('/auth/');
-                return;
-            }
+            if (!token) { navigate('/auth/'); return; }
             try {
                 const response = await axios.get(`${baseURL}/user/current-user`, {
                     headers: { "Authorization": `bearer ${token}` }
                 });
-
                 const currentUser = response.data;
                 currentUser.name = currentUser.username;
-
                 const initials = currentUser.name
                     ? currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
                     : '??';
-
-                setUser({
-                    name: currentUser.name,
-                    initial: initials,
-                    email: currentUser.email || ''
-                });
+                setUser({ name: currentUser.name, initial: initials, email: currentUser.email || '' });
             } catch (error) {
-                console.error("Auth Error:", error);
                 if (error.response?.status === 401) {
                     removeAccessToken();
                     navigate('/auth/login');
@@ -103,15 +78,10 @@ export default function LayoutDashboard() {
         verifyAndFetchUser();
     }, [navigate]);
 
-    // Close dropdowns on outside click
     useEffect(() => {
         const handleMouseUp = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setProjectDropdownOpen(false);
-            }
-            if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
-                setUserDropdownOpen(false);
-            }
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setProjectDropdownOpen(false);
+            if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) setUserDropdownOpen(false);
         };
         document.addEventListener("mouseup", handleMouseUp);
         return () => document.removeEventListener("mouseup", handleMouseUp);
@@ -123,24 +93,18 @@ export default function LayoutDashboard() {
     };
 
     const navigation = [
-        { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: 'emerald', iconColor: '#10b981' },
-        { name: t('nav.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: 'sky', iconColor: '#0ea5e9' }, // لون سماوي
-        { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: 'violet', iconColor: '#8b5cf6' },
-
-        // تم تغيير اللون إلى Indigo لتمييزه عن المتاجر والثيم
-        { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: 'indigo', iconColor: '#6366f1' },
-
-        { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: 'amber', iconColor: '#f59e0b' },
-        { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: 'rose', iconColor: '#f43f5e' }, // لون وردي محمر
-        { name: t('nav.landing', 'صفحة الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: 'pink', iconColor: '#ec4899' },
-        { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: 'orange', iconColor: '#f97316' },
-        { name: t('nav.shipping', 'أسعار الشحن'), href: '/dashboard/shipping', icon: Truck, color: 'cyan', iconColor: '#06b6d4' },
-
-        // لون Lime أو Teal للمحفظة ليعطي إيحاءً بالمال والنمو
-        { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: 'green', iconColor: '#22c55e' },
-
-        { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: 'fuchsia', iconColor: '#d946ef' }, // لون أرجواني ساطع
-        { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: 'slate', iconColor: '#64748b' }
+        { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: '#10b981' },
+        { name: t('nav.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: '#0ea5e9' },
+        { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: '#8b5cf6' },
+        { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: '#6366f1' },
+        { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
+        { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: '#f43f5e' },
+        { name: t('nav.landing', 'الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: '#ec4899' },
+        { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: '#f97316' },
+        { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, color: '#06b6d4' },
+        { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: '#22c55e' },
+        { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: '#d946ef' },
+        { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: '#64748b' }
     ];
 
     const [selectedProject, setSelectedProject] = useState(null);
@@ -151,279 +115,210 @@ export default function LayoutDashboard() {
             const response = await axios.get(`${baseURL}/stores/user/me`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-
             const dataStores = response.data.data;
-            console.log(dataStores[0].id);
-
-
-            if (dataStores.length === 0) {
-                navigate('/dashboard/stores/create-first');
-            }
-
+            if (dataStores.length === 0) navigate('/dashboard/stores/create-first');
             if (response.data.success) {
-                if (!localStorage.getItem('storeId') || localStorage.getItem('storeId') === '') {
-                    localStorage.setItem('storeId', dataStores[0].id)
-                } else {
-                    const getStore = dataStores.find(s => s.id == localStorage.getItem('storeId'))
-                    !getStore
-                        ? localStorage.setItem('storeId', dataStores[0].id)
-                        : localStorage.setItem('storeId', getStore.id)
+                if (!localStorage.getItem('storeId')) localStorage.setItem('storeId', dataStores[0].id);
+                else {
+                    const getStore = dataStores.find(s => s.id == localStorage.getItem('storeId'));
+                    if (!getStore) localStorage.setItem('storeId', dataStores[0].id);
                 }
-
                 setMyStores(response.data.data || []);
             }
-        } catch (err) {
-            console.error('Error fetching stores:', err);
-        }
+        } catch (err) { console.error('Error:', err); }
     };
 
-    useEffect(() => {
-        fetchStores();
-    }, []);
+    useEffect(() => { fetchStores(); }, []);
 
     useEffect(() => {
-        if (myStores && myStores.length > 0) {
+        if (myStores?.length > 0) {
             const savedStoreId = localStorage.getItem('storeId');
-            if (savedStoreId) {
-                const savedStore = myStores.find(s =>
-                    (s.id?.toString() === savedStoreId.toString()) ||
-                    (s._id?.toString() === savedStoreId.toString())
-                );
-                setSelectedProject(savedStore || myStores[0]);
-            } else {
-                setSelectedProject(myStores[0]);
-            }
+            const savedStore = savedStoreId ? myStores.find(s => s.id?.toString() === savedStoreId.toString()) : null;
+            setSelectedProject(savedStore || myStores[0]);
         }
     }, [myStores]);
 
-    // Get gradient based on store name for visual variety
     const getStoreGradient = (name) => {
-        const gradients = [
-            'from-violet-500 to-purple-600',
-            'from-blue-500 to-cyan-600',
-            'from-emerald-500 to-teal-600',
-            'from-orange-500 to-amber-600',
-            'from-pink-500 to-rose-600',
-            'from-indigo-500 to-blue-600',
-        ];
-        const index = name ? name.charCodeAt(0) % gradients.length : 0;
-        return gradients[index];
+        const gradients = ['from-emerald-400 to-teal-500', 'from-blue-400 to-indigo-500', 'from-violet-400 to-purple-500', 'from-orange-400 to-pink-500'];
+        return gradients[name ? name.charCodeAt(0) % gradients.length : 0];
     };
 
-    return (
-        <div className="min-h-screen bg-gray-50/50 dark:bg-[#0a0a0b] font-sans transition-colors duration-300" dir={isRtl ? 'rtl' : 'ltr'}>
-
-            {/* Desktop Sidebar */}
-            <aside className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col ${isRtl ? 'right-0' : 'left-0'} bg-white dark:bg-[#0f0f10] border-${isRtl ? 'l' : 'r'} border-gray-200 dark:border-white/5 shadow-xl shadow-black/5 transition-all`}>
-
-                {/* Logo Section */}
-                <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-100 dark:border-white/5">
-                    <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 overflow-hidden group">
-                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                            MdStore
-                        </span>
-                        <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Dashboard</span>
-                    </div>
+    const StoreSelector = ({ isMobile }) => (
+        <div className={`relative ${isMobile ? 'px-3 py-2 border-b border-gray-100 dark:border-white/5' : 'px-3 py-2 border-b border-gray-200 dark:border-white/5'}`} ref={isMobile ? dropdownRef : null}>
+            <button
+                onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
+                className="w-full flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-emerald-500/30 transition-all"
+            >
+                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
+                    {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
                 </div>
+                <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t('nav.current_store', 'المتجر الحالي')}</p>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
+                        {selectedProject?.name || 'Select Store'}
+                    </p>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${projectDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-                {/* Store Selector */}
-                <div className="px-4 py-4 relative" ref={dropdownRef}>
-                    <button
-                        onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
-                        className="w-full group relative overflow-hidden rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-3 hover:border-emerald-500/30 dark:hover:border-emerald-500/30 transition-all duration-300"
-                    >
-                        <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}>
-                                {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
-                            </div>
-                            <div className="flex-1 text-left">
-                                <p className="text-xs text-gray-400 font-medium mb-0.5">Current Store</p>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                    {selectedProject?.name || 'Select Store'}
-                                </p>
-                            </div>
-                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
-                        </div>
-                    </button>
-
-                    {/* Dropdown Menu */}
-                    {projectDropdownOpen && (
-                        <div className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl shadow-black/20 border border-gray-100 dark:border-white/10 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                            <div className="p-2 space-y-1">
-                                {myStores.length > 0 ? (
-                                    myStores.map((store, idx) => (
-                                        <button
-                                            key={store.id || idx}
-                                            onClick={() => {
-                                                localStorage.setItem('storeId', store.id);
-                                                setSelectedProject(store);
-                                                setProjectDropdownOpen(false);
-                                                navigate('/dashboard/stores');
-                                            }}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group"
-                                        >
-                                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getStoreGradient(store.name)} flex items-center justify-center text-xs font-bold text-white`}>
-                                                {store.name.charAt(0).toUpperCase()}
-                                            </div>
-                                            <span className="font-medium flex-1 text-left">{store.name}</span>
-                                            {selectedProject?.id === store.id && (
-                                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                            )}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <div className="px-3 py-4 text-center text-sm text-gray-400">
-                                        No stores available
-                                    </div>
-                                )}
-                            </div>
-                            <div className="border-t border-gray-100 dark:border-white/5 p-2">
+            {projectDropdownOpen && (
+                <div className={`absolute ${isMobile ? 'left-3 right-3' : 'left-3 right-3'} top-full mt-1 bg-white dark:bg-[#1a1a1b] rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 overflow-hidden`}>
+                    <div className="max-h-48 overflow-y-auto py-1">
+                        {myStores.length > 0 ? (
+                            myStores.map((store) => (
                                 <button
-                                    onClick={() => navigate('/dashboard/stores/create')}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors font-medium"
+                                    key={store.id}
+                                    onClick={() => {
+                                        localStorage.setItem('storeId', store.id);
+                                        setSelectedProject(store);
+                                        setProjectDropdownOpen(false);
+                                        if (isMobile) setSidebarOpen(false);
+                                        navigate('/dashboard/stores');
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                                 >
-                                    <Store className="w-4 h-4" />
-                                    Create New Store
+                                    <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${getStoreGradient(store.name)} flex items-center justify-center text-xs font-bold text-white`}>
+                                        {store.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span className="flex-1 text-left truncate">{store.name}</span>
+                                    {selectedProject?.id === store.id && (
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                    )}
                                 </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto pb-6">
-                    <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Menu
+                            ))
+                        ) : (
+                            <div className="px-3 py-2 text-sm text-gray-400 text-center">No stores</div>
+                        )}
                     </div>
-                    {navigation.map((item) => {
-                        const isActive = location.pathname === item.href ||
-                            (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-
-                        return (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative overflow-hidden ${isActive
-                                    ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
-                                    }`}
-                            >
-                                {isActive && (
-                                    <div className={`absolute ${isRtl ? 'right-0' : 'left-0'} top-1/2 -translate-y-1/2 w-1 h-8 bg-emerald-500 rounded-full`} />
-                                )}
-                                <item.icon
-                                    className={`w-5 h-5 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}
-                                    style={{ color: item.iconColor }} // هذا السطر سيقوم بتطبيق اللون الخاص بكل أيقونة
-                                />                                <span className="relative z-10">{item.name}</span>
-                                {isActive && (
-                                    <ChevronRight className={`w-4 h-4 ml-auto opacity-50 ${isRtl ? 'rotate-180' : ''}`} />
-                                )}
-                            </Link>
-                        );
-                    })}
-                </nav>
-
-                {/* Bottom Section */}
-                {/* <div className="p-4 border-t border-gray-100 dark:border-white/5">
-                    <div className="bg-gradient-to-br from-gray-900 to-gray-800 dark:from-white/10 dark:to-white/5 rounded-2xl p-4 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/20 rounded-full blur-2xl -mr-10 -mt-10" />
-                        <h4 className="text-white font-semibold text-sm mb-1 relative z-10">Pro Plan</h4>
-                        <p className="text-gray-300 text-xs mb-3 relative z-10">Get more features</p>
-                        <button className="w-full py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-lg transition-colors relative z-10">
-                            Upgrade Now
+                    <div className="border-t border-gray-100 dark:border-white/5 p-1">
+                        <button
+                            onClick={() => { if (isMobile) setSidebarOpen(false); navigate('/dashboard/stores/create'); }}
+                            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-md transition-colors"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            {t('new_store', 'جديد')}
                         </button>
                     </div>
-                </div> */}
+                </div>
+            )}
+        </div>
+    );
+
+    const Navigation = ({ isMobile }) => (
+        <nav className={`flex-1 overflow-y-auto py-2 ${isMobile ? 'px-2' : 'px-2'} scrollbar-thin`}>
+            <div className={`${isMobile ? 'px-3 mb-1' : 'px-3 mb-1'} text-[10px] font-bold text-gray-400 uppercase tracking-wider`}>
+                {t('menu', 'القائمة')}
+            </div>
+            <div className="space-y-0.5">
+                {navigation.map((item) => {
+                    const isActive = location.pathname === item.href || (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+                    return (
+                        <Link
+                            key={item.href}
+                            to={item.href}
+                            onClick={() => isMobile && setSidebarOpen(false)}
+                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-colors ${isActive
+                                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium'
+                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
+                                }`}
+                        >
+                            <item.icon className="w-4 h-4 shrink-0" style={{ color: isActive ? item.color : undefined }} />
+                            <span className="truncate">{item.name}</span>
+                            {isActive && <div className="w-1 h-1 rounded-full bg-emerald-500 ml-auto" />}
+                        </Link>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0b] text-sm" dir={isRtl ? 'rtl' : 'ltr'}>
+            
+            {/* Desktop Sidebar */}
+            <aside className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col ${isRtl ? 'right-0' : 'left-0'} bg-white dark:bg-[#0f0f10] border-${isRtl ? 'l' : 'r'} border-gray-200 dark:border-white/5`}>
+                <div className="flex items-center gap-2 px-4 h-14 border-b border-gray-200 dark:border-white/5">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-md">
+                        <Sparkles className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-base font-bold text-gray-900 dark:text-white leading-none">MdStore</span>
+                        <span className="text-[9px] text-gray-400 uppercase tracking-wider">Dashboard</span>
+                    </div>
+                </div>
+
+                <StoreSelector />
+                <Navigation />
             </aside>
 
-            {/* Main Content Area */}
-            <div className={`${isRtl ? 'lg:pr-72' : 'lg:pl-72'} min-h-screen flex flex-col`}>
-
+            {/* Main Content */}
+            <div className={`${isRtl ? 'lg:pr-64' : 'lg:pl-64'} min-h-screen flex flex-col`}>
+                
                 {/* Header */}
-                <header className={`sticky top-0 z-40 flex h-16 items-center justify-between px-4 lg:px-8 transition-all duration-300 ${scrolled ? 'bg-white/80 dark:bg-[#0a0a0b]/80 backdrop-blur-xl shadow-sm' : 'bg-transparent'}`}>
-
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="lg:hidden p-2 -ml-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors"
-                        onClick={() => setSidebarOpen(true)}
-                    >
-                        <Menu className="h-5 w-5" />
-                    </button>
-
-                    {/* Search Bar */}
-                    <div className="flex-1 max-w-md mx-4 hidden sm:block">
-                        <div className="relative group">
-                            <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 transition-colors ${isRtl ? 'right-3' : 'left-3'} group-focus-within:text-emerald-500`} />
+                <header className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-white/95 dark:bg-[#0a0a0b]/95 border-b border-gray-200 dark:border-white/5 backdrop-blur supports-[backdrop-filter]:bg-white/80`}>
+                    <div className="flex items-center gap-3">
+                        <button className="lg:hidden p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md" onClick={() => setSidebarOpen(true)}>
+                            <Menu className="h-5 w-5" />
+                        </button>
+                        
+                        <div className="hidden sm:flex items-center relative">
+                            <Search className={`absolute w-4 h-4 text-gray-400 ${isRtl ? 'right-2.5' : 'left-2.5'}`} />
                             <input
                                 type="search"
-                                placeholder={t('common.search', 'Search anything...')}
-                                className={`w-full bg-gray-100/50 dark:bg-white/5 border border-transparent focus:bg-white dark:focus:bg-white/5 focus:border-emerald-500/30 rounded-xl py-2.5 ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} text-sm text-gray-900 dark:text-white placeholder:text-gray-400 transition-all outline-none`}
+                                placeholder={t('search', 'بحث...')}
+                                className={`w-64 bg-gray-100 dark:bg-white/5 border-0 rounded-md py-1.5 ${isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'} text-sm focus:ring-2 focus:ring-emerald-500/20`}
                             />
                         </div>
                     </div>
 
-                    {/* Right Actions */}
                     <div className="flex items-center gap-2">
-                        {/* Theme Toggle */}
-                        <button
-                            onClick={() => setIsDark(!isDark)}
-                            className="relative p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
-                        >
-                            <div className="relative w-5 h-5">
-                                <Sun className={`absolute inset-0 w-5 h-5 text-amber-500 transition-all duration-300 ${isDark ? 'opacity-0 rotate-90 scale-0' : 'opacity-100 rotate-0 scale-100'}`} />
-                                <Moon className={`absolute inset-0 w-5 h-5 text-indigo-400 transition-all duration-300 ${isDark ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-0'}`} />
-                            </div>
+                        <button onClick={() => setIsDark(!isDark)} className="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
+                            {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+                        
+                        <button className="relative p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
+                            <Bell className="w-4 h-4" />
+                            <span className="absolute top-1 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full" />
                         </button>
 
-                        {/* Notifications */}
-                        <button className="relative p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95">
-                            <Bell className="w-5 h-5" />
-                            <span className="absolute top-2 right-2.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-[#0a0a0b]" />
-                        </button>
+                        <div className="w-px h-6 bg-gray-200 dark:border-white/10 mx-1" />
 
-                        <div className="w-px h-8 bg-gray-200 dark:border-white/10 mx-1" />
-
-                        {/* User Menu */}
+                        {/* User Dropdown */}
                         <div className="relative" ref={userDropdownRef}>
                             <button
                                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                                className="flex items-center gap-3 p-1.5 pr-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200"
+                                className="flex items-center gap-2 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                             >
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-white shadow-lg">
+                                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
                                     {user.initial}
                                 </div>
-                                <div className="hidden md:block text-left">
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight">{user.name}</p>
-                                    <p className="text-xs text-gray-400">Admin</p>
+                                <div className="hidden sm:block text-right">
+                                    <p className="text-xs font-semibold text-gray-900 dark:text-white leading-none">{user.name}</p>
+                                    <p className="text-[10px] text-gray-500">Admin</p>
                                 </div>
-                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userDropdownOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${userDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
 
-                            {/* User Dropdown */}
                             {userDropdownOpen && (
-                                <div className={`absolute top-full ${isRtl ? 'left-0' : 'right-0'} mt-2 w-64 bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl shadow-black/20 border border-gray-100 dark:border-white/10 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200`}>
-                                    <div className="p-4 border-b border-gray-100 dark:border-white/5">
+                                <div className={`absolute top-full ${isRtl ? 'left-0' : 'right-0'} mt-2 w-56 bg-white dark:bg-[#1a1a1b] rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 overflow-hidden`}>
+                                    <div className="p-3 border-b border-gray-100 dark:border-white/5">
                                         <p className="text-sm font-semibold text-gray-900 dark:text-white">{user.name}</p>
-                                        <p className="text-xs text-gray-400 mt-0.5">{user.email}</p>
+                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
                                     </div>
-                                    <div className="p-2">
+                                    <div className="p-1.5">
                                         <button
                                             onClick={() => navigate('/dashboard/settings')}
-                                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-xl transition-colors"
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-md transition-colors"
                                         >
                                             <Settings className="w-4 h-4" />
-                                            Settings
+                                            {t('user_menu.settings', 'الإعدادات')}
                                         </button>
                                         <button
                                             onClick={handleLogout}
-                                            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors mt-1"
+                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-md transition-colors mt-0.5"
                                         >
                                             <LogOut className="w-4 h-4" />
-                                            Sign Out
+                                            {t('user_menu.logout', 'تسجيل الخروج')}
                                         </button>
                                     </div>
                                 </div>
@@ -432,122 +327,30 @@ export default function LayoutDashboard() {
                     </div>
                 </header>
 
-                {/* Page Content */}
-                <main className="flex-1 p-4 lg:p-8">
-                    <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Outlet />
-                    </div>
+                <main className="flex-1 p-4">
+                    <Outlet />
                 </main>
             </div>
 
-            {/* Mobile Sidebar Overlay */}
+            {/* Mobile Sidebar */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                        onClick={() => setSidebarOpen(false)}
-                    />
-                    <div className={`absolute inset-y-0 ${isRtl ? 'right-0' : 'left-0'} w-80 bg-white dark:bg-[#0f0f10] shadow-2xl transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : isRtl ? 'translate-x-full' : '-translate-x-full'}`}>
-
-                        {/* Mobile Header */}
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-                                    <Sparkles className="w-5 h-5 text-white" />
+                    <div className="absolute inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+                    <div className={`absolute inset-y-0 ${isRtl ? 'right-0' : 'left-0'} w-64 bg-white dark:bg-[#0f0f10] shadow-xl flex flex-col`}>
+                        <div className="flex items-center justify-between px-4 h-14 border-b border-gray-200 dark:border-white/5">
+                            <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
+                                    <Sparkles className="w-4 h-4 text-white" />
                                 </div>
-                                <span className="text-lg font-bold text-gray-900 dark:text-white">MdStore</span>
+                                <span className="font-bold text-gray-900 dark:text-white">MdStore</span>
                             </div>
-                            <button
-                                onClick={() => setSidebarOpen(false)}
-                                className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-colors"
-                            >
+                            <button onClick={() => setSidebarOpen(false)} className="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-
-                        {/* Mobile Store Selector */}
-                        <div className="p-4 border-b border-gray-100 dark:border-white/5 relative" ref={dropdownRef}>
-                            <button
-                                onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
-                                className="w-full flex items-center gap-3 p-3 bg-gray-50 dark:bg-white/5 rounded-xl border border-transparent active:border-emerald-500/30 transition-all"
-                            >
-                                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shadow-lg`}>
-                                    {selectedProject?.name?.charAt(0).toUpperCase() || 'S'}
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <p className="text-xs text-gray-400">Current Store</p>
-                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{selectedProject?.name || 'Select Store'}</p>
-                                </div>
-                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-300 ${projectDropdownOpen ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {/* Dropdown Menu for Mobile */}
-                            {projectDropdownOpen && (
-                                <div className="absolute left-4 right-4 mt-2 bg-white dark:bg-[#1a1a1b] rounded-2xl shadow-2xl border border-gray-100 dark:border-white/10 z-50 overflow-hidden animate-in fade-in zoom-in-95">
-                                    <div className="p-2 space-y-1 max-h-60 overflow-y-auto">
-                                        {myStores.length > 0 ? (
-                                            myStores.map((store, idx) => (
-                                                <button
-                                                    key={store.id || idx}
-                                                    onClick={() => {
-                                                        localStorage.setItem('storeId', store.id);
-                                                        setSelectedProject(store);
-                                                        setProjectDropdownOpen(false);
-                                                        setSidebarOpen(false); // إغلاق القائمة الجانبية بعد الاختيار
-                                                        navigate('/dashboard/stores');
-                                                    }}
-                                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                                >
-                                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getStoreGradient(store.name)} flex items-center justify-center text-xs font-bold text-white`}>
-                                                        {store.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <span className="font-medium flex-1 text-left">{store.name}</span>
-                                                    {selectedProject?.id === store.id && (
-                                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                                    )}
-                                                </button>
-                                            ))
-                                        ) : (
-                                            <div className="px-3 py-4 text-center text-sm text-gray-400">No stores available</div>
-                                        )}
-                                    </div>
-                                    <div className="border-t border-gray-100 dark:border-white/5 p-2">
-                                        <button
-                                            onClick={() => {
-                                                setSidebarOpen(false);
-                                                navigate('/dashboard/stores/create');
-                                            }}
-                                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-emerald-600 dark:text-emerald-400 font-medium"
-                                        >
-                                            <Store className="w-4 h-4" />
-                                            Create New Store
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Mobile Navigation */}
-                        <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100vh-180px)]">
-                            {navigation.map((item) => {
-                                const isActive = location.pathname === item.href ||
-                                    (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        to={item.href}
-                                        onClick={() => setSidebarOpen(false)}
-                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
-                                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
-                                            }`}
-                                    >
-                                        <item.icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
-                                        {item.name}
-                                    </Link>
-                                );
-                            })}
-                        </nav>
+                        
+                        <StoreSelector isMobile={true} />
+                        <Navigation isMobile={true} />
                     </div>
                 </div>
             )}

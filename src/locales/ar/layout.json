@@ -12,7 +12,8 @@
     "analytics":  "الإحصائيات",
     "settings":   "الإعدادات",
     "menu_label": "القائمة",
-    "pixels":"بيكسل"
+    "pixels":"بيكسل",
+    "current_store": "المتجر الحالي"
   },
 
   "store_selector": {

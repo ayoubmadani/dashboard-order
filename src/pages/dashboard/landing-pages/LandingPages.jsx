@@ -14,6 +14,7 @@ import { CopyPlus } from 'lucide-react';
 import { Loader2Icon } from 'lucide-react';
 import { ShoppingBag } from 'lucide-react';
 import { TrendingUp } from 'lucide-react';
+import { Layout } from 'lucide-react';
 
 const getProductImage = (page) =>
   page.urlImage ||
@@ -201,7 +202,7 @@ const LandingPages = () => {
 
   // ─── Main Render ──────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="min-h-[calc(100vh-200px)] bg-gray-50 dark:bg-zinc-950 pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
 
       {/* ── Header ── */}
       <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-50">
@@ -285,6 +286,21 @@ const LandingPages = () => {
             <span className="text-gray-600 dark:text-zinc-400">{pages.reduce((acc, p) => acc + (p.views || 0), 0).toLocaleString()} {t('common.views')}</span>
           </div>
         </div>
+
+        {filteredPages.length == 0 && (
+          <div className='w-full h-[200px] flex justify-center items-center'>
+            <div className='flex flex-col justify-center items-center'>
+              <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Layout size={20} className="text-gray-400" />
+              </div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{searchQuery ?t('empty.no_results'):t('empty.title')}</h3>
+              <p className="text-xs text-gray-500 dark:text-zinc-400">
+                {searchQuery ?t('empty.no_results_sub') :t('empty.subtitle')}
+              </p>
+            </div>
+          </div>
+        )}
+
 
         {/* Empty State */}
         {filteredPages.length > 0 && (

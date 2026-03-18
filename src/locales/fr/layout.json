@@ -12,7 +12,8 @@
     "analytics":  "Statistiques",
     "settings":   "Paramètres",
     "menu_label": "Menu",
-    "pixels": "pixels"
+    "pixels": "pixels",
+    "current_store": "Boutique actuelle"
   },
 
   "store_selector": {
