@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import { baseURL } from '../constents/const.';
 import { getAccessToken } from '../services/access-token';
+import Loading from './Loading';
 
 const PIXEL_TYPES = [
   { 
@@ -172,11 +173,7 @@ export const PixelManager = ({ storeId }) => {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 size={24} className="animate-spin text-indigo-600" />
-        </div>
-      </div>
+      <Loading />
     );
   }
 

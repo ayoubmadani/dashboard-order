@@ -15,6 +15,7 @@ import { Loader2Icon } from 'lucide-react';
 import { ShoppingBag } from 'lucide-react';
 import { TrendingUp } from 'lucide-react';
 import { Layout } from 'lucide-react';
+import Loading from '../../../components/Loading';
 
 const getProductImage = (page) =>
   page.urlImage ||
@@ -168,15 +169,7 @@ const LandingPages = () => {
   // ─── Loading State ────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative w-16 h-16 mx-auto mb-4">
-            <div className="absolute inset-0 border-4 border-rose-200 dark:border-rose-900 border-t-rose-500 rounded-full animate-spin" />
-            <Rocket className="absolute inset-0 m-auto text-rose-500" size={24} />
-          </div>
-          <p className="text-gray-500 dark:text-zinc-400 font-medium">{t('loading')}</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 

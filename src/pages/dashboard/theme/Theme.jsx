@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import Loading from '../../../components/Loading';
 
 const DEFAULT_IMAGE = 'https://bloomidea.com/sites/default/files/styles/og_image/public/blog/Tipos%20de%20come%CC%81rcio%20electro%CC%81nico_0.png?itok=jC9MlQZq';
 
@@ -111,12 +112,7 @@ export default function Theme() {
   /* ── Loading ── */
   if (loading) {
     return (
-      <div className="w-full h-[calc(100vh-130px)] flex flex-col justify-center items-center gap-3 bg-gray-50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
-        <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-          <Loader2 size={28} className="text-indigo-500 animate-spin" />
-        </div>
-        <p className="text-sm text-gray-400 dark:text-zinc-500 font-medium">{t('loading')}</p>
-      </div>
+      <Loading />
     );
   }
 

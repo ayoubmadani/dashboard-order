@@ -108,6 +108,8 @@ const Settings = () => {
       setShowSubModal(false);
       showSubToast(t('sub_success'), 'success');
     } catch (err) {
+      alert(err?.response?.data?.message || t('sub_error'), 'error')
+      setShowSubModal(false);
       showSubToast(err?.response?.data?.message || t('sub_error'), 'error');
     } finally {
       setSubscribing(null);

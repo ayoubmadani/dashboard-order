@@ -12,6 +12,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import Loading from '../../../components/Loading';
 
 const Stores = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -89,7 +90,8 @@ const Stores = () => {
   const filteredStores = myStores.filter(store =>
     store.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     store.subdomain?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    store.contact?.wilaya?.toLowerCase().includes(searchQuery.toLowerCase())
+    store.contact?.wilaya?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    store.id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const statusConfig = {
@@ -130,12 +132,7 @@ const Stores = () => {
   // ─── Loading State ────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 size={48} className="animate-spin mx-auto mb-4 text-indigo-600" />
-          <p className="text-gray-600 dark:text-zinc-400">{t('stores.loading_stores')}</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 

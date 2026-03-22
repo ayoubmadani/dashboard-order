@@ -5,12 +5,13 @@ import * as XLSX from 'xlsx';
 import {
   Search, RefreshCw, Download, Trash2, Edit2,
   Package, AlertTriangle, ChevronDown,
-  ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight,
-  Loader2, X, ShoppingBag
+  ArrowLeft, ArrowRight,
+  Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import OrderModal from './orderModel';
+import Loading from '../../../components/Loading';
 
 export const StatusEnum = {
   PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
@@ -19,14 +20,14 @@ export const StatusEnum = {
 };
 
 const STATUS_STYLES = {
-  pending: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
-  appl1: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
-  appl2: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
-  appl3: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  pending:   'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
+  appl1:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  appl2:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  appl3:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
   confirmed: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20',
-  shipping: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20',
+  shipping:  'text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20',
   cancelled: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20',
-  returned: 'text-purple-600 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20',
+  returned:  'text-purple-600 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20',
   delivered: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
   postponed: 'text-gray-500 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700',
 };
@@ -37,10 +38,74 @@ const truncate = (text = '', max = 20) =>
 const getStoreId = () => localStorage.getItem('storeId');
 
 /* ════════════════════════════════════════════════════
+   Ship Result Modal
+════════════════════════════════════════════════════ */
+function ShipResultModal({ result, onClose }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'orders' });
+  if (!result) return null;
+
+  const isSuccess = result.type === 'success';
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="relative bg-white dark:bg-zinc-900 w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-zinc-800"
+        style={{ animation: 'zoomIn .18s ease' }}
+      >
+        <div className={`h-1 ${isSuccess ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+
+        <div className="p-6 flex flex-col items-center gap-4 text-center">
+          <div className={`w-14 h-14 rounded-full flex items-center justify-center ${
+            isSuccess
+              ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-100 dark:border-emerald-500/20'
+              : 'bg-rose-50 dark:bg-rose-500/10 border-2 border-rose-100 dark:border-rose-500/20'
+          }`}>
+            {isSuccess
+              ? <CheckCircle2 size={26} className="text-emerald-500" />
+              : <XCircle size={26} className="text-rose-500" />
+            }
+          </div>
+
+          <div>
+            <h3 className="text-base font-black text-gray-900 dark:text-white">
+              {isSuccess
+                ? t('ship.success_title', 'تم إرسال الطلب للشحن ✓')
+                : t('ship.error_title', 'فشل إرسال الطلب')
+              }
+            </h3>
+            {result.trackingId && (
+              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
+                {t('ship.tracking', 'رقم التتبع')}: <span className="font-bold text-indigo-500 select-all">{result.trackingId}</span>
+              </p>
+            )}
+            {result.message && (
+              <p className="text-xs text-rose-500 mt-1 font-medium">{result.message}</p>
+            )}
+          </div>
+
+          <button
+            onClick={onClose}
+            className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${
+              isSuccess
+                ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                : 'bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-300'
+            }`}
+          >
+            {t('ship.close', 'إغلاق')}
+          </button>
+        </div>
+      </div>
+      <style>{`@keyframes zoomIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}`}</style>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════
    Delete Confirm Modal
 ════════════════════════════════════════════════════ */
 function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
-  const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
+  const { t } = useTranslation('translation', { keyPrefix: 'orders' });
   if (!order) return null;
 
   return (
@@ -51,7 +116,6 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
         <div className="h-1 bg-gradient-to-r from-rose-500 to-rose-400" />
 
         <div className="p-6 space-y-5">
-          {/* Icon + title */}
           <div className="flex flex-col items-center gap-3 text-center">
             <div className="w-14 h-14 rounded-full bg-rose-50 dark:bg-rose-500/10 border-2 border-rose-100 dark:border-rose-500/20 flex items-center justify-center">
               <Trash2 size={24} className="text-rose-500" />
@@ -62,12 +126,11 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
             </div>
           </div>
 
-          {/* Order summary */}
           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 space-y-2.5 border border-gray-100 dark:border-zinc-700 text-sm">
             {[
               { label: t('delete_modal.customer'), value: order.customerName },
-              { label: t('delete_modal.phone'), value: order.customerPhone, blue: true },
-              { label: t('delete_modal.product'), value: order.product?.name || order.productName },
+              { label: t('delete_modal.phone'),    value: order.customerPhone, blue: true },
+              { label: t('delete_modal.product'),  value: order.product?.name || order.productName },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center">
                 <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">{row.label}</span>
@@ -84,7 +147,6 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
             </div>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3">
             <button onClick={onCancel} disabled={deleting}
               className="flex-1 py-2.5 rounded-xl border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all disabled:opacity-50">
@@ -105,28 +167,97 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
 }
 
 /* ════════════════════════════════════════════════════
+   Ship Button (per row)
+════════════════════════════════════════════════════ */
+function ShipButton({ order, onResult }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'orders' });
+  const [loading, setLoading] = useState(false);
+  const token = getAccessToken();
+  const storeId = getStoreId();
+
+  // Already shipped — show badge instead
+  if (order.status === 'shipping' || order.shippingTrackingId) {
+    return (
+      <div className="px-2 py-0.5 flex items-center gap-1.5 rounded-lg bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 text-[11px] font-bold border border-cyan-100 dark:border-cyan-500/20">
+        <Truck size={12} />
+        {t('ship.shipped', 'مُرسَل')}
+      </div>
+    );
+  }
+
+  const handleShip = async (e) => {
+    e.stopPropagation();
+    if (!storeId) {
+      onResult({ type: 'error', message: t('ship.no_store', 'لم يتم تحديد المتجر') });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { data } = await axios.post(
+        `${baseURL}/stores/${storeId}/shipping/orders`,
+        { orderData: { orderId: order.id } },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Extract tracking ID from provider response (varies by provider)
+      const trackingId =
+        data?.tracking ??
+        data?.Tracking ??
+        data?.tracking_id ??
+        data?.id ??
+        null;
+
+      onResult({ type: 'success', trackingId });
+    } catch (err) {
+      const message =
+        err.response?.data?.message ??
+        err.response?.data?.error ??
+        t('ship.generic_error', 'حدث خطأ أثناء الإرسال');
+      onResult({ type: 'error', message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleShip}
+      disabled={loading}
+      title={t('ship.btn_title', 'إرسال للشحن')}
+      className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+    >
+      {loading
+        ? <Loader2 size={14} className="animate-spin" />
+        : <Truck size={14} />
+      }
+      <span>{loading ? t('ship.sending', 'جاري...') : t('ship.btn', 'شحن')}</span>
+    </button>
+  );
+}
+
+/* ════════════════════════════════════════════════════
    Main Component
 ════════════════════════════════════════════════════ */
 export default function Orders() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
 
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [query, setQuery] = useState('');
+  const [orders,       setOrders]       = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState(null);
+  const [searchTerm,   setSearchTerm]   = useState('');
+  const [query,        setQuery]        = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const [orderId, setOrderId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [isOpen,       setIsOpen]       = useState(false);
+  const [orderId,      setOrderId]      = useState(null);
+  const [currentPage,  setCurrentPage]  = useState(1);
   const PAGE_SIZE = 100;
 
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting,     setDeleting]     = useState(false);
+  const [shipResult,   setShipResult]   = useState(null); // { type: 'success'|'error', trackingId?, message? }
 
   const token = getAccessToken();
-
   const statusKeys = Object.values(StatusEnum);
 
   /* ── Fetch ── */
@@ -151,14 +282,14 @@ export default function Orders() {
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
   useEffect(() => {
-    document.body.style.overflow = (isOpen || !!deleteTarget) ? 'hidden' : 'auto';
+    document.body.style.overflow = (isOpen || !!deleteTarget || !!shipResult) ? 'hidden' : 'auto';
     return () => { document.body.style.overflow = 'auto'; };
-  }, [isOpen, deleteTarget]);
+  }, [isOpen, deleteTarget, shipResult]);
 
   /* ── Filter ── */
   const filtered = orders.filter(o => {
     const q = searchTerm.trim().toLowerCase();
-    const matchSearch = !q || (o.customerName || '').toLowerCase().includes(q) || (o.customerPhone || '').includes(q);
+    const matchSearch = !q || (o.customerName || '').toLowerCase().includes(q) || (o.customerPhone || '').includes(q) || (o.id || '').includes(q);
     const matchStatus = !statusFilter || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -168,14 +299,14 @@ export default function Orders() {
     if (!filtered.length) { alert(t('list.no_export')); return; }
     const exportData = filtered.map(order => ({
       [t('export.customer_name')]: order.customerName || '',
-      [t('export.phone')]: order.customerPhone || '',
-      [t('export.product')]: order.product?.name || order.productName || '',
-      [t('export.wilaya')]: order.customerWilaya?.ar_name || '',
-      [t('export.commune')]: order.customerCommune?.ar_name || '',
-      [t('export.ship_type')]: order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
-      [t('export.ship_price')]: parseFloat(order.priceShip || 0),
-      [t('export.total')]: parseFloat(order.totalPrice || 0),
-      [t('export.status')]: t(`status.${order.status}`) || order.status,
+      [t('export.phone')]:         order.customerPhone || '',
+      [t('export.product')]:       order.product?.name || order.productName || '',
+      [t('export.wilaya')]:        order.customerWilaya?.ar_name || '',
+      [t('export.commune')]:       order.customerCommune?.ar_name || '',
+      [t('export.ship_type')]:     order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
+      [t('export.ship_price')]:    parseFloat(order.priceShip || 0),
+      [t('export.total')]:         parseFloat(order.totalPrice || 0),
+      [t('export.status')]:        t(`status.${order.status}`) || order.status,
     }));
     const ws = XLSX.utils.json_to_sheet(exportData);
     ws['!cols'] = Array(9).fill({ wch: 18 });
@@ -202,23 +333,15 @@ export default function Orders() {
     }
   };
 
-  const openModal = (id) => { setOrderId(id); setIsOpen(true); };
-  const closeModal = () => { setIsOpen(false); setOrderId(null); };
+  const openModal  = (id) => { setOrderId(id); setIsOpen(true); };
+  const closeModal = ()   => { setIsOpen(false); setOrderId(null); };
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated  = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  /* ── Loading / Error ── */
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="flex flex-col items-center gap-3">
-        <Loader2 size={36} className="text-indigo-500 animate-spin" />
-        <p className="text-sm font-semibold text-gray-400">{t('list.loading')}</p>
-      </div>
-    </div>
-  );
+  if (loading) return <Loading />;
 
   if (error) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-zinc-950 gap-4" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -233,7 +356,7 @@ export default function Orders() {
 
   return (
     <div
-      className={`min-h-screen bg-gray-50/50 dark:bg-zinc-950 font-sans ${isOpen || deleteTarget ? 'overflow-hidden h-screen' : ''}`}
+      className={`min-h-screen bg-gray-50/50 dark:bg-zinc-950 font-sans ${isOpen || deleteTarget || shipResult ? 'overflow-hidden h-screen' : ''}`}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
       {/* ── Header ── */}
@@ -241,7 +364,6 @@ export default function Orders() {
         <div className="max-w-[1400px] mx-auto px-6 py-6">
           <div className="flex flex-col gap-5">
 
-            {/* Title + search */}
             <div className="flex items-center gap-4 flex-1">
               <div className="p-2.5 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl">
                 <ShoppingBag size={22} className="text-indigo-600 dark:text-indigo-400" />
@@ -253,7 +375,6 @@ export default function Orders() {
             </div>
 
             <div className='flex flex-col xl:flex-row xl:items-center justify-between gap-5'>
-              {/* Search bar */}
               <div className="relative w-full xl:max-w-sm">
                 <Search className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${isRtl ? 'right-3.5' : 'left-3.5'}`} size={17} />
                 <input
@@ -271,9 +392,7 @@ export default function Orders() {
                 </button>
               </div>
 
-              {/* Controls */}
               <div className="flex items-center gap-3 flex-wrap">
-                {/* Status filter */}
                 <div className="relative">
                   <select
                     value={statusFilter}
@@ -307,7 +426,6 @@ export default function Orders() {
               </div>
             </div>
 
-            {/* Active search tag */}
             {query && (
               <button
                 onClick={() => { setQuery(''); setSearchTerm(''); fetchOrders(); }}
@@ -318,7 +436,6 @@ export default function Orders() {
             )}
           </div>
 
-          {/* Results count */}
           <p className="text-xs text-gray-400 dark:text-zinc-500 font-medium mt-4">
             {t('list.results_count', { filtered: filtered.length, total: orders.length })}
             {statusFilter && (
@@ -329,7 +446,7 @@ export default function Orders() {
       </div>
 
       {/* ── Orders List ── */}
-      <div className="max-w-[1400px] mx-auto py-6 space-y-2.5 ">
+      <div className="max-w-[1400px] mx-auto py-6 space-y-2.5">
         {paginated.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-14 text-center">
             <Package size={40} className="mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
@@ -341,9 +458,9 @@ export default function Orders() {
             <div
               key={order.id}
               onDoubleClick={() => openModal(order.id)}
-              className={` ${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-sm transition-all cursor-default`}
+              className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-sm transition-all cursor-default`}
             >
-              {/* Row number + Customer */}
+              {/* Customer */}
               <div className="flex flex-col w-full md:w-1/4 gap-0.5">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                   {truncate(`${order.customerName || '—'} (${(currentPage - 1) * PAGE_SIZE + i + 1})`)}
@@ -406,23 +523,26 @@ export default function Orders() {
                 </span>
               </div>
 
-              {/* Hover actions */}
-              <div className={`flex md:flex-col gap-2`}>
+              {/* Actions */}
+              <div className="flex md:flex-col gap-2">
                 <button
                   onClick={(e) => { e.stopPropagation(); openModal(order.id); }}
                   title={t('list.edit_order')}
                   className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                   <Edit2 size={14} />
-                  <span >{t('list.edit')}</span>
+                  <span>{t('list.edit')}</span>
                 </button>
+
+                {/* ── Ship button ── */}
+                <ShipButton order={order} onResult={setShipResult} />
+
                 <button
                   onClick={(e) => { e.stopPropagation(); setDeleteTarget(order); }}
                   title={t('list.delete_order')}
                   className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 dark:text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                   <Trash2 size={14} />
-                  <span >{t('list.delete')}</span>
+                  <span>{t('list.delete')}</span>
                 </button>
-                
               </div>
             </div>
           );
@@ -435,7 +555,7 @@ export default function Orders() {
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all`}>
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
             {isRtl ? <ArrowLeft size={16} className="rotate-180" /> : <ArrowLeft size={16} />}
             {t('list.prev_page')}
           </button>
@@ -469,15 +589,19 @@ export default function Orders() {
         </div>
       )}
 
-      {/* ── Edit Modal ── */}
+      {/* ── Modals ── */}
       <OrderModal isOpen={isOpen} onClose={closeModal} orderId={orderId} onRefresh={fetchOrders} />
 
-      {/* ── Delete Modal ── */}
       <DeleteConfirmModal
         order={deleteTarget}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
         deleting={deleting}
+      />
+
+      <ShipResultModal
+        result={shipResult}
+        onClose={() => setShipResult(null)}
       />
     </div>
   );

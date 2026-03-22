@@ -10,6 +10,7 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
+import Loading from '../../../components/Loading';
 
 /* ── API setup ── */
 const getStoreId = () => {
@@ -283,14 +284,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
   /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 flex items-center justify-center" dir={isRtl ? 'rtl' : 'ltr'}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 shadow-sm">
-            <RefreshCw size={28} className="animate-spin text-indigo-500" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium">{t('loading')}</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 

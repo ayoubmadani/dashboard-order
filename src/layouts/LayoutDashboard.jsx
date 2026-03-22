@@ -55,8 +55,32 @@ export default function LayoutDashboard() {
     }, []);
 
     useEffect(() => {
+        const initSub = async () => {
+            try {
+                const token = getAccessToken();
+
+                // الوسيط الثاني: الـ Body (هنا فارغ {})
+                // الوسيط الثالث: الـ Config (يحتوي على headers)
+                await axios.post(`${baseURL}/user/init-sub`, {}, {
+                    headers: {
+                        "Authorization": `Bearer ${token}` // يفضل كتابة Bearer بحرف كبير B
+                    }
+                });
+
+                console.log("Subscription initialized successfully");
+            } catch (error) {
+                console.error("Error initializing sub:", error.response?.data || error.message);
+            }
+        }
+
+        if (getAccessToken()) { // تأكد من وجود توكن قبل الطلب
+            initSub();
+        }
+    }, []);
+
+    useEffect(() => {
         const verifyAndFetchUser = async () => {
-            const token = Cookies.get('access_token');
+            const token = getAccessToken()
             if (!token) { navigate('/auth/'); return; }
             try {
                 const response = await axios.get(`${baseURL}/user/current-user`, {
@@ -234,7 +258,7 @@ export default function LayoutDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-[#0a0a0b] text-sm" dir={isRtl ? 'rtl' : 'ltr'}>
-            
+
             {/* Desktop Sidebar */}
             <aside className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col ${isRtl ? 'right-0' : 'left-0'} bg-white dark:bg-[#0f0f10] border-${isRtl ? 'l' : 'r'} border-gray-200 dark:border-white/5`}>
                 <div className="flex items-center gap-2 px-4 h-14 border-b border-gray-200 dark:border-white/5">
@@ -253,14 +277,14 @@ export default function LayoutDashboard() {
 
             {/* Main Content */}
             <div className={`${isRtl ? 'lg:pr-64' : 'lg:pl-64'} min-h-screen flex flex-col`}>
-                
+
                 {/* Header */}
                 <header className={`sticky top-0 z-40 h-14 flex items-center justify-between px-4 bg-white/95 dark:bg-[#0a0a0b]/95 border-b border-gray-200 dark:border-white/5 backdrop-blur supports-[backdrop-filter]:bg-white/80`}>
                     <div className="flex items-center gap-3">
                         <button className="lg:hidden p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md" onClick={() => setSidebarOpen(true)}>
                             <Menu className="h-5 w-5" />
                         </button>
-                        
+
                         <div className="hidden sm:flex items-center relative">
                             <Search className={`absolute w-4 h-4 text-gray-400 ${isRtl ? 'right-2.5' : 'left-2.5'}`} />
                             <input
@@ -275,7 +299,7 @@ export default function LayoutDashboard() {
                         <button onClick={() => setIsDark(!isDark)} className="p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
                             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
-                        
+
                         <button className="relative p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
                             <Bell className="w-4 h-4" />
                             <span className="absolute top-1 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full" />
@@ -348,7 +372,7 @@ export default function LayoutDashboard() {
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        
+
                         <StoreSelector isMobile={true} />
                         <Navigation isMobile={true} />
                     </div>
