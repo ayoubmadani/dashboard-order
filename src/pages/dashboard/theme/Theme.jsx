@@ -3,13 +3,16 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2, Palette, Layers, LayoutGrid,
-  ExternalLink, Download, CheckCircle2, Sparkles
+  ExternalLink, Download, CheckCircle2, Sparkles,
+  ChevronLeft, ChevronRight, Zap
 } from 'lucide-react';
 import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import Loading from '../../../components/Loading';
 
 const DEFAULT_IMAGE = 'https://bloomidea.com/sites/default/files/styles/og_image/public/blog/Tipos%20de%20come%CC%81rcio%20electro%CC%81nico_0.png?itok=jC9MlQZq';
+
+const ITEMS_PER_PAGE = 6;
 
 export default function Theme() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'theme' });
@@ -23,6 +26,7 @@ export default function Theme() {
   const [installingId, setInstallingId] = useState(null);
   const [activatingId, setActivatingId] = useState(null);
   const [idActive, setIdActive] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const token = getAccessToken();
   const storeId = localStorage.getItem('storeId');
@@ -39,14 +43,8 @@ export default function Theme() {
         axios.get(`${baseURL}/stores/${storeId}`, headers),
       ]);
 
-      const themeUserData = store.data?.data?.themeUser; // الوصول لأول عنصر في المصفوفة      
-
-      if (themeUserData?.themeId) {
-        setIdActive(themeUserData.themeId)
-      } else {
-        setIdActive('')
-      }
-
+      const themeUserData = store.data?.data?.themeUser;
+      setIdActive(themeUserData?.themeId ?? '');
       setThemes(themesRes.data.data ?? []);
       setTypes(typesRes.data ?? []);
       setMyTheme(myThemeRes.data ?? []);
@@ -59,11 +57,22 @@ export default function Theme() {
 
   useEffect(() => { getData(); }, []);
 
-  /* ── Filter ── */
+  /* ── Filter + Pagination ── */
   const filteredThemes =
     selectedType === 'all'
       ? themes
       : themes.filter(theme => theme.themeTypeId === selectedType);
+
+  const totalPages = Math.ceil(filteredThemes.length / ITEMS_PER_PAGE);
+  const paginatedThemes = filteredThemes.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  const handleTypeChange = (type) => {
+    setSelectedType(type);
+    setCurrentPage(1);
+  };
 
   /* ── Handlers ── */
   const handleInstallTheme = async (themeId) => {
@@ -93,13 +102,9 @@ export default function Theme() {
         { themeId, storeId },
         headers
       );
-      const data = res.data
-      console.log(res);
-      
-      if (data.success) {
-        setIdActive(themeId)
+      if (res.data.success) {
+        setIdActive(themeId);
         getData();
-      } else {
       }
     } catch (error) {
       console.error('Activation failed:', error);
@@ -109,14 +114,8 @@ export default function Theme() {
     }
   };
 
-  /* ── Loading ── */
-  if (loading) {
-    return (
-      <Loading />
-    );
-  }
+  if (loading) return <Loading />;
 
-  /* ── Helpers ── */
   const resultsLabel = filteredThemes.length === 1
     ? t('gallery.results_one')
     : t('gallery.results_other', { count: filteredThemes.length });
@@ -139,7 +138,8 @@ export default function Theme() {
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('my_themes.title')}</h2>
         </div>
 
-        <div className="flex flex-wrap gap-5">
+        {/* Horizontal scrollable row */}
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
 
           {/* Default slot */}
           <ThemeCard
@@ -149,10 +149,9 @@ export default function Theme() {
             onActivate={() => handleActiveTheme()}
             activateLabel={t('my_themes.activate_btn')}
             isDefault
-            isActive={idActive === ""}
+            isActive={idActive === ''}
           />
 
-          {/* Installed themes */}
           {myTheme.map((item) => (
             <ThemeCard
               key={item.id}
@@ -166,7 +165,9 @@ export default function Theme() {
           ))}
 
           {myTheme.length === 0 && (
-            <p className="text-sm text-gray-400 dark:text-zinc-500 py-4">{t('my_themes.empty')}</p>
+            <p className="text-sm text-gray-400 dark:text-zinc-500 py-4 self-center">
+              {t('my_themes.empty')}
+            </p>
           )}
         </div>
       </section>
@@ -184,19 +185,17 @@ export default function Theme() {
         </div>
 
         <div className="flex flex-wrap gap-2.5">
-          {/* All pill */}
           <FilterPill
             label={t('types.all')}
             active={selectedType === 'all'}
-            onClick={() => setSelectedType('all')}
+            onClick={() => handleTypeChange('all')}
           />
-          {/* Dynamic pills */}
           {types.map((type) => (
             <FilterPill
               key={type.id}
               label={type.name}
               active={selectedType === type.id}
-              onClick={() => setSelectedType(type.id)}
+              onClick={() => handleTypeChange(type.id)}
             />
           ))}
         </div>
@@ -228,157 +227,187 @@ export default function Theme() {
             <p className="text-sm mt-1">{t('gallery.empty_subtitle')}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filteredThemes.map((item) => {
-              const isFree = Number(item.price) === 0;
-              const isInstalling = installingId === item.id;
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {paginatedThemes.map((item) => {
+                const isFree = Number(item.price) === 0;
+                const isInstalling = installingId === item.id;
 
-              return (
-                <div
-                  key={item.id}
-                  className="group bg-gray-50 dark:bg-zinc-950 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-xl transition-all duration-300"
-                >
-                  {/* Thumbnail */}
-                  <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
-                    {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name_en}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        onError={e => { e.target.style.display = 'none'; }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Sparkles size={40} className="text-gray-300 dark:text-zinc-600" />
+                return (
+                  <div
+                    key={item.id}
+                    className="group bg-gray-50 dark:bg-zinc-950 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-xl transition-all duration-300"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name_en}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          onError={e => { e.target.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Sparkles size={40} className="text-gray-300 dark:text-zinc-600" />
+                        </div>
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                      {/* Price badge */}
+                      <div className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-800 dark:text-white shadow-sm`}>
+                        {isFree ? t('gallery.free_label') : `$${Number(item.price).toFixed(2)}`}
                       </div>
-                    )}
 
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                    {/* Price badge */}
-                    <div className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-800 dark:text-white shadow-sm`}>
-                      {isFree ? t('gallery.free_label') : `$${Number(item.price).toFixed(2)}`}
+                      {isFree && (
+                        <div className={`absolute top-3 ${isRtl ? 'right-3' : 'left-3'} bg-emerald-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm uppercase tracking-wide`}>
+                          {t('gallery.free_label')}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Free pill */}
-                    {isFree && (
-                      <div className={`absolute top-3 ${isRtl ? 'right-3' : 'left-3'} bg-emerald-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm uppercase tracking-wide`}>
-                        {t('gallery.free_label')}
+                    {/* Body */}
+                    <div className="p-5">
+                      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1 truncate">
+                        {item.name_en || item.name_ar}
+                      </h3>
+                      <p className="text-sm text-gray-500 dark:text-zinc-400 mb-4 line-clamp-2">
+                        {item.desc_en}
+                      </p>
+
+                      {Array.isArray(item.tag) && item.tag.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-4">
+                          {item.tag.map((tag, idx) => (
+                            <span key={idx} className="px-2 py-0.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-400 text-[10px] font-semibold rounded-lg">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2.5">
+                        <a
+                          target="_blank"
+                          rel="noreferrer"
+                          href={`${storeURL}/show/${item.slug}`}
+                          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-500/20"
+                        >
+                          <ExternalLink size={14} />
+                          {t('gallery.preview_btn')}
+                        </a>
+                        <button
+                          onClick={() => handleInstallTheme(item.id)}
+                          disabled={isInstalling}
+                          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-opacity disabled:opacity-60 shadow-sm"
+                        >
+                          {isInstalling
+                            ? <Loader2 size={14} className="animate-spin" />
+                            : <Download size={14} />}
+                          {t('gallery.install_btn')}
+                        </button>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Body */}
-                  <div className="p-5">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1 truncate">
-                      {item.name_en || item.name_ar}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-zinc-400 mb-4 line-clamp-2">
-                      {item.desc_en}
-                    </p>
-
-                    {/* Tags */}
-                    {Array.isArray(item.tag) && item.tag.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mb-4">
-                        {item.tag.map((tag, idx) => (
-                          <span key={idx} className="px-2 py-0.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-400 text-[10px] font-semibold rounded-lg">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2.5">
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={`${storeURL}/show/${item.slug}`}
-                        className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-500/20"
-                      >
-                        <ExternalLink size={14} />
-                        {t('gallery.preview_btn')}
-                      </a>
-                      <button
-                        onClick={() => handleInstallTheme(item.id)}
-                        disabled={isInstalling}
-                        className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-opacity disabled:opacity-60 shadow-sm"
-                      >
-                        {isInstalling
-                          ? <Loader2 size={14} className="animate-spin" />
-                          : <Download size={14} />}
-                        {t('gallery.install_btn')}
-                      </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {/* ── Pagination ── */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                isRtl={isRtl}
+              />
+            )}
+          </>
         )}
       </section>
     </div>
   );
 }
 
-/* ── Sub-components ── */
-
-
-
+/* ═══════════════════════════════════════════════════
+   ThemeCard — horizontal card design
+═══════════════════════════════════════════════════ */
 function ThemeCard({ image, name, isActivating, onActivate, activateLabel, isDefault, isActive = false }) {
   return (
-    <div className={`flex flex-col items-center gap-2.5 group p-2 rounded-2xl transition-all duration-300
-      ${isActive
-        ? "border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-500/10 shadow-lg shadow-emerald-500/10"
-        : "border-2 border-transparent hover:bg-gray-50 dark:hover:bg-zinc-900"}
-    `}>
-
-      {/* Container للصورة */}
-      <div className={`w-28 h-28 rounded-2xl overflow-hidden border-2 transition-all duration-200 
+    <div
+      className={`relative flex-shrink-0 w-56 rounded-2xl overflow-hidden border-2 transition-all duration-300 cursor-pointer group
         ${isActive
-          ? 'border-emerald-500'
-          : isDefault
-            ? 'border-emerald-200 dark:border-emerald-500/30' // تم التغيير للأخضر
-            : 'border-gray-200 dark:border-zinc-700'} 
-        group-hover:border-emerald-400 dark:group-hover:border-emerald-500/60 shadow-sm`}
-      >
+          ? 'border-emerald-500 shadow-lg shadow-emerald-500/20'
+          : 'border-gray-200 dark:border-zinc-700 hover:border-emerald-400 dark:hover:border-emerald-500/60 hover:shadow-md'
+        }`}
+    >
+      {/* Cover image */}
+      <div className="relative h-32 overflow-hidden bg-gray-100 dark:bg-zinc-800">
         <img
           src={image}
           alt={name}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           onError={e => { e.target.style.display = 'none'; }}
         />
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+
+        {/* Active badge top-right */}
+        {isActive && (
+          <div className="absolute top-2 right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm">
+            <CheckCircle2 size={10} />
+            مفعّل
+          </div>
+        )}
+
+        {/* Default badge */}
+        {isDefault && !isActive && (
+          <div className="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/30">
+            Default
+          </div>
+        )}
       </div>
 
-      {/* اسم القالب */}
-      <span className={`text-xs font-bold text-center max-w-[7rem] truncate transition-colors
-        ${isActive ? "text-emerald-700 dark:text-emerald-400" : "text-gray-600 dark:text-zinc-400"}
-      `}>
-        {name}
-      </span>
-
-      {/* زر التفعيل */}
-      <button
-        onClick={onActivate}
-        disabled={isActivating || isActive}
-        className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-70
+      {/* Bottom info */}
+      <div
+        className={`px-3 py-3 flex items-center justify-between gap-2
           ${isActive
-            ? "bg-emerald-500 text-white cursor-default"
-            : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20"} // تم التغيير للأخضر
-        `}
+            ? 'bg-emerald-50 dark:bg-emerald-500/10'
+            : 'bg-white dark:bg-zinc-900'
+          }`}
       >
-        {isActivating ? (
-          <Loader2 size={12} className="animate-spin" />
-        ) : (
-          <CheckCircle2 size={12} />
-        )}
-        {isActive ? "مفعّل" : activateLabel}
-      </button>
+        <span
+          className={`text-xs font-bold truncate max-w-[7rem]
+            ${isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-700 dark:text-zinc-300'}`}
+        >
+          {name}
+        </span>
+
+        <button
+          onClick={onActivate}
+          disabled={isActivating || isActive}
+          className={`flex-shrink-0 flex items-center gap-1 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all active:scale-95 disabled:opacity-70
+            ${isActive
+              ? 'bg-emerald-500 text-white cursor-default'
+              : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/30'
+            }`}
+        >
+          {isActivating
+            ? <Loader2 size={11} className="animate-spin" />
+            : isActive
+              ? <CheckCircle2 size={11} />
+              : <Zap size={11} />
+          }
+          {isActive ? 'مفعّل' : activateLabel}
+        </button>
+      </div>
     </div>
   );
 }
 
+/* ═══════════════════════════════════════════════════
+   FilterPill
+═══════════════════════════════════════════════════ */
 function FilterPill({ label, active, onClick }) {
   return (
     <button
@@ -389,5 +418,76 @@ function FilterPill({ label, active, onClick }) {
     >
       {label}
     </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   Pagination
+═══════════════════════════════════════════════════ */
+function Pagination({ currentPage, totalPages, onPageChange, isRtl }) {
+  const PrevIcon = isRtl ? ChevronRight : ChevronLeft;
+  const NextIcon = isRtl ? ChevronLeft : ChevronRight;
+
+  /* Build page numbers: always show first, last, current ±1, with ellipsis */
+  const getPages = () => {
+    const pages = [];
+    const range = (from, to) => {
+      for (let i = from; i <= to; i++) pages.push(i);
+    };
+
+    if (totalPages <= 7) {
+      range(1, totalPages);
+    } else {
+      pages.push(1);
+      if (currentPage > 3) pages.push('…');
+      range(Math.max(2, currentPage - 1), Math.min(totalPages - 1, currentPage + 1));
+      if (currentPage < totalPages - 2) pages.push('…');
+      pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 mt-8 pt-6 border-t border-gray-100 dark:border-zinc-800">
+
+      {/* Prev */}
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <PrevIcon size={16} />
+      </button>
+
+      {/* Pages */}
+      {getPages().map((page, idx) =>
+        page === '…' ? (
+          <span key={`ellipsis-${idx}`} className="w-9 h-9 flex items-center justify-center text-gray-400 dark:text-zinc-500 text-sm select-none">
+            …
+          </span>
+        ) : (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-9 h-9 flex items-center justify-center rounded-xl text-sm font-semibold transition-all duration-200
+              ${currentPage === page
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/30 scale-105'
+                : 'border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
+              }`}
+          >
+            {page}
+          </button>
+        )
+      )}
+
+      {/* Next */}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        <NextIcon size={16} />
+      </button>
+    </div>
   );
 }
