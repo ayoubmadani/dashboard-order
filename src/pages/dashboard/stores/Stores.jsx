@@ -443,7 +443,7 @@ const Stores = () => {
 
                       {/* ── Visit link — full width ── */}
                       <a
-                        href={import.meta.env.SSL ? `https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}` : `http://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`} target="_blank"
+                        href={`https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`}  target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => !store.isActive && e.preventDefault()}
                         className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all border
