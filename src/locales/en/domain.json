@@ -1,0 +1,44 @@
+{
+  "title": "Domains",
+  "subtitle": "Add a custom domain to your store and check activation status",
+
+  "add_domain": "Add Domain",
+  "add_placeholder": "example.com",
+  "add_hint": "Enter your root domain or a subdomain (e.g., store.example.com)",
+  "add_btn": "Add",
+  "adding": "Adding…",
+
+  "nameservers_title": "Step 1 — Set Nameservers",
+  "nameservers_desc": "Change the Nameservers in your domain provider's panel to the following values:",
+  "ns_copy": "Copy",
+  "ns_copied": "Copied",
+  "ns_note": "Propagation may take 24 to 48 hours after the change.",
+
+  "verify_title": "Step 2 — Wait for Verification",
+  "verify_desc": "Once nameservers are changed, the system will automatically verify and issue an SSL certificate.",
+
+  "status_active": "Active",
+  "status_pending": "Pending",
+  "status_error": "Error",
+  "status_initializing": "Initializing",
+  "ssl_active": "SSL Active",
+  "ssl_pending": "SSL Pending",
+  "ssl_initializing": "SSL Initializing",
+
+  "check_status": "Check Status",
+  "checking": "Checking…",
+  "delete": "Delete",
+  "deleting": "Deleting…",
+  "confirm_delete": "Are you sure you want to delete this domain?",
+
+  "empty_title": "No domains yet",
+  "empty_desc": "Add your custom domain to link it to your store.",
+
+  "error_fetch": "Failed to load domains",
+  "error_add": "Failed to add domain",
+  "error_invalid": "Please enter a valid domain (e.g., store.example.com)",
+  "added_success": "Domain added successfully",
+
+  "your_store_url": "Your current store URL",
+  "docs_link": "How to set up the domain?"
+}

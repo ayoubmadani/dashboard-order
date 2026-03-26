@@ -11,6 +11,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
+import { Globe } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
@@ -119,7 +120,7 @@ export default function LayoutDashboard() {
     const navigation = [
         { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: '#10b981' },
         { name: t('nav.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: '#0ea5e9' },
-        { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: '#8b5cf6' },
+        { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe, color: '#64748b' }, { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: '#8b5cf6' },
         { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: '#6366f1' },
         { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
         { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: '#f43f5e' },
@@ -128,7 +129,8 @@ export default function LayoutDashboard() {
         { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, color: '#06b6d4' },
         { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: '#22c55e' },
         { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: '#d946ef' },
-        { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: '#64748b' }
+        { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: '#64748b' },
+
     ];
 
     const [selectedProject, setSelectedProject] = useState(null);

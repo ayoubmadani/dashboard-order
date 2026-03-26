@@ -1,0 +1,44 @@
+{
+  "title": "النطاقات",
+  "subtitle": "أضف نطاقاً مخصصاً لمتجرك وتحقق من حالة التفعيل",
+
+  "add_domain": "إضافة نطاق",
+  "add_placeholder": "example.com",
+  "add_hint": "أدخل نطاقك الجذري أو نطاقاً فرعياً (مثال: store.example.com)",
+  "add_btn": "إضافة",
+  "adding": "جارٍ الإضافة…",
+
+  "nameservers_title": "خطوة 1 — اضبط خوادم الأسماء",
+  "nameservers_desc": "قم بتغيير خوادم الأسماء (Nameservers) في لوحة مزود النطاق الخاص بك إلى القيم التالية:",
+  "ns_copy": "نسخ",
+  "ns_copied": "تم النسخ",
+  "ns_note": "قد يستغرق الانتشار من 24 إلى 48 ساعة بعد التغيير.",
+
+  "verify_title": "خطوة 2 — انتظر التحقق",
+  "verify_desc": "بمجرد تغيير خوادم الأسماء، سيتحقق النظام تلقائياً ويُصدر شهادة SSL.",
+
+  "status_active":       "نشط",
+  "status_pending":      "قيد الانتظار",
+  "status_error":        "خطأ",
+  "status_initializing": "جارٍ التهيئة",
+  "ssl_active":          "SSL نشط",
+  "ssl_pending":         "SSL معلق",
+  "ssl_initializing":    "SSL يُهيَّأ",
+
+  "check_status": "فحص الحالة",
+  "checking": "جارٍ الفحص…",
+  "delete": "حذف",
+  "deleting": "جارٍ الحذف…",
+  "confirm_delete": "هل أنت متأكد من حذف هذا النطاق؟",
+
+  "empty_title": "لا توجد نطاقات بعد",
+  "empty_desc": "أضف نطاقك المخصص لربطه بمتجرك.",
+
+  "error_fetch": "فشل تحميل النطاقات",
+  "error_add": "فشل إضافة النطاق",
+  "error_invalid": "يرجى إدخال نطاق صالح (مثال: store.example.com)",
+  "added_success": "تمت إضافة النطاق بنجاح",
+
+  "your_store_url": "رابط متجرك الحالي",
+  "docs_link": "كيفية ضبط النطاق؟"
+}

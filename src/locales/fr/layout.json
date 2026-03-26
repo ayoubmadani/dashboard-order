@@ -1,39 +1,37 @@
 {
   "nav": {
-    "home":       "Accueil",
-    "stores":     "Boutiques",
-    "theme":      "Thèmes",
+    "home": "Accueil",
+    "stores": "Boutiques",
+    "theme": "Thèmes",
     "categories": "Catégories",
-    "products":   "Produits",
-    "landing":    "Page de vente",
-    "orders":     "Commandes",
-    "shipping":   "Frais de port",
-    "wallet":     "Portefeuille",
-    "analytics":  "Statistiques",
-    "settings":   "Paramètres",
+    "products": "Produits",
+    "landing": "Page de vente",
+    "orders": "Commandes",
+    "shipping": "Frais de port",
+    "wallet": "Portefeuille",
+    "analytics": "Statistiques",
+    "settings": "Paramètres",
     "menu_label": "Menu",
     "pixels": "pixels",
-    "current_store": "Boutique actuelle"
+    "current_store": "Boutique actuelle",
+    "domain": "domaine"
   },
-
   "store_selector": {
     "current_store": "Boutique actuelle",
-    "select_store":  "Choisir une boutique",
-    "no_stores":     "Aucune boutique",
-    "create_store":  "Créer une boutique"
+    "select_store": "Choisir une boutique",
+    "no_stores": "Aucune boutique",
+    "create_store": "Créer une boutique"
   },
-
   "header": {
     "search_placeholder": "Rechercher…",
-    "notifications":      "Notifications",
-    "theme_toggle":       "Changer de thème",
-    "dark":                "Sombre",
-    "light":               "Clair"
+    "notifications": "Notifications",
+    "theme_toggle": "Changer de thème",
+    "dark": "Sombre",
+    "light": "Clair"
   },
-
   "user_menu": {
-    "role":     "Admin",
+    "role": "Admin",
     "settings": "Paramètres",
-    "logout":   "Déconnexion"
+    "logout": "Déconnexion"
   }
 }

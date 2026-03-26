@@ -41,6 +41,7 @@ import Wallet from './pages/dashboard/wallet/wallet';
 import Plan from './pages/site/plan';
 import Pixels from './pages/dashboard/pixels/pixels';
 import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
+import Domain from './pages/dashboard/domain/domain';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -95,7 +96,10 @@ const App = () => {
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
             </Route>
 
+
+
             <Route path='pixels'  element={<Pixels />}/>
+            <Route path='domain'  element={<Domain />}/>
 
             <Route path='theme'>
               <Route index element={<Theme />} />

@@ -1,0 +1,44 @@
+{
+  "title": "Domaines",
+  "subtitle": "Ajoutez un domaine personnalisé à votre boutique et vérifiez le statut d'activation",
+
+  "add_domain": "Ajouter un domaine",
+  "add_placeholder": "exemple.com",
+  "add_hint": "Entrez votre domaine racine ou un sous-domaine (ex: boutique.exemple.com)",
+  "add_btn": "Ajouter",
+  "adding": "Ajout en cours…",
+
+  "nameservers_title": "Étape 1 — Configurez les serveurs de noms",
+  "nameservers_desc": "Modifiez les serveurs de noms (Nameservers) dans le panneau de votre fournisseur de domaine par les valeurs suivantes :",
+  "ns_copy": "Copier",
+  "ns_copied": "Copié",
+  "ns_note": "La propagation peut prendre de 24 à 48 heures après la modification.",
+
+  "verify_title": "Étape 2 — Attendez la vérification",
+  "verify_desc": "Une fois les serveurs de noms modifiés, le système vérifiera automatiquement et émettra un certificat SSL.",
+
+  "status_active": "Actif",
+  "status_pending": "En attente",
+  "status_error": "Erreur",
+  "status_initializing": "Initialisation",
+  "ssl_active": "SSL Actif",
+  "ssl_pending": "SSL en attente",
+  "ssl_initializing": "Initialisation SSL",
+
+  "check_status": "Vérifier le statut",
+  "checking": "Vérification…",
+  "delete": "Supprimer",
+  "deleting": "Suppression…",
+  "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce domaine ?",
+
+  "empty_title": "Aucun domaine pour le moment",
+  "empty_desc": "Ajoutez votre domaine personnalisé pour le lier à votre boutique.",
+
+  "error_fetch": "Échec du chargement des domaines",
+  "error_add": "Échec de l'ajout du domaine",
+  "error_invalid": "Veuillez entrer un domaine valide (ex: boutique.exemple.com)",
+  "added_success": "Domaine ajouté avec succès",
+
+  "your_store_url": "URL actuelle de votre boutique",
+  "docs_link": "Comment configurer le domaine ?"
+}

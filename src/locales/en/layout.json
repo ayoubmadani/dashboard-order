@@ -13,7 +13,8 @@
     "settings": "Settings",
     "menu_label": "Menu",
     "pixels": "pixels",
-    "current_store": "Current Store"
+    "current_store": "Current Store",
+    "domain": "domain"
   },
   "store_selector": {
     "current_store": "Current Store",

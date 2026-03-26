@@ -13,7 +13,8 @@
     "settings":   "الإعدادات",
     "menu_label": "القائمة",
     "pixels":"بيكسل",
-    "current_store": "المتجر الحالي"
+    "current_store": "المتجر الحالي",
+    "domain" : "دومين"
   },
 
   "store_selector": {
