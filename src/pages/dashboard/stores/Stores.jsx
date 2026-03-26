@@ -443,7 +443,7 @@ const Stores = () => {
 
                       {/* ── Visit link — full width ── */}
                       <a
-                        href={`${import.meta.env.VITE_STORE_URL}/${store.subdomain}`}
+                        href={`${store.subdomain}.${import.meta.env.VITE_STORE_URL}/`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => !store.isActive && e.preventDefault()}
