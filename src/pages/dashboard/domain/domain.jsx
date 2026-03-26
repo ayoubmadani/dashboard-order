@@ -79,8 +79,6 @@ function CnameSetupCard({ domainId, domainName }) {
             try {
                 const { data } = await axios.get(`${baseURL}/domain/setup-instructions/${domainId}`, headers);
                 setData(data);
-                console.log(data);
-
             } catch (err) { console.error(err); }
             finally { setLoading(false); }
         };
@@ -91,6 +89,9 @@ function CnameSetupCard({ domainId, domainName }) {
 
     const cname = data?.instructions?.find(i => i.type === 'CNAME');
     const txt = data?.instructions?.find(i => i.type === 'TXT');
+    
+    // التحقق مما إذا كان الدومين نشطاً بالفعل
+    const isDomainActive = data?.status === 'active';
 
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
@@ -101,35 +102,48 @@ function CnameSetupCard({ domainId, domainName }) {
                     </div>
                     <div>
                         <h3 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('setup_title', 'إعداد الربط السريع')}</h3>
-                        <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-0.5">{t('setup_desc', 'أضف هذه السجلات في لوحة تحكم الدومين')}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-0.5">
+                            {isDomainActive ? 'تم الربط بنجاح، دومينك جاهز للعمل' : t('setup_desc', 'أضف هذه السجلات في لوحة تحكم الدومين')}
+                        </p>
                     </div>
                 </div>
             </div>
 
             <div className="p-5">
-                {/* CNAME Record */}
+                {/* CNAME Record - دائماً مطلوب للتوجيه */}
                 <DnsRecordBox
                     label="1. سجل الربط (Main Record)"
                     type="CNAME"
                     host={cname?.host || '@'}
-                    value={cname?.value || 'ironium.mdstore.top'}
+                    value={cname?.value || '...'}
                 />
 
                 <div className="h-px bg-gray-100 dark:bg-zinc-800 my-4" />
 
-                {/* TXT Record */}
-                <DnsRecordBox
-                    label="2. سجل الأمان (SSL Verification)"
-                    type="TXT"
-                    host={txt?.host || '_cf-custom-hostname'}
-                    value={txt?.value || '...جاري التحميل'}
-                />
+                {/* TXT Record - يظهر فقط إذا لم يتم التفعيل بعد */}
+                {!isDomainActive ? (
+                    <DnsRecordBox
+                        label="2. سجل الأمان (SSL Verification)"
+                        type="TXT"
+                        host={txt?.host || '_cf-custom-hostname'}
+                        value={txt?.value || 'جاري استخراج القيمة من السحابة...'}
+                    />
+                ) : (
+                    <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-500/20 rounded-xl">
+                        <CheckCircle2 size={16} className="text-emerald-500" />
+                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                            تم التحقق من ملكية الدومين وتفعيل شهادة SSL بنجاح.
+                        </span>
+                    </div>
+                )}
             </div>
 
             <div className="px-5 pb-5 flex items-start gap-2 italic">
                 <Info size={12} className="text-amber-500 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-gray-400 leading-relaxed">
-                    بعد إضافة السجلات، قد يستغرق التفعيل من 5 إلى 30 دقيقة.
+                    {isDomainActive 
+                        ? 'ملاحظة: لا تقم بحذف سجل CNAME لضمان استمرار عمل الموقع.' 
+                        : 'بعد إضافة السجلات، قد يستغرق التفعيل من 5 إلى 30 دقيقة.'}
                 </p>
             </div>
         </div>
