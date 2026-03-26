@@ -3,19 +3,12 @@ import { useTranslation } from 'react-i18next';
 import {
     Globe, Plus, Copy, CheckCircle2, XCircle, Clock,
     Loader2, Trash2, RefreshCcw, ShieldCheck, ShieldAlert,
-    AlertTriangle, ChevronRight, ExternalLink, Server, Zap
+    AlertTriangle, ChevronRight, ExternalLink, Server, Zap, FileCode, Info
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
-
-// ─────────────────────────────────────────────
-//  Constants
-// ─────────────────────────────────────────────
-const NAMESERVERS = ['ns1.mdstore.top', 'ns2.mdstore.top'];
-
-const DOMAIN_REGEX =
-    /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
+import { Link } from 'react-router-dom';
 
 // ─────────────────────────────────────────────
 //  Helpers
@@ -29,91 +22,115 @@ const Skeleton = ({ className = '' }) => (
     <div className={`animate-pulse bg-gray-100 dark:bg-zinc-800 rounded-xl ${className}`} />
 );
 
-function StatusBadge({ status, ssl }) {
-    const { t, i18n } = useTranslation('translation', { keyPrefix: 'domain' });
-
-    const map = {
-        active: { label: t('status_active'), icon: CheckCircle2, cls: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' },
-        pending: { label: t('status_pending'), icon: Clock, cls: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/30' },
-        error: { label: t('status_error'), icon: XCircle, cls: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-500/30' },
+// ─────────────────────────────────────────────
+//  DNS Record Row (New Component)
+// ─────────────────────────────────────────────
+function DnsRecordBox({ type, host, value, label }) {
+    const [copied, setCopied] = useState(false);
+    const copy = (txt) => {
+        navigator.clipboard.writeText(txt);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
-    const sslMap = {
-        active: { label: t('ssl_active'), icon: ShieldCheck, cls: 'text-emerald-500' },
-        pending: { label: t('ssl_pending'), icon: ShieldAlert, cls: 'text-amber-500' },
-        initializing: { label: t('ssl_initializing'), icon: ShieldAlert, cls: 'text-gray-400' },
-    };
-
-    const s = map[status] || map.pending;
-    const sslS = sslMap[ssl] || sslMap.initializing;
-    const Icon = s.icon;
-    const SslIcon = sslS.icon;
 
     return (
-        <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black border ${s.cls}`}>
-                <Icon className="w-3 h-3" />
-                {s.label}
-            </span>
-            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${sslS.cls}`}>
-                <SslIcon className="w-3 h-3" />
-                {sslS.label}
-            </span>
+        <div className="space-y-2 mb-4 last:mb-0">
+            <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">{label}</span>
+                <span className="px-2 py-0.5 rounded bg-gray-100 dark:bg-zinc-800 text-[9px] font-bold text-gray-500">{type}</span>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+                {/* Host Field */}
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-zinc-800/60 border border-gray-100 dark:border-zinc-700 rounded-xl">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Host / Name</p>
+                        <code className="text-xs font-mono font-bold text-gray-700 dark:text-zinc-200 truncate block">{host}</code>
+                    </div>
+                    <button onClick={() => copy(host)} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-gray-400">
+                        {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    </button>
+                </div>
+                {/* Value Field */}
+                <div className="flex items-center gap-2 p-2.5 bg-gray-50 dark:bg-zinc-800/60 border border-gray-100 dark:border-zinc-700 rounded-xl">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Value / Target</p>
+                        <code className="text-xs font-mono font-bold text-gray-700 dark:text-zinc-200 truncate block">{value}</code>
+                    </div>
+                    <button onClick={() => copy(value)} className="p-1.5 hover:bg-white dark:hover:bg-zinc-700 rounded-lg transition-colors text-gray-400">
+                        {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
 
 // ─────────────────────────────────────────────
-//  NS Copy Card
+//  CNAME Setup Card (Replaces NameserverCard)
 // ─────────────────────────────────────────────
-function NameserverCard() {
-    const { t, i18n } = useTranslation('translation', { keyPrefix: 'domain' });
-    const [copiedNs, setCopiedNs] = useState(null);
+function CnameSetupCard({ domainId, domainName }) {
+    const { t } = useTranslation('translation', { keyPrefix: 'domain' });
+    const [loading, setLoading] = useState(true);
+    const [data, setData] = useState(null);
+    const headers = useAuthHeaders();
 
-    const copyNs = (ns) => {
-        navigator.clipboard.writeText(ns).catch(() => { });
-        setCopiedNs(ns);
-        setTimeout(() => setCopiedNs(null), 2000);
-    };
+    useEffect(() => {
+        const fetchInstructions = async () => {
+            try {
+                const { data } = await axios.get(`${baseURL}/domain/setup-instructions/${domainId}`, headers);
+                setData(data);
+                console.log(data);
+
+            } catch (err) { console.error(err); }
+            finally { setLoading(false); }
+        };
+        if (domainId) fetchInstructions();
+    }, [domainId]);
+
+    if (loading) return <Skeleton className="h-64 w-full" />;
+
+    const cname = data?.instructions?.find(i => i.type === 'CNAME');
+    const txt = data?.instructions?.find(i => i.type === 'TXT');
 
     return (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
-            {/* Header */}
-            <div className="flex items-start gap-3 p-5 border-b border-gray-50 dark:border-zinc-800">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <Server className="w-4 h-4 text-indigo-500" />
-                </div>
-                <div>
-                    <h3 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('nameservers_title')}</h3>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 leading-relaxed">{t('nameservers_desc')}</p>
-                </div>
-            </div>
-
-            {/* NS rows */}
-            <div className="p-4 space-y-2.5">
-                {NAMESERVERS.map((ns, i) => (
-                    <div key={ns} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-zinc-800/60 rounded-xl border border-gray-100 dark:border-zinc-700">
-                        <span className="w-5 h-5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black flex items-center justify-center shrink-0">
-                            {i + 1}
-                        </span>
-                        <code className="flex-1 text-sm font-mono font-semibold text-gray-800 dark:text-zinc-200">{ns}</code>
-                        <button
-                            onClick={() => copyNs(ns)}
-                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${copiedNs === ns
-                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                                    : 'bg-white dark:bg-zinc-700 text-gray-500 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-600 border border-gray-200 dark:border-zinc-600'
-                                }`}
-                        >
-                            {copiedNs === ns ? <CheckCircle2 className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                            {copiedNs === ns ? t('ns_copied') : t('ns_copy')}
-                        </button>
+            <div className="p-5 border-b border-gray-50 dark:border-zinc-800 bg-indigo-50/30 dark:bg-indigo-900/10">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-500 text-white flex items-center justify-center shrink-0">
+                        <Zap size={16} />
                     </div>
-                ))}
+                    <div>
+                        <h3 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('setup_title', 'إعداد الربط السريع')}</h3>
+                        <p className="text-[10px] text-gray-500 dark:text-zinc-400 mt-0.5">{t('setup_desc', 'أضف هذه السجلات في لوحة تحكم الدومين')}</p>
+                    </div>
+                </div>
             </div>
 
-            {/* Note */}
-            <div className="flex items-start gap-2 px-4 pb-4 pt-0">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-gray-400 dark:text-zinc-500">{t('ns_note')}</p>
+            <div className="p-5">
+                {/* CNAME Record */}
+                <DnsRecordBox
+                    label="1. سجل الربط (Main Record)"
+                    type="CNAME"
+                    host={cname?.host || '@'}
+                    value={cname?.value || 'ironium.mdstore.top'}
+                />
+
+                <div className="h-px bg-gray-100 dark:bg-zinc-800 my-4" />
+
+                {/* TXT Record */}
+                <DnsRecordBox
+                    label="2. سجل الأمان (SSL Verification)"
+                    type="TXT"
+                    host={txt?.host || '_cf-custom-hostname'}
+                    value={txt?.value || '...جاري التحميل'}
+                />
+            </div>
+
+            <div className="px-5 pb-5 flex items-start gap-2 italic">
+                <Info size={12} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-gray-400 leading-relaxed">
+                    بعد إضافة السجلات، قد يستغرق التفعيل من 5 إلى 30 دقيقة.
+                </p>
             </div>
         </div>
     );
@@ -122,98 +139,76 @@ function NameserverCard() {
 // ─────────────────────────────────────────────
 //  Domain Row
 // ─────────────────────────────────────────────
-function DomainRow({ domain, onDelete, onCheckStatus }) {
+function DomainRow({ domain, onDelete, onSync, isSelected, onSelect }) {
     const { t } = useTranslation('domain');
-    const [checking, setChecking] = useState(false);
+    const [syncing, setSyncing] = useState(false);
     const [deleting, setDeleting] = useState(false);
-    const [statusData, setStatusData] = useState(null);
 
-    const handleCheck = async () => {
-        setChecking(true);
-        const result = await onCheckStatus(domain.domain);
-        if (result) setStatusData(result);
-        setChecking(false);
+    const handleSync = async () => {
+        setSyncing(true);
+        await onSync(domain.id);
+        setSyncing(false);
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm(t('confirm_delete'))) return;
-        setDeleting(true);
-        await onDelete(domain.id);
-        setDeleting(false);
-    };
-
-    const status = statusData?.status || (domain.isActive ? 'active' : 'pending');
-    const ssl = statusData?.sslStatus || 'initializing';
+    const status = domain.isActive ? 'active' : 'pending';
 
     return (
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all group">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-5">
-
-                {/* Icon + domain */}
+        <div
+            onClick={() => onSelect(domain)}
+            className={`bg-white dark:bg-zinc-900 rounded-2xl border transition-all overflow-hidden ${isSelected
+                    ? 'border-indigo-500 ring-2 ring-indigo-500/10 shadow-lg scale-[1.01]'
+                    : 'border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 shadow-sm'
+                }`}>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${status === 'active'
-                            ? 'bg-emerald-50 dark:bg-emerald-900/20'
-                            : status === 'error'
-                                ? 'bg-red-50 dark:bg-red-900/20'
-                                : 'bg-amber-50 dark:bg-amber-900/20'
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${status === 'active' ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
                         }`}>
-                        <Globe className={`w-5 h-5 ${status === 'active' ? 'text-emerald-500' :
-                                status === 'error' ? 'text-red-500' : 'text-amber-500'
-                            }`} />
+                        <Globe className={`w-5 h-5 ${status === 'active' ? 'text-emerald-500' : 'text-amber-500'}`} />
                     </div>
-                    <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-black text-gray-900 dark:text-white font-mono">{domain.domain}</span>
-                            <a
-                                href={`https://${domain.domain}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-gray-400 hover:text-indigo-500 transition-colors"
-                            >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                        </div>
-                        <div className="mt-1.5">
-                            <StatusBadge status={status} ssl={ssl} />
+                    <div className="min-w-0 flex-1">
+                        {/* رابط الدومين مع أيقونة "فتح خارجي" تظهر عند التحويم */}
+                        <a
+                            href={`https://${domain.domain}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-center gap-1.5 text-sm font-black text-blue-600 dark:text-indigo-400 font-mono transition-colors hover:text-blue-700 dark:hover:text-indigo-300"
+                        >
+                            <span className="truncate">{domain.domain}</span>
+                            <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                        </a>
+
+                        {/* حالة الاتصال مع نقطة (Indicator) ملونة */}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
+                                }`} />
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter leading-none">
+                                {status === 'active' ? 'متصل ومؤمن' : 'بانتظار الإعداد'}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2">
                     <button
-                        onClick={handleCheck}
-                        disabled={checking}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all border border-gray-100 dark:border-zinc-700 disabled:opacity-50"
+                        onClick={(e) => { e.stopPropagation(); handleSync(); }}
+                        disabled={syncing}
+                        className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-xl text-xs font-bold border border-gray-100 dark:border-zinc-700 disabled:opacity-50"
                     >
-                        {checking
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : <RefreshCcw className="w-3.5 h-3.5" />}
-                        {checking ? t('checking') : t('check_status')}
+                        {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCcw size={14} />}
+                        تحقق
                     </button>
-
                     <button
-                        onClick={handleDelete}
-                        disabled={deleting}
-                        className="p-2 text-rose-500 bg-rose-50 dark:bg-rose-900/20 rounded-xl hover:bg-rose-500 hover:text-white transition-all border border-rose-100 dark:border-rose-500/20 disabled:opacity-50"
-                        title={t('delete')}
+                        onClick={(e) => { e.stopPropagation(); onDelete(domain.id); }}
+                        className="p-2 text-rose-500 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-100 dark:border-rose-500/20"
                     >
-                        {deleting
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <Trash2 className="w-4 h-4" />}
+                        <Trash2 size={16} />
                     </button>
                 </div>
             </div>
-
-            {/* Pending guide strip */}
-            {status === 'pending' && (
-                <div className="flex items-center gap-2 px-5 pb-4 pt-0">
-                    <div className="flex-1 h-1.5 bg-gray-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                        <div className="h-full w-1/3 bg-amber-400 rounded-full animate-pulse" />
-                    </div>
-                    <p className="text-[10px] text-amber-500 font-semibold shrink-0">
-                        {t('verify_desc')}
-                    </p>
+            {isSelected && !domain.isActive && (
+                <div className="bg-indigo-500 text-white text-[10px] font-black py-1.5 text-center flex items-center justify-center gap-1">
+                    <ChevronRight size={12} className="rotate-90" />
+                    انظر تعليمات الربط في اليسار
                 </div>
             )}
         </div>
@@ -225,205 +220,130 @@ function DomainRow({ domain, onDelete, onCheckStatus }) {
 // ─────────────────────────────────────────────
 export default function Domain() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'domain' });
-
     const isRtl = i18n.dir() === 'rtl';
     const headers = useAuthHeaders();
     const storeId = localStorage.getItem('storeId');
 
     const [domains, setDomains] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [selectedDomain, setSelectedDomain] = useState(null);
     const [inputDomain, setInputDomain] = useState('');
-    const [inputError, setInputError] = useState(null);
     const [adding, setAdding] = useState(false);
-    const [addedToast, setAddedToast] = useState(false);
 
-    /* ── Fetch domains ── */
     useEffect(() => {
-        const fetch = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const { data } = await axios.get(`${baseURL}/domain/store/${storeId}`, headers);
-                setDomains(Array.isArray(data) ? data : data.data ?? []);
-            } catch (err) {
-                // endpoint may not exist yet — show empty gracefully
-                if (err.response?.status === 404) setDomains([]);
-                else setError(t('error_fetch'));
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (storeId) fetch();
+        fetchDomains();
     }, [storeId]);
 
-    /* ── Add domain ── */
+    const fetchDomains = async () => {
+        setLoading(true);
+        try {
+            const { data } = await axios.get(`${baseURL}/domain/store/${storeId}`, headers);
+            setDomains(data);
+            if (data.length > 0) setSelectedDomain(data[0]);
+        } catch (err) { console.error(err); }
+        finally { setLoading(false); }
+    };
+
     const handleAdd = async () => {
-        const val = inputDomain.trim().toLowerCase();
-        if (!DOMAIN_REGEX.test(val)) { setInputError(t('error_invalid')); return; }
-        setInputError(null);
         setAdding(true);
         try {
-            const { data } = await axios.post(
-                `${baseURL}/domain`,
-                { domain: val, storeId, isActive: false },
-                headers
-            );
-            setDomains(prev => [data, ...prev]);
+            const { data } = await axios.post(`${baseURL}/domain`, { domain: inputDomain, storeId }, headers);
+            setDomains([data, ...domains]);
+            setSelectedDomain(data);
             setInputDomain('');
-            setAddedToast(true);
-            setTimeout(() => setAddedToast(false), 3000);
-        } catch (err) {
-            setInputError(err?.response?.data?.message || t('error_add'));
-        } finally {
-            setAdding(false);
-        }
+        } catch (err) { alert(err.response?.data?.message || 'خطأ في الإضافة'); }
+        finally { setAdding(false); }
     };
 
-    /* ── Delete domain ── */
+    const handleSync = async (id) => {
+        try {
+            const { data } = await axios.patch(`${baseURL}/domain/sync/${id}`, {}, headers);
+            if (data.isActive) {
+                setDomains(domains.map(d => d.id === id ? { ...d, isActive: true } : d));
+            }
+            return data;
+        } catch (err) { console.error(err); }
+    };
+
     const handleDelete = async (id) => {
+        if (!window.confirm('هل أنت متأكد من حذف هذا الدومين؟')) return;
         try {
             await axios.delete(`${baseURL}/domain/${id}`, headers);
-            setDomains(prev => prev.filter(d => d.id !== id));
-        } catch (err) {
-            console.error('Delete failed:', err);
-        }
+            setDomains(domains.filter(d => d.id !== id));
+            if (selectedDomain?.id === id) setSelectedDomain(null);
+        } catch (err) { console.error(err); }
     };
 
-    /* ── Check status ── */
-    const handleCheckStatus = async (hostname) => {
-        try {
-            const { data } = await axios.get(`${baseURL}/domain/status/${hostname}`, headers);
-            return data;
-        } catch {
-            return null;
-        }
-    };
-
-    // ── Render ──────────────────────────────────
     return (
-        <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-6 font-sans animate-in fade-in duration-500">
-
-            {/* ── Toast ── */}
-            {addedToast && (
-                <div className={`fixed top-5 ${isRtl ? 'left-5' : 'right-5'} z-50 flex items-center gap-2 px-4 py-3 bg-emerald-500 text-white text-sm font-semibold rounded-2xl shadow-xl animate-in fade-in slide-in-from-top-2 duration-300`}>
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    {t('added_success')}
-                </div>
-            )}
-
-            {/* ── Header ── */}
+        <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-6 font-sans">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
                         <div className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl">
                             <Globe size={22} />
                         </div>
-                        {t('title')}
+                        إدارة الدومينات المخصصة
                     </h1>
-                    <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{t('subtitle')}</p>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-zinc-500 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 px-3 py-2 rounded-xl shadow-sm">
-                    <Zap className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="font-mono">*.mdstore.top</span>
+                    <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">اربط نطاقك الخاص بمتجرك بسهولة عبر سجلات CNAME</p>
                 </div>
             </div>
 
-            {/* ── Add domain input ── */}
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5">
-                <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-3">
-                    {t('add_domain')}
-                </label>
+            {/* Input Section */}
+            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-5">
                 <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                        <Globe className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none ${isRtl ? 'right-3' : 'left-3'}`} />
-                        <input
-                            type="text"
-                            value={inputDomain}
-                            onChange={e => { setInputDomain(e.target.value); setInputError(null); }}
-                            onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                            placeholder={t('add_placeholder')}
-                            dir="ltr"
-                            className={`w-full py-2.5 bg-gray-50 dark:bg-zinc-950 border rounded-xl outline-none transition-all text-sm font-mono text-gray-900 dark:text-white placeholder:text-gray-400 ${inputError
-                                    ? 'border-red-400 focus:border-red-400'
-                                    : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'
-                                } ${isRtl ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={inputDomain}
+                        onChange={e => setInputDomain(e.target.value.toLowerCase())}
+                        placeholder="example.com"
+                        className="flex-1 py-3 px-4 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl outline-none font-mono text-sm"
+                    />
                     <button
                         onClick={handleAdd}
-                        disabled={adding || !inputDomain.trim()}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:translate-y-0 text-sm shadow-lg"
+                        disabled={adding || !inputDomain}
+                        className="px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl hover:-translate-y-0.5 transition-all disabled:opacity-50"
                     >
-                        {adding
-                            ? <Loader2 className="w-4 h-4 animate-spin" />
-                            : <Plus className="w-4 h-4" />}
-                        {adding ? t('adding') : t('add_btn')}
+                        {adding ? <Loader2 className="animate-spin" /> : 'إضافة دومين'}
                     </button>
                 </div>
-                {inputError && (
-                    <p className="flex items-center gap-1.5 mt-2 text-xs text-red-500">
-                        <XCircle className="w-3.5 h-3.5 shrink-0" />{inputError}
-                    </p>
-                )}
-                <p className="text-[11px] text-gray-400 dark:text-zinc-600 mt-2">{t('add_hint')}</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                {/* ── Domain list ── */}
-                <div className="lg:col-span-2 space-y-3">
-
-                    {/* Error */}
-                    {error && (
-                        <div className="flex items-center gap-2 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl border border-red-100 dark:border-red-800/30 text-sm font-medium">
-                            <AlertTriangle className="w-4 h-4 shrink-0" />{error}
+                {/* List Section */}
+                <div className="lg:col-span-2 space-y-4">
+                    {loading ? (
+                        <Skeleton className="h-20 w-full" />
+                    ) : domains.length === 0 ? (
+                        <div className="text-center py-20 border-2 border-dashed rounded-3xl">
+                            <Globe className="mx-auto text-gray-200 mb-4" size={48} />
+                            <p className="text-gray-400 font-bold italic">لا يوجد دومينات مضافة بعد</p>
                         </div>
+                    ) : (
+                        domains.map(d => (
+                            <DomainRow
+                                key={d.id}
+                                domain={d}
+                                onDelete={handleDelete}
+                                onSync={handleSync}
+                                isSelected={selectedDomain?.id === d.id}
+                                onSelect={setSelectedDomain}
+                            />
+                        ))
                     )}
-
-                    {/* Loading skeletons */}
-                    {loading && (
-                        <div className="space-y-3">
-                            {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
-                        </div>
-                    )}
-
-                    {/* Empty */}
-                    {!loading && !error && domains.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-16 text-center bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-gray-200 dark:border-zinc-700">
-                            <Globe className="w-12 h-12 text-gray-200 dark:text-zinc-700 mb-3" />
-                            <h3 className="text-sm font-black text-gray-700 dark:text-zinc-300 mb-1">{t('empty_title')}</h3>
-                            <p className="text-xs text-gray-400 dark:text-zinc-600">{t('empty_desc')}</p>
-                        </div>
-                    )}
-
-                    {/* Domain rows */}
-                    {!loading && domains.map(d => (
-                        <DomainRow
-                            key={d.id}
-                            domain={d}
-                            onDelete={handleDelete}
-                            onCheckStatus={handleCheckStatus}
-                        />
-                    ))}
                 </div>
 
-                {/* ── Nameservers guide ── */}
+                {/* Instructions Section */}
                 <div className="space-y-4">
-                    <NameserverCard />
-
-                    {/* Step 2 card */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-5">
-                        <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center shrink-0 mt-0.5">
-                                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                            </div>
-                            <div>
-                                <h3 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('verify_title')}</h3>
-                                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1 leading-relaxed">{t('verify_desc')}</p>
-                            </div>
+                    {selectedDomain ? (
+                        <CnameSetupCard
+                            domainId={selectedDomain.id}
+                            domainName={selectedDomain.domain}
+                        />
+                    ) : (
+                        <div className="p-10 border-2 border-dashed rounded-3xl text-center text-gray-400 text-xs font-bold">
+                            اختر دوميناً من القائمة لعرض تعليمات الربط
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
