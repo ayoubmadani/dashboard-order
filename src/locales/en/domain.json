@@ -1,44 +1,31 @@
 {
-  "title": "Domains",
-  "subtitle": "Add a custom domain to your store and check activation status",
+  "title": "Custom Domains",
+  "subtitle": "Link your own domain to your store via a single CNAME record",
 
-  "add_domain": "Add Domain",
+  "add_label": "Add Domain",
   "add_placeholder": "example.com",
-  "add_hint": "Enter your root domain or a subdomain (e.g., store.example.com)",
   "add_btn": "Add",
   "adding": "Adding…",
+  "add_error": "Error adding domain",
 
-  "nameservers_title": "Step 1 — Set Nameservers",
-  "nameservers_desc": "Change the Nameservers in your domain provider's panel to the following values:",
-  "ns_copy": "Copy",
-  "ns_copied": "Copied",
-  "ns_note": "Propagation may take 24 to 48 hours after the change.",
+  "dns_section_title": "DNS Setup — same values for all domains",
+  "dns_section_desc": "Add this record in your domain provider's control panel for any domain you want to link",
+  "dns_type": "Type",
+  "dns_host": "Host / Name",
+  "dns_value": "Value / Target",
+  "dns_ttl": "TTL",
+  "dns_note": "After adding the record, activation may take 5 to 30 minutes.",
+  "copied": "Copied",
+  "copy": "Copy",
 
-  "verify_title": "Step 2 — Wait for Verification",
-  "verify_desc": "Once nameservers are changed, the system will automatically verify and issue an SSL certificate.",
-
-  "status_active": "Active",
-  "status_pending": "Pending",
-  "status_error": "Error",
-  "status_initializing": "Initializing",
-  "ssl_active": "SSL Active",
-  "ssl_pending": "SSL Pending",
-  "ssl_initializing": "SSL Initializing",
-
-  "check_status": "Check Status",
+  "domains_title": "Your Domains",
+  "status_active": "Connected & Secured",
+  "status_pending": "Pending Activation",
+  "check_btn": "Verify",
   "checking": "Checking…",
   "delete": "Delete",
-  "deleting": "Deleting…",
   "confirm_delete": "Are you sure you want to delete this domain?",
 
   "empty_title": "No domains yet",
-  "empty_desc": "Add your custom domain to link it to your store.",
-
-  "error_fetch": "Failed to load domains",
-  "error_add": "Failed to add domain",
-  "error_invalid": "Please enter a valid domain (e.g., store.example.com)",
-  "added_success": "Domain added successfully",
-
-  "your_store_url": "Your current store URL",
-  "docs_link": "How to set up the domain?"
+  "empty_desc": "Add your first domain above"
 }
