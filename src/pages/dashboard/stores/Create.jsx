@@ -1,18 +1,17 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Store, Upload, Save, Loader2,
   Image as ImageIcon, Palette, MapPin, Mail,
   Phone, Type, CheckCircle, AlertCircle,
-  Shirt, Smartphone, Home, Sparkles, ExternalLink,
+  ExternalLink,
   Trash2
 } from 'lucide-react';
 import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
-import { useEffect } from 'react';
 
 const CreateStore = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -46,7 +45,7 @@ const CreateStore = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
-  const [niches, setNiche] = useState([]);
+  const [niches, setNiches] = useState([]);
   const [wilayas, setWilayas] = useState([]);
 
    useEffect(() => {
@@ -58,7 +57,7 @@ const CreateStore = () => {
           axios.get(`${baseURL}/shipping/wilayas`)
         ]);
 
-        setNiche(nichesRes.data);
+        setNiches(nichesRes.data);
         setWilayas(wilayasRes.data);
 
         console.log("Data loaded successfully");

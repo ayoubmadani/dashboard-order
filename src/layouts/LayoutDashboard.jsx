@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -135,7 +135,7 @@ export default function LayoutDashboard() {
 
     const [selectedProject, setSelectedProject] = useState(null);
 
-    const fetchStores = async () => {
+    const fetchStores = useCallback(async () => {
         try {
             const token = getAccessToken();
             const response = await axios.get(`${baseURL}/stores/user/me`, {
@@ -152,9 +152,9 @@ export default function LayoutDashboard() {
                 setMyStores(response.data.data || []);
             }
         } catch (err) { console.error('Error:', err); }
-    };
+    }, [navigate]);
 
-    useEffect(() => { fetchStores(); }, []);
+    useEffect(() => { fetchStores(); }, [fetchStores]);
 
     useEffect(() => {
         if (myStores?.length > 0) {
@@ -354,7 +354,7 @@ export default function LayoutDashboard() {
                 </header>
 
                 <main className="flex-1 p-4">
-                    <Outlet />
+                    <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user }} />
                 </main>
             </div>
 

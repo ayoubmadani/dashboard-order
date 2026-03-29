@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer
@@ -189,32 +189,25 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const headers  = useAuthHeaders();
 
+  // ✅ استخدام الـ stores من context بدل re-fetch
+  const { myStores } = useOutletContext();
+  const stores = myStores || [];
+
   // ── State ─────────────────────────────────
-  const [stores,       setStores]       = useState([]);   // [{id, name, ...}]
-  const [storeData,    setStoreData]    = useState({});   // { storeId: { orders:[], statusCounts:[] } }
+  const [storeData,    setStoreData]    = useState({});
   const [loading,      setLoading]      = useState(true);
   const [refreshing,   setRefreshing]   = useState(false);
   const [error,        setError]        = useState(null);
   const [period,       setPeriod]       = useState('today');
 
-  // ── Fetch all stores, then per-store data ─
+  // ✅ fetchData: فقط orders + statusCounts (بدون re-fetch stores)
   const fetchData = async (silent = false) => {
+    if (stores.length === 0) { setLoading(false); return; }
     if (!silent) setLoading(true); else setRefreshing(true);
     setError(null);
     try {
-      // 1. GET /stores/user/me → { success, data: Store[] }
-      const storesRes = await axios.get(`${baseURL}/stores/user/me`, headers);
-      const storeList = storesRes.data?.data || [];
-      setStores(storeList);
-
-      if (storeList.length === 0) {
-        setStoreData({});
-        return;
-      }
-
-      // 2. Fetch orders + statusCounts for every store in parallel
       const results = await Promise.all(
-        storeList.map(s =>
+        stores.map(s =>
           Promise.all([
             axios.get(`${baseURL}/orders/${s.id}`, headers).then(r => r.data || []).catch(() => []),
             axios.get(`${baseURL}/orders/get-count-status/${s.id}`, headers).then(r => r.data || []).catch(() => []),
@@ -234,7 +227,7 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [stores.length]);
 
   // ── Aggregate ALL orders across all stores ─
   const allOrders = useMemo(

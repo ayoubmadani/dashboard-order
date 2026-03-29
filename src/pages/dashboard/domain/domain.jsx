@@ -7,6 +7,7 @@ import {
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import { Zap } from 'lucide-react';
 
 // ─────────────────────────────────────────────
 //  Constants — shared for ALL domains
@@ -104,7 +105,7 @@ function DnsCard() {
 // ─────────────────────────────────────────────
 function DomainRow({ domain, onDelete, onSync }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'domain' });
-  const [syncing,  setSyncing]  = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const active = domain.isActive;
 
@@ -128,14 +129,25 @@ function DomainRow({ domain, onDelete, onSync }) {
     setDeleting(false);
   };
 
-  return (
-    <div className="flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm hover:border-gray-200 dark:hover:border-zinc-700 transition-all group">
+  const isSub = domain.domain.endsWith('.mdstore.top');
 
-      {/* Status dot */}
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-        active ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
+  // مصفوفة الألوان لتسهيل القراءة
+  const statusColors = isSub 
+    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800'
+    : active 
+      ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 border-emerald-100 dark:border-emerald-800'
+      : 'bg-amber-50 dark:bg-amber-900/20 text-amber-400 border-amber-100 dark:border-amber-800';
+
+  return (
+    <div className={`flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border ${isSub ? 'border-blue-100 dark:border-blue-900/30' : 'border-gray-100 dark:border-zinc-800'} shadow-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all group`}>
+
+      {/* Status icon container */}
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+        isSub ? 'bg-blue-100/50 dark:bg-blue-900/30' : active ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
       }`}>
-        <Globe className={`w-4.5 h-4.5 ${active ? 'text-emerald-500' : 'text-amber-400'}`} size={18} />
+        <Globe className={`w-4.5 h-4.5 ${
+          isSub ? 'text-blue-600 dark:text-blue-400' : active ? 'text-emerald-500' : 'text-amber-400'
+        }`} size={18} />
       </div>
 
       {/* Domain + status */}
@@ -145,48 +157,50 @@ function DomainRow({ domain, onDelete, onSync }) {
             href={`https://${domain.domain}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="group/link inline-flex items-center gap-1 text-sm font-black font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors"
+            className={`group/link inline-flex items-center gap-1 text-sm font-black font-mono transition-colors ${
+              isSub ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700' : 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-700'
+            }`}
           >
             {domain.domain}
             <ExternalLink size={11} className="opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
           </a>
           
-          {/* Copy Button */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              copy();
-            }}
-            className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-indigo-500"
+            onClick={(e) => { e.stopPropagation(); copy(); }}
+            className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
             title={copied ? t('copied') : t('copy')}
           >
-            {copied ? (
-              <CheckCircle2 size={14} className="text-emerald-500" />
-            ) : (
-              <Copy size={14} />
-            )}
+            {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
           </button>
         </div>
         
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
-          <span className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-tight">
-            {active ? t('status_active') : t('status_pending')}
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+            isSub ? 'bg-blue-500' : active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
+          }`} />
+          <span className={`text-[10px] font-bold uppercase tracking-tight ${
+            isSub ? 'text-blue-500' : 'text-gray-400 dark:text-zinc-500'
+          }`}>
+            {isSub ? t('system_domain') : active ? t('status_active') : t('status_pending')}
           </span>
-          {active && <ShieldCheck size={11} className="text-emerald-500" />}
+          {active && !isSub && <ShieldCheck size={11} className="text-emerald-500" />}
+          {isSub && <Zap size={11} className="text-blue-500" />} {/* أيقونة إضافية للدومين الفرعي */}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-1.5 shrink-0">
-        <button
-          onClick={handleSync}
-          disabled={syncing}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-xl text-xs font-bold border border-gray-100 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
-        >
-          {syncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
-          <span className="hidden sm:inline">{syncing ? t('checking') : t('check_btn')}</span>
-        </button>
+        {!isSub && ( // إخفاء زر الفحص للدومينات الفرعية لأنها دائماً مربوطة
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-xl text-xs font-bold border border-gray-100 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all disabled:opacity-50"
+          >
+            {syncing ? <Loader2 size={12} className="animate-spin" /> : <RefreshCcw size={12} />}
+            <span className="hidden sm:inline">{syncing ? t('checking') : t('check_btn')}</span>
+          </button>
+        )}
+        
         <button
           onClick={handleDelete}
           disabled={deleting}
@@ -254,7 +268,7 @@ export default function Domain() {
   /* ── Delete ── */
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${baseURL}/domain/${id}`, headers);
+      await axios.delete(`${baseURL}/domain/${id}`,{storeId: localStorage.getItem('storeId')} ,headers);
       setDomains(prev => prev.filter(d => d.id !== id));
     } catch (err) { console.error(err); }
   };

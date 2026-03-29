@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useOutletContext } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Settings as SettingsIcon, User, Bell,
@@ -37,8 +38,15 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const token = getAccessToken();
 
+  // ✅ user من context بدل re-fetch /user/current-user
+  const { user: contextUser } = useOutletContext();
+
   const [userData, setUserData] = useState({
-    username: '', email: '', provider: '', topic: '', isNtfy: true,
+    username: contextUser?.name || '',
+    email: contextUser?.email || '',
+    provider: '',
+    topic: '',
+    isNtfy: true,
   });
 
   const [subscription, setSubscription] = useState(null);
@@ -55,14 +63,27 @@ const Settings = () => {
   const [isDark, setIsDark] = useState(document.documentElement.classList.contains('dark'));
   const isRtl = i18n.dir() === 'rtl';
 
-  /* ── Fetch user ── */
+  // ✅ sync userData من context عند تغير user (بدل axios call منفصل)
+  useEffect(() => {
+    if (contextUser?.name) {
+      setUserData(prev => ({
+        ...prev,
+        username: contextUser.name,
+        email: contextUser.email || prev.email,
+      }));
+    }
+  }, [contextUser]);
+
+  // ── جلب topic و isNtfy — بيانات إضافية غير موجودة في context ──
   useEffect(() => {
     if (!token) return;
     axios.get(`${baseURL}/user/current-user`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(({ data }) => setUserData({
-        username: data.username || '', email: data.email || '',
-        provider: data.provider || '', topic: data.topic || '', isNtfy: data.isNtfy,
-      }))
+      .then(({ data }) => setUserData(prev => ({
+        ...prev,
+        provider: data.provider || '',
+        topic: data.topic || '',
+        isNtfy: data.isNtfy ?? prev.isNtfy,
+      })))
       .catch(console.error);
   }, [token]);
 
