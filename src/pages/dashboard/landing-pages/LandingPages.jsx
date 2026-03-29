@@ -286,9 +286,9 @@ const LandingPages = () => {
               <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Layout size={20} className="text-gray-400" />
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{searchQuery ?t('empty.no_results'):t('empty.title')}</h3>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{searchQuery ? t('empty.no_results') : t('empty.title')}</h3>
               <p className="text-xs text-gray-500 dark:text-zinc-400">
-                {searchQuery ?t('empty.no_results_sub') :t('empty.subtitle')}
+                {searchQuery ? t('empty.no_results_sub') : t('empty.subtitle')}
               </p>
             </div>
           </div>
@@ -303,8 +303,8 @@ const LandingPages = () => {
               const fullUrl = `${storeURL}/lp/${page.domain}`;
               const isActive = page.isActive;
               const isToggling = togglingId === page.id;
-              const mockViewsCount = page.shows.length; // يمكنك تغييره لكل صفحة
-              const mockOrdersCount = page.orders.length
+              const mockViewsCount = page.showsCount || (page.shows?.length) || 0;
+              const mockOrdersCount = page.ordersCount || (page.orders?.length) || 0;
 
 
               return (
