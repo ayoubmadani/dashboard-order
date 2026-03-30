@@ -13,10 +13,10 @@ import { Zap } from 'lucide-react';
 //  Constants — shared for ALL domains
 // ─────────────────────────────────────────────
 const DNS_RECORD = {
-  type:  'CNAME',
-  host:  '@',
+  type: 'CNAME',
+  host: '@',
   value: 'mdstore.top',
-  ttl:   'Auto',
+  ttl: 'Auto',
 };
 
 function useAuthHeaders() {
@@ -36,7 +36,7 @@ function CopyCell({ label, value, mono = true }) {
 
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(value).catch(() => {});
+    navigator.clipboard.writeText(value).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -50,11 +50,10 @@ function CopyCell({ label, value, mono = true }) {
         </span>
         <button
           onClick={copy}
-          className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${
-            copied
-              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-              : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
-          }`}
+          className={`shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${copied
+            ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+            : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+            }`}
         >
           {copied ? <CheckCircle2 size={11} /> : <Copy size={11} />}
           {copied ? t('copied') : t('copy')}
@@ -85,10 +84,10 @@ function DnsCard() {
 
       {/* Record grid */}
       <div className="p-5 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <CopyCell label={t('dns_type')}  value={DNS_RECORD.type}  mono />
-        <CopyCell label={t('dns_host')}  value={DNS_RECORD.host}  mono />
+        <CopyCell label={t('dns_type')} value={DNS_RECORD.type} mono />
+        <CopyCell label={t('dns_host')} value={DNS_RECORD.host} mono />
         <CopyCell label={t('dns_value')} value={DNS_RECORD.value} mono />
-        <CopyCell label={t('dns_ttl')}   value={DNS_RECORD.ttl}   mono={false} />
+        <CopyCell label={t('dns_ttl')} value={DNS_RECORD.ttl} mono={false} />
       </div>
 
       {/* Note */}
@@ -111,7 +110,7 @@ function DomainRow({ domain, onDelete, onSync }) {
 
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(domain.domain).catch(() => {});
+    navigator.clipboard.writeText(domain.domain).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -132,9 +131,9 @@ function DomainRow({ domain, onDelete, onSync }) {
   const isSub = domain.domain.endsWith('.mdstore.top');
 
   // مصفوفة الألوان لتسهيل القراءة
-  const statusColors = isSub 
+  const statusColors = isSub
     ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800'
-    : active 
+    : active
       ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 border-emerald-100 dark:border-emerald-800'
       : 'bg-amber-50 dark:bg-amber-900/20 text-amber-400 border-amber-100 dark:border-amber-800';
 
@@ -142,12 +141,10 @@ function DomainRow({ domain, onDelete, onSync }) {
     <div className={`flex items-center gap-4 px-4 py-3.5 bg-white dark:bg-zinc-900 rounded-2xl border ${isSub ? 'border-blue-100 dark:border-blue-900/30' : 'border-gray-100 dark:border-zinc-800'} shadow-sm hover:border-blue-200 dark:hover:border-blue-800 transition-all group`}>
 
       {/* Status icon container */}
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
-        isSub ? 'bg-blue-100/50 dark:bg-blue-900/30' : active ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
-      }`}>
-        <Globe className={`w-4.5 h-4.5 ${
-          isSub ? 'text-blue-600 dark:text-blue-400' : active ? 'text-emerald-500' : 'text-amber-400'
-        }`} size={18} />
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isSub ? 'bg-blue-100/50 dark:bg-blue-900/30' : active ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-amber-50 dark:bg-amber-900/20'
+        }`}>
+        <Globe className={`w-4.5 h-4.5 ${isSub ? 'text-blue-600 dark:text-blue-400' : active ? 'text-emerald-500' : 'text-amber-400'
+          }`} size={18} />
       </div>
 
       {/* Domain + status */}
@@ -157,14 +154,13 @@ function DomainRow({ domain, onDelete, onSync }) {
             href={`https://${domain.domain}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`group/link inline-flex items-center gap-1 text-sm font-black font-mono transition-colors ${
-              isSub ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700' : 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-700'
-            }`}
+            className={`group/link inline-flex items-center gap-1 text-sm font-black font-mono transition-colors ${isSub ? 'text-blue-600 dark:text-blue-400 hover:text-blue-700' : 'text-indigo-600 dark:text-indigo-400 hover:text-indigo-700'
+              }`}
           >
             {domain.domain}
             <ExternalLink size={11} className="opacity-0 group-hover/link:opacity-100 transition-opacity shrink-0" />
           </a>
-          
+
           <button
             onClick={(e) => { e.stopPropagation(); copy(); }}
             className="p-1 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors text-gray-400 hover:text-blue-500"
@@ -173,14 +169,12 @@ function DomainRow({ domain, onDelete, onSync }) {
             {copied ? <CheckCircle2 size={14} className="text-emerald-500" /> : <Copy size={14} />}
           </button>
         </div>
-        
+
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-            isSub ? 'bg-blue-500' : active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
-          }`} />
-          <span className={`text-[10px] font-bold uppercase tracking-tight ${
-            isSub ? 'text-blue-500' : 'text-gray-400 dark:text-zinc-500'
-          }`}>
+          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isSub ? 'bg-blue-500' : active ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'
+            }`} />
+          <span className={`text-[10px] font-bold uppercase tracking-tight ${isSub ? 'text-blue-500' : 'text-gray-400 dark:text-zinc-500'
+            }`}>
             {isSub ? t('system_domain') : active ? t('status_active') : t('status_pending')}
           </span>
           {active && !isSub && <ShieldCheck size={11} className="text-emerald-500" />}
@@ -200,7 +194,7 @@ function DomainRow({ domain, onDelete, onSync }) {
             <span className="hidden sm:inline">{syncing ? t('checking') : t('check_btn')}</span>
           </button>
         )}
-        
+
         <button
           onClick={handleDelete}
           disabled={deleting}
@@ -219,15 +213,15 @@ function DomainRow({ domain, onDelete, onSync }) {
 // ─────────────────────────────────────────────
 export default function Domain() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'domain' });
-  const isRtl   = i18n.dir() === 'rtl';
+  const isRtl = i18n.dir() === 'rtl';
   const headers = useAuthHeaders();
   const storeId = localStorage.getItem('storeId');
 
-  const [domains,     setDomains]     = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [domains, setDomains] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [inputDomain, setInputDomain] = useState('');
-  const [adding,      setAdding]      = useState(false);
-  const [inputError,  setInputError]  = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [inputError, setInputError] = useState(null);
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -267,10 +261,16 @@ export default function Domain() {
 
   /* ── Delete ── */
   const handleDelete = async (id) => {
+    const storeId = localStorage.getItem('storeId');
     try {
-      await axios.delete(`${baseURL}/domain/${id}`,{storeId: localStorage.getItem('storeId')} ,headers);
+      // ندمج كل شيء في الوسيط الثاني (config)
+      await axios.post(`${baseURL}/domain/delete/${id}`, {storeId} , headers);
+
       setDomains(prev => prev.filter(d => d.id !== id));
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      alert(err.response.data.message);
+      
+    }
   };
 
   // ── Render ──────────────────────────────────
@@ -306,9 +306,8 @@ export default function Domain() {
               onKeyDown={e => e.key === 'Enter' && handleAdd()}
               placeholder={t('add_placeholder')}
               dir="ltr"
-              className={`w-full py-2.5 bg-white dark:bg-zinc-900 border rounded-xl outline-none font-mono text-sm text-gray-900 dark:text-white placeholder:text-gray-400 transition-all shadow-sm ${
-                inputError ? 'border-red-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'
-              } ${isRtl ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
+              className={`w-full py-2.5 bg-white dark:bg-zinc-900 border rounded-xl outline-none font-mono text-sm text-gray-900 dark:text-white placeholder:text-gray-400 transition-all shadow-sm ${inputError ? 'border-red-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'
+                } ${isRtl ? 'pr-9 pl-4' : 'pl-9 pr-4'}`}
             />
           </div>
           <button
