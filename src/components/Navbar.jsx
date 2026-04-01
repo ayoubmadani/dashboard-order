@@ -6,11 +6,10 @@ import { Languages, ChevronDown, Check, Sun, Moon, Menu, X } from 'lucide-react'
 export default function NavBar() {
     const { t, i18n } = useTranslation();
     const [isLangOpen, setIsLangOpen] = useState(false);
+    const [isMobileLangOpen, setIsMobileLangOpen] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const dropdownRef = useRef(null);
-    const mobileLangRef = useRef(null);
-
     const isRtl = i18n.language === 'ar';
 
     useEffect(() => {
@@ -21,11 +20,10 @@ export default function NavBar() {
         }
     }, []);
 
-    // إغلاق المنيو عند تغيير حجم الشاشة لـ desktop
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 768) {
-                setIsMobileOpen(false);
+                closeMobileMenu();
                 setIsLangOpen(false);
             }
         };
@@ -33,11 +31,15 @@ export default function NavBar() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // منع التمرير عند فتح المنيو
     useEffect(() => {
         document.body.style.overflow = isMobileOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [isMobileOpen]);
+
+    const closeMobileMenu = () => {
+        setIsMobileOpen(false);
+        setIsMobileLangOpen(false);
+    };
 
     const toggleTheme = () => {
         if (isDarkMode) {
@@ -63,6 +65,7 @@ export default function NavBar() {
         document.documentElement.lang = lng;
         localStorage.setItem('i18nextLng', lng);
         setIsLangOpen(false);
+        setIsMobileLangOpen(false);
     };
 
     useEffect(() => {
@@ -76,7 +79,6 @@ export default function NavBar() {
     }, []);
 
     const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
-
     const navLinks = ['home', 'about', 'contact', 'plan'];
 
     return (
@@ -84,7 +86,7 @@ export default function NavBar() {
             <nav className="w-full h-20 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between px-5 md:px-8 sticky top-0 z-50 transition-colors duration-300">
 
                 {/* الشعار */}
-                <Link to="/" className="flex items-center gap-2 group" onClick={() => setIsMobileOpen(false)}>
+                <Link to="/" className="flex items-center gap-2 group" onClick={closeMobileMenu}>
                     <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform">
                         <span className="text-white font-bold text-lg">MD</span>
                     </div>
@@ -161,14 +163,14 @@ export default function NavBar() {
             {/* Overlay */}
             {isMobileOpen && (
                 <div
-                    className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300"
-                    onClick={() => setIsMobileOpen(false)}
+                    className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                    onClick={closeMobileMenu}
                 />
             )}
 
             {/* Mobile Drawer */}
             <div
-                className={`md:hidden fixed top-20 ${isRtl ? 'right-0' : 'left-0'} w-full bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800 z-40 transition-all duration-300 ease-in-out shadow-2xl ${
+                className={`md:hidden fixed top-20 left-0 right-0 bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800 z-40 transition-all duration-300 ease-in-out shadow-2xl ${
                     isMobileOpen
                         ? 'opacity-100 translate-y-0 pointer-events-auto'
                         : 'opacity-0 -translate-y-4 pointer-events-none'
@@ -177,13 +179,12 @@ export default function NavBar() {
                 <div className="flex flex-col px-5 py-4 gap-1">
 
                     {/* روابط التنقل */}
-                    {navLinks.map((item, idx) => (
+                    {navLinks.map((item) => (
                         <Link
                             key={item}
                             to={item === 'home' ? '/' : `/${item}`}
-                            onClick={() => setIsMobileOpen(false)}
+                            onClick={closeMobileMenu}
                             className="flex items-center px-4 py-3.5 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition-colors text-base"
-                            style={{ animationDelay: `${idx * 40}ms` }}
                         >
                             {t(`nav.${item}`)}
                         </Link>
@@ -193,7 +194,7 @@ export default function NavBar() {
                     <div className="h-px bg-gray-100 dark:bg-zinc-800 my-2" />
 
                     {/* Dark Mode + اللغة في صف واحد */}
-                    <div className="flex items-center justify-between px-1 py-1 gap-3">
+                    <div className="flex items-center gap-3">
 
                         {/* Dark Mode Toggle */}
                         <button
@@ -206,20 +207,20 @@ export default function NavBar() {
                             </span>
                         </button>
 
-                        {/* Language Selector Mobile */}
-                        <div className="relative flex-1" ref={mobileLangRef}>
+                        {/* Language Selector Mobile - state منفصل */}
+                        <div className="relative flex-1">
                             <button
-                                onClick={() => setIsLangOpen(!isLangOpen)}
+                                onClick={() => setIsMobileLangOpen(!isMobileLangOpen)}
                                 className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-gray-700 dark:text-gray-300 font-bold text-sm transition-all active:scale-95"
                             >
                                 <div className="flex items-center gap-2">
                                     <Languages className="w-4 h-4 text-indigo-600" />
                                     <span className="uppercase tracking-wider">{currentLang.code}</span>
                                 </div>
-                                <ChevronDown className={`w-3 h-3 transition-transform ${isLangOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDown className={`w-3 h-3 transition-transform ${isMobileLangOpen ? 'rotate-180' : ''}`} />
                             </button>
 
-                            {isLangOpen && (
+                            {isMobileLangOpen && (
                                 <div className="absolute bottom-full mb-2 left-0 right-0 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-xl py-1.5 z-50">
                                     {languages.map((lang) => (
                                         <button
@@ -239,7 +240,7 @@ export default function NavBar() {
                     {/* زر تسجيل الدخول */}
                     <Link
                         to="/auth"
-                        onClick={() => setIsMobileOpen(false)}
+                        onClick={closeMobileMenu}
                         className="mt-1 w-full text-center py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black transition-all shadow-lg shadow-indigo-100 dark:shadow-none text-sm"
                     >
                         {t('auth.login_btn', 'تسجيل الدخول')}
