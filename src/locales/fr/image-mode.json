@@ -1,0 +1,61 @@
+{
+  "ui": {
+    "library": "Bibliothèque",
+    "media_management": "Gestion des Médias",
+    "folders": "Dossiers",
+    "images": "Images",
+    "load_more": "Charger plus",
+    "empty_folder": "Le dossier est vide",
+    "empty_folder_desc": "Aucune image dans {{folder}} pour le moment. Commencez par télécharger votre première image.",
+    "select": "Sélectionner",
+    "delete": "Supprimer"
+  },
+  "upload": {
+    "compressing": "Compression de l'image...",
+    "uploading": "Téléchargement...",
+    "saved_size": "{{percent}}% de taille économisée ({{oldSize}} → {{newSize}})",
+    "drop_here": "Déposez l'image ici",
+    "click_or_drag": "Glissez-déposez ou cliquez pour télécharger"
+  },
+  "folders": {
+    "products": {
+      "name": "Produits",
+      "description": "Images principales des produits"
+    },
+    "category": {
+      "name": "Catégories",
+      "description": "Icônes et couvertures de catégories"
+    },
+    "hero": {
+      "name": "Hero",
+      "description": "Images de bannières principales"
+    },
+    "logo": {
+      "name": "Logos",
+      "description": "Logos du site et de la marque"
+    },
+    "favicon": {
+      "name": "Favicons",
+      "description": "Petites icônes de navigateur"
+    },
+    "productVariant": {
+      "name": "Variantes de Produits",
+      "description": "Images des différentes couleurs et tailles de produits"
+    }
+  },
+  "alerts": {
+    "unsupported_type": "Type de fichier non supporté. Seuls JPG, PNG, GIF et WEBP sont autorisés.",
+    "file_too_large": "Le fichier est trop volumineux. Taille maximale 50 Mo",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette image ?",
+    "upload_failed": "Échec du téléchargement",
+    "delete_failed": "Échec de la suppression"
+  },
+  "errors": {
+    "fetch_counts": "Erreur lors de la récupération du nombre :",
+    "fetch_images": "Erreur lors de la récupération des images :",
+    "fetch_size": "Erreur lors de la récupération de la taille :",
+    "compression_failed": "Échec de la compression :",
+    "upload_failed": "Erreur de téléchargement :",
+    "delete_failed": "Erreur de suppression :"
+  }
+}

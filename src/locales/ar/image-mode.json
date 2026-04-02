@@ -1,0 +1,61 @@
+{
+    "ui": {
+        "library": "المكتبة",
+        "media_management": "إدارة الوسائط",
+        "folders": "المجلدات",
+        "images": "صورة",
+        "load_more": "تحميل المزيد",
+        "empty_folder": "المجلد فارغ",
+        "empty_folder_desc": "لا توجد صور في مجلد {{folder}} بعد. ابدأ برفع صورتك الأولى.",
+        "select": "اختيار",
+        "delete": "حذف"
+    },
+    "upload": {
+        "compressing": "جاري ضغط الصورة...",
+        "uploading": "جاري الرفع...",
+        "saved_size": "تم توفير {{percent}}% من الحجم ({{oldSize}} → {{newSize}})",
+        "drop_here": "أفلت الصورة هنا",
+        "click_or_drag": "اسحب الصورة أو انقر للرفع"
+    },
+    "folders": {
+        "products": {
+            "name": "المنتجات",
+            "description": "صور المنتجات الرئيسية"
+        },
+        "category": {
+            "name": "الفئات",
+            "description": "أيقونات وأغلفة الفئات"
+        },
+        "hero": {
+            "name": "الهيرو",
+            "description": "صور البانر الرئيسية"
+        },
+        "logo": {
+            "name": "الشعارات",
+            "description": "شعارات الموقع والعلامة التجارية"
+        },
+        "favicon": {
+            "name": "الأيقونات",
+            "description": "أيقونات صغيرة للمتصفح"
+        },
+        "productVariant": {
+            "name": "خيارات المنتجات",
+            "description": "صور ألوان وأحجام المنتجات المختلفة"
+        }
+    },
+    "alerts": {
+        "unsupported_type": "نوع الملف غير مدعوم. يسمح فقط بـ: JPG, PNG, GIF, WEBP",
+        "file_too_large": "حجم الملف كبير جداً. الحد الأقصى 50MB",
+        "confirm_delete": "هل أنت متأكد من حذف هذه الصورة؟",
+        "upload_failed": "فشل رفع الصورة",
+        "delete_failed": "فشل حذف الصورة"
+    },
+    "errors": {
+        "fetch_counts": "خطأ في جلب العدد:",
+        "fetch_images": "خطأ في جلب الصور:",
+        "fetch_size": "خطأ في جلب الحجم:",
+        "compression_failed": "فشل الضغط:",
+        "upload_failed": "خطأ في رفع الصورة:",
+        "delete_failed": "خطأ في الحذف:"
+    }
+}

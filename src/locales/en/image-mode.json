@@ -1,0 +1,61 @@
+{
+  "ui": {
+    "library": "Library",
+    "media_management": "Media Management",
+    "folders": "Folders",
+    "images": "Images",
+    "load_more": "Load More",
+    "empty_folder": "Folder is empty",
+    "empty_folder_desc": "No images in {{folder}} yet. Start by uploading your first image.",
+    "select": "Select",
+    "delete": "Delete"
+  },
+  "upload": {
+    "compressing": "Compressing image...",
+    "uploading": "Uploading...",
+    "saved_size": "Saved {{percent}}% of size ({{oldSize}} → {{newSize}})",
+    "drop_here": "Drop image here",
+    "click_or_drag": "Drag and drop or click to upload"
+  },
+  "folders": {
+    "products": {
+      "name": "Products",
+      "description": "Main product images"
+    },
+    "category": {
+      "name": "Categories",
+      "description": "Category icons and covers"
+    },
+    "hero": {
+      "name": "Hero",
+      "description": "Main banner images"
+    },
+    "logo": {
+      "name": "Logos",
+      "description": "Site and brand logos"
+    },
+    "favicon": {
+      "name": "Favicons",
+      "description": "Browser tab icons"
+    },
+    "productVariant": {
+      "name": "Product Variants",
+      "description": "Images for different product colors and sizes"
+    }
+  },
+  "alerts": {
+    "unsupported_type": "Unsupported file type. Only JPG, PNG, GIF, and WEBP are allowed.",
+    "file_too_large": "File is too large. Maximum size is 50MB",
+    "confirm_delete": "Are you sure you want to delete this image?",
+    "upload_failed": "Upload failed",
+    "delete_failed": "Deletion failed"
+  },
+  "errors": {
+    "fetch_counts": "Error fetching count:",
+    "fetch_images": "Error fetching images:",
+    "fetch_size": "Error fetching size:",
+    "compression_failed": "Compression failed:",
+    "upload_failed": "Upload error:",
+    "delete_failed": "Delete error:"
+  }
+}

@@ -110,6 +110,7 @@ export default function CreateProduct() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
+  const [folder , setFolder] = useState()
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -220,7 +221,7 @@ export default function CreateProduct() {
   const updateOffer = (id, field, val) => setOffers(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
 
   /* ── Images ── */
-  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setIsOpenModelImage(true); };
+  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('offers') ; setIsOpenModelImage(true); };
   const handleImageSelect = (imageData) => {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
@@ -273,6 +274,7 @@ export default function CreateProduct() {
         isOpen={isOpenModelImage}
         close={() => { setIsOpenModelImage(false); setSelectingImageFor(null); }}
         onSelectImage={handleImageSelect}
+        initialFolder={folder}
       />
 
       {/* Notification */}
@@ -694,7 +696,7 @@ export default function CreateProduct() {
       {/* ── SECTION 5: Images ── */}
       <Section icon={ImageIcon} title={t('images.section_title')} color="blue">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
-          <button type="button" onClick={() => setIsOpenModelImage(true)}
+          <button type="button" onClick={() => {setFolder('products') ; setIsOpenModelImage(true)}}
             className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
             <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
             <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>

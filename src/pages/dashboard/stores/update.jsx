@@ -655,6 +655,7 @@ const UpdateStore = () => {
         isOpen={isModalOpen}
         onSelectImage={handleSelectImage}
         close={() => setIsModalOpen(false)}
+        folder={activeModal}
       />
     </div>
   );

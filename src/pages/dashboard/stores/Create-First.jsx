@@ -468,7 +468,7 @@ const CreateFirstStore = () => {
           </div>
         </form>
 
-        <ModelImages isOpen={!!activeModal} onSelectImage={handleSelectImage} close={closeModal} />
+        <ModelImages isOpen={!!activeModal} onSelectImage={handleSelectImage} close={closeModal} folder={activeModal}/>
       </div>
     </div>
   );
