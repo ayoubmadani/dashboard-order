@@ -223,8 +223,6 @@ const UpdateStore = () => {
         },
       };
 
-      console.log(payload);
-
 
       const token = getAccessToken();
       const response = await axios.patch(
@@ -238,9 +236,12 @@ const UpdateStore = () => {
         }
       );
 
-      if (response.data.success) {
+      console.log({response});
+      
+
+      if (response.statusText === "OK") {
         showNotification('success', 'تم تحديث المتجر بنجاح! 🎉');
-        setTimeout(() => navigate('/dashboard/stores'), 2000);
+        setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
       console.error('Error updating store:', error);

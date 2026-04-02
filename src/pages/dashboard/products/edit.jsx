@@ -310,7 +310,6 @@ export default function EditProduct() {
     } else {
       setImages(prev => [...prev, imageData.url]);
     }
-    showNotification('success', t('images.added_success'));
   };
 
   /* ── Validate + Submit ── */
@@ -355,6 +354,8 @@ export default function EditProduct() {
       };
       await axios.patch(`${baseURL}/stores/${storeId}/products/${id}`, data, { headers: { Authorization: `Bearer ${token}` } });
       showNotification('success', t('edit.success'));
+      setTimeout(() => navigate('/dashboard/products'), 500);
+
     } catch (err) {
       console.error('Update error:', err);
       showNotification('error', err.response?.data?.message || t('edit.error'));

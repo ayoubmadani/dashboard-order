@@ -184,21 +184,14 @@ const CreateFirstStore = () => {
         },
       };
 
-      console.log(payload);
-      
-      
-
       const token = getAccessToken();
       const response = await axios.post(`${baseURL}/stores/create-full`, payload, {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      });
-
-      console.log({res : response.data.success});
-      
+      });      
 
       if (response.data.success) {
         showNotification('success', t('create.success'));
-        //setTimeout(() => navigate('/dashboard/stores'), 2000);
+        setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
       showNotification('error', error.response?.data?.message || t('create.failed'));

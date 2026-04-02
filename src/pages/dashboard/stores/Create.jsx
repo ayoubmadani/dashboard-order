@@ -179,7 +179,7 @@ const openFaviconModal = useCallback(() => setActiveModal('favicon'), []);
 
       if (response.data.success) {
         showNotification('success', t('create.success'));
-        setTimeout(() => navigate('/dashboard/stores'), 2000);
+        setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
       console.error('Error creating store:', error);

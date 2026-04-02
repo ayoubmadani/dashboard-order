@@ -256,6 +256,7 @@ export default function CreateProduct() {
       
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
       showNotification('success', t('create.success'));
+      setTimeout(() => navigate('/dashboard/products'), 500);
     } catch (err) {
       console.error(err);
       showNotification('error', t('create.error'));
