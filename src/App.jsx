@@ -42,9 +42,19 @@ import Plan from './pages/site/plan';
 import Pixels from './pages/dashboard/pixels/pixels';
 import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
 import Domain from './pages/dashboard/domain/domain';
+import Title from './halper/title';
 
 const App = () => {
   const { i18n } = useTranslation();
+
+function MyComponent() {
+  useEffect(() => {
+    // تغيير العنوان عند تحميل المكون
+    document.title = "صفحتي الجديدة";
+  }, []);
+
+  return <h1>مرحباً بك في موقعي</h1>;
+}
 
   // 1. منطق إدارة الوضع الليلي
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -66,6 +76,7 @@ const App = () => {
 
   return (
     <BrowserRouter>
+    <Title title={"MD store"} />
       <Routes>
         {/* 1. قسم الموقع العام */}
         <Route path="/" element={<LayoutSite />}>
