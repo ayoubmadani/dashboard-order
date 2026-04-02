@@ -11,6 +11,7 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
+import Loading from '../../../components/Loading';
 
 const UpdateStore = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -241,7 +242,7 @@ const UpdateStore = () => {
 
       if (response.status == 200 || response.status == 201) {
         showNotification('success', t('update.success'));
-        //setTimeout(() => navigate('/dashboard/stores'), 500);
+        setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
       console.error('Error updating store:', error);
@@ -276,12 +277,7 @@ const UpdateStore = () => {
   // ─── Loading Store ────────────────────────────────────────────────────────────
   if (fetchingStore) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 size={48} className="animate-spin mx-auto mb-4 text-indigo-600" />
-          <p className="text-gray-600 dark:text-zinc-400">{t('update.loading')}</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 
