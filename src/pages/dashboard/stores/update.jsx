@@ -241,7 +241,7 @@ const UpdateStore = () => {
 
       if (response.statusText === "OK") {
         showNotification('success', 'تم تحديث المتجر بنجاح! 🎉');
-        setTimeout(() => navigate('/dashboard/stores'), 500);
+        //setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
       console.error('Error updating store:', error);
