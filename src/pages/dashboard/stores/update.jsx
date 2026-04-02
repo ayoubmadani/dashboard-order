@@ -239,7 +239,7 @@ const UpdateStore = () => {
       console.log({response});
       
 
-      if (response.statusText === "OK") {
+      if (response.status == 200 || response.status == 201) {
         showNotification('success', 'تم تحديث المتجر بنجاح! 🎉');
         //setTimeout(() => navigate('/dashboard/stores'), 500);
       }
