@@ -37,6 +37,7 @@ const CreateFirstStore = () => {
     topBarText: '',
     currency: 'DZD',
     language: 'ar',
+    favicon: null,
   });
   const [logoPreview, setLogoPreview] = useState(null);
   const [heroImagePreview, setHeroImagePreview] = useState(null);
@@ -45,6 +46,7 @@ const CreateFirstStore = () => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiches] = useState([]);
   const [wilayas, setWilayas] = useState([]);
+  const [faviconPreview, setFaviconPreview] = useState(null);
 
   // ─── Guard: إذا عنده متاجر — redirect ────────────────────────────────────
   useEffect(() => {
@@ -94,6 +96,9 @@ const CreateFirstStore = () => {
     } else if (activeModal === 'logo') {
       setLogoPreview(image.url);
       setFormData(prev => ({ ...prev, logo: image.url }));
+    } else if (activeModal === 'favicon') {
+      setFaviconPreview(image.url);
+      setFormData(prev => ({ ...prev, favicon: image.url }));
     }
     setActiveModal(null);
   }, [activeModal]);
@@ -102,6 +107,13 @@ const CreateFirstStore = () => {
     setLogoPreview(null);
     setFormData(prev => ({ ...prev, logo: null }));
   }, []);
+
+  const removeFavicon = useCallback(() => {
+    setFaviconPreview(null);
+    setFormData(prev => ({ ...prev, favicon: null }));
+  }, []);
+
+  const openFaviconModal = useCallback(() => setActiveModal('favicon'), []);
 
   const removeHeroImage = useCallback(() => {
     setHeroImagePreview(null);
@@ -153,6 +165,7 @@ const CreateFirstStore = () => {
           primaryColor: formData.primaryColor,
           secondaryColor: formData.secondaryColor,
           logoUrl: formData.logo,
+          faviconUrl: formData.favicon, // ← أضف
         },
         topBar: {
           enabled: formData.showTopBar,
@@ -171,14 +184,21 @@ const CreateFirstStore = () => {
         },
       };
 
+      console.log(payload);
+      
+      
+
       const token = getAccessToken();
       const response = await axios.post(`${baseURL}/stores/create-full`, payload, {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       });
 
+      console.log({res : response.data.success});
+      
+
       if (response.data.success) {
         showNotification('success', t('create.success'));
-        setTimeout(() => navigate('/dashboard/stores'), 2000);
+        //setTimeout(() => navigate('/dashboard/stores'), 2000);
       }
     } catch (error) {
       showNotification('error', error.response?.data?.message || t('create.failed'));
@@ -198,8 +218,7 @@ const CreateFirstStore = () => {
 
   // ─── Shared classes ───────────────────────────────────────────────────────
   const inputClass = (hasError) =>
-    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${
-      hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
+    `w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border ${hasError ? 'border-rose-500' : 'border-gray-200 dark:border-zinc-700'
     } rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 dark:text-white`;
 
   const sectionClass = 'bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6';
@@ -213,9 +232,8 @@ const CreateFirstStore = () => {
 
         {/* Notification */}
         {notification.show && (
-          <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 ${
-            notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
-          } text-white`}>
+          <div className={`fixed top-4 ${isRtl ? 'left-4' : 'right-4'} z-50 p-4 rounded-xl shadow-2xl flex items-center gap-3 ${notification.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'
+            } text-white`}>
             {notification.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
             <span className="font-bold text-sm">{notification.message}</span>
           </div>
@@ -309,37 +327,64 @@ const CreateFirstStore = () => {
               <Palette size={20} className="text-indigo-600" />
               {t('form.design')}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            {/* Logo + Favicon */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
                 <label className={labelClass}><ImageIcon size={14} className="inline me-1" />{t('form.logo_label')}</label>
                 {logoPreview ? (
                   <div className="relative group">
-                    <img src={logoPreview} alt="Logo" className="w-full h-32 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700" />
-                    <button type="button" onClick={removeLogo} className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}>
-                      <Trash2 size={16} />
+                    <img src={logoPreview} alt="Logo" className="w-full h-36 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700" />
+                    <button type="button" onClick={removeLogo} className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 ) : (
-                  <button type="button" onClick={openLogoModal} className="w-full h-32 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-800">
-                    <Upload size={24} className="text-gray-400" />
+                  <button type="button" onClick={openLogoModal} className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 group">
+                    <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ImageIcon size={20} className="text-indigo-500" />
+                    </div>
                     <span className="text-sm text-gray-500">{t('form.logo_upload')}</span>
                   </button>
                 )}
               </div>
-              <div className="space-y-4">
-                {[
-                  { name: 'primaryColor', label: t('form.primary_color') },
-                  { name: 'secondaryColor', label: t('form.secondary_color') },
-                ].map(({ name, label }) => (
-                  <div key={name}>
-                    <label className={labelClass}>{label}</label>
-                    <div className="flex items-center gap-3">
-                      <input type="color" name={name} value={formData[name]} onChange={handleInputChange} className="h-12 w-20 rounded-xl cursor-pointer border-0" />
-                      <input type="text" value={formData[name]} readOnly className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white" />
-                    </div>
+
+              <div>
+                <label className={labelClass}><ImageIcon size={14} className="inline me-1" />{t('form.favicon_label')}</label>
+                {faviconPreview ? (
+                  <div className="relative group">
+                    <img src={faviconPreview} alt="Favicon" className="w-full h-36 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700" />
+                    <button type="button" onClick={removeFavicon} className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}>
+                      <Trash2 size={14} />
+                    </button>
                   </div>
-                ))}
+                ) : (
+                  <button type="button" onClick={openFaviconModal} className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 group">
+                    <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <ImageIcon size={20} className="text-indigo-500" />
+                    </div>
+                    <span className="text-sm text-gray-500">{t('form.favicon_upload')}</span>
+                    <span className="text-xs text-gray-400 dark:text-zinc-500">32×32 px</span>
+                  </button>
+                )}
               </div>
+            </div>
+
+            {/* Colors */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { name: 'primaryColor', label: t('form.primary_color') },
+                { name: 'secondaryColor', label: t('form.secondary_color') },
+              ].map(({ name, label }) => (
+                <div key={name}>
+                  <label className={labelClass}>{label}</label>
+                  <div className="flex items-center gap-3">
+                    <input type="color" name={name} value={formData[name]} onChange={handleInputChange} className="h-12 w-16 rounded-xl cursor-pointer border-0 p-1 bg-gray-50 dark:bg-zinc-800" />
+                    <input type="text" value={formData[name]} readOnly className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white" />
+                    <div className="w-12 h-12 rounded-xl border border-gray-200 dark:border-zinc-700 flex-shrink-0" style={{ backgroundColor: formData[name] }} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

@@ -22,6 +22,8 @@ const UpdateStore = () => {
   const [isLogoModalOpen, setIsLogoModalOpen] = useState(false);
   const [isHeroModalOpen, setIsHeroModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFaviconModalOpen, setIsFaviconModalOpen] = useState(false);
+  const [faviconPreview, setFaviconPreview] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -41,6 +43,7 @@ const UpdateStore = () => {
     topBarColor: '#6366f1',
     currency: 'DZD',
     language: 'ar',
+    favicon: null,
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -98,9 +101,11 @@ const UpdateStore = () => {
           topBarColor: store.topBar?.color || '#6366f1',
           currency: store.currency || 'DZD',
           language: store.language || 'ar',
+          favicon: store.design?.faviconUrl || null,
         });
         setLogoPreview(store.design?.logoUrl || null);
         setHeroImagePreview(store.hero?.imageUrl || null);
+        setFaviconPreview(store.design?.faviconUrl || null);
       }
     } catch (error) {
       console.error('Error fetching store:', error);
@@ -121,13 +126,29 @@ const UpdateStore = () => {
       setLogoPreview(image.url);
       setFormData(prev => ({ ...prev, logo: image.url }));
       setIsLogoModalOpen(false);
+    } else if (isFaviconModalOpen) {
+      setFaviconPreview(image.url);
+      setFormData(prev => ({ ...prev, favicon: image.url }));
+      setIsFaviconModalOpen(false);
     }
     setIsModalOpen(false);
-  }, [isHeroModalOpen, isLogoModalOpen]);
+  }, [isHeroModalOpen, isLogoModalOpen, isFaviconModalOpen]); // ← أضف isFaviconModalOpen
 
   const removeLogo = useCallback(() => {
     setLogoPreview(null);
     setFormData(prev => ({ ...prev, logo: null }));
+  }, []);
+
+  const removeFavicon = useCallback(() => {
+    setFaviconPreview(null);
+    setFormData(prev => ({ ...prev, favicon: null }));
+  }, []);
+
+  const openFaviconModal = useCallback(() => {
+    setIsFaviconModalOpen(true);
+    setIsLogoModalOpen(false);
+    setIsHeroModalOpen(false);
+    setIsModalOpen(true);
   }, []);
 
   const removeHeroImage = useCallback(() => {
@@ -183,6 +204,7 @@ const UpdateStore = () => {
           primaryColor: formData.primaryColor,
           secondaryColor: formData.secondaryColor,
           logoUrl: formData.logo,
+          faviconUrl: formData.favicon,
         },
         topBar: {
           enabled: formData.showTopBar,
@@ -202,7 +224,7 @@ const UpdateStore = () => {
       };
 
       console.log(payload);
-      
+
 
       const token = getAccessToken();
       const response = await axios.patch(
@@ -367,7 +389,7 @@ const UpdateStore = () => {
                 {/* عرض قائمة التخصصات */}
                 {niches && niches.map((n) => (
                   <option key={n.id} value={n.id}>
-                    {n.icon} {n.name}
+                    {n.icon} {i18n.language === 'ar' ? n.name_ar : i18n.language === 'fr' ? n.name_fr : n.name_en}
                   </option>
                 ))}
               </select>
@@ -418,7 +440,8 @@ const UpdateStore = () => {
             {t('form.design')}
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Images Row: Logo + Favicon */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             {/* Logo */}
             <div>
               <label className={labelClass}>
@@ -427,57 +450,79 @@ const UpdateStore = () => {
               </label>
               {logoPreview ? (
                 <div className="relative group">
-                  <img
-                    src={logoPreview}
-                    alt="Logo"
-                    className="w-full h-32 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700"
+                  <img src={logoPreview} alt="Logo"
+                    className="w-full h-36 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700"
                   />
-                  <button
-                    type="button"
-                    onClick={removeLogo}
-                    className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}
+                  <button type="button" onClick={removeLogo}
+                    className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={openLogoModal}
-                  className="w-full h-32 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-zinc-800"
+                <button type="button" onClick={openLogoModal}
+                  className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 group"
                 >
-                  <Upload size={24} className="text-gray-400" />
+                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon size={20} className="text-indigo-500" />
+                  </div>
                   <span className="text-sm text-gray-500">{t('form.logo_upload')}</span>
                 </button>
               )}
             </div>
 
-            {/* Colors */}
-            <div className="space-y-4">
-              {[
-                { name: 'primaryColor', label: t('form.primary_color') },
-                { name: 'secondaryColor', label: t('form.secondary_color') },
-              ].map(({ name, label }) => (
-                <div key={name}>
-                  <label className={labelClass}>{label}</label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="color"
-                      name={name}
-                      value={formData[name]}
-                      onChange={handleInputChange}
-                      className="h-12 w-20 rounded-xl cursor-pointer border-0"
-                    />
-                    <input
-                      type="text"
-                      value={formData[name]}
-                      readOnly
-                      className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
-                    />
-                  </div>
+            {/* Favicon */}
+            <div>
+              <label className={labelClass}>
+                <ImageIcon size={14} className="inline me-1" />
+                {t('form.favicon_label')}
+              </label>
+              {faviconPreview ? (
+                <div className="relative group">
+                  <img src={faviconPreview} alt="Favicon"
+                    className="w-full h-36 object-contain bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 border border-gray-200 dark:border-zinc-700"
+                  />
+                  <button type="button" onClick={removeFavicon}
+                    className={`absolute top-2 ${isRtl ? 'left-2' : 'right-2'} p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 opacity-0 group-hover:opacity-100 transition-opacity`}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <button type="button" onClick={openFaviconModal}
+                  className="w-full h-36 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl hover:border-indigo-500 transition-colors flex flex-col items-center justify-center gap-2 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 group"
+                >
+                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <ImageIcon size={20} className="text-indigo-500" />
+                  </div>
+                  <span className="text-sm text-gray-500">{t('form.favicon_upload')}</span>
+                  <span className="text-xs text-gray-400 dark:text-zinc-500">32×32 px</span>
+                </button>
+              )}
             </div>
+          </div>
+
+          {/* Colors Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              { name: 'primaryColor', label: t('form.primary_color') },
+              { name: 'secondaryColor', label: t('form.secondary_color') },
+            ].map(({ name, label }) => (
+              <div key={name}>
+                <label className={labelClass}>{label}</label>
+                <div className="flex items-center gap-3">
+                  <input type="color" name={name} value={formData[name]} onChange={handleInputChange}
+                    className="h-12 w-16 rounded-xl cursor-pointer border-0 p-1 bg-gray-50 dark:bg-zinc-800"
+                  />
+                  <input type="text" value={formData[name]} readOnly
+                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
+                  />
+                  <div className="w-12 h-12 rounded-xl border border-gray-200 dark:border-zinc-700 flex-shrink-0"
+                    style={{ backgroundColor: formData[name] }}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -580,24 +625,6 @@ const UpdateStore = () => {
                   placeholder={t('form.top_bar_placeholder')}
                   className={inputClass(false)}
                 />
-              </div>
-              <div>
-                <label className={labelClass}>{t('form.top_bar_color')}</label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    name="topBarColor"
-                    value={formData.topBarColor}
-                    onChange={handleInputChange}
-                    className="h-12 w-20 rounded-xl cursor-pointer border-0"
-                  />
-                  <input
-                    type="text"
-                    value={formData.topBarColor}
-                    readOnly
-                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
-                  />
-                </div>
               </div>
             </div>
           )}

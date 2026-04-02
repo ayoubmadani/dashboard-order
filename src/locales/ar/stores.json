@@ -109,8 +109,8 @@
     "phone_label": "رقم الهاتف",
     "email_label": "البريد الإلكتروني",
     "design": "التصميم والألوان",
-    "logo_label": "اللوغو",
-    "logo_upload": "اختر لوغو",
+    "logo_label": "الشعار",
+    "logo_upload": "اختر شعار",
     "primary_color": "اللون الأساسي",
     "secondary_color": "اللون الثانوي",
     "hero_section": "القسم الرئيسي (Hero)",
@@ -128,6 +128,7 @@
     "preview_domain": "الدومين",
     "preview_wilaya": "الولاية",
     "required": "*",
+    "favicon_label":"اختر ايقونة الصغيرة",
     "validation": {
       "name_required": "اسم المتجر مطلوب",
       "name_short": "الاسم قصير جداً (حرفين على الأقل)",
