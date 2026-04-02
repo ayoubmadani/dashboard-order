@@ -240,7 +240,7 @@ const UpdateStore = () => {
       
 
       if (response.status == 200 || response.status == 201) {
-        showNotification('success', 'تم تحديث المتجر بنجاح! 🎉');
+        showNotification('success', t('update.success'));
         //setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
