@@ -41,6 +41,10 @@
     "productVariant": {
       "name": "Product Variants",
       "description": "Images for different product colors and sizes"
+    },
+    "landingPage": {
+      "name": "Landing Pages",
+      "description": "Background images, introductory sections, and promotional offers"
     }
   },
   "alerts": {

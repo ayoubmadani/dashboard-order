@@ -41,6 +41,10 @@
     "productVariant": {
       "name": "Variantes de Produits",
       "description": "Images des différentes couleurs et tailles de produits"
+    },
+    "landingPage": {
+      "name": "Pages d'Atterrissage",
+      "description": "Images d'arrière-plan, sections d'introduction et offres promotionnelles"
     }
   },
   "alerts": {

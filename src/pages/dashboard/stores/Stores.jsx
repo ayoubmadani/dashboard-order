@@ -13,6 +13,7 @@ import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import Loading from '../../../components/Loading';
+import { ExternalLink } from 'lucide-react';
 
 /* ─── Injected styles ─────────────────────────────────────────────────────── */
 const styles = `
@@ -143,8 +144,8 @@ const Stores = () => {
   );
 
   const totalProducts = stores.reduce((acc, s) => acc + (s.productsCount ?? s.products?.length ?? 0), 0);
-  const totalOrders   = stores.reduce((acc, s) => acc + (s.ordersCount  ?? s.orders?.length  ?? 0), 0);
-  const totalShows    = stores.reduce((acc, s) => acc + (s.showsCount   ?? s.shows?.length   ?? 0), 0);
+  const totalOrders = stores.reduce((acc, s) => acc + (s.ordersCount ?? s.orders?.length ?? 0), 0);
+  const totalShows = stores.reduce((acc, s) => acc + (s.showsCount ?? s.shows?.length ?? 0), 0);
 
   const getCount = (store, key) => store[`${key}Count`] ?? store[key]?.length ?? 0;
 
@@ -188,10 +189,10 @@ const Stores = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               {[
-                { key: 'stores',   icon: Store,       color: 'indigo',  value: stores.length,  sub: t('stores.stats.active_count', { count: stores.filter(s => s.isActive).length }) },
-                { key: 'products', icon: Package,     color: 'emerald', value: totalProducts,  sub: t('stores.stats.products_sub') },
-                { key: 'orders',   icon: TrendingUp,  color: 'amber',   value: totalOrders,    sub: t('stores.stats.orders_sub') },
-                { key: 'views',    icon: Eye,         color: 'blue',    value: totalShows,     sub: t('stores.stats.views_sub') },
+                { key: 'stores', icon: Store, color: 'indigo', value: stores.length, sub: t('stores.stats.active_count', { count: stores.filter(s => s.isActive).length }) },
+                { key: 'products', icon: Package, color: 'emerald', value: totalProducts, sub: t('stores.stats.products_sub') },
+                { key: 'orders', icon: TrendingUp, color: 'amber', value: totalOrders, sub: t('stores.stats.orders_sub') },
+                { key: 'views', icon: Eye, color: 'blue', value: totalShows, sub: t('stores.stats.views_sub') },
               ].map(({ key, icon: Icon, color, value, sub }) => (
                 <div key={key} className={`bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-zinc-800 dark:to-zinc-900 p-5 rounded-2xl border border-${color}-100 dark:border-zinc-700 shadow-sm`}>
                   <div className="flex items-center gap-3 mb-3">
@@ -220,16 +221,6 @@ const Stores = () => {
                     <X size={18} />
                   </button>
                 )}
-              </div>
-              <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl">
-                <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400'}`}>
-                  <LayoutGrid size={18} />
-                </button>
-                <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400'}`}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
@@ -309,18 +300,36 @@ const Stores = () => {
                         </div>
                       </div>
 
-                      {/* Domain row */}
-                      <div className="flex items-center justify-between mb-4 p-2.5 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+                      {/* Domain row - Enhanced Browser Style */}
+                      <div className="flex items-center justify-between mb-4 p-2.5 bg-gray-50 dark:bg-zinc-800/80 rounded-xl border border-transparent hover:border-blue-500/20 transition-all group/link">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                          <Globe size={12} className="text-gray-400 shrink-0" />
-                          <span className="text-xs text-gray-500 dark:text-zinc-400 truncate font-mono">{store.subdomain}.mdstore.dz</span>
+                          {/* أيقونة الكرة الأرضية تتلون عند التمرير */}
+                          <Globe size={14} className="text-gray-400 shrink-0 group-hover/link:text-blue-500 transition-colors" />
+
+                          <a
+                            href={`https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate font-mono font-bold transition-all hover:underline underline-offset-4 decoration-2"
+                          >
+                            {store.subdomain}.mdstore.dz
+                          </a>
                         </div>
-                        {store.contact?.wilaya && (
-                          <div className="flex items-center gap-1 shrink-0 ml-2">
-                            <MapPin size={11} className="text-amber-500" />
-                            <span className="text-xs text-gray-500 dark:text-zinc-400">{store.contact.wilaya}</span>
-                          </div>
-                        )}
+
+                        {/* معلومات الموقع وأيقونة الخروج */}
+                        <div className="flex items-center gap-3 shrink-0 ml-2">
+                          {store.contact?.wilaya && (
+                            <div className="flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-zinc-700 rounded-lg border border-gray-100 dark:border-zinc-600 shadow-sm">
+                              <MapPin size={11} className="text-amber-500" />
+                              <span className="text-[10px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-tight">
+                                {store.contact.wilaya}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* أيقونة تظهر بوضوح عند تمرير الماوس لتأكيد أنه رابط خارجي */}
+                          <ExternalLink size={12} className="text-gray-300 group-hover/link:text-blue-500 transition-colors" />
+                        </div>
                       </div>
 
                       {/* Actions */}
@@ -339,142 +348,14 @@ const Stores = () => {
                           {deletingStoreId === store.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                         </button>
                       </div>
-
-                      {/* Visit */}
-                      <a
-                        href={`https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => !store.isActive && e.preventDefault()}
-                        className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all border
-                          ${store.isActive
-                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 border-transparent'
-                            : 'bg-gray-50 dark:bg-zinc-800/40 text-gray-400 cursor-not-allowed border-transparent'}`}
-                      >
-                        <Eye size={14} />
-                        <span className="truncate max-w-[180px]">{store.subdomain}.mdstore.dz</span>
-                      </a>
                     </div>
                   </div>
                 );
               })}
-
-              {/* Add new card */}
-              <Link
-                to="/dashboard/stores/create"
-                className="group relative min-h-[320px] rounded-2xl flex flex-col items-center justify-center gap-5 overflow-hidden transition-all duration-300 hover:shadow-xl"
-                style={{ background: 'linear-gradient(145deg, rgba(245,158,11,0.04), rgba(249,115,22,0.04))', border: '2px dashed rgba(245,158,11,0.25)' }}
-              >
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(145deg, rgba(245,158,11,0.08), rgba(249,115,22,0.05))' }} />
-                <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:rotate-12 group-hover:scale-110"
-                  style={{ background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(249,115,22,0.1))', border: '1.5px dashed rgba(245,158,11,0.4)' }}
-                >
-                  <Plus size={28} className="text-amber-500 group-hover:text-orange-500 transition-colors" />
-                </div>
-                <div className="relative text-center px-6">
-                  <p className="font-extrabold text-gray-800 dark:text-zinc-200 mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors" style={{ fontFamily: 'Syne, sans-serif' }}>
-                    {t('stores.add_card.title')}
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-zinc-500">{t('stores.add_card.subtitle')}</p>
-                </div>
-              </Link>
             </div>
           )}
 
-          {/* ─── LIST VIEW ──────────────────────────────────────────────────── */}
-          {viewMode === 'list' && filteredStores.length > 0 && (
-            <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.07)', boxShadow: '0 4px 24px rgba(0,0,0,0.05)' }}>
-              {/* Header */}
-              <div
-                className="grid items-center px-6 py-3"
-                style={{ gridTemplateColumns: '2fr 1fr 1fr 80px 80px 80px 120px', background: 'linear-gradient(90deg, #fafafa 0%, #f5f5f5 100%)', borderBottom: '1px solid rgba(0,0,0,0.06)' }}
-              >
-                {['store', 'status', 'location', 'orders', 'products', 'views', 'actions'].map((col) => (
-                  <span
-                    key={col}
-                    className={`text-[10px] font-black uppercase tracking-widest text-zinc-400 ${col === 'actions' ? 'text-center' : ['store', 'location', 'status'].includes(col) ? 'text-start' : 'text-center'}`}
-                    style={{ fontFamily: 'Syne, sans-serif' }}
-                  >
-                    {t(`stores.table.${col}`)}
-                  </span>
-                ))}
-              </div>
-
-              {/* Rows */}
-              <div className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                {filteredStores.map((store, idx) => {
-                  const isToggling = togglingStoreId === store.id;
-                  return (
-                    <div
-                      key={store.id}
-                      className="row-bar grid items-center px-6 py-4 transition-colors hover:bg-amber-50/40 dark:hover:bg-zinc-800/40 fade-up"
-                      style={{ gridTemplateColumns: '2fr 1fr 1fr 80px 80px 80px 120px', animationDelay: `${idx * 50}ms`, opacity: store.isActive ? 1 : 0.65 }}
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-base shrink-0
-                            ${store.isActive ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-sm shadow-amber-500/30' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400'}`}
-                          style={{ fontFamily: 'Syne, sans-serif' }}
-                        >
-                          {store.name?.charAt(0)?.toUpperCase() || '?'}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-gray-900 dark:text-white text-sm truncate">{store.name}</p>
-                          <p className="text-[11px] text-amber-600 dark:text-amber-400 truncate">{store.subdomain}.mdstore.dz</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <PowerToggle isActive={store.isActive} onToggle={() => handleToggleStoreStatus(store.id, store.isActive)} disabled={isToggling} />
-                        <span className={`text-[10px] font-semibold hidden sm:block ${store.isActive ? 'text-emerald-500' : 'text-zinc-400'}`}>
-                          {isToggling ? '...' : (store.isActive ? t('common.active') : t('common.inactive'))}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
-                        <MapPin size={12} className="text-amber-500 shrink-0" />
-                        <span className="truncate">{store.contact?.wilaya || '—'}</span>
-                      </div>
-
-                      <div className="text-center"><span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{getCount(store, 'orders')}</span></div>
-                      <div className="text-center"><span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{getCount(store, 'products')}</span></div>
-                      <div className="text-center"><span className="text-sm font-black text-blue-600 dark:text-blue-400">{getCount(store, 'shows')}</span></div>
-
-                      <div className="flex items-center justify-center gap-1">
-                        <a
-                          href={`https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => !store.isActive && e.preventDefault()}
-                          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all ${store.isActive ? 'text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10' : 'text-zinc-300 cursor-not-allowed'}`}
-                        >
-                          <Eye size={15} />
-                        </a>
-                        <button onClick={() => navigate(`/dashboard/stores/update/${store.id}`)} className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-all">
-                          <Edit2 size={15} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteStore(store.id)}
-                          disabled={deletingStoreId === store.id}
-                          className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all disabled:opacity-40"
-                        >
-                          {deletingStoreId === store.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={15} />}
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="px-6 py-3 flex items-center justify-between" style={{ background: '#fafafa', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-                <span className="text-xs text-zinc-400 font-medium">{filteredStores.length} {t('stores.stats.stores')}</span>
-                <div className="flex gap-1">
-                  {filteredStores.slice(0, 5).map((_, i) => <div key={i} className="w-1.5 h-1.5 rounded-full bg-amber-400" />)}
-                  {filteredStores.length > 5 && <span className="text-[10px] text-zinc-400 ml-1">+{filteredStores.length - 5}</span>}
-                </div>
-              </div>
-            </div>
-          )}
+        
 
           {/* ─── EMPTY STATE ────────────────────────────────────────────────── */}
           {filteredStores.length === 0 && (

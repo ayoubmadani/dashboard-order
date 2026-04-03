@@ -130,6 +130,7 @@
     "preview_wilaya": "State",
     "required": "*",
     "favicon_label": "Choose Favicon",
+    "favicon_upload": "Upload Favicon",
     "validation": {
       "name_required": "Store name is required",
       "name_short": "Name is too short (at least 2 characters)",

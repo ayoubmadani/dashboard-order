@@ -16,6 +16,7 @@ import { ShoppingBag } from 'lucide-react';
 import { TrendingUp } from 'lucide-react';
 import { Layout } from 'lucide-react';
 import Loading from '../../../components/Loading';
+import { Share2 } from 'lucide-react';
 
 const getProductImage = (page) =>
   page.urlImage ||
@@ -44,7 +45,6 @@ const LandingPages = () => {
   const [duplicatingId, setDuplicatingId] = useState(null);
   const [updatingPlatformId, setUpdatingPlatformId] = useState(null);
 
-
   const token = getAccessToken();
   const storeId = localStorage.getItem('storeId');
 
@@ -72,12 +72,16 @@ const LandingPages = () => {
   }, [fetchPages]);
 
   /* ── Handlers ── */
+  // ✅ إصلاح: تنسيق الرابط بشكل صحيح
   const handleCopyLink = useCallback((page) => {
-    const url = `${window.location.origin}/lp/${page.domain}`;
+    // page.domain يحتوي على: shamsou-game.mdstore.top/lp/page-name
+    // storeURL يحتوي على: https://store.mdstore.top
+    const url = `https://${page.domain}`; // ✅ تصحيح: إضافة /lp/ مرة واحدة
+
     navigator.clipboard.writeText(url);
     setCopiedId(page.id);
     setTimeout(() => setCopiedId(null), 2000);
-  }, []);
+  }, [storeURL]); // ✅ إضافة storeURL للـ dependencies
 
   const handleDelete = useCallback(async (id) => {
     if (!window.confirm(t('confirm_delete'))) return;
@@ -87,13 +91,12 @@ const LandingPages = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchPages();
-
     } catch (err) {
       alert(t('delete_error'));
     } finally {
       setDeletingId(null);
     }
-  }, [token, t]);
+  }, [token, t, fetchPages]); // ✅ إضافة fetchPages للـ dependencies
 
   const handleToggleStatus = useCallback(async (id, currentStatus) => {
     setTogglingId(id);
@@ -105,22 +108,29 @@ const LandingPages = () => {
 
       console.log('Toggle response:', res.data);
 
-      // ✅ Extract status from response (handle different response structures)
-      const newStatus = res.data;
+      // ✅ إصلاح: التعامل مع مختلف أنواع الاستجابات
+      let newStatus;
+      if (typeof res.data === 'boolean') {
+        newStatus = res.data;
+      } else if (res.data?.isActive !== undefined) {
+        newStatus = res.data.isActive;
+      } else if (res.data?.status !== undefined) {
+        newStatus = res.data.status === 'active';
+      } else {
+        newStatus = !currentStatus; // fallback
+      }
 
       // ✅ Update the page with new status
       setPages((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: newStatus, isActive: newStatus } : p))
       );
     } catch (err) {
-
-
-      alert(err.response.data.message);
+      console.error('Toggle error:', err);
+      alert(err?.response?.data?.message || t('toggle_error'));
     } finally {
       setTogglingId(null);
     }
   }, [token, t]);
-
 
   const handleDuplicate = useCallback(async (id) => {
     if (!window.confirm(t('common.confirm_duplicate'))) return;
@@ -129,7 +139,7 @@ const LandingPages = () => {
     try {
       const res = await axios.post(
         `${baseURL}/landing-page/duplicate/${id}`,
-        {}, // غالباً يكون طلب POST فارغ الجسم
+        {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -141,10 +151,10 @@ const LandingPages = () => {
     } finally {
       setDuplicatingId(null);
     }
-  }, [token, t, baseURL]);
+  }, [token, t, fetchPages]); // ✅ إضافة fetchPages للـ dependencies
 
   const handleUpdatePlatform = useCallback(async (id, platformValue) => {
-    setUpdatingPlatformId(id); // هنا يتم استخدام المتغير الذي تسبب في الخطأ
+    setUpdatingPlatformId(id);
     try {
       await axios.patch(
         `${baseURL}/landing-page/update-platform/${id}`,
@@ -154,11 +164,11 @@ const LandingPages = () => {
       // يمكنك إضافة تنبيه نجاح هنا
     } catch (err) {
       console.error(err);
-      alert(t('common.update_error'));
+      alert(err?.response?.data?.message || t('common.update_error'));
     } finally {
-      setUpdatingPlatformId(null); // إعادة الحالة للطبيعية بعد انتهاء الطلب
+      setUpdatingPlatformId(null);
     }
-  }, [token, baseURL, t]);
+  }, [token, t]); // ✅ إزالة baseURL لأنه مستورد وليس state
 
   const filteredPages = pages.filter(page =>
     page.product?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -280,7 +290,7 @@ const LandingPages = () => {
           </div>
         </div>
 
-        {filteredPages.length == 0 && (
+        {filteredPages.length === 0 && (
           <div className='w-full h-[200px] flex justify-center items-center'>
             <div className='flex flex-col justify-center items-center'>
               <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -294,174 +304,137 @@ const LandingPages = () => {
           </div>
         )}
 
-
         {/* Empty State */}
         {filteredPages.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {filteredPages.map((page) => {
               const imgSrc = getProductImage(page);
-              const fullUrl = `${storeURL}/lp/${page.domain}`;
+              // ✅ إصلاح: تنسيق الرابط الصحيح
+              const fullUrl = page.domain;
               const isActive = page.isActive;
               const isToggling = togglingId === page.id;
               const mockViewsCount = page.showsCount || (page.shows?.length) || 0;
               const mockOrdersCount = page.ordersCount || (page.orders?.length) || 0;
 
-
               return (
                 <div
                   key={page.id}
-                  className={`group relative bg-white dark:bg-zinc-900 rounded-2xl border transition-all duration-300 hover:-translate-y-1 ${isActive
-                    ? 'border-gray-200 dark:border-zinc-800 shadow-md hover:shadow-xl hover:shadow-rose-500/5'
-                    : 'border-gray-200 dark:border-zinc-800 opacity-60 hover:opacity-100'
+                  className={`group relative bg-white dark:bg-zinc-900 rounded-2xl border transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/10 ${isActive
+                    ? 'border-gray-200 dark:border-zinc-800'
+                    : 'border-gray-100 dark:border-zinc-800/50 opacity-75'
                     }`}
                 >
-                  {/* Status Indicator Line */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl ${isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-700'}`} />
+                  {/* Status Indicator Line - أنحف وأكثر أناقة */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl transition-colors ${isActive ? 'bg-gradient-to-r from-emerald-400 to-teal-500' : 'bg-gray-200 dark:bg-zinc-800'}`} />
 
-                  <div className="p-4 sm:p-5">
-                    {/* Header: Image + Title */}
-                    <div className="flex items-start gap-3 sm:gap-4 mb-4">
-                      <div className="relative shrink-0">
-                        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 ring-2 ring-offset-2 ${isActive ? 'ring-emerald-500/20' : 'ring-gray-200 dark:ring-zinc-700'}`}>
-                          {imgSrc ? (
-                            <img src={imgSrc} alt={truncate(page.product?.name, 20)} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-300">
-                              <Package size={20} className="sm:w-6 sm:h-6" />
-                            </div>
-                          )}
-                        </div>
-                        {/* Online Status Dot */}
-                        <div className={`absolute -bottom-1 ${isRtl ? '-left-1' : '-right-1'} w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-white dark:border-zinc-900 ${isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}>
-                          {isActive && <div className="w-full h-full rounded-full bg-emerald-500 animate-ping opacity-75" />}
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-0 pt-0.5 sm:pt-1">
-                        <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base leading-tight mb-1 truncate" title={page.product?.name}>
-                          {truncate(page.product?.name, 20)}
-                        </h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400">
-                            {page.platform || 'MD'}
+                  <div className="p-5">
+                    {/* Header Section */}
+                    <div className="flex items-start justify-between mb-5">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={`w-16 h-16 rounded-2xl overflow-hidden bg-gray-50 dark:bg-zinc-800 border-2 transition-transform duration-500 group-hover:scale-105 ${isActive ? 'border-emerald-500/20' : 'border-transparent'}`}>
+                            {imgSrc ? (
+                              <img src={imgSrc} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <Package size={24} />
+                              </div>
+                            )}
+                          </div>
+                          {/* نقطة الحالة مع نبض */}
+                          <span className={`absolute -top-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-zinc-900 ${isActive ? 'bg-emerald-500' : 'bg-gray-400'}`}>
+                            {isActive && <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-75"></span>}
                           </span>
-                          {isActive && (
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                              ● {t('status.active')}
+                        </div>
+
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-gray-900 dark:text-white text-base truncate mb-1" title={page.product?.name}>
+                            {truncate(page.product?.name, 25)}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                              {page.platform || 'General'}
                             </span>
-                          )}
+                            <span className="text-[10px] font-medium text-gray-400 dark:text-zinc-500 font-mono">
+                              ID: {page.id.slice(-4)}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* ✅ NEW: Views & Orders Badges Container */}
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-
-                      {/* Views Count Badge */}
-                      <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg">
-                        <Eye size={16} className="text-indigo-600 dark:text-indigo-400" />
-                        <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
-                          {mockViewsCount.toLocaleString(isRtl ? 'ar-DZ' : 'en-US')}
-                        </span>
-                        <span className="text-xs text-indigo-500 dark:text-indigo-400">
-                          {isRtl ? 'مشاهدة' : 'views'}
-                        </span>
+                    {/* Stats Grid - توزيع أوضح للإحصائيات */}
+                    <div className="grid grid-cols-3 gap-2 mb-5">
+                      <div className="bg-gray-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
+                        <p className="text-[10px] text-gray-500 dark:text-zinc-500 mb-1">{isRtl ? 'مشاهدات' : 'Views'}</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{mockViewsCount.toLocaleString()}</p>
                       </div>
-
-                      {/* ✅ ADDED: Orders Count Badge */}
-                      <div className="flex items-center gap-2 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg">
-                        <ShoppingBag size={16} className="text-emerald-600 dark:text-emerald-400" />
-                        <span className="text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                          {mockOrdersCount.toLocaleString(isRtl ? 'ar-DZ' : 'en-US')}
-                        </span>
-                        <span className="text-xs text-emerald-500 dark:text-emerald-400">
-                          {isRtl ? 'طلب' : 'orders'}
-                        </span>
+                      <div className="bg-gray-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
+                        <p className="text-[10px] text-gray-500 dark:text-zinc-500 mb-1">{isRtl ? 'طلبات' : 'Orders'}</p>
+                        <p className="text-sm font-bold text-emerald-600">{mockOrdersCount.toLocaleString()}</p>
                       </div>
-
-                      {/* ✅ نسبة الشراء - مع معالجة خطأ القسمة على صفر */}
-                      <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 rounded-lg">
-                        <TrendingUp size={16} className="text-amber-600 dark:text-amber-400" />
-                        <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
-                          {/* التحقق: إذا كانت المشاهدات أكبر من صفر احسب النسبة، وإلا اظهر 0 */}
-                          {mockViewsCount > 0
-                            ? ((mockOrdersCount / mockViewsCount) * 100).toFixed(1)
-                            : "0"}%
-                        </span>
-                        <span className="text-xs text-amber-500 dark:text-amber-400">
-                          {isRtl ? 'نسبة الشراء' : 'Conv. Rate'}
-                        </span>
+                      <div className="bg-emerald-50 dark:bg-emerald-500/5 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-500/10 text-center">
+                        <p className="text-[10px] text-emerald-600/70 mb-1">CR</p>
+                        <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                          {mockViewsCount > 0 ? ((mockOrdersCount / mockViewsCount) * 100).toFixed(1) : "0"}%
+                        </p>
                       </div>
-
                     </div>
 
-                    {/* URL & Price Row */}
-                    <div className="flex items-center justify-between mb-4 p-2.5 sm:p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <ExternalLink size={12} className="text-gray-400 shrink-0" />
-                        <span className="text-xs text-gray-500 dark:text-zinc-400 truncate font-mono">
-                          {truncate(page.domain, 22)}
-                        </span>
+                    {/* Platform Quick Edit - تصميم مدمج */}
+                    <div className="group/edit relative flex items-center mb-5 bg-gray-50 dark:bg-zinc-800/80 rounded-xl border border-transparent focus-within:border-indigo-500/50 transition-all">
+                      <div className="pl-3 text-gray-400">
+                        <Share2 size={14} />
                       </div>
-                      <span className="text-sm font-black text-gray-900 dark:text-white ml-2 shrink-0">
-                        {page.product?.price
-                          ? `${parseFloat(String(page.product.price)).toLocaleString(isRtl ? 'ar-DZ' : 'en-US')}`
-                          : '—'}
-                      </span>
-                    </div>
-
-                    {/* Platform Edit Row */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="relative flex-1 group">
-                        <input
-                          type="text"
-                          value={page.platform || ''}
-                          placeholder={t('platform_placeholder')}
-                          onChange={(e) => setPages((prev) =>
-                            prev.map((p) => (p.id === page.id ? { ...p, platform: e.target.value } : p))
-                          )}
-                          className="w-full pl-3 pr-10 py-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg text-xs outline-none focus:border-indigo-500 transition-all"
-                        />
-                        <Edit2 size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400" />
-                      </div>
+                      <input
+                        type="text"
+                        value={page.platform || ''}
+                        placeholder={t('platform_placeholder')}
+                        onChange={(e) => setPages((prev) =>
+                          prev.map((p) => (p.id === page.id ? { ...p, platform: e.target.value } : p))
+                        )}
+                        className="w-full px-3 py-2.5 bg-transparent text-xs outline-none dark:text-zinc-200"
+                      />
                       <button
                         onClick={() => handleUpdatePlatform(page.id, page.platform)}
-                        disabled={updatingPlatformId === page.id}
-                        className="p-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg transition-all disabled:opacity-50"
+                        className="mr-1 p-1.5 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg transition-all"
                       >
-                        {updatingPlatformId === page.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                        {updatingPlatformId === page.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={16} />}
                       </button>
                     </div>
 
-                    {/* Action Buttons Row */}
-                    <div className={`flex items-center justify-between gap-1.5 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
-                      <div className="flex items-center gap-1.5 sm:gap-2">
-                        {/* Toggle */}
+                    {/* Quick Link - مظهر الـ "URL Bar" */}
+                    <div className="flex items-center gap-2 mb-5 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg group/link border border-gray-100 dark:border-zinc-700/50">
+                      <a
+                        href={`https://${fullUrl}`}
+                        target="_blank"
+                        className="flex-1 truncate font-mono text-[10px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 underline-offset-4 hover:underline transition-all px-2"
+                      >
+                        {page.domain}
+                      </a>
+                    </div>
+
+                    {/* Actions Bar - أزرار دائرية ونظيفة */}
+                    <div className="flex items-center justify-between border-t border-gray-100 dark:border-zinc-800 pt-4">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleToggleStatus(page.id, isActive)}
-                          disabled={isToggling}
-                          className={`p-2 rounded-xl transition-all ${isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' : 'bg-gray-100 text-gray-400'} disabled:opacity-50`}
-                          title={isActive ? t('common.deactivate') : t('common.activate')}
+                          className={`p-2.5 rounded-full transition-all ${isActive ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-gray-100 text-gray-400 hover:bg-emerald-500 hover:text-white'}`}
                         >
-                          {isToggling ? <Loader2 size={16} className="animate-spin" /> : <Power size={16} />}
+                          <Power size={16} />
                         </button>
-
-                        {/* Copy */}
                         <button
                           onClick={() => handleCopyLink(page)}
-                          className={`p-2 rounded-xl transition-all ${copiedId === page.id ? 'bg-emerald-500 text-white' : 'bg-blue-50 text-blue-600'}`}
+                          className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"
                         >
-                          {copiedId === page.id ? <Check size={16} /> : <Copy size={16} />}
+                          <Copy size={16} />
                         </button>
-
-                        {/* Edit */}
                         <button
                           onClick={() => navigate(`/dashboard/landing-pages/edit/${page.id}`)}
-                          className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                          className="p-2.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
                         >
                           <Edit2 size={16} />
                         </button>
-
                         {/* Duplicate */}
                         <button
                           onClick={() => handleDuplicate(page.id)}
@@ -472,48 +445,19 @@ const LandingPages = () => {
                         </button>
                       </div>
 
-                      {/* Delete (Isolated to prevent accidental clicks) */}
                       <button
                         onClick={() => handleDelete(page.id)}
-                        disabled={deletingId === page.id}
-                        className="p-2 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-500 hover:text-white transition-all"
+                        className="p-2.5 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
                       >
-                        {deletingId === page.id ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                        <Trash2 size={16} />
                       </button>
-                    </div>
 
-                    {/* View Link - Full Width */}
-                    <a
-                      href={fullUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => !isActive && e.preventDefault()}
-                      className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all border ${isActive
-                        ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90'
-                        : 'bg-gray-50 text-gray-400 cursor-not-allowed border-transparent'
-                        }`}
-                    >
-                      <Eye size={14} />
-                      <span className="truncate max-w-[180px] dir-ltr">{fullUrl.replace(/^https?:\/\//, '')}</span>
-                    </a>
+
+                    </div>
                   </div>
                 </div>
               );
             })}
-
-            {/* Add New Card */}
-            <Link
-              to="/dashboard/landing-pages/create"
-              className="group relative border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-2xl p-6 flex flex-col items-center justify-center gap-4 text-gray-400 hover:border-rose-500 hover:text-rose-500 transition-all min-h-[280px] hover:bg-rose-50/30 dark:hover:bg-rose-500/5"
-            >
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-current flex items-center justify-center group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
-                <Plus size={28} />
-              </div>
-              <div className="text-center">
-                <p className="font-bold text-gray-900 dark:text-white mb-1">{t('add_new')}</p>
-                <p className="text-xs text-gray-500">{t('create_desc')}</p>
-              </div>
-            </Link>
           </div>
         )}
       </div>

@@ -25,6 +25,7 @@ const UpdateStore = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFaviconModalOpen, setIsFaviconModalOpen] = useState(false);
   const [faviconPreview, setFaviconPreview] = useState(null);
+  const [folder , setFolder] = useState()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -54,6 +55,8 @@ const UpdateStore = () => {
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiche] = useState([]);
+
+  const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
     async function getNiches() {
@@ -143,13 +146,6 @@ const UpdateStore = () => {
   const removeFavicon = useCallback(() => {
     setFaviconPreview(null);
     setFormData(prev => ({ ...prev, favicon: null }));
-  }, []);
-
-  const openFaviconModal = useCallback(() => {
-    setIsFaviconModalOpen(true);
-    setIsLogoModalOpen(false);
-    setIsHeroModalOpen(false);
-    setIsModalOpen(true);
   }, []);
 
   const removeHeroImage = useCallback(() => {
@@ -254,14 +250,26 @@ const UpdateStore = () => {
   }, [formData, storeId, navigate, showNotification, validateForm]);
 
   const openLogoModal = useCallback(() => {
+    setFolder('logo')
     setIsLogoModalOpen(true);
     setIsHeroModalOpen(false);
     setIsModalOpen(true);
   }, []);
 
   const openHeroModal = useCallback(() => {
+    setFolder('hero')
     setIsHeroModalOpen(true);
     setIsLogoModalOpen(false);
+    setIsModalOpen(true);
+  }, []);
+
+
+
+  const openFaviconModal = useCallback(() => {
+    setFolder('favicon')
+    setIsFaviconModalOpen(true);
+    setIsLogoModalOpen(false);
+    setIsHeroModalOpen(false);
     setIsModalOpen(true);
   }, []);
 
@@ -655,7 +663,7 @@ const UpdateStore = () => {
         isOpen={isModalOpen}
         onSelectImage={handleSelectImage}
         close={() => setIsModalOpen(false)}
-        folder={activeModal}
+        initialFolder={folder}
       />
     </div>
   );

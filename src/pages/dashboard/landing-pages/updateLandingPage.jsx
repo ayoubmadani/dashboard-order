@@ -29,10 +29,14 @@ const UpdateLandingPage = () => {
   const [saving, setSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false); // ✅ Modal state
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
   const [aiGeneratedOptions, setAiGeneratedOptions] = useState(null);
+
+  // ✅ إصلاح: إضافة selectedDomain و pageName مثل CreateLandingPage
+  const [selectedDomain, setSelectedDomain] = useState('');
+  const [pageName, setPageName] = useState('');
 
   const [formData, setFormData] = useState({
     domain: '',
@@ -51,6 +55,13 @@ const UpdateLandingPage = () => {
   const [products, setProducts] = useState([]);
   const token = getAccessToken();
   const storeId = localStorage.getItem('storeId');
+
+  // ✅ نفس قائمة الدومينات في CreateLandingPage
+  const listDomain = [
+    { domain: "shamsou-game.mdstore.top" },
+    { domain: "shamsou2-game.mdstore.top" },
+    { domain: "shamsou3-game.mdstore.top" },
+  ];
 
   /* ── Fetch Products ── */
   useEffect(() => {
@@ -82,8 +93,30 @@ const UpdateLandingPage = () => {
       });
       const page = res.data.data || res.data;
       
+      // ✅ إصلاح: تقسيم الدومين إلى selectedDomain و pageName
+      const fullDomain = page.domain || '';
+      let initialDomain = '';
+      let initialPageName = '';
+
+      // محاولة استخراج الدومين واسم الصفحة من الرابط الكامل
+      if (fullDomain) {
+        const domainMatch = listDomain.find(d => fullDomain.includes(d.domain));
+        if (domainMatch) {
+          initialDomain = domainMatch.domain;
+          // استخراج اسم الصفحة بعد /lp/
+          const pageNameMatch = fullDomain.match(/\/lp\/(.+)$/);
+          initialPageName = pageNameMatch ? pageNameMatch[1] : '';
+        } else {
+          // إذا لم يتم العثور على تطابق، نضع القيمة كاملة في pageName
+          initialPageName = fullDomain;
+        }
+      }
+
+      setSelectedDomain(initialDomain);
+      setPageName(initialPageName);
+
       setFormData({
-        domain: page.domain || '',
+        domain: fullDomain,
         platform: page.platform || '',
         status: page.status || 'active',
         urlImage: page.urlImage || '',
@@ -121,13 +154,11 @@ const UpdateLandingPage = () => {
     }
   }, []);
 
-  // ✅ Same as CreateLandingPage - open modal
   const handleOpenProductModal = useCallback(() => {
     setIsProductModalOpen(true);
     setSearchQuery('');
   }, []);
 
-  // ✅ Same as CreateLandingPage - select and close
   const handleSelectProduct = useCallback((product) => {
     setFormData(prev => ({
       ...prev,
@@ -139,7 +170,7 @@ const UpdateLandingPage = () => {
         image: product.image
       }
     }));
-    setIsProductModalOpen(false); // ✅ Close modal
+    setIsProductModalOpen(false);
     setSearchQuery('');
   }, []);
 
@@ -176,10 +207,20 @@ const UpdateLandingPage = () => {
   }, [formData.product.id, token, t]);
 
   const handleSave = useCallback(async () => {
+    // ✅ إصلاح: التحقق من selectedDomain و pageName مثل CreateLandingPage
+    if (!selectedDomain || !pageName || !formData.product.id) {
+      alert(t('update.fill_required') || 'Please fill all required fields');
+      return;
+    }
+
     setSaving(true);
+
+    // ✅ إصلاح: تنسيق الرابط بشكل صحيح
+    const fullDomain = `${selectedDomain}/lp/${pageName}`;
+
     try {
       await axios.patch(`${baseURL}/landing-page/${id}`, {
-        domain: formData.domain,
+        domain: fullDomain, // ✅ إرسال الرابط الكامل
         platform: formData.platform,
         urlImage: formData.urlImage,
         productId: formData.product.id
@@ -190,15 +231,15 @@ const UpdateLandingPage = () => {
         }
       });
       alert(t('update.success'));
+      navigate('/dashboard/landing-pages');
     } catch (err) {
       console.error('Update failed:', err);
-      alert(t('update.save_error'));
+      alert(err.response?.data?.message || t('update.save_error'));
     } finally {
       setSaving(false);
     }
-  }, [id, formData, token, t]);
+  }, [id, formData, selectedDomain, pageName, token, t, navigate]);
 
-  // ✅ Filter products for modal
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -248,14 +289,14 @@ const UpdateLandingPage = () => {
           <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-md p-6 border border-gray-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">{t('update.editor_title')}</h2>
 
-            {/* ✅ Product Selector - Same as CreateLandingPage */}
+            {/* Product Selector */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
                 {t('update.select_product')}
               </label>
               {formData.product.name ? (
                 <div 
-                  onClick={handleOpenProductModal} // ✅ Click to open modal
+                  onClick={handleOpenProductModal}
                   className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 cursor-pointer hover:border-purple-500 transition-all"
                 >
                   <img src={formData.product.image} alt={formData.product.name} className="w-16 h-16 rounded-lg object-cover" />
@@ -269,7 +310,7 @@ const UpdateLandingPage = () => {
                 </div>
               ) : (
                 <button 
-                  onClick={handleOpenProductModal} // ✅ Click to open modal
+                  onClick={handleOpenProductModal}
                   className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl flex items-center justify-between text-gray-500 hover:border-purple-500 transition-all"
                 >
                   <span>{t('update.select_product')}</span>
@@ -330,20 +371,46 @@ const UpdateLandingPage = () => {
               <ImageIcon size={20} /> {t('update.media_library')}
             </button>
 
-            {/* Inputs */}
+            {/* ✅ Inputs - نفس تصميم CreateLandingPage */}
             <div className="space-y-4 mb-8">
-              {/* Domain */}
+              {/* Domain - نفس CreateLandingPage */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">{t('update.domain')}</label>
-                <div className="relative">
-                  <Link2 className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                  <input 
-                    type="text" 
-                    name="domain"
-                    value={formData.domain} 
-                    onChange={handleChange}
-                    placeholder="example.com" 
-                    className={`w-full ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white`}
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                  {t('update.domain') || 'Domain Name'}
+                </label>
+                <div className={`relative flex items-stretch ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* أيقونة الكرة الأرضية */}
+                  <Globe
+                    className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 z-10`}
+                    size={18}
+                  />
+
+                  {/* قائمة اختيار الدومين */}
+                  <div className="relative flex-shrink-0 min-w-[140px]">
+                    <select
+                      value={selectedDomain}
+                      onChange={(e) => setSelectedDomain(e.target.value)}
+                      className={`h-full w-full appearance-none ${isRtl ? 'pr-10 pl-8 rounded-r-xl border-l-0' : 'pl-10 pr-8 rounded-l-xl border-r-0'} py-3 bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white cursor-pointer text-sm transition-all`}
+                    >
+                      <option value="">Select domain...</option>
+                      {listDomain.map((item) => (
+                        <option key={item.domain} value={item.domain}>
+                          {item.domain}/lp/
+                        </option>
+                      ))}
+                    </select>
+                    <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'left-2' : 'right-2'} flex items-center text-gray-400`}>
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+
+                  {/* حقل إدخال اسم الصفحة */}
+                  <input
+                    type="text"
+                    value={pageName}
+                    onChange={(e) => setPageName(e.target.value)}
+                    placeholder="example-page"
+                    className={`w-full py-3 px-4 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 ${isRtl ? 'rounded-l-xl' : 'rounded-r-xl'} focus:ring-2 focus:ring-purple-500 outline-none dark:text-white`}
                   />
                 </div>
               </div>
@@ -365,10 +432,10 @@ const UpdateLandingPage = () => {
               </div>
             </div>
 
-            {/* Save Button */}
+            {/* Save Button - ✅ إصلاح: التحقق من selectedDomain و pageName */}
             <button
               onClick={handleSave}
-              disabled={saving || !formData.domain}
+              disabled={saving || !selectedDomain || !pageName || !formData.product.id}
               className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold py-4 rounded-xl disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {saving ? <><Loader2 size={20} className="animate-spin" /> {t('update.saving')}</> : <><Check size={20} /> {t('update.save')}</>}
@@ -393,7 +460,7 @@ const UpdateLandingPage = () => {
         </div>
       </div>
 
-      {/* ✅ Product Selection Modal - Same as CreateLandingPage */}
+      {/* Product Selection Modal */}
       {isProductModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
@@ -462,6 +529,7 @@ const UpdateLandingPage = () => {
         isOpen={isImageModalOpen}
         close={() => setIsImageModalOpen(false)}
         onSelectImage={handleImageSelect}
+        initialFolder='landingPage'
       />
     </div>
   );

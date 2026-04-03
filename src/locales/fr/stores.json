@@ -129,6 +129,7 @@
     "preview_wilaya": "Wilaya",
     "required": "*",
     "favicon_label": "Choisir un Favicon",
+    "favicon_upload": "Télécharger le Favicon",
     "validation": {
       "name_required": "Le nom de la boutique est obligatoire",
       "name_short": "Le nom est trop court (au moins 2 caractères)",

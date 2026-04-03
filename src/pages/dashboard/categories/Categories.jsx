@@ -649,7 +649,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
         isOpen={isImageModalOpen}
         close={() => setIsImageModalOpen(false)}
         onSelectImage={handleImageSelect}
-        folder='category'
+        initialFolder='category'
       />
     </div>
   );

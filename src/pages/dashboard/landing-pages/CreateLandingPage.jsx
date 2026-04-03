@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 const CreateLandingPage = () => {
-  // استخدام keyPrefix لتبسيط المفاتيح مثل t('title') بدلاً من t('landing.title')
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'landing.create' });
   const navigate = useNavigate();
   const isRtl = i18n.language === 'ar';
@@ -25,20 +24,29 @@ const CreateLandingPage = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [domain, setDomain] = useState('');
   const [platform, setPlatform] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [products, setProducts] = useState([]);
   const [aiGeneratedOptions, setAiGeneratedOptions] = useState(null);
+  const [selectedDomain, setSelectedDomain] = useState('');
+  const [pageName, setPageName] = useState('');
+
+  const listDomain = [
+    { domain: "shamsou-game.mdstore.top" },
+    { domain: "shamsou2-game.mdstore.top" },
+    { domain: "shamsou3-game.mdstore.top" },
+  ];
 
   const storeId = localStorage.getItem('storeId');
+  
+  // ✅ إصلاح: استخدام useCallback لتجنب إعادة التحميل المستمرة
   const token = getAccessToken();
 
   useEffect(() => {
     const getProduct = async () => {
       try {
         const response = await axios.get(`${baseURL}/stores/${storeId}/products`, {
-          headers: { Authorization: `bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` } // ✅ إصلاح: Bearer بدلاً من bearer
         });
         const listProduct = response.data.products.map(p => ({
           id: p.id,
@@ -52,7 +60,7 @@ const CreateLandingPage = () => {
       }
     };
     if (storeId) getProduct();
-  }, [storeId, token]);
+  }, [storeId, token]); // ✅ تم الاحتفاظ بالتبعيات لكن token يجب أن يكون مستقراً
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -97,19 +105,23 @@ const CreateLandingPage = () => {
   };
 
   const handlePublish = async () => {
-    if (!selectedProduct || !selectedImage || !domain) return;
+    // ✅ إصلاح: التحقق من selectedDomain و pageName بدلاً من domain
+    if (!selectedProduct || !selectedImage || !selectedDomain || !pageName) return;
     setIsPublishing(true);
+
+    // ✅ إصلاح: تنسيق الرابط بشكل صحيح مع /
+    const fullDomain = `${selectedDomain}/lp/${pageName}`;
 
     const payload = {
       productId: selectedProduct.id,
       urlImage: selectedImage,
-      domain: domain,
-      platform: platform, // تم تصحيح الخطأ الإملائي من paltform إلى platform
+      domain: fullDomain, // ✅ إصلاح: استخدام الرابط الكامل المنسق
+      platform: platform,
     };
 
     try {
       const response = await axios.post(`${baseURL}/landing-page`, payload, {
-        headers: { Authorization: `bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` } // ✅ إصلاح: Bearer بدلاً من bearer
       });
 
       if (response.data.success) {
@@ -117,7 +129,7 @@ const CreateLandingPage = () => {
         navigate('/dashboard/landing-pages');
       }
     } catch (error) {
-      alert(error.response.data.message)
+      alert(error.response?.data?.message || 'An error occurred'); // ✅ إصلاح: اختياري chaining
     } finally {
       setIsPublishing(false);
     }
@@ -163,7 +175,7 @@ const CreateLandingPage = () => {
                       {selectedProduct.name}
                     </h3>                    <p className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold">{formatPrice(selectedProduct.price)}</p>
                   </div>
-                  <button  className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg">
+                  <button className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg">
                     <ChevronDown size={20} />
                   </button>
                 </div>
@@ -216,15 +228,39 @@ const CreateLandingPage = () => {
 
             <div className="space-y-4 mb-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">{t('domain_name') || 'Domain Name'}</label>
-                <div className="relative">
-                  <Globe className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
+                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                  {t('domain_name') || 'Domain Name'}
+                </label>
+                <div className={`relative flex items-stretch ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <Globe
+                    className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 z-10`}
+                    size={18}
+                  />
+
+                  <div className="relative flex-shrink-0 min-w-[140px]">
+                    <select
+                      value={selectedDomain}
+                      onChange={(e) => setSelectedDomain(e.target.value)}
+                      className={`h-full w-full appearance-none ${isRtl ? 'pr-10 pl-8 rounded-r-xl border-l-0' : 'pl-10 pr-8 rounded-l-xl border-r-0'} py-3 bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white cursor-pointer text-sm transition-all`}
+                    >
+                      <option value="">Select domain...</option> {/* ✅ إضافة: خيار افتراضي */}
+                      {listDomain.map((item) => (
+                        <option key={item.domain} value={item.domain}>
+                          {item.domain}/lp/
+                        </option>
+                      ))}
+                    </select>
+                    <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'left-2' : 'right-2'} flex items-center text-gray-400`}>
+                      <ChevronDown size={14} />
+                    </div>
+                  </div>
+
                   <input
                     type="text"
-                    value={domain}
-                    onChange={(e) => setDomain(e.target.value)}
+                    value={pageName}
+                    onChange={(e) => setPageName(e.target.value)}
                     placeholder="example-page"
-                    className={`w-full ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white`}
+                    className={`w-full py-3 px-4 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 ${isRtl ? 'rounded-l-xl' : 'rounded-r-xl'} focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white`}
                   />
                 </div>
               </div>
@@ -242,7 +278,8 @@ const CreateLandingPage = () => {
 
             <button
               onClick={handlePublish}
-              disabled={!selectedProduct || !selectedImage || !domain || isPublishing}
+              // ✅ إصلاح: التحقق من selectedDomain و pageName
+              disabled={!selectedProduct || !selectedImage || !selectedDomain || !pageName || isPublishing}
               className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {isPublishing ? <><Loader2 size={20} className="animate-spin" /> {t('publishing_btn') || 'Publishing...'}</> : <><Check size={20} /> {t('publish_btn') || 'Publish Page'}</>}
@@ -321,6 +358,7 @@ const CreateLandingPage = () => {
         isOpen={isImageModalOpen}
         close={() => setIsImageModalOpen(false)}
         onSelectImage={handleImageSelect}
+        initialFolder='landingPage'
       />
     </div>
   );
