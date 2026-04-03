@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 const CreateLandingPage = () => {
+  // استخدام keyPrefix لتبسيط المفاتيح مثل t('title') بدلاً من t('landing.title')
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'landing.create' });
   const navigate = useNavigate();
   const isRtl = i18n.language === 'ar';
@@ -24,29 +25,40 @@ const CreateLandingPage = () => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [domain, setDomain] = useState('');
   const [platform, setPlatform] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [products, setProducts] = useState([]);
   const [aiGeneratedOptions, setAiGeneratedOptions] = useState(null);
-  const [selectedDomain, setSelectedDomain] = useState('');
-  const [pageName, setPageName] = useState('');
+  const [selectedDomain, setSelectedDomain] = useState();
+  const [pageName, setPageName] = useState();
+  const [listDomain , setListDomain1] = useState([])
 
-  const listDomain = [
+  const storeId = localStorage.getItem('storeId');
+  const token = getAccessToken();
+  const headers= { headers: { Authorization: `Bearer ${token}` } };
+
+
+  const listDomain1 = [
     { domain: "shamsou-game.mdstore.top" },
     { domain: "shamsou2-game.mdstore.top" },
     { domain: "shamsou3-game.mdstore.top" },
-  ];
+  ]
 
-  const storeId = localStorage.getItem('storeId');
+  useEffect(() => {
+    if (!storeId) return;
+    axios.get(`${baseURL}/domain/store/${storeId}`, headers)
+      .then(r => setListDomain1(Array.isArray(r.data) ? r.data : r.data.data ?? []))
+      .catch(console.error)
+  }, [storeId]);
+
   
-  // ✅ إصلاح: استخدام useCallback لتجنب إعادة التحميل المستمرة
-  const token = getAccessToken();
 
   useEffect(() => {
     const getProduct = async () => {
       try {
         const response = await axios.get(`${baseURL}/stores/${storeId}/products`, {
-          headers: { Authorization: `Bearer ${token}` } // ✅ إصلاح: Bearer بدلاً من bearer
+          headers: { Authorization: `bearer ${token}` }
         });
         const listProduct = response.data.products.map(p => ({
           id: p.id,
@@ -60,7 +72,7 @@ const CreateLandingPage = () => {
       }
     };
     if (storeId) getProduct();
-  }, [storeId, token]); // ✅ تم الاحتفاظ بالتبعيات لكن token يجب أن يكون مستقراً
+  }, [storeId, token]);
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -105,23 +117,24 @@ const CreateLandingPage = () => {
   };
 
   const handlePublish = async () => {
-    // ✅ إصلاح: التحقق من selectedDomain و pageName بدلاً من domain
-    if (!selectedProduct || !selectedImage || !selectedDomain || !pageName) return;
+    if (!selectedProduct || !selectedImage || !pageName) return;
     setIsPublishing(true);
 
-    // ✅ إصلاح: تنسيق الرابط بشكل صحيح مع /
-    const fullDomain = `${selectedDomain}/lp/${pageName}`;
+    const formattedPageName = pageName
+      .trim()                   // إزالة المسافات من البداية والنهاية
+      .toLowerCase()            // تحويل الحروف لصغيرة
+      .replace(/\s+/g, '_');    // استبدال كل المسافات (واحدة أو أكثر) بشرطة واحدة
 
     const payload = {
       productId: selectedProduct.id,
       urlImage: selectedImage,
-      domain: fullDomain, // ✅ إصلاح: استخدام الرابط الكامل المنسق
+      // أضفنا / بين الدومين واسم الصفحة لضمان عمل الرابط
+      domain: `${selectedDomain}${formattedPageName}`,
       platform: platform,
     };
-
     try {
       const response = await axios.post(`${baseURL}/landing-page`, payload, {
-        headers: { Authorization: `Bearer ${token}` } // ✅ إصلاح: Bearer بدلاً من bearer
+        headers: { Authorization: `bearer ${token}` }
       });
 
       if (response.data.success) {
@@ -129,7 +142,7 @@ const CreateLandingPage = () => {
         navigate('/dashboard/landing-pages');
       }
     } catch (error) {
-      alert(error.response?.data?.message || 'An error occurred'); // ✅ إصلاح: اختياري chaining
+      alert(error.response.data.message)
     } finally {
       setIsPublishing(false);
     }
@@ -191,7 +204,7 @@ const CreateLandingPage = () => {
             <button
               onClick={handleGenerate}
               disabled={!selectedProduct || isGenerating}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
+              className="w-full hidden bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-4 px-6 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {isGenerating ? (
                 <><Loader2 size={20} className="animate-spin" /> {t('generating_ai') || 'Generating...'}</>
@@ -201,7 +214,7 @@ const CreateLandingPage = () => {
             </button>
 
             {aiGeneratedOptions && (
-              <div className="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-200 dark:border-indigo-500/30 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="mt-6 p-4 hidden bg-indigo-50 dark:bg-indigo-900/10 rounded-2xl border border-indigo-200 dark:border-indigo-500/30 animate-in fade-in slide-in-from-top-4 duration-300">
                 <h3 className="text-sm font-semibold text-indigo-900 dark:text-indigo-300 mb-3 flex items-center gap-2">
                   <Wand2 size={16} /> {t('ai_success_title') || 'Generated Successfully!'}
                 </h3>
@@ -216,7 +229,7 @@ const CreateLandingPage = () => {
               </div>
             )}
 
-            <div className="flex items-center gap-4 my-6">
+            <div className="flex items-center hidden gap-4 my-6">
               <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
               <span className="text-sm text-gray-400 font-medium">{t('or_manual') || 'OR'}</span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
@@ -232,32 +245,41 @@ const CreateLandingPage = () => {
                   {t('domain_name') || 'Domain Name'}
                 </label>
                 <div className={`relative flex items-stretch ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+                  {/* أيقونة الكرة الأرضية */}
                   <Globe
                     className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 z-10`}
                     size={18}
                   />
 
-                  <div className="relative flex-shrink-0 min-w-[140px]">
+                  {/* قائمة اختيار الدومين - Responsive Design */}
+                  <div className="relative flex-shrink-0 w-1/3 sm:w-auto sm:min-w-[160px]">
                     <select
                       value={selectedDomain}
                       onChange={(e) => setSelectedDomain(e.target.value)}
-                      className={`h-full w-full appearance-none ${isRtl ? 'pr-10 pl-8 rounded-r-xl border-l-0' : 'pl-10 pr-8 rounded-l-xl border-r-0'} py-3 bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white cursor-pointer text-sm transition-all`}
+                      className={`h-full w-full appearance-none py-3 bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white cursor-pointer text-[12px] sm:text-sm transition-all
+      ${isRtl
+                          ? 'pr-8 sm:pr-10 pl-6 sm:pl-8 rounded-r-xl border-l-0'
+                          : 'pl-8 sm:pl-10 pr-6 sm:pr-8 rounded-l-xl border-r-0'
+                        }`}
                     >
-                      <option value="">Select domain...</option> {/* ✅ إضافة: خيار افتراضي */}
                       {listDomain.map((item) => (
-                        <option key={item.domain} value={item.domain}>
-                          {item.domain}/lp/
+                        <option key={item.domain} value={item.domain} className="dark:bg-zinc-800">
+                          {/* في الشاشات الصغيرة جداً نظهر الدومين فقط، وفي الأكبر نضيف /lp/ */}
+                          {item.domain}{window.innerWidth > 640 ? '/lp/' : '/'}
                         </option>
                       ))}
                     </select>
+
+                    {/* سهم صغير للـ select - تحديد مكانه بدقة */}
                     <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'left-2' : 'right-2'} flex items-center text-gray-400`}>
-                      <ChevronDown size={14} />
+                      <ChevronDown size={14} className="sm:w-4 sm:h-4 w-3 h-3" />
                     </div>
                   </div>
 
+                  {/* حقل إدخال اسم الصفحة */}
                   <input
                     type="text"
-                    value={pageName}
+                    value={pageName} // يفضل استخدام state منفصلة لاسم الصفحة
                     onChange={(e) => setPageName(e.target.value)}
                     placeholder="example-page"
                     className={`w-full py-3 px-4 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 ${isRtl ? 'rounded-l-xl' : 'rounded-r-xl'} focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white`}
@@ -278,8 +300,7 @@ const CreateLandingPage = () => {
 
             <button
               onClick={handlePublish}
-              // ✅ إصلاح: التحقق من selectedDomain و pageName
-              disabled={!selectedProduct || !selectedImage || !selectedDomain || !pageName || isPublishing}
+              disabled={!selectedProduct || !selectedImage || !pageName || isPublishing}
               className="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
             >
               {isPublishing ? <><Loader2 size={20} className="animate-spin" /> {t('publishing_btn') || 'Publishing...'}</> : <><Check size={20} /> {t('publish_btn') || 'Publish Page'}</>}

@@ -33,6 +33,8 @@ const UpdateLandingPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
   const [aiGeneratedOptions, setAiGeneratedOptions] = useState(null);
+    const [listDomain , setListDomain1] = useState([])
+  
 
   // ✅ إصلاح: إضافة selectedDomain و pageName مثل CreateLandingPage
   const [selectedDomain, setSelectedDomain] = useState('');
@@ -55,13 +57,14 @@ const UpdateLandingPage = () => {
   const [products, setProducts] = useState([]);
   const token = getAccessToken();
   const storeId = localStorage.getItem('storeId');
+  const headers= { headers: { Authorization: `Bearer ${token}` } };
 
-  // ✅ نفس قائمة الدومينات في CreateLandingPage
-  const listDomain = [
-    { domain: "shamsou-game.mdstore.top" },
-    { domain: "shamsou2-game.mdstore.top" },
-    { domain: "shamsou3-game.mdstore.top" },
-  ];
+  useEffect(() => {
+    if (!storeId) return;
+    axios.get(`${baseURL}/domain/store/${storeId}`, headers)
+      .then(r => setListDomain1(Array.isArray(r.data) ? r.data : r.data.data ?? []))
+      .catch(console.error)
+  }, [storeId]);
 
   /* ── Fetch Products ── */
   useEffect(() => {
@@ -91,29 +94,21 @@ const UpdateLandingPage = () => {
       const res = await axios.get(`${baseURL}/landing-page/get-one/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const page = res.data.data || res.data;
+      const page = res.data;
+
       
+      
+
       // ✅ إصلاح: تقسيم الدومين إلى selectedDomain و pageName
       const fullDomain = page.domain || '';
-      let initialDomain = '';
-      let initialPageName = '';
+      console.log(fullDomain);
+      let initialDomain = fullDomain.split('/')[0];
+      let initialPageName = fullDomain;
 
-      // محاولة استخراج الدومين واسم الصفحة من الرابط الكامل
-      if (fullDomain) {
-        const domainMatch = listDomain.find(d => fullDomain.includes(d.domain));
-        if (domainMatch) {
-          initialDomain = domainMatch.domain;
-          // استخراج اسم الصفحة بعد /lp/
-          const pageNameMatch = fullDomain.match(/\/lp\/(.+)$/);
-          initialPageName = pageNameMatch ? pageNameMatch[1] : '';
-        } else {
-          // إذا لم يتم العثور على تطابق، نضع القيمة كاملة في pageName
-          initialPageName = fullDomain;
-        }
-      }
+      
 
       setSelectedDomain(initialDomain);
-      setPageName(initialPageName);
+      setPageName(initialPageName.replace(`${initialDomain}/lp/`,''));
 
       setFormData({
         domain: fullDomain,
@@ -138,7 +133,7 @@ const UpdateLandingPage = () => {
 
   useEffect(() => {
     fetchPageData();
-  }, [fetchPageData]);
+  }, [listDomain]);
 
   /* ── Handlers ── */
   const handleChange = useCallback((e) => {
@@ -216,7 +211,13 @@ const UpdateLandingPage = () => {
     setSaving(true);
 
     // ✅ إصلاح: تنسيق الرابط بشكل صحيح
-    const fullDomain = `${selectedDomain}/lp/${pageName}`;
+    const formattedPageName = pageName
+      .trim()                   // إزالة المسافات من البداية والنهاية
+      .toLowerCase()            // تحويل الحروف لصغيرة
+      .replace(/\s+/g, '_');    // استبدال كل المسافات (واحدة أو أكثر) بشرطة واحدة
+
+      const fullDomain = `${selectedDomain}/lp/${formattedPageName}`;
+
 
     try {
       await axios.patch(`${baseURL}/landing-page/${id}`, {
@@ -225,7 +226,7 @@ const UpdateLandingPage = () => {
         urlImage: formData.urlImage,
         productId: formData.product.id
       }, {
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
@@ -271,10 +272,10 @@ const UpdateLandingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 p-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <div className="max-w-7xl mx-auto">
-        
+
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <button 
+          <button
             onClick={() => navigate('/dashboard/landing-pages')}
             className="p-2 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-lg transition-colors"
           >
@@ -295,7 +296,7 @@ const UpdateLandingPage = () => {
                 {t('update.select_product')}
               </label>
               {formData.product.name ? (
-                <div 
+                <div
                   onClick={handleOpenProductModal}
                   className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl border border-gray-200 dark:border-zinc-700 cursor-pointer hover:border-purple-500 transition-all"
                 >
@@ -309,7 +310,7 @@ const UpdateLandingPage = () => {
                   </button>
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={handleOpenProductModal}
                   className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-xl flex items-center justify-between text-gray-500 hover:border-purple-500 transition-all"
                 >
@@ -323,7 +324,7 @@ const UpdateLandingPage = () => {
             <button
               onClick={handleGenerate}
               disabled={!formData.product.id || isGenerating}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2 mb-6"
+              className="w-full hidden bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 px-6 rounded-xl hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2 mb-6"
             >
               {isGenerating ? (
                 <><Loader2 size={20} className="animate-spin" /> {t('update.generating')}</>
@@ -334,7 +335,7 @@ const UpdateLandingPage = () => {
 
             {/* AI Generated Content */}
             {aiGeneratedOptions && (
-              <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-2xl border border-purple-200 dark:border-purple-500/30 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="mb-6 p-4 hidden bg-purple-50 dark:bg-purple-900/10 rounded-2xl border border-purple-200 dark:border-purple-500/30 animate-in fade-in slide-in-from-top-4 duration-300">
                 <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-300 mb-3 flex items-center gap-2">
                   <Wand2 size={16} /> {t('update.ai_success')}
                 </h3>
@@ -357,76 +358,91 @@ const UpdateLandingPage = () => {
             )}
 
             {/* Divider */}
-            <div className="flex items-center gap-4 my-6">
+            <div className="flex hidden items-center gap-4 my-6">
               <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
               <span className="text-sm text-gray-400 font-medium">{t('common.or')}</span>
               <div className="flex-1 h-px bg-gray-200 dark:bg-zinc-700"></div>
             </div>
 
             {/* Media Library */}
-            <button 
-              onClick={() => setIsImageModalOpen(true)} 
+            <button
+              onClick={() => setIsImageModalOpen(true)}
               className="w-full mb-6 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 dark:border-zinc-700 rounded-xl text-gray-700 dark:text-zinc-300 hover:border-purple-500 transition-all"
             >
               <ImageIcon size={20} /> {t('update.media_library')}
             </button>
 
-            {/* ✅ Inputs - نفس تصميم CreateLandingPage */}
-            <div className="space-y-4 mb-8">
-              {/* Domain - نفس CreateLandingPage */}
+            {/* ✅ Inputs - تصميم متجاوب واحترافي */}
+            <div className="space-y-5 mb-8">
+              {/* Domain Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2 px-1">
                   {t('update.domain') || 'Domain Name'}
                 </label>
-                <div className={`relative flex items-stretch ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* أيقونة الكرة الأرضية */}
+
+                {/* الحاوية الرئيسية: flex-wrap يضمن عدم تداخل العناصر في الموبايل الصغير جداً */}
+                <div className={`relative flex items-stretch w-full ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+
+                  {/* أيقونة الكرة الأرضية - تختفي في الموبايل الصغير جداً لتوفير مساحة أو تبقى حسب الرغبة */}
                   <Globe
-                    className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 z-10`}
+                    className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 z-10 hidden sm:block`}
                     size={18}
                   />
 
-                  {/* قائمة اختيار الدومين */}
-                  <div className="relative flex-shrink-0 min-w-[140px]">
+                  {/* قائمة اختيار الدومين - عرض ديناميكي */}
+                  <div className="relative flex-shrink-0 w-[40%] sm:w-auto sm:min-w-[160px]">
                     <select
                       value={selectedDomain}
                       onChange={(e) => setSelectedDomain(e.target.value)}
-                      className={`h-full w-full appearance-none ${isRtl ? 'pr-10 pl-8 rounded-r-xl border-l-0' : 'pl-10 pr-8 rounded-l-xl border-r-0'} py-3 bg-gray-100 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white cursor-pointer text-sm transition-all`}
+                      className={`h-full w-full appearance-none py-3 bg-gray-100 dark:bg-zinc-700/50 border border-gray-200 dark:border-zinc-600 focus:ring-2 focus:ring-purple-500 outline-none dark:text-white cursor-pointer text-[11px] sm:text-sm transition-all
+                      ${isRtl
+                          ? 'pr-3 sm:pr-10 pl-7 sm:pl-8 rounded-r-xl border-l-0'
+                          : 'pl-3 sm:pl-10 pr-7 sm:pr-8 rounded-l-xl border-r-0'
+                        }`}
                     >
-                      <option value="">Select domain...</option>
+                      <option value="" disabled>{isRtl ? 'اختر..' : 'Select..'}</option>
                       {listDomain.map((item) => (
-                        <option key={item.domain} value={item.domain}>
+                        <option key={item.domain} value={item.domain} className="dark:bg-zinc-800 text-sm">
                           {item.domain}/lp/
                         </option>
                       ))}
                     </select>
+                    {/* سهم الـ Select */}
                     <div className={`pointer-events-none absolute inset-y-0 ${isRtl ? 'left-2' : 'right-2'} flex items-center text-gray-400`}>
                       <ChevronDown size={14} />
                     </div>
                   </div>
 
-                  {/* حقل إدخال اسم الصفحة */}
-                  <input
-                    type="text"
-                    value={pageName}
-                    onChange={(e) => setPageName(e.target.value)}
-                    placeholder="example-page"
-                    className={`w-full py-3 px-4 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 ${isRtl ? 'rounded-l-xl' : 'rounded-r-xl'} focus:ring-2 focus:ring-purple-500 outline-none dark:text-white`}
-                  />
+                  {/* حقل إدخال اسم الصفحة - يأخذ باقي المساحة */}
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={pageName}
+                      onChange={(e) => setPageName(e.target.value)}
+                      placeholder="example-page"
+                      className={`w-full py-3 px-4 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-sm sm:text-base ${isRtl ? 'rounded-l-xl' : 'rounded-r-xl'} focus:ring-2 focus:ring-purple-500 outline-none dark:text-white transition-all`}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* Platform */}
+              {/* Platform Section */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">{t('update.platform')}</label>
-                <div className="relative">
-                  <Package className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400`} size={18} />
-                  <input 
-                    type="text" 
+                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2 px-1">
+                  {t('update.platform')}
+                </label>
+                <div className="relative group">
+                  <Package
+                    className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 transition-colors`}
+                    size={18}
+                  />
+                  <input
+                    type="text"
                     name="platform"
-                    value={formData.platform} 
+                    value={formData.platform}
                     onChange={handleChange}
-                    placeholder="Facebook / TikTok" 
-                    className={`w-full ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white`}
+                    placeholder="Facebook / TikTok"
+                    className={`w-full ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none dark:text-white transition-all`}
                   />
                 </div>
               </div>

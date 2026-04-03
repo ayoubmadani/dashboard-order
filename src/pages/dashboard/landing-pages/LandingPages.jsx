@@ -403,7 +403,6 @@ const LandingPages = () => {
                       </button>
                     </div>
 
-                    {/* Quick Link - مظهر الـ "URL Bar" */}
                     <div className="flex items-center gap-2 mb-5 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg group/link border border-gray-100 dark:border-zinc-700/50">
                       <a
                         href={`https://${fullUrl}`}
@@ -412,6 +411,10 @@ const LandingPages = () => {
                       >
                         {page.domain}
                       </a>
+
+                      {/* إضافة أيقونة صغيرة لتعزيز فكرة أنه رابط خارجي */}
+                      <div className="pr-1 text-gray-400 group-hover/link:text-blue-500 transition-colors">
+                      </div>
                     </div>
 
                     {/* Actions Bar - أزرار دائرية ونظيفة */}
@@ -423,18 +426,22 @@ const LandingPages = () => {
                         >
                           <Power size={16} />
                         </button>
+                        {/* Copy */}
                         <button
                           onClick={() => handleCopyLink(page)}
-                          className="p-2.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all"
+                          className={`p-2 rounded-xl transition-all ${copiedId === page.id ? 'bg-emerald-500 text-white' : 'bg-blue-50 text-blue-600'}`}
                         >
-                          <Copy size={16} />
+                          {copiedId === page.id ? <Check size={16} /> : <Copy size={16} />}
                         </button>
+
+                        {/* Edit */}
                         <button
                           onClick={() => navigate(`/dashboard/landing-pages/edit/${page.id}`)}
-                          className="p-2.5 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+                          className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
                         >
                           <Edit2 size={16} />
                         </button>
+
                         {/* Duplicate */}
                         <button
                           onClick={() => handleDuplicate(page.id)}
@@ -451,8 +458,6 @@ const LandingPages = () => {
                       >
                         <Trash2 size={16} />
                       </button>
-
-
                     </div>
                   </div>
                 </div>
