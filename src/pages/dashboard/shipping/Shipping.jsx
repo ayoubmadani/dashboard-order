@@ -435,9 +435,7 @@ export default function Shipping() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(-1)} className="p-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all">
-            <ArrowLeft className={`w-5 h-5 text-gray-600 dark:text-zinc-400 ${isRtl ? 'rotate-180' : ''}`} />
-          </button>
+          
           <div>
             <h1 className="text-lg font-black text-gray-900 dark:text-white">{t('title')}</h1>
             <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{t('subtitle')}</p>

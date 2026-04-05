@@ -10,8 +10,8 @@ import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import Loading from '../../../components/Loading';
 
+// 1. الثوابت الأساسية
 const DEFAULT_IMAGE = 'https://bloomidea.com/sites/default/files/styles/og_image/public/blog/Tipos%20de%20come%CC%81rcio%20electro%CC%81nico_0.png?itok=jC9MlQZq';
-
 const ITEMS_PER_PAGE = 6;
 
 export default function Theme() {
@@ -32,45 +32,53 @@ export default function Theme() {
   const storeId = localStorage.getItem('storeId');
   const headers = { headers: { Authorization: `Bearer ${token}` } };
 
-  /* ── Fetch ── */
-  async function getData() {
-    setLoading(true);
+  // جلب البيانات الأولية (التصنيفات، ثيماتي، بيانات المتجر)
+  async function getInitialData() {
     try {
-      const [themesRes, typesRes, myThemeRes, store] = await Promise.all([
-        axios.get(`${baseURL}/theme`),
+      const [typesRes, myThemeRes, store] = await Promise.all([
         axios.get(`${baseURL}/theme/type`),
         axios.get(`${baseURL}/theme/my`, headers),
         axios.get(`${baseURL}/stores/${storeId}`, headers),
       ]);
 
-      const themeUserData = store.data?.data?.themeUser;
-      setIdActive(themeUserData?.themeId ?? '');
-      setThemes(themesRes.data.data ?? []);
       setTypes(typesRes.data ?? []);
       setMyTheme(myThemeRes.data ?? []);
+      const themeUserData = store.data?.data?.themeUser;
+      setIdActive(themeUserData?.themeId ?? '');
     } catch (err) {
-      console.error('Failed to load themes:', err);
-    } finally {
-      setLoading(false);
+      console.error('Failed to load initial data:', err);
     }
   }
 
-  useEffect(() => { getData(); }, []);
+  useEffect(() => { getInitialData(); }, []);
 
-  /* ── Filter + Pagination ── */
-  const filteredThemes =
-    selectedType === 'all'
-      ? themes
-      : themes.filter(theme => theme.themeTypeId === selectedType);
+  // 2. الفلترة عبر Axios (تحديث قائمة الثيمات بناءً على النوع)
+  useEffect(() => {
+    const fetchFilteredThemes = async () => {
+      setLoading(true);
+      try {
+        const typeQuery = (selectedType === 'all' || !selectedType) ? '' : selectedType;
+        const { data } = await axios.get(`${baseURL}/theme?type=${typeQuery}`, headers);
+        setThemes(data.data ?? []);
+      } catch (err) {
+        console.error('Error fetching filtered themes:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const totalPages = Math.ceil(filteredThemes.length / ITEMS_PER_PAGE);
-  const paginatedThemes = filteredThemes.slice(
+    fetchFilteredThemes();
+  }, [selectedType]);
+
+  /* ── منطق Pagination ── */
+  const totalPages = Math.ceil(themes.length / ITEMS_PER_PAGE);
+  const paginatedThemes = themes.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
-  const handleTypeChange = (type) => {
-    setSelectedType(type);
+  const handleTypeChange = (typeId) => {
+    setSelectedType(typeId);
     setCurrentPage(1);
   };
 
@@ -85,7 +93,7 @@ export default function Theme() {
         return;
       }
       alert(t('alerts.install_success'));
-      getData();
+      getInitialData(); // لتحديث قسم "ثيماتي"
     } catch (error) {
       console.error('Connection error:', error.message);
     } finally {
@@ -104,7 +112,7 @@ export default function Theme() {
       );
       if (res.data.success) {
         setIdActive(themeId);
-        getData();
+        alert(t('alerts.activate_success'));
       }
     } catch (error) {
       console.error('Activation failed:', error);
@@ -114,44 +122,36 @@ export default function Theme() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading && themes.length === 0 && types.length === 0) return <Loading />;
 
-  const resultsLabel = filteredThemes.length === 1
+  // تعريف التسمية لعدد النتائج لضمان عدم حدوث خطأ ReferenceError
+  const resultsLabel = themes.length === 1
     ? t('gallery.results_one')
-    : t('gallery.results_other', { count: filteredThemes.length });
+    : t('gallery.results_other', { count: themes.length });
 
   return (
     <div
       className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 p-6 md:p-8 space-y-6 font-sans"
       dir={isRtl ? 'rtl' : 'ltr'}
     >
-
-      {/* ═══════════════════════════════
-          My Themes
-      ═══════════════════════════════ */}
+      {/* قسم ثيماتي (My Themes) */}
       <section className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
-
         <div className="flex items-center gap-2.5 mb-6">
           <div className="p-2 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl">
             <Palette size={18} className="text-indigo-600 dark:text-indigo-400" />
           </div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('my_themes.title')}</h2>
         </div>
-
-        {/* Horizontal scrollable row */}
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-
-          {/* Default slot */}
           <ThemeCard
             image={DEFAULT_IMAGE}
             name={t('my_themes.default_name')}
             isActivating={activatingId === 'default'}
-            onActivate={() => handleActiveTheme()}
+            onActivate={() => handleActiveTheme(null)}
             activateLabel={t('my_themes.activate_btn')}
             isDefault
-            isActive={idActive === ''}
+            isActive={idActive === '' || idActive === null}
           />
-
           {myTheme.map((item) => (
             <ThemeCard
               key={item.id}
@@ -163,27 +163,17 @@ export default function Theme() {
               activateLabel={t('my_themes.activate_btn')}
             />
           ))}
-
-          {myTheme.length === 0 && (
-            <p className="text-sm text-gray-400 dark:text-zinc-500 py-4 self-center">
-              {t('my_themes.empty')}
-            </p>
-          )}
         </div>
       </section>
 
-      {/* ═══════════════════════════════
-          Type Filter
-      ═══════════════════════════════ */}
+      {/* قسم الفلترة (Type Filter) */}
       <section className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
-
         <div className="flex items-center gap-2.5 mb-5">
           <div className="p-2 bg-purple-100 dark:bg-purple-500/10 rounded-xl">
             <Layers size={18} className="text-purple-600 dark:text-purple-400" />
           </div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('types.title')}</h2>
         </div>
-
         <div className="flex flex-wrap gap-2.5">
           <FilterPill
             label={t('types.all')}
@@ -201,11 +191,8 @@ export default function Theme() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════
-          Theme Gallery
-      ═══════════════════════════════ */}
+      {/* معرض الثيمات (Theme Gallery) */}
       <section className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6 shadow-sm">
-
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-emerald-100 dark:bg-emerald-500/10 rounded-xl">
@@ -218,92 +205,37 @@ export default function Theme() {
           </span>
         </div>
 
-        {filteredThemes.length === 0 ? (
+        {themes.length === 0 ? (
           <div className="text-center py-20 text-gray-400 dark:text-zinc-500">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <LayoutGrid size={24} className="text-gray-400" />
-            </div>
-            <p className="text-base font-semibold text-gray-500 dark:text-zinc-400">{t('gallery.empty_title')}</p>
-            <p className="text-sm mt-1">{t('gallery.empty_subtitle')}</p>
+             <LayoutGrid size={48} className="mx-auto mb-4 opacity-20" />
+             <p>{t('gallery.empty_title')}</p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
               {paginatedThemes.map((item) => {
                 const isFree = Number(item.price) === 0;
-                const isInstalling = installingId === item.id;
-
                 return (
-                  <div
-                    key={item.id}
-                    className="group bg-gray-50 dark:bg-zinc-950 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-xl transition-all duration-300"
-                  >
-                    {/* Thumbnail */}
-                    <div className="relative h-48 overflow-hidden bg-gray-100 dark:bg-zinc-800">
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name_en}
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                          onError={e => { e.target.style.display = 'none'; }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Sparkles size={40} className="text-gray-300 dark:text-zinc-600" />
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                      {/* Price badge */}
-                      <div className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-800 dark:text-white shadow-sm`}>
+                  <div key={item.id} className="group bg-gray-50 dark:bg-zinc-950 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 hover:shadow-xl transition-all">
+                    <div className="relative h-48 bg-gray-100 dark:bg-zinc-800">
+                      <img src={item.imageUrl || DEFAULT_IMAGE} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute top-3 right-3 bg-white/90 dark:bg-zinc-900/90 px-3 py-1 rounded-full text-xs font-bold">
                         {isFree ? t('gallery.free_label') : `$${Number(item.price).toFixed(2)}`}
                       </div>
-
-                      {isFree && (
-                        <div className={`absolute top-3 ${isRtl ? 'right-3' : 'left-3'} bg-emerald-500 text-white px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm uppercase tracking-wide`}>
-                          {t('gallery.free_label')}
-                        </div>
-                      )}
                     </div>
-
-                    {/* Body */}
                     <div className="p-5">
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white mb-1 truncate">
-                        {item.name_en || item.name_ar}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-zinc-400 mb-4 line-clamp-2">
-                        {item.desc_en}
-                      </p>
-
-                      {Array.isArray(item.tag) && item.tag.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {item.tag.map((tag, idx) => (
-                            <span key={idx} className="px-2 py-0.5 bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-400 text-[10px] font-semibold rounded-lg">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex gap-2.5">
-                        <a
-                          target="_blank"
-                          rel="noreferrer"
-                          href={`${storeURL}/show/${item.slug}`}
-                          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 dark:border-indigo-500/20"
-                        >
-                          <ExternalLink size={14} />
-                          {t('gallery.preview_btn')}
+                      <h3 className="font-bold text-gray-900 dark:text-white mb-1">{item.name_en}</h3>
+                      <p className="text-sm text-gray-500 line-clamp-2 mb-4">{item.desc_en}</p>
+                      <div className="flex gap-2">
+                        <a href={`${storeURL}/show/${item.slug}`} target="_blank" rel="noreferrer" className="flex-1 flex justify-center items-center gap-2 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 text-sm font-bold">
+                          <ExternalLink size={14} /> {t('gallery.preview_btn')}
                         </a>
-                        <button
+                        <button 
                           onClick={() => handleInstallTheme(item.id)}
-                          disabled={isInstalling}
-                          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-opacity disabled:opacity-60 shadow-sm"
+                          disabled={installingId === item.id}
+                          className="flex-1 flex justify-center items-center gap-2 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold"
                         >
-                          {isInstalling
-                            ? <Loader2 size={14} className="animate-spin" />
-                            : <Download size={14} />}
+                          {installingId === item.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                           {t('gallery.install_btn')}
                         </button>
                       </div>
@@ -313,7 +245,6 @@ export default function Theme() {
               })}
             </div>
 
-            {/* ── Pagination ── */}
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}

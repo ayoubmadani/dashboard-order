@@ -211,7 +211,7 @@ export default function WalletPage() {
   // ── Render ──────────────────────────────────
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-gray-50/40 dark:bg-zinc-950 p-4 md:p-8 font-sans">
-      <div className="max-w-2xl mx-auto space-y-5">
+      <div className="mx-auto space-y-5">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between">
