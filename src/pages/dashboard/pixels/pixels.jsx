@@ -6,9 +6,7 @@ const Pixels = () => {
   const storeId = localStorage.getItem('storeId')
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <PixelManager storeId={storeId} />
-    </div>
+    <PixelManager storeId={storeId} />
   );
 };
 

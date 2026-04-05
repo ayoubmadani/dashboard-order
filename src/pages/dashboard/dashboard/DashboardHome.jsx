@@ -385,8 +385,8 @@ export default function Dashboard() {
 
       {/* ── Stat cards row 1 ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={TrendingUp}   label={t('stats.net_revenue')}  value={`${fmt(stats.net)} DA`}       sub={t('stats.net_revenue_sub', { amount: fmt(stats.monthNet) })}         color="#10b981" loading={loading} onClick={() => navigate('/analytics')} />
-        <StatCard icon={ShoppingBag}  label={t('stats.total_orders')} value={fmt(stats.total)}              sub={t('stats.total_orders_sub', { count: stats.todayCount })}            color="#6366f1" loading={loading} onClick={() => navigate('/orders')} />
+        <StatCard icon={TrendingUp}   label={t('stats.net_revenue')}  value={`${fmt(stats.net)} DA`}       sub={t('stats.net_revenue_sub', { amount: fmt(stats.monthNet) })}         color="#10b981" loading={loading} onClick={() => navigate('/dashboard/analytics')} />
+        <StatCard icon={ShoppingBag}  label={t('stats.total_orders')} value={fmt(stats.total)}              sub={t('stats.total_orders_sub', { count: stats.todayCount })}            color="#6366f1" loading={loading} onClick={() => navigate('/dashboard/orders')} />
         <StatCard icon={Truck}        label={t('stats.shipping')}      value={fmt(stats.shipping)}           sub={t('stats.shipping_sub')}                                             color="#06b6d4" loading={loading} />
         <StatCard icon={CheckCircle2} label={t('stats.delivered')}    value={fmt(stats.delivered)}          sub={t('stats.delivered_sub', { amount: fmt(stats.todayRev) })}          color="#10b981" loading={loading} />
       </div>
@@ -466,7 +466,7 @@ export default function Dashboard() {
             <Store className="w-4 h-4 text-indigo-500" />
             <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('store_breakdown')}</h2>
           </div>
-          <button onClick={() => navigate('/stores')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
+          <button onClick={() => navigate('/dashboard/stores')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
             {t('view_all')} <ChevronRight className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
           </button>
         </div>
@@ -499,7 +499,7 @@ export default function Dashboard() {
               <Clock className="w-4 h-4 text-indigo-500" />
               <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('recent_orders')}</h2>
             </div>
-            <button onClick={() => navigate('/orders')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
+            <button onClick={() => navigate('/dashboard/orders')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
               {t('view_all')} <ChevronRight className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
             </button>
           </div>
@@ -523,7 +523,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {recentOrders.map(order => (
-                    <tr key={order.id} className="border-t border-gray-50 dark:border-zinc-800/60 hover:bg-gray-50/60 dark:hover:bg-zinc-800/30 transition-colors cursor-pointer" onClick={() => navigate(`/orders/${order.id}`)}>
+                    <tr key={order.id} className="border-t border-gray-50 dark:border-zinc-800/60 hover:bg-gray-50/60 dark:hover:bg-zinc-800/30 transition-colors">
                       <td className="px-4 py-3 font-black text-indigo-600 dark:text-indigo-400 tabular-nums whitespace-nowrap">
                         #{order.id?.slice(-6)?.toUpperCase()}
                       </td>
@@ -594,43 +594,19 @@ export default function Dashboard() {
 
       {/* ── Quick actions + Inventory ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-5 shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-5 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <ArrowUpRight className="w-4 h-4 text-indigo-500" />
             <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('quick_actions')}</h2>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
-            <QuickAction icon={Store}     label={t('action_stores')}    color="#6366f1" onClick={() => navigate('/stores')} />
-            <QuickAction icon={ShoppingBag} label={t('action_orders')}  color="#8b5cf6" onClick={() => navigate('/orders')} />
-            <QuickAction icon={Plus}      label={t('action_new_order')} color="#10b981" onClick={() => navigate('/orders/new')} />
-            <QuickAction icon={Layers}    label={t('action_products')}  color="#f59e0b" onClick={() => navigate('/products')} />
-            <QuickAction icon={Truck}     label={t('action_shipping')}  color="#06b6d4" onClick={() => navigate('/shipping')} />
-            <QuickAction icon={BarChart2} label={t('action_analytics')} color="#f97316" onClick={() => navigate('/analytics')} />
-            <QuickAction icon={Settings}  label={t('action_settings')}  color="#64748b" onClick={() => navigate('/settings')} />
-          </div>
-        </div>
-
-        <div className="bg-zinc-900 dark:bg-indigo-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden group">
-          <div className="relative z-10 flex flex-col gap-6">
-            <div>
-              <div className="w-11 h-11 bg-white/10 rounded-2xl flex items-center justify-center mb-4">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <h3 className="text-lg font-black mb-2">{t('inventory_title')}</h3>
-              <p className="text-zinc-400 dark:text-indigo-100 text-xs leading-relaxed">{t('inventory_desc')}</p>
-            </div>
-            <button onClick={() => navigate('/products')} className="w-full py-3 bg-white text-zinc-900 dark:text-indigo-700 font-black rounded-xl hover:bg-zinc-100 transition-all active:scale-95 text-sm">
-              {t('inventory_btn')}
-            </button>
-          </div>
-          <div className="absolute -bottom-10 -right-10 w-44 h-44 bg-white/5 rounded-full blur-3xl group-hover:bg-white/10 transition-all" />
-          <div className="absolute top-0 right-0 w-full h-full opacity-[0.06] pointer-events-none">
-            <svg width="100%" height="100%">
-              <pattern id="dgrid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-              </pattern>
-              <rect width="100%" height="100%" fill="url(#dgrid)" />
-            </svg>
+            <QuickAction icon={Store}     label={t('action_stores')}    color="#6366f1" onClick={() => navigate('/dashboard/stores')} />
+            <QuickAction icon={ShoppingBag} label={t('action_orders')}  color="#8b5cf6" onClick={() => navigate('/dashboard/orders')} />
+            <QuickAction icon={Plus}      label={t('action_new_order')} color="#10b981" onClick={() => navigate('/dashboard/orders/new')} />
+            <QuickAction icon={Layers}    label={t('action_products')}  color="#f59e0b" onClick={() => navigate('/dashboard/products')} />
+            <QuickAction icon={Truck}     label={t('action_shipping')}  color="#06b6d4" onClick={() => navigate('/dashboard/shipping')} />
+            <QuickAction icon={BarChart2} label={t('action_analytics')} color="#f97316" onClick={() => navigate('/dashboard/analytics')} />
+            <QuickAction icon={Settings}  label={t('action_settings')}  color="#64748b" onClick={() => navigate('/dashboard/settings')} />
           </div>
         </div>
       </div>

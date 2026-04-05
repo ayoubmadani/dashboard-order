@@ -35,8 +35,8 @@
     "ship_fee": "+{{price}} shipping",
     "prev_page": "Previous",
     "next_page": "Next",
-    "edit" : "Edite",
-    "delete" : "Delete"
+    "edit": "Edit",
+    "delete": "Delete"
   },
   "export": {
     "customer_name": "Customer Name",
@@ -105,5 +105,34 @@
     "price_original": "Original Price:",
     "price_ship": "Shipping Fee:",
     "price_total": "Total:"
+  },
+  "ship": {
+    "success_title": "Order sent for shipping ✓",
+    "error_title": "Failed to send order",
+    "tracking": "Tracking Number",
+    "close": "Close",
+    "shipped": "Shipped",
+    "no_store": "No store selected",
+    "generic_error": "An error occurred while sending",
+    "sending": "Sending...",
+    "btn": "Ship"
+  },
+  "account_picker": {
+    "title": "Select Shipping Account",
+    "subtitle": "Will be used for this order only",
+    "empty_title": "No shipping accounts",
+    "empty_subtitle": "Add accounts from settings",
+    "default_badge": "Default"
+  },
+  "bulk_ship": {
+    "title": "Bulk Shipping",
+    "status_running": "Running... {{progress}} / {{total}}",
+    "status_complete": "Completed — {{okCount}} success, {{errorCount}} failed",
+    "close": "Close",
+    "success": "Success",
+    "failed": "Failed",
+    "button_select_all": "Bulk Ship ({{count}})",
+    "button_ship_selected": "Ship {{count}} orders",
+    "clear_selection": "Clear Selection"
   }
 }

@@ -4,9 +4,12 @@
   "tab_preferences": "Preferences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Subscription",
+  "tab_shipping": "Shipping",
+  
   "personal_info": "Personal Information",
   "username": "Username",
   "email": "Email Address",
+  
   "platform_pref": "Platform Preferences",
   "language": "Dashboard Language",
   "lang_ar": "العربية",
@@ -15,6 +18,7 @@
   "mode": "Dashboard Theme",
   "dark": "Dark Mode",
   "light": "Light Mode",
+  
   "notif_title": "Push Notifications (Ntfy)",
   "notif_topic_label": "Topic ID",
   "notif_topic_placeholder": "Enter your topic ID here...",
@@ -23,12 +27,15 @@
   "notif_send_pref": "Sending Preferences",
   "notif_new_order": "Notify on new order receipt",
   "save": "Save Changes",
+  
   "sub_no_plan_hint": "No active subscription, free plan will be activated automatically",
   "sub_no_available_plans": "No plans available at the moment",
   "sub_activate": "Activate",
   "sub_active": "Active",
   "sub_monthly": "Monthly",
   "sub_annual": "Annual",
+  "sub_monthly_short": "mo",
+  "sub_annual_short": "yr",
   "sub_price": "Price",
   "sub_start_date": "Start Date",
   "sub_end_date": "Expiry Date",
@@ -42,5 +49,37 @@
   "sub_auto_renew": "Auto-renew",
   "sub_auto_renew_on": "Your subscription will be renewed automatically",
   "sub_auto_renew_off": "Your subscription will not be renewed automatically",
-  "free": "free"
+  "free": "Free",
+  
+  "feat_stores": "Stores",
+  "feat_products": "Products",
+  "feat_pages": "Landing Pages",
+  "feat_commission": "Commission",
+  "save_pct": "Save {{pct}}%",
+  
+  "search_placeholder": "Search...",
+  
+  "shipping_accounts_title": "Shipping Accounts",
+  "shipping_accounts_subtitle": "Add multiple shipping accounts and set the default",
+  "shipping_add_account": "Add Account",
+  "shipping_add_first_account": "Add First Account",
+  "shipping_no_store_message": "Please select a store first",
+  "shipping_empty_title": "No shipping accounts",
+  "shipping_empty_subtitle": "Add a shipping account to enable delivery in your store",
+  
+  "shipping_add_title": "Add New Shipping Account",
+  "shipping_add_subtitle": "Select a provider and enter credentials",
+  "shipping_select_provider": "Select a provider from the list",
+  "shipping_account_name_label": "Account Name",
+  "shipping_account_placeholder": "Example: Main Yalidine Account",
+  "shipping_credentials": "Credentials",
+  "shipping_test_button": "Test",
+  "shipping_save_account": "Save Account",
+  "shipping_test_success": "Credentials valid ✓",
+  "shipping_test_fail": "Credentials invalid ✗",
+  "shipping_default_badge": "Default",
+  "shipping_verified": "Verified",
+  "shipping_unverified": "Unverified",
+  "shipping_set_default": "Set as Default",
+  "shipping_delete_confirm": "Delete this account?"
 }

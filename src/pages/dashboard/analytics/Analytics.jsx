@@ -218,6 +218,9 @@ export default function Analytics() {
         axios.get(`${baseURL}/orders/${storeId}`, headers),
         axios.get(`${baseURL}/orders/get-count-status/${storeId}`, headers),
       ]);
+      
+      console.log({testing : ordersRes.data});
+      
       setOrders(ordersRes.data || []);
       setStatusCounts(statusRes.data || []);
     } catch (err) {
@@ -241,8 +244,9 @@ export default function Analytics() {
     const delivered      = orders.filter(o => o.status === 'delivered');
     const todayOrders    = orders.filter(o => isToday(o.createdAt));
     const monthOrders    = orders.filter(o => isThisMonth(o.createdAt));
-    const grossRevenue   = delivered.reduce((s, o) => s + Number(o.totalPrice || 0), 0);
-    const returnedLossAll= orders.filter(o => o.status === 'returned').reduce((s, o) => s + Number(o.priceLoss || 0), 0);
+const grossRevenue = delivered.reduce((s, o) => {
+  return s + Number(o.totalPrice || 0) - Number(o.priceShip || 0);
+}, 0);    const returnedLossAll= orders.filter(o => o.status === 'returned').reduce((s, o) => s + Number(o.priceLoss || 0), 0);
     const revenue        = grossRevenue - returnedLossAll;
     const todayRevenue   = delivered.filter(o => isToday(o.createdAt)).reduce((s, o) => s + Number(o.totalPrice || 0), 0);
     const monthRevenue   = delivered.filter(o => isThisMonth(o.createdAt)).reduce((s, o) => s + Number(o.totalPrice || 0), 0);
@@ -366,12 +370,7 @@ export default function Analytics() {
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all"
-          >
-            <ArrowLeft className={`w-5 h-5 text-gray-600 dark:text-zinc-400 ${isRtl ? 'rotate-180' : ''}`} />
-          </button>
+          
           <div>
             <h1 className="text-xl font-black text-gray-900 dark:text-white">{t('title')}</h1>
             <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{t('subtitle')}</p>
