@@ -8,8 +8,22 @@ import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
+// ── إضافة التعريف هنا لضمان عدم حدوث خطأ ReferenceError ──
+export const StatusEnum = {
+  PENDING: 'pending',
+  APPL1: 'appl1',
+  APPL2: 'appl2',
+  APPL3: 'appl3',
+  CONFIRMED: 'confirmed',
+  SHIPPING: 'shipping',
+  CANCELLED: 'cancelled',
+  RETURNED: 'returned',
+  DELIVERED: 'delivered',
+  POSTPONED: 'postponed',
+};
+
 export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
-const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });  
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
 
   const [editedOrder, setEditedOrder] = useState(null);
@@ -182,25 +196,36 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
   const hasProduct = !!editedOrder.product;
   const canEdit = hasProduct;
 
-  /* Status select color */
   const statusSelectCls = (() => {
-    if (!canEdit) return 'bg-gray-100 dark:bg-zinc-700 text-gray-500 cursor-not-allowed';
-    const map = {
-      confirmed: 'bg-emerald-500 text-white',
-      cancelled: 'bg-rose-500 text-white',
-      delivered: 'bg-emerald-600 text-white',
-      shipping: 'bg-cyan-500 text-white',
+    if (!canEdit) return 'bg-gray-100 dark:bg-zinc-800 text-gray-500 cursor-not-allowed';
+
+    const colorMap = {
+      [StatusEnum.PENDING]: 'bg-amber-400 text-white',
+      [StatusEnum.APPL1]: 'bg-orange-400 text-white',
+      [StatusEnum.APPL2]: 'bg-orange-500 text-white',
+      [StatusEnum.APPL3]: 'bg-orange-600 text-white',
+      [StatusEnum.CONFIRMED]: 'bg-emerald-500 text-white',
+      [StatusEnum.SHIPPING]: 'bg-cyan-500 text-white',
+      [StatusEnum.RETURNED]: 'bg-rose-500 text-white',
+      [StatusEnum.CANCELLED]: 'bg-purple-500 text-white',
+      [StatusEnum.DELIVERED]: 'bg-emerald-600 text-white',
+      [StatusEnum.POSTPONED]: 'bg-slate-500 text-white',
     };
-    return map[editedOrder.status] || 'bg-amber-400 text-white';
+
+    return colorMap[editedOrder.status] || 'bg-amber-400 text-white';
   })();
 
   const statusOptions = [
-    { value: 'pending',   label: t('modal.status_pending') },
-    { value: 'confirmed', label: t('modal.status_confirmed') },
-    { value: 'shipping',  label: t('modal.status_shipping') },
-    { value: 'delivered', label: t('modal.status_delivered') },
-    { value: 'cancelled', label: t('modal.status_cancelled') },
-    { value: 'returned',  label: t('modal.status_returned') },
+    { value: StatusEnum.PENDING, label: t('status.pending') },
+    { value: StatusEnum.APPL1, label: t('status.appl1') },
+    { value: StatusEnum.APPL2, label: t('status.appl2') },
+    { value: StatusEnum.APPL3, label: t('status.appl3') },
+    { value: StatusEnum.CONFIRMED, label: t('status.confirmed') },
+    { value: StatusEnum.SHIPPING, label: t('status.shipping') },
+    { value: StatusEnum.DELIVERED, label: t('status.delivered') },
+    { value: StatusEnum.CANCELLED, label: t('status.cancelled') },
+    { value: StatusEnum.RETURNED, label: t('status.returned') },
+    { value: StatusEnum.POSTPONED, label: t('status.postponed') },
   ];
 
   return (
@@ -214,7 +239,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
           </div>
         )}
 
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900 z-10">
           <h2 className="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
             <span className="w-1.5 h-6 bg-indigo-600 rounded-full" />
@@ -226,10 +251,10 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
           </button>
         </div>
 
-        {/* ── Body ── */}
+        {/* Body */}
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1 bg-gray-50/50 dark:bg-zinc-950/30">
 
-          {/* ── Col 1: Shipping ── */}
+          {/* Col 1: Shipping */}
           <div className="space-y-4">
             <h3 className={`text-[10px] font-black uppercase tracking-widest px-1 flex items-center gap-1.5 ${canEdit ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
               <MapPin size={12} />{t('modal.section_shipping')}
@@ -245,8 +270,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
             )}
 
             <div className={`bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4 ${!canEdit ? 'opacity-60' : ''}`}>
-
-              {/* Customer name */}
               <div>
                 <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                   {t('modal.customer_name')}
@@ -261,7 +284,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                 />
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                   {t('modal.customer_phone')}
@@ -275,7 +297,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                 />
               </div>
 
-              {/* Wilaya + Commune */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
@@ -313,7 +334,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                 </div>
               </div>
 
-              {/* Ship type */}
               <div>
                 <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                   {t('modal.ship_type')}
@@ -337,7 +357,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                 </div>
               </div>
 
-              {/* Status */}
               <div className="p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
                 <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                   {t('modal.status_label')}
@@ -356,7 +375,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
             </div>
           </div>
 
-          {/* ── Col 2: Product ── */}
+          {/* Col 2: Product */}
           <div className="space-y-4">
             <h3 className={`text-[10px] font-black uppercase tracking-widest px-1 flex items-center gap-1.5 ${hasProduct ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
               <Package size={12} />{t('modal.section_product')}
@@ -364,7 +383,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
 
             {hasProduct ? (
               <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
-                {/* Product name */}
                 <div>
                   <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                     {t('modal.product_label')}
@@ -374,7 +392,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                   </div>
                 </div>
 
-                {/* Quantity */}
                 <div>
                   <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
                     {t('modal.quantity')}
@@ -387,7 +404,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                   />
                 </div>
 
-                {/* Variant dropdown */}
                 {variantOptions.length > 0 && (
                   <div className="relative">
                     <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
@@ -468,7 +484,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                   </div>
                 )}
 
-                {/* Offer select */}
                 {offers.length > 0 && (
                   <div>
                     <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
@@ -486,7 +501,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                   </div>
                 )}
 
-                {/* Price summary */}
                 <PriceSummary
                   priceLabel={t('modal.price_product')}
                   initPrice={editedOrder.initPrice}
@@ -496,7 +510,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
                 />
               </div>
             ) : (
-              /* No product */
               <div className="bg-gray-50 dark:bg-zinc-800/30 p-6 rounded-2xl border border-gray-200 dark:border-zinc-700 space-y-4">
                 <div className="text-center py-6">
                   <div className="w-16 h-16 bg-gray-200 dark:bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -520,7 +533,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
           </div>
         </div>
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <div className="px-6 py-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 flex justify-end items-center gap-3 z-10">
           <button onClick={onClose}
             className="px-5 py-2.5 text-gray-400 dark:text-zinc-500 font-semibold text-sm hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">
@@ -543,7 +556,6 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'orders' });
   );
 }
 
-/* ── Price Summary sub-component ── */
 function PriceSummary({ priceLabel, initPrice, priceShip, totalPrice, t }) {
   return (
     <div className="p-4 bg-gray-900 dark:bg-zinc-950 rounded-2xl space-y-2 border border-zinc-800">

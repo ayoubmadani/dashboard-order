@@ -21,14 +21,14 @@ export const StatusEnum = {
 };
 
 const STATUS_STYLES = {
-  pending:   'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
-  appl1:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
-  appl2:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
-  appl3:     'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  pending: 'text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20',
+  appl1: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  appl2: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
+  appl3: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
   confirmed: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20',
-  shipping:  'text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20',
-  cancelled: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20',
-  returned:  'text-purple-600 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20',
+  shipping: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 border-cyan-200 dark:border-cyan-500/20',
+  cancelled: 'text-purple-600 bg-purple-50 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20',
+  returned: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20',
   delivered: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
   postponed: 'text-gray-500 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700',
 };
@@ -43,7 +43,7 @@ const getStoreId = () => localStorage.getItem('storeId');
 ════════════════════════════════════════════════════ */
 function AccountPickerModal({ storeId, token, isRtl, subtitle, onSelect, onClose, t }) {
   const [accounts, setAccounts] = useState([]);
-  const [loading, setLoading]   = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
@@ -95,15 +95,13 @@ function AccountPickerModal({ storeId, token, isRtl, subtitle, onSelect, onClose
               <button
                 key={acc.id}
                 onClick={() => onSelect(acc)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:border-cyan-400 hover:bg-cyan-50/60 dark:hover:bg-cyan-500/10 text-${isRtl ? 'right' : 'left'} ${
-                  acc.isDefault
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:border-cyan-400 hover:bg-cyan-50/60 dark:hover:bg-cyan-500/10 text-${isRtl ? 'right' : 'left'} ${acc.isDefault
                     ? 'border-cyan-400 bg-cyan-50/60 dark:bg-cyan-500/10'
                     : 'border-gray-100 dark:border-zinc-700'
-                }`}
+                  }`}
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                  acc.isVerified ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
-                }`}>
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${acc.isVerified ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
+                  }`}>
                   <Truck size={14} className={acc.isVerified ? 'text-emerald-500' : 'text-amber-500'} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -135,8 +133,8 @@ function AccountPickerModal({ storeId, token, isRtl, subtitle, onSelect, onClose
    Bulk Ship Progress Modal
 ════════════════════════════════════════════════════ */
 function BulkShipModal({ orders, accountId, token, storeId, onClose, onDone, t }) {
-  const [results,  setResults]  = useState([]);
-  const [running,  setRunning]  = useState(true);
+  const [results, setResults] = useState([]);
+  const [running, setRunning] = useState(true);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -163,9 +161,9 @@ function BulkShipModal({ orders, accountId, token, storeId, onClose, onDone, t }
     })();
   }, []);
 
-  const okCount    = results.filter(r => r.status === 'ok').length;
+  const okCount = results.filter(r => r.status === 'ok').length;
   const errorCount = results.filter(r => r.status === 'error').length;
-  const pct        = orders.length ? Math.round((progress / orders.length) * 100) : 0;
+  const pct = orders.length ? Math.round((progress / orders.length) * 100) : 0;
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
@@ -215,8 +213,8 @@ function BulkShipModal({ orders, accountId, token, storeId, onClose, onDone, t }
             <div key={order.id} className="flex items-center gap-3 px-5 py-3">
               <div className="shrink-0">
                 {status === 'pending' && <Loader2 size={16} className="animate-spin text-gray-300 dark:text-zinc-600" />}
-                {status === 'ok'      && <CheckCircle2 size={16} className="text-emerald-500" />}
-                {status === 'error'   && <XCircle size={16} className="text-rose-500" />}
+                {status === 'ok' && <CheckCircle2 size={16} className="text-emerald-500" />}
+                {status === 'error' && <XCircle size={16} className="text-rose-500" />}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{order.customerName}</p>
@@ -310,8 +308,8 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 space-y-2.5 border border-gray-100 dark:border-zinc-700 text-sm">
             {[
               { label: t('delete_modal.customer'), value: order.customerName },
-              { label: t('delete_modal.phone'),    value: order.customerPhone, blue: true },
-              { label: t('delete_modal.product'),  value: order.product?.name || order.productName },
+              { label: t('delete_modal.phone'), value: order.customerPhone, blue: true },
+              { label: t('delete_modal.product'), value: order.product?.name || order.productName },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center">
                 <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">{row.label}</span>
@@ -342,9 +340,9 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
 function ShipButton({ order, onResult, t }) {
   const { i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
-  const [loading, setLoading]       = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
-  const token   = getAccessToken();
+  const token = getAccessToken();
   const storeId = getStoreId();
 
   if (order.status === 'shipping' || order.shippingTrackingId) {
@@ -401,42 +399,49 @@ export default function Orders() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
 
-  const [orders,       setOrders]       = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [error,        setError]        = useState(null);
-  const [searchTerm,   setSearchTerm]   = useState('');
-  const [query,        setQuery]        = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [isOpen,       setIsOpen]       = useState(false);
-  const [orderId,      setOrderId]      = useState(null);
-  const [currentPage,  setCurrentPage]  = useState(1);
-  const PAGE_SIZE = 100;
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('pending');
+  const [isOpen, setIsOpen] = useState(false);
+  const [orderId, setOrderId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const [deleteTarget,   setDeleteTarget]   = useState(null);
-  const [deleting,       setDeleting]       = useState(false);
-  const [shipResult,     setShipResult]     = useState(null);
+  const PAGE_SIZE = 50;
+
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [shipResult, setShipResult] = useState(null);
 
   // ── Bulk ──
-  const [selectedIds,    setSelectedIds]    = useState(new Set());
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const [showBulkPicker, setShowBulkPicker] = useState(false);
   const [bulkShipOrders, setBulkShipOrders] = useState(null);
-  const [bulkAccountId,  setBulkAccountId]  = useState(null);
+  const [bulkAccountId, setBulkAccountId] = useState(null);
 
-  const token      = getAccessToken();
-  const storeId    = getStoreId();
+  const token = getAccessToken();
+  const storeId = getStoreId();
   const statusKeys = Object.values(StatusEnum);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true); setError(null);
     try {
       const { data } = await axios.get(`${baseURL}/orders/${storeId}`, {
+        params: { status: statusFilter, query, page: currentPage }, // ← currentPage → page
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const resCount = await axios.get(`${baseURL}/orders/count/${storeId}`, {
         params: { status: statusFilter, query },
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(Array.isArray(data) ? data : (data.data ?? data.orders ?? []));
+      setTotalPages(Math.ceil(resCount.data / PAGE_SIZE)); // ← count → pages
     } catch (e) { console.error(e); setError(t('list.error')); }
     finally { setLoading(false); }
-  }, [token, query, statusFilter]);
+  }, [token, query, statusFilter, currentPage]); // ← أضف currentPage
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -446,17 +451,11 @@ export default function Orders() {
     return () => { document.body.style.overflow = 'auto'; };
   }, [isOpen, deleteTarget, shipResult, showBulkPicker, bulkShipOrders]);
 
-  const filtered = orders.filter(o => {
-    const q = searchTerm.trim().toLowerCase();
-    const matchSearch = !q || (o.customerName || '').toLowerCase().includes(q) || (o.customerPhone || '').includes(q) || (o.id || '').includes(q);
-    const matchStatus = !statusFilter || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const filtered = orders;
 
   // طلبات confirmed فقط (قابلة للشحن الجماعي)
-  const confirmedOrders      = filtered.filter(o => o.status === 'confirmed' && !o.shippingTrackingId);
-  const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(o => selectedIds.has(o.id));
-  const someSelected         = selectedIds.size > 0;
+  const confirmedOrders = orders.filter(o => o.status === 'confirmed' && !o.shippingTrackingId); const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(o => selectedIds.has(o.id));
+  const someSelected = selectedIds.size > 0;
 
   const toggleSelect = (id) =>
     setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -478,14 +477,14 @@ export default function Orders() {
     if (!filtered.length) { alert(t('list.no_export')); return; }
     const ws = XLSX.utils.json_to_sheet(filtered.map(order => ({
       [t('export.customer_name')]: order.customerName || '',
-      [t('export.phone')]:         order.customerPhone || '',
-      [t('export.product')]:       order.product?.name || order.productName || '',
-      [t('export.wilaya')]:        order.customerWilaya?.ar_name || '',
-      [t('export.commune')]:       order.customerCommune?.ar_name || '',
-      [t('export.ship_type')]:     order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
-      [t('export.ship_price')]:    parseFloat(order.priceShip || 0),
-      [t('export.total')]:         parseFloat(order.totalPrice || 0),
-      [t('export.status')]:        t(`status.${order.status}`) || order.status,
+      [t('export.phone')]: order.customerPhone || '',
+      [t('export.product')]: order.product?.name || order.productName || '',
+      [t('export.wilaya')]: order.customerWilaya?.ar_name || '',
+      [t('export.commune')]: order.customerCommune?.ar_name || '',
+      [t('export.ship_type')]: order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
+      [t('export.ship_price')]: parseFloat(order.priceShip || 0),
+      [t('export.total')]: parseFloat(order.totalPrice || 0),
+      [t('export.status')]: t(`status.${order.status}`) || order.status,
     })));
     ws['!cols'] = Array(9).fill({ wch: 18 });
     const wb = XLSX.utils.book_new();
@@ -504,13 +503,12 @@ export default function Orders() {
     finally { setDeleting(false); }
   };
 
-  const openModal  = (id) => { setOrderId(id); setIsOpen(true); };
-  const closeModal = ()   => { setIsOpen(false); setOrderId(null); };
+  const openModal = (id) => { setOrderId(id); setIsOpen(true); };
+  const closeModal = () => { setIsOpen(false); setOrderId(null); };
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated  = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginated = orders;
 
   if (loading) return <Loading />;
   if (error) return (
@@ -590,11 +588,10 @@ export default function Orders() {
                 {confirmedOrders.length > 0 && (
                   <button
                     onClick={someSelected ? startBulkShip : toggleSelectAll}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${
-                      someSelected
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${someSelected
                         ? 'bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500 shadow-md shadow-cyan-500/20'
                         : 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:border-cyan-500'
-                    }`}
+                      }`}
                   >
                     {someSelected
                       ? <><Send size={14} /> {t('bulk_ship.button_ship_selected', { count: selectedIds.size })}</>
@@ -649,7 +646,7 @@ export default function Orders() {
           )}
 
           <p className="text-xs text-gray-400 dark:text-zinc-500 font-medium mt-3">
-            {t('list.results_count', { filtered: filtered.length, total: orders.length })}
+            {t('list.results_count', { filtered: currentPage, total: totalPages})}
             {statusFilter && <span className="text-indigo-500 font-bold"> {t('list.active_filter', { status: t(`status.${statusFilter}`) })}</span>}
           </p>
         </div>
@@ -665,16 +662,15 @@ export default function Orders() {
         ) : paginated.map((order, i) => {
           const statusStyle = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
           const isConfirmed = order.status === 'confirmed' && !order.shippingTrackingId;
-          const isSelected  = selectedIds.has(order.id);
+          const isSelected = selectedIds.has(order.id);
           return (
             <div
               key={order.id}
               onDoubleClick={() => openModal(order.id)}
-              className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-sm transition-all cursor-default ${
-                isSelected
+              className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-sm transition-all cursor-default ${isSelected
                   ? 'border-cyan-400 dark:border-cyan-500 shadow-sm shadow-cyan-500/10'
                   : 'border-gray-100 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/30'
-              }`}
+                }`}
             >
               {/* Checkbox */}
               {isConfirmed && (
@@ -706,7 +702,7 @@ export default function Orders() {
                       <div key={index} className="flex items-center px-1.5 py-0.5 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700">
                         {attr.displayMode === 'color' ? <div className="w-4 h-4 rounded-full border border-gray-200 dark:border-zinc-600" style={{ backgroundColor: attr.value }} />
                           : attr.displayMode === 'image' ? <img className="w-4 h-4 object-cover rounded" src={attr.value} alt="" />
-                          : <span className="text-[10px] text-gray-600 dark:text-zinc-400 font-medium">{attr.value}</span>
+                            : <span className="text-[10px] text-gray-600 dark:text-zinc-400 font-medium">{attr.value}</span>
                         }
                       </div>
                     ))}
