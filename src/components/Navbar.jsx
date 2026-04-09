@@ -86,11 +86,11 @@ export default function NavBar() {
             <nav className="w-full h-20 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between px-5 md:px-8 sticky top-0 z-50 transition-colors duration-300">
 
                 {/* الشعار */}
-                <Link to="/" className="flex items-center gap-2 group" onClick={closeMobileMenu}>
+                <Link dir="ltr" to="/" className="flex items-center gap-0.5 group" onClick={closeMobileMenu}>
                     <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform">
                         <span className="text-white font-bold text-lg">MD</span>
                     </div>
-                    <span className="text-xl font-black text-gray-800 dark:text-white tracking-tighter italic">MdStore</span>
+                    <span className="text-xl font-black text-gray-800 dark:text-white tracking-tighter italic">Store</span>
                 </Link>
 
                 {/* روابط Desktop */}

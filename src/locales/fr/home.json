@@ -1,15 +1,21 @@
 {
     "new_feature": "Plateforme Marchande N°1",
     "hero_title": "Créez Votre Boutique",
-    "hero_sub": "en Minutes",
-    "hero_desc": "Une plateforme intégrée qui fournit tout ce dont vous avez besoin pour vendre vos produits en ligne avec facilité et sécurité, avec un support technique continu et des fonctionnalités infinies.",
+    "hero_sub": "En Quelques Minutes",
+    "hero_desc": "Une plateforme complète offrant tout ce dont vous avez besoin pour vendre vos produits en ligne facilement et en toute sécurité, avec un support continu.",
     "get_started": "Commencer Gratuitement",
     "learn_more": "En Savoir Plus",
     "features_title": "Pourquoi Choisir Notre Plateforme ?",
     "feat1_title": "Configuration Facile",
     "feat1_desc": "Une interface simple qui vous permet de lancer votre boutique sans aucune expérience préalable en programmation.",
-    "feat2_title": "Paiement Sécurisé",
-    "feat2_desc": "Support complet des passerelles de paiement locales et mondiales avec une protection avancée pour vos données et vos clients.",
+    "feat2_title": "Protection Contre les Commandes Fictives",
+    "feat2_desc": "Systèmes de vérification intelligents pour garantir le sérieux des clients, réduisant les annulations et protégeant vos bénéfices.",
     "feat3_title": "Rapports Intelligents",
-    "feat3_desc": "Analysez vos ventes et comprenez le comportement des clients grâce à un tableau de bord intelligent et détaillé."
+    "feat3_desc": "Analysez vos ventes et comprenez le comportement de vos clients grâce à un tableau de bord détaillé.",
+    "feat4_title": "Intégration d'Expédition Intelligente",
+    "feat4_desc": "Intégration complète avec les principales sociétés de transport pour suivre et gérer les commandes en un seul endroit.",
+    "feat5_title": "Sync Pixel en un Clic",
+    "feat5_desc": "Connectez facilement les pixels Facebook et TikTok pour suivre vos publicités avec précision sans aucun code.",
+    "feat6_title": "Support 24/7",
+    "feat6_desc": "Notre équipe vous accompagne à chaque étape via chat en direct pour assurer la croissance continue de votre entreprise."
 }

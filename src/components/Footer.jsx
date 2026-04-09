@@ -13,11 +13,11 @@ const Footer = () => {
           
           {/* العمود الأول: الشعار والوصف */}
           <div className="space-y-6">
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link dir='ltr' to="/" className="inline-flex items-center gap-0.5 group">
               <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-                <span className="text-white font-bold text-xl font-sans">M</span>
+                <span className="text-white font-bold text-xl font-sans">MD</span>
               </div>
-              <span className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter italic">MdStore</span>
+              <span className="text-2xl font-black text-gray-900 dark:text-white tracking-tighter italic">Store</span>
             </Link>
             <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">
               {t('footer.description', 'المنصة الرائدة لتمكين التجار من بناء مستقبلهم الرقمي بكل سهولة.')}

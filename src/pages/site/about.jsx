@@ -1,58 +1,77 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Users, Zap, Award, BarChart as ChartIcon, Globe } from 'lucide-react';
+import { Target, Users, Award } from 'lucide-react';
 
 const About = () => {
   const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-white dark:bg-brand-dark transition-colors duration-300">
-      
-      {/* Hero Section - تصميم عصري مع خلفية داكنة ثابتة */}
-      <section className="relative py-24 bg-zinc-900 dark:bg-zinc-900/50 overflow-hidden rounded-[3xl] mx-4 my-4">
-        <div className="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none">
-          <Globe className="w-full h-full scale-150 text-white" />
-        </div>
-        
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">
-            {t('about.hero_title', 'نحن نعيد تعريف')} <br />
-            <span className="bg-gradient-to-r from-brand-primary to-purple-400 bg-clip-text text-transparent">
-               {t('about.hero_sub', 'التجارة الإلكترونية')}
-            </span>
-          </h1>
-          <p className="text-indigo-100 dark:text-gray-300 text-lg md:text-xl opacity-80 max-w-2xl mx-auto leading-relaxed">
-            {t('about.hero_desc', 'نحن لسنا مجرد منصة، بل نحن المحرك التقني الذي يحول أحلامك التجارية إلى واقع ملموس.')}
-          </p>
-        </div>
-      </section>
 
+      {/* Hero Section - خلفية صورة الجزائر الجوية */}
+      {/* Hero Section */}
+      <section className="relative py-24 overflow-hidden rounded-[3xl] mx-4 my-4 min-h-[340px] rounded-2xl">
+
+        {/* الصور */}
+        <img
+          src="/public/images/darck/Gemini_Generated_Image_gyzy0zgyzy0zgyzy.png"
+          alt="Dark"
+          className="hidden dark:block absolute inset-0 w-full h-full object-cover"
+        />
+        <img
+          src="/public/images/light/Gemini_Generated_Image_gyzy0zgyzy0zgyzy.png"
+          alt="Light"
+          className="block dark:hidden absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* طبقة تظليل خفيفة جداً فقط لإعطاء عمق */}
+        <div className="absolute inset-0 bg-white/10 dark:bg-black/60 transition-colors duration-300"></div>
+
+        
+      </section>
       {/* Our Story Section */}
       <section className="py-20 container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="relative group order-2 lg:order-1">
             <div className="absolute -inset-4 bg-brand-primary/10 dark:bg-brand-primary/5 rounded-[2.5rem] rotate-3 group-hover:rotate-0 transition-transform duration-500"></div>
-            <div className="relative bg-gray-50 dark:bg-zinc-900 h-[400px] rounded-[2.5rem] flex items-center justify-center border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
-                <Zap size={120} className="text-brand-primary animate-pulse" />
+            <div className="relative h-[420px] rounded-[2.5rem] overflow-hidden shadow-xl">
+
+              {/* صورة الفريق - الوضع الليلي */}
+              <img
+                src="/public/images/darck/futuristic-algerian-tech-startup-office-_8RvEFkYQQYyiM2B4ZUR3wQ_LpgjbEhpTa-9O-JFgbo68w.jpeg"
+                alt="Our Team Dark"
+                className="hidden dark:block w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+
+              {/* صورة الفريق - الوضع الفاتح */}
+              <img
+                src="/public/images/light/futuristic-algerian-tech-startup-office-_8RvEFkYQQYyiM2B4ZUR3wQ_LpgjbEhpTa-9O-JFgbo68w.jpeg"
+                alt="Our Team Light"
+                className="block dark:hidden w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+
+              {/* Gradient overlay at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/40 to-transparent"></div>
             </div>
           </div>
-          
+
           <div className="space-y-6 text-right order-1 lg:order-2">
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white leading-tight">
-               {t('about.story_title', 'قصتنا وكيف بدأنا')}
+              {t('about.story_title', 'قصتنا وكيف بدأنا')}
             </h2>
             <p className="text-gray-500 dark:text-gray-400 text-lg leading-relaxed">
               {t('about.story_p1', 'بدأت MdStore بفكرة بسيطة: جعل التجارة الإلكترونية متاحة للجميع. لاحظنا الصعوبات التي يواجهها التجار في إطلاق مواقعهم، فقررنا بناء بيئة تقنية متكاملة تتسم بالسهولة والقوة.')}
             </p>
+
             <div className="grid grid-cols-2 gap-4 pt-4">
-               <div className="p-4 bg-brand-primary/5 dark:bg-brand-primary/10 rounded-2xl border border-brand-primary/10">
-                  <h4 className="font-bold text-brand-primary text-xl mb-1">2024</h4>
-                  <p className="text-[10px] text-brand-primary opacity-80 uppercase tracking-widest font-black">تاريخ الانطلاق</p>
-               </div>
-               <div className="p-4 bg-purple-50 dark:bg-purple-500/10 rounded-2xl border border-purple-100 dark:border-purple-500/10">
-                  <h4 className="font-bold text-purple-700 dark:text-purple-400 text-xl mb-1">+1000</h4>
-                  <p className="text-[10px] text-purple-600 dark:text-purple-400 opacity-80 uppercase tracking-widest font-black">تاجر موثوق</p>
-               </div>
+              <div className="p-4 bg-brand-primary/5 dark:bg-brand-primary/10 rounded-2xl border border-brand-primary/10">
+                <h4 className="font-bold text-brand-primary text-xl mb-1">2026</h4>
+                <p className="text-[10px] text-brand-primary opacity-80 uppercase tracking-widest font-black">تاريخ الانطلاق</p>
+              </div>
+              <div className="p-4 bg-purple-50 dark:bg-purple-500/10 rounded-2xl border border-purple-100 dark:border-purple-500/10">
+                <h4 className="font-bold text-purple-700 dark:text-purple-400 text-xl mb-1">+100</h4>
+                <p className="text-[10px] text-purple-600 dark:text-purple-400 opacity-80 uppercase tracking-widest font-black">تاجر موثوق</p>
+              </div>
             </div>
           </div>
         </div>
@@ -62,8 +81,8 @@ const About = () => {
       <section className="py-12 bg-gray-50/50 dark:bg-zinc-900/30">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <StatItem number="+15k" label={t('about.stat_merchants', 'تاجر نشط')} />
-            <StatItem number="+200k" label={t('about.stat_products', 'منتج مباع')} />
+            <StatItem number="+150" label={t('about.stat_merchants', 'تاجر نشط')} />
+            <StatItem number="+20k" label={t('about.stat_products', 'منتج مباع')} />
             <StatItem number="24/7" label={t('about.stat_support', 'دعم متواصل')} />
             <StatItem number="99.9%" label={t('about.stat_uptime', 'وقت التشغيل')} />
           </div>
@@ -76,20 +95,20 @@ const About = () => {
           <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">{t('about.values_title', 'قيمنا الأساسية')}</h2>
           <div className="w-20 h-1.5 bg-brand-primary mx-auto rounded-full"></div>
         </div>
-        
+
         <div className="grid md:grid-cols-3 gap-8">
-          <ValueCard 
-            icon={<Target className="text-brand-primary" />} 
+          <ValueCard
+            icon={<Target className="text-brand-primary" />}
             title={t('about.val1_title', 'الابتكار المستمر')}
             desc={t('about.val1_desc', 'نسعى دائماً لتوفير أحدث الأدوات التقنية التي تسبق توقعات السوق.')}
           />
-          <ValueCard 
-            icon={<Award className="text-purple-600 dark:text-purple-400" />} 
+          <ValueCard
+            icon={<Award className="text-purple-600 dark:text-purple-400" />}
             title={t('about.val2_title', 'الشفافية المطلقة')}
             desc={t('about.val2_desc', 'نتعامل بوضوح تام مع شركائنا في جميع الرسوم والخدمات المقدمة.')}
           />
-          <ValueCard 
-            icon={<Users className="text-blue-600 dark:text-blue-400" />} 
+          <ValueCard
+            icon={<Users className="text-blue-600 dark:text-blue-400" />}
             title={t('about.val3_title', 'تمكين التاجر')}
             desc={t('about.val3_desc', 'هدفنا هو منحك التحكم الكامل ببياناتك وعملياتك التجارية.')}
           />

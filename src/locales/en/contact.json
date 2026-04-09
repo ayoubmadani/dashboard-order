@@ -16,5 +16,7 @@
     "message_label": "Message",
     "message_placeholder": "Write your message here...",
     "send_btn": "Send Message",
-    "success_msg": "Thank you for contacting us! We'll get back to you soon."
+    "success_msg": "Thank you for contacting us! We'll get back to you soon.",
+    "error_msg": "Oops! Something went wrong. Please try again later.",
+    "sending": "Sending..."
 }

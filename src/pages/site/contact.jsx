@@ -1,29 +1,41 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import { baseURL } from '../../constents/const.';
 
 const Contact = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === 'ar';
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
 
-  const handleSubmit = (e) => {
+  const [status, setStatus] = useState({ loading: false, success: false, error: false });
+  const [formData, setFormData] = useState({ username: '', email: '', subject: '', message: '' });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form Data:', formData);
-    alert(t('contact.success_msg', 'شكرًا لتواصلك معنا! سنرد عليك قريبًا.'));
+    setStatus({ loading: true, success: false, error: false });
+
+    try {
+      // إرسال البيانات للـ DTO الذي أنشأناه في NestJS
+      const response = await axios.post(`${baseURL}/admin/contact`, formData);
+      
+      if (response.status === 201 || response.status === 200) {
+        setStatus({ loading: false, success: true, error: false });
+        setFormData({ username: '', email: '', subject: '', message: '' }); // تفريغ الحقول
+        
+        // إخفاء رسالة النجاح بعد 5 ثوانٍ
+        setTimeout(() => setStatus(prev => ({ ...prev, success: false })), 5000);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setStatus({ loading: false, success: false, error: true });
+    }
   };
 
   return (
     <div className="bg-white dark:bg-brand-dark min-h-screen py-16 px-6 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         
-        {/* العناوين الرئيسية */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">
             {t('contact.title', 'تواصل معنا')}
@@ -35,10 +47,8 @@ const Contact = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
-          {/* الجانب الأيسر: معلومات التواصل وساعات العمل */}
+          {/* معلومات التواصل */}
           <div className="lg:col-span-1 space-y-6">
-            
-            {/* بطاقة معلومات التواصل */}
             <div className="bg-gray-50 dark:bg-zinc-900 p-8 rounded-[2rem] shadow-sm border border-gray-100 dark:border-zinc-800 space-y-8">
               <ContactInfoItem 
                 icon={<MapPin size={20} />} 
@@ -64,7 +74,6 @@ const Contact = () => {
               />
             </div>
 
-            {/* بطاقة ساعات العمل - تصميم جذاب */}
             <div className="bg-brand-primary p-8 rounded-[2rem] shadow-xl shadow-brand-primary/20 text-white relative overflow-hidden group">
               <Clock className="absolute -right-4 -bottom-4 w-32 h-32 opacity-10 group-hover:rotate-12 transition-transform duration-500" />
               <h3 className="font-bold text-xl mb-4 flex items-center gap-2">
@@ -84,8 +93,24 @@ const Contact = () => {
             </div>
           </div>
 
-          {/* الجانب الأيمن: نموذج المراسلة */}
+          {/* نموذج المراسلة */}
           <div className="lg:col-span-2 bg-white dark:bg-zinc-900 p-8 md:p-12 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-zinc-800">
+            
+            {/* رسائل التنبيه */}
+            {status.success && (
+              <div className="mb-8 p-4 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-700 dark:text-emerald-400 animate-in fade-in slide-in-from-top-4">
+                <CheckCircle2 size={20} />
+                <span className="font-bold">{t('contact.success_msg', 'تم إرسال رسالتك بنجاح، سنرد عليك قريباً.')}</span>
+              </div>
+            )}
+
+            {status.error && (
+              <div className="mb-8 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl flex items-center gap-3 text-red-700 dark:text-red-400">
+                <AlertCircle size={20} />
+                <span className="font-bold">{t('contact.error_msg', 'حدث خطأ ما، يرجى المحاولة لاحقاً.')}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
@@ -93,9 +118,10 @@ const Contact = () => {
                   <input
                     type="text"
                     required
-                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-brand-primary/5 focus:border-brand-primary outline-none transition-all"
+                    value={formData.username}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white outline-none focus:border-brand-primary transition-all"
                     placeholder={t('contact.name_placeholder', 'أدخل اسمك الكامل')}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    onChange={(e) => setFormData({...formData, username: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
@@ -103,7 +129,8 @@ const Contact = () => {
                   <input
                     type="email"
                     required
-                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-brand-primary/5 focus:border-brand-primary outline-none transition-all"
+                    value={formData.email}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white outline-none focus:border-brand-primary transition-all"
                     placeholder="example@mail.com"
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                   />
@@ -114,7 +141,9 @@ const Contact = () => {
                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mx-1">{t('contact.subject_label', 'الموضوع')}</label>
                 <input
                   type="text"
-                  className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-brand-primary/5 focus:border-brand-primary outline-none transition-all"
+                  required
+                  value={formData.subject}
+                  className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white outline-none focus:border-brand-primary transition-all"
                   placeholder={t('contact.subject_placeholder', 'كيف يمكننا مساعدتك؟')}
                   onChange={(e) => setFormData({...formData, subject: e.target.value})}
                 />
@@ -125,7 +154,8 @@ const Contact = () => {
                 <textarea
                   rows="5"
                   required
-                  className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-zinc-950 focus:ring-4 focus:ring-brand-primary/5 focus:border-brand-primary outline-none transition-all resize-none"
+                  value={formData.message}
+                  className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 text-gray-900 dark:text-white outline-none focus:border-brand-primary transition-all resize-none"
                   placeholder={t('contact.message_placeholder', 'اكتب رسالتك هنا...')}
                   onChange={(e) => setFormData({...formData, message: e.target.value})}
                 ></textarea>
@@ -133,10 +163,13 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="w-full md:w-max px-12 py-4 bg-brand-primary text-white font-black rounded-2xl hover:bg-brand-primary/90 transition-all shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-3 group active:scale-95"
+                disabled={status.loading}
+                className={`w-full md:w-max px-12 py-4 bg-brand-primary text-white font-black rounded-2xl transition-all shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-3 group active:scale-95 ${status.loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-brand-primary/90'}`}
               >
-                <span>{t('contact.send_btn', 'إرسال الرسالة')}</span>
-                <Send size={18} className={`${isRtl ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
+                <span>{status.loading ? t('contact.sending', 'جاري الإرسال...') : t('contact.send_btn', 'إرسال الرسالة')}</span>
+                {!status.loading && (
+                  <Send size={18} className={`${isRtl ? 'rotate-180' : ''} group-hover:translate-x-1 transition-transform`} />
+                )}
               </button>
             </form>
           </div>

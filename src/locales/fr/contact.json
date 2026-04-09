@@ -1,11 +1,11 @@
 {
     "title": "Contactez-nous",
-    "subtitle": "Vous avez une question sur MdStore ? Notre équipe est prête à répondre à vos questions et à vous aider à lancer votre boutique.",
+    "subtitle": "Vous avez une question sur MdStore ? Notre équipe est prête à vous répondre et à vous aider à lancer votre boutique.",
     "address_label": "Adresse",
     "address_val": "Alger, Ouled Fayet",
     "phone_label": "Téléphone",
     "email_label": "E-mail",
-    "hours_title": "Heures d'Ouverture",
+    "hours_title": "Heures d'ouverture",
     "days_work": "Dimanche - Jeudi",
     "days_off": "Vendredi - Samedi",
     "closed": "Fermé",
@@ -15,6 +15,8 @@
     "subject_placeholder": "Comment pouvons-nous vous aider ?",
     "message_label": "Message",
     "message_placeholder": "Écrivez votre message ici...",
-    "send_btn": "Envoyer le Message",
-    "success_msg": "Merci de nous avoir contactés ! Nous vous répondrons bientôt."
+    "send_btn": "Envoyer le message",
+    "success_msg": "Merci de nous avoir contactés ! Nous vous répondrons bientôt.",
+    "error_msg": "Désolé, une erreur est survenue. Veuillez réessayer plus tard.",
+    "sending": "Envoi en cours..."
 }

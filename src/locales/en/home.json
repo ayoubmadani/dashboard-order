@@ -1,15 +1,21 @@
 {
     "new_feature": "#1 Merchant Platform",
     "hero_title": "Create Your Store",
-    "hero_sub": "in Minutes",
-    "hero_desc": "An integrated platform that provides everything you need to sell your products online with ease and security, with continuous technical support and endless features.",
-    "get_started": "Get Started Free",
+    "hero_sub": "In Minutes",
+    "hero_desc": "An all-in-one platform providing everything you need to sell your products online easily and securely, with ongoing support and endless features.",
+    "get_started": "Start Free",
     "learn_more": "Learn More",
     "features_title": "Why Choose Our Platform?",
     "feat1_title": "Easy Setup",
-    "feat1_desc": "A simple interface that allows you to launch your store without any prior programming experience.",
-    "feat2_title": "Secure Payment",
-    "feat2_desc": "Full support for local and global payment gateways with advanced protection for your data and customers.",
+    "feat1_desc": "A simple interface that lets you launch your store without any prior coding experience.",
+    "feat2_title": "Fake Order Protection",
+    "feat2_desc": "Smart verification systems to ensure customer seriousness, reducing cancellations and protecting your profits.",
     "feat3_title": "Smart Reports",
-    "feat3_desc": "Analyze your sales and understand customer behavior through an intelligent and detailed dashboard."
+    "feat3_desc": "Analyze your sales and understand customer behavior through a detailed and smart dashboard.",
+    "feat4_title": "Smart Shipping Integration",
+    "feat4_desc": "Full integration with major shipping companies to track and manage orders from one place.",
+    "feat5_title": "One-Click Pixel Sync",
+    "feat5_desc": "Easily connect Facebook and TikTok pixels to track your ad campaign results accurately without any coding.",
+    "feat6_title": "24/7 Support",
+    "feat6_desc": "Our team is with you every step of the way via live chat to ensure your business grows non-stop."
 }
