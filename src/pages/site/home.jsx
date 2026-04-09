@@ -8,6 +8,10 @@ import { Truck } from 'lucide-react';
 import { ShieldCheckIcon } from 'lucide-react';
 import { Code2 } from 'lucide-react';
 
+// لاحظ التغيير من public إلى assets داخل مجلد src
+import dashboardMockupLight from '../../assets/images/light/dashboard-mockup.jpeg';
+import dashboardMockupDarck from '../../assets/images/darck/dashboard-mockup.jpeg';
+
 const HomeSite = () => {
   const { t } = useTranslation();
 
@@ -53,26 +57,27 @@ const HomeSite = () => {
             </div>
 
             {/* الجانب البصري - Dashboard Image */}
-            <div className="flex-1 relative">
-              {/* تأثير التوهج خلف الصورة */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-[3rem] rotate-3 opacity-20 blur-2xl animate-pulse"></div>
+<div className="flex-1 relative">
+  {/* تأثير التوهج خلف الصورة */}
+  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-[3rem] rotate-3 opacity-20 blur-2xl animate-pulse"></div>
 
-              <div className="relative transform -rotate-2 hover:rotate-0 transition-transform duration-500">
-                {/* صورة الوضع الليلي - تظهر فقط عندما يكون الأب لديه كلاس dark */}
-                <img
-                  src="public/images/darck/modern-e-commerce-saas-dashboard-mockup-_6GGspzOfRx28WgiEBetmWA_M6hSyyJmSiuVxVydkZdBrg.jpeg"
-                  alt="MdStore Dark Dashboard"
-                  className="hidden dark:block w-full rounded-[2rem] shadow-2xl shadow-indigo-500/20 border border-white/10"
-                />
+  <div className="relative transform -rotate-2 hover:rotate-0 transition-transform duration-500">
+    
+    {/* صورة الوضع الليلي - تظهر فقط في الـ Dark Mode */}
+    <img
+      src={dashboardMockupDarck} // لاحظ إزالة .src واستخدام الاسم الذي عرفته في الأعلى
+      alt="MdStore Dark Dashboard"
+      className="hidden dark:block w-full rounded-[2rem] shadow-2xl shadow-indigo-500/20 border border-white/10"
+    />
 
-                {/* صورة الوضع الفاتح - تختفي عندما يتم تفعيل الـ dark mode */}
-                <img
-                  src="public/images/light/modern-e-commerce-saas-dashboard-mockup-_6GGspzOfRx28WgiEBetmWA_M6hSyyJmSiuVxVydkZdBrg.png"
-                  alt="MdStore Light Dashboard"
-                  className="block dark:hidden w-full rounded-[2rem] shadow-2xl shadow-indigo-500/20 border border-gray-200"
-                />
-              </div>
-            </div>
+    {/* صورة الوضع الفاتح - تظهر فقط في الـ Light Mode */}
+    <img
+      src={dashboardMockupLight} // لاحظ إزالة .src
+      alt="MdStore Light Dashboard"
+      className="block dark:hidden w-full rounded-[2rem] shadow-2xl shadow-indigo-500/20 border border-gray-200"
+    />
+  </div>
+</div>
 
           </div>
         </div>

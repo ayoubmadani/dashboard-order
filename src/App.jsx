@@ -57,7 +57,7 @@ function MyComponent() {
 }
 
   // 1. منطق إدارة الوضع الليلي
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
 
   useEffect(() => {
     const root = window.document.documentElement;
