@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { useNavigate } from 'react-router-dom'; // استيراد الهوك
 import {
   Search, RefreshCw, Download, Trash2, Edit2,
   Package, AlertTriangle, ChevronDown,
@@ -37,6 +38,7 @@ const truncate = (text = '', max = 20) =>
   text.length > max ? text.slice(0, max) + '…' : text;
 
 const getStoreId = () => localStorage.getItem('storeId');
+
 
 /* ════════════════════════════════════════════════════
    Account Picker Modal
@@ -96,8 +98,8 @@ function AccountPickerModal({ storeId, token, isRtl, subtitle, onSelect, onClose
                 key={acc.id}
                 onClick={() => onSelect(acc)}
                 className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all hover:border-cyan-400 hover:bg-cyan-50/60 dark:hover:bg-cyan-500/10 text-${isRtl ? 'right' : 'left'} ${acc.isDefault
-                    ? 'border-cyan-400 bg-cyan-50/60 dark:bg-cyan-500/10'
-                    : 'border-gray-100 dark:border-zinc-700'
+                  ? 'border-cyan-400 bg-cyan-50/60 dark:bg-cyan-500/10'
+                  : 'border-gray-100 dark:border-zinc-700'
                   }`}
               >
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${acc.isVerified ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'
@@ -219,7 +221,7 @@ function BulkShipModal({ orders, accountId, token, storeId, onClose, onDone, t }
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{order.customerName}</p>
                 <p className="text-[11px] text-gray-400 dark:text-zinc-500 truncate">
-                  {truncate(order.product?.name || order.productName || '', 30)}
+                  {truncate(order.items?.[0]?.product?.name || '', 30)}
                 </p>
               </div>
               <div className="shrink-0 text-right">
@@ -309,7 +311,7 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
             {[
               { label: t('delete_modal.customer'), value: order.customerName },
               { label: t('delete_modal.phone'), value: order.customerPhone, blue: true },
-              { label: t('delete_modal.product'), value: order.product?.name || order.productName },
+              { label: t('delete_modal.product'), value: order.items?.map(i => i.product?.name).filter(Boolean).join(', ') },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center">
                 <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">{row.label}</span>
@@ -392,21 +394,24 @@ function ShipButton({ order, onResult, t }) {
   );
 }
 
+// ... (نفس الـ Imports و الـ Styles السابقة)
+
 /* ════════════════════════════════════════════════════
    Main Component
 ════════════════════════════════════════════════════ */
 export default function Orders() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
+  const navigate = useNavigate();
 
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([]); // ستحتوي الآن على مجموعات (Grouped Carts)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [isOpen, setIsOpen] = useState(false);
-  const [orderId, setOrderId] = useState(null);
+  const [selectedCart, setSelectedCart] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
 
@@ -416,7 +421,6 @@ export default function Orders() {
   const [deleting, setDeleting] = useState(false);
   const [shipResult, setShipResult] = useState(null);
 
-  // ── Bulk ──
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showBulkPicker, setShowBulkPicker] = useState(false);
   const [bulkShipOrders, setBulkShipOrders] = useState(null);
@@ -430,20 +434,29 @@ export default function Orders() {
     setLoading(true); setError(null);
     try {
       const { data } = await axios.get(`${baseURL}/orders/${storeId}`, {
-        params: { status: statusFilter, query, page: currentPage }, // ← currentPage → page
+        params: { status: statusFilter, query, page: currentPage },
         headers: { Authorization: `Bearer ${token}` },
       });
       const resCount = await axios.get(`${baseURL}/orders/count/${storeId}`, {
         params: { status: statusFilter, query },
         headers: { Authorization: `Bearer ${token}` },
       });
-      setOrders(Array.isArray(data) ? data : (data.data ?? data.orders ?? []));
-      setTotalPages(Math.ceil(resCount.data / PAGE_SIZE)); // ← count → pages
+
+      // البيانات القادمة هي الآن المصفوفة المجمعة (Grouped Array)      
+      console.log(data);
+
+      setOrders(Array.isArray(data) ? data : []);
+      setTotalPages(Math.ceil(resCount.data / PAGE_SIZE));
     } catch (e) { console.error(e); setError(t('list.error')); }
     finally { setLoading(false); }
-  }, [token, query, statusFilter, currentPage]); // ← أضف currentPage
+  }, [token, query, statusFilter, currentPage, storeId, t]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  // تعديل منطق الفلترة للطلبات القابلة للشحن (بناءً على أول عنصر في السلة)
+  const confirmedOrders = orders.filter(cart => cart.status === 'confirmed');
+  const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(cart => selectedIds.has(cart.id));
+  const someSelected = selectedIds.size > 0;
 
   useEffect(() => {
     const anyModal = isOpen || !!deleteTarget || !!shipResult || showBulkPicker || !!bulkShipOrders;
@@ -452,10 +465,6 @@ export default function Orders() {
   }, [isOpen, deleteTarget, shipResult, showBulkPicker, bulkShipOrders]);
 
   const filtered = orders;
-
-  // طلبات confirmed فقط (قابلة للشحن الجماعي)
-  const confirmedOrders = orders.filter(o => o.status === 'confirmed' && !o.shippingTrackingId); const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(o => selectedIds.has(o.id));
-  const someSelected = selectedIds.size > 0;
 
   const toggleSelect = (id) =>
     setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -478,7 +487,7 @@ export default function Orders() {
     const ws = XLSX.utils.json_to_sheet(filtered.map(order => ({
       [t('export.customer_name')]: order.customerName || '',
       [t('export.phone')]: order.customerPhone || '',
-      [t('export.product')]: order.product?.name || order.productName || '',
+      [t('export.product')]: order.items.map(i => `${i.quantity}x ${i.product?.name || ''}`).join(' | '),
       [t('export.wilaya')]: order.customerWilaya?.ar_name || '',
       [t('export.commune')]: order.customerCommune?.ar_name || '',
       [t('export.ship_type')]: order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
@@ -496,15 +505,15 @@ export default function Orders() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await axios.delete(`${baseURL}/orders/${deleteTarget.id}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${baseURL}/orders/${deleteTarget.cartId}`, { headers: { Authorization: `Bearer ${token}` } });
       setOrders(prev => prev.filter(o => o.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (e) { console.error(e); alert(t('delete_modal.failed')); }
     finally { setDeleting(false); }
   };
 
-  const openModal = (id) => { setOrderId(id); setIsOpen(true); };
-  const closeModal = () => { setIsOpen(false); setOrderId(null); };
+  const openModal = (cart) => { setSelectedCart(cart); setIsOpen(true); };
+  const closeModal = () => { setIsOpen(false); setSelectedCart(null); };
 
   useEffect(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
 
@@ -589,8 +598,8 @@ export default function Orders() {
                   <button
                     onClick={someSelected ? startBulkShip : toggleSelectAll}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border ${someSelected
-                        ? 'bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500 shadow-md shadow-cyan-500/20'
-                        : 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:border-cyan-500'
+                      ? 'bg-cyan-500 hover:bg-cyan-600 text-white border-cyan-500 shadow-md shadow-cyan-500/20'
+                      : 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-200 dark:border-cyan-500/20 hover:bg-cyan-500 hover:text-white hover:border-cyan-500'
                       }`}
                   >
                     {someSelected
@@ -646,35 +655,35 @@ export default function Orders() {
           )}
 
           <p className="text-xs text-gray-400 dark:text-zinc-500 font-medium mt-3">
-            {t('list.results_count', { filtered: currentPage, total: totalPages})}
+            {t('list.results_count', { filtered: currentPage, total: totalPages })}
             {statusFilter && <span className="text-indigo-500 font-bold"> {t('list.active_filter', { status: t(`status.${statusFilter}`) })}</span>}
           </p>
         </div>
       </div>
 
       {/* ── Orders List ── */}
-      <div className="max-w-[1400px] mx-auto py-6 space-y-2.5">
-        {paginated.length === 0 ? (
+      <div className="max-w-[1400px] mx-auto py-6 space-y-3">
+        {orders.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-14 text-center">
             <Package size={40} className="mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
             <p className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('list.no_orders')}</p>
           </div>
-        ) : paginated.map((order, i) => {
-          const statusStyle = STATUS_STYLES[order.status] || STATUS_STYLES.pending;
-          const isConfirmed = order.status === 'confirmed' && !order.shippingTrackingId;
-          const isSelected = selectedIds.has(order.id);
+        ) : orders.map((cart, i) => {
+          const statusStyle = STATUS_STYLES[cart.status] || STATUS_STYLES.pending;
+          const isSelected = selectedIds.has(cart.id);
+
           return (
             <div
-              key={order.id}
-              onDoubleClick={() => openModal(order.id)}
+              key={cart.id}
+              onDoubleClick={() => openModal(cart)}
               className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-sm transition-all cursor-default ${isSelected
-                  ? 'border-cyan-400 dark:border-cyan-500 shadow-sm shadow-cyan-500/10'
-                  : 'border-gray-100 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+                ? 'border-cyan-400 dark:border-cyan-500 shadow-sm shadow-cyan-500/10'
+                : 'border-gray-100 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/30'
                 }`}
             >
               {/* Checkbox */}
-              {isConfirmed && (
-                <button onClick={e => { e.stopPropagation(); toggleSelect(order.id); }} className="shrink-0 self-start md:self-center">
+              {cart.status === 'confirmed' && (
+                <button onClick={e => { e.stopPropagation(); toggleSelect(cart.id); }} className="shrink-0 self-start md:self-center">
                   {isSelected
                     ? <CheckSquare size={18} className="text-cyan-500" />
                     : <Square size={18} className="text-gray-300 dark:text-zinc-600 hover:text-cyan-400 transition-colors" />
@@ -682,60 +691,55 @@ export default function Orders() {
                 </button>
               )}
 
-              {/* Customer */}
+              {/* Customer Info */}
               <div className="flex flex-col w-full md:w-1/4 gap-0.5">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
-                  {truncate(`${order.customerName || '—'} (${(currentPage - 1) * PAGE_SIZE + i + 1})`)}
+                  {truncate(`${cart.customerName || '—'}`)}
+                  <span className="text-[10px] text-gray-400 font-normal ml-2">#{(currentPage - 1) * PAGE_SIZE + i + 1}</span>
                 </span>
-                <span role="button" onClick={e => { e.stopPropagation(); setQuery(order.customerPhone); }} className="text-sm text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline">
-                  {order.customerPhone}
+                <span role="button" onClick={e => { e.stopPropagation(); setQuery(cart.customerPhone); }} className="text-sm text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline">
+                  {cart.customerPhone}
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-zinc-500">{order.paltform || order.platform || '—'}</span>
-              </div>
-
-              {/* Product */}
-              <div className="flex flex-col w-full md:w-1/4 gap-1">
-                <span className="font-semibold text-gray-700 dark:text-zinc-300 text-sm">{truncate(order.product?.name || order.productName || '—')}</span>
-                {order.variantDetail?.name && Array.isArray(order.variantDetail.name) && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {order.variantDetail.name.map((attr, index) => (
-                      <div key={index} className="flex items-center px-1.5 py-0.5 rounded-lg bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700">
-                        {attr.displayMode === 'color' ? <div className="w-4 h-4 rounded-full border border-gray-200 dark:border-zinc-600" style={{ backgroundColor: attr.value }} />
-                          : attr.displayMode === 'image' ? <img className="w-4 h-4 object-cover rounded" src={attr.value} alt="" />
-                            : <span className="text-[10px] text-gray-600 dark:text-zinc-400 font-medium">{attr.value}</span>
-                        }
-                      </div>
-                    ))}
-                  </div>
+                {cart.items.length > 1 && (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-cyan-600 bg-cyan-50 dark:bg-cyan-500/10 px-1.5 py-0.5 rounded w-fit">
+                    <ShoppingBag size={10} /> {cart.items.length} منتجات
+                  </span>
                 )}
-                {order.offer && <span className="text-[10px] text-orange-500 dark:text-orange-400 font-bold">{order.offer.name}</span>}
               </div>
 
               {/* Location */}
               <div className="flex flex-col w-full md:w-1/5 gap-0.5">
-                <span className="font-semibold text-sm text-gray-800 dark:text-zinc-200">{order.customerWilaya?.ar_name || '—'}</span>
-                <span className="text-xs text-gray-500 dark:text-zinc-400">{order.customerCommune?.ar_name || '—'}</span>
-                <span className="text-[10px] text-gray-400 dark:text-zinc-500">{order.typeShip === 'office' ? t('list.ship_office') : t('list.ship_home')}</span>
+                <span className="font-semibold text-sm text-gray-800 dark:text-zinc-200">{cart.customerWilaya?.ar_name || '—'}</span>
+                <span className="text-xs text-gray-500 dark:text-zinc-400">{cart.customerCommune?.ar_name || '—'}</span>
+                <span className="text-[10px] text-gray-400 dark:text-zinc-500">{cart.typeShip === 'office' ? t('list.ship_office') : t('list.ship_home')}</span>
               </div>
 
               {/* Price + Status */}
               <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-2 border-t md:border-t-0 border-gray-100 dark:border-zinc-800 pt-3 md:pt-0">
                 <div className={`flex flex-col ${isRtl ? 'items-start' : 'items-end'}`}>
-                  <span dir="ltr" className="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none">{parseFloat(order.totalPrice || 0).toLocaleString()} DA</span>
-                  <span className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{t('list.ship_fee', { price: parseFloat(order.priceShip || 0).toLocaleString() })}</span>
+                  {/* استخدام السعر الإجمالي للسلة */}
+                  <span dir="ltr" className="text-lg font-black text-emerald-600 dark:text-emerald-400 leading-none">
+                    {parseFloat(cart.totalPrice || 0).toLocaleString()} DA
+                  </span>
+                  <span className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">
+                    {t('list.ship_fee', { price: parseFloat(cart.priceShip || 0).toLocaleString() })}
+                  </span>
                 </div>
                 <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${statusStyle}`}>
-                  {t(`status.${order.status}`) || order.status}
+                  {t(`status.${cart.status}`) || cart.status}
                 </span>
               </div>
 
               {/* Actions */}
+              {/* onClick={e => { e.stopPropagation(); openModal(cart); }} */}
               <div className="flex md:flex-col gap-2">
-                <button onClick={e => { e.stopPropagation(); openModal(order.id); }} className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
-                  <Edit2 size={14} /> <span>{t('list.edit')}</span>
+                <button
+                  onClick={() => navigate(`/dashboard/orders/${cart.id}`)} // تعديل هنا
+                  className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                >                  <Edit2 size={14} /> <span>{t('list.edit')}</span>
                 </button>
-                <ShipButton order={order} onResult={setShipResult} t={t} />
-                <button onClick={e => { e.stopPropagation(); setDeleteTarget(order); }} className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                <ShipButton order={cart} onResult={setShipResult} t={t} />
+                <button onClick={e => { e.stopPropagation(); setDeleteTarget(cart); }} className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm">
                   <Trash2 size={14} /> <span>{t('list.delete')}</span>
                 </button>
               </div>
@@ -765,7 +769,6 @@ export default function Orders() {
         </div>
       )}
 
-      <OrderModal isOpen={isOpen} onClose={closeModal} orderId={orderId} onRefresh={fetchOrders} />
-    </div>
+      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} />    </div>
   );
 }

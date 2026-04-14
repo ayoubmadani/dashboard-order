@@ -43,6 +43,8 @@ import Pixels from './pages/dashboard/pixels/pixels';
 import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
+import OrderShow from './pages/dashboard/orders/OrderEditPage';
+import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -143,6 +145,7 @@ function MyComponent() {
 
             <Route path="orders">
               <Route index  element={<Orders />} />
+              <Route path=':id'  element={<OrderEditPage />} />
             </Route>
 
 

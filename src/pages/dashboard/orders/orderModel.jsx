@@ -1,176 +1,443 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  X, Loader2, MapPin, Package,
-  AlertCircle, Check, ChevronDown, Save
+  X, Loader2, MapPin, AlertCircle,
+  ChevronDown, Save, ShoppingBag, CheckCircle2, Package
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
-// ── إضافة التعريف هنا لضمان عدم حدوث خطأ ReferenceError ──
 export const StatusEnum = {
-  PENDING: 'pending',
-  APPL1: 'appl1',
-  APPL2: 'appl2',
-  APPL3: 'appl3',
-  CONFIRMED: 'confirmed',
-  SHIPPING: 'shipping',
-  CANCELLED: 'cancelled',
-  RETURNED: 'returned',
-  DELIVERED: 'delivered',
-  POSTPONED: 'postponed',
+  PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
+  CONFIRMED: 'confirmed', SHIPPING: 'shipping', CANCELLED: 'cancelled',
+  RETURNED: 'returned', DELIVERED: 'delivered', POSTPONED: 'postponed',
 };
 
-export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
+const STATUS_META = {
+  pending:   { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  appl1:     { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+  appl2:     { color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
+  appl3:     { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+  confirmed: { color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  shipping:  { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)' },
+  delivered: { color: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+  cancelled: { color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
+  returned:  { color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
+  postponed: { color: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
+};
+
+const S = `
+  .om { font-family: 'Inter', system-ui, sans-serif; }
+  .om * { box-sizing: border-box; }
+
+  .om-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center; padding: 12px;
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+    animation: omFade .18s ease;
+  }
+  @keyframes omFade { from { opacity:0 } to { opacity:1 } }
+  @keyframes omUp   { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+
+  .om-panel {
+    position: relative; width: 100%; max-width: 680px;
+    max-height: 92vh; display: flex; flex-direction: column;
+    border-radius: 20px; overflow: hidden;
+    background: #fff;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06);
+    animation: omUp .24s cubic-bezier(.22,1,.36,1);
+  }
+  .dark .om-panel { background: #111114; box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06); }
+
+  /* Header */
+  .om-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f4;
+    flex-shrink: 0;
+  }
+  .dark .om-header { border-bottom-color: rgba(255,255,255,0.07); }
+
+  .om-header-left { display: flex; align-items: center; gap: 10px; }
+
+  .om-icon-box {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+    display: flex; align-items: center; justify-content: center; color: #6366f1;
+    flex-shrink: 0;
+  }
+
+  .om-title { font-size: 14px; font-weight: 700; color: #111; line-height: 1; }
+  .dark .om-title { color: #f0f0f8; }
+  .om-sub { font-size: 11px; color: #9a9ab0; margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+  .om-status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  }
+  .om-status-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+  .om-x {
+    width: 32px; height: 32px; border-radius: 9px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid #eee; color: #9a9ab0;
+    transition: all .15s ease;
+  }
+  .dark .om-x { border-color: rgba(255,255,255,0.08); }
+  .om-x:hover { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.25); color: #ef4444; }
+
+  /* Body */
+  .om-body { flex: 1; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .om-body::-webkit-scrollbar { width: 4px; }
+  .om-body::-webkit-scrollbar-thumb { background: #e0e0ea; border-radius: 4px; }
+  .dark .om-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+
+  /* Card */
+  .om-card {
+    background: #fafafa; border: 1px solid #ebebf0;
+    border-radius: 16px; padding: 16px;
+  }
+  .dark .om-card { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.07); }
+
+  .om-card-title {
+    font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: #9a9ab8; display: flex; align-items: center; gap: 6px; margin-bottom: 14px;
+  }
+  .om-card-title svg { color: #6366f1; }
+
+  /* Fields */
+  .om-row { display: grid; gap: 10px; }
+  .om-row.cols2 { grid-template-columns: 1fr 1fr; }
+
+  .om-field { display: flex; flex-direction: column; gap: 5px; }
+  .om-label {
+    font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: #b0b0c8;
+  }
+
+  .om-input, .om-select {
+    padding: 9px 12px; border-radius: 10px;
+    border: 1px solid #e4e4ec; background: #fff;
+    font-size: 13px; font-weight: 500; color: #1a1a2e;
+    outline: none; transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  .dark .om-input, .dark .om-select {
+    background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8e8f4;
+  }
+  .om-input:focus, .om-select:focus {
+    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  }
+  .om-input:disabled {
+    background: #f5f5f8; color: #b0b0c0; cursor: not-allowed;
+  }
+  .dark .om-input:disabled { background: rgba(255,255,255,0.03); color: #3a3a50; }
+
+  .om-select {
+    appearance: none; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9ab8' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 11px center; padding-right: 30px;
+  }
+  .om-select option { background: #fff; color: #1a1a2e; }
+  .dark .om-select option { background: #18181f; color: #e8e8f4; }
+  .om-select:disabled { cursor: not-allowed; opacity: .5; }
+
+  /* Toggle */
+  .om-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .om-toggle-btn {
+    padding: 9px; border-radius: 10px; cursor: pointer;
+    font-size: 12px; font-weight: 700;
+    border: 1px solid #e4e4ec; background: #fff; color: #9a9ab8;
+    transition: all .15s ease; display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .dark .om-toggle-btn { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.09); }
+  .om-toggle-btn.active {
+    background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.4);
+    color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+  }
+  .om-toggle-btn:hover:not(.active) { border-color: #ccc; color: #6a6a80; }
+
+  /* Items */
+  .om-items-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .om-item {
+    background: #fff; border: 1px solid #ebebf0; border-radius: 12px; padding: 12px 14px;
+    transition: border-color .15s;
+  }
+  .dark .om-item { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.07); }
+  .om-item:hover { border-color: #d0d0e0; }
+  .dark .om-item:hover { border-color: rgba(255,255,255,0.13); }
+
+  .om-item-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px; padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f6;
+  }
+  .dark .om-item-header { border-bottom-color: rgba(255,255,255,0.06); }
+
+  .om-item-badge {
+    width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800; color: #6366f1;
+  }
+
+  .om-item-name { font-size: 12px; font-weight: 600; color: #1a1a2e; flex: 1; line-height: 1.4; }
+  .dark .om-item-name { color: #d8d8f0; }
+
+  .om-item-price { font-size: 13px; font-weight: 800; color: #10b981; flex-shrink: 0; }
+
+  .om-item-controls { display: grid; gap: 8px; }
+  .om-item-controls.has-offer { grid-template-columns: 72px 1fr; }
+  .om-item-controls.no-offer  { grid-template-columns: 72px; }
+
+  .om-qty-input {
+    padding: 8px 6px; border-radius: 10px; text-align: center;
+    border: 1px solid #e4e4ec; background: #fff;
+    font-size: 14px; font-weight: 800; color: #1a1a2e;
+    outline: none; width: 100%;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .dark .om-qty-input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #e8e8f4; }
+  .om-qty-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+
+  /* Offer */
+  .om-offer-select {
+    padding: 8px 28px 8px 10px; border-radius: 10px;
+    border: 1px solid rgba(249,115,22,0.25); background: rgba(249,115,22,0.04);
+    font-size: 12px; font-weight: 600; color: #f97316;
+    outline: none; cursor: pointer; appearance: none; width: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%23f97316' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 9px center;
+    transition: border-color .15s;
+  }
+  .om-offer-select:focus { border-color: rgba(249,115,22,0.5); box-shadow: 0 0 0 3px rgba(249,115,22,0.08); }
+  .om-offer-select option { background: #fff; color: #1a1a2e; }
+  .dark .om-offer-select option { background: #18181f; color: #e8e8f4; }
+
+  /* Variant */
+  .om-variant-btn {
+    width: 100%; margin-top: 8px; padding: 8px 12px; border-radius: 10px; cursor: pointer;
+    border: 1px solid rgba(139,92,246,0.25); background: rgba(139,92,246,0.05);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 500; color: #8b5cf6;
+    transition: all .15s ease;
+  }
+  .om-variant-btn:hover { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.4); }
+
+  .om-variant-dd {
+    position: absolute; z-index: 50; top: calc(100% + 5px); left: 0; right: 0;
+    background: #fff; border: 1px solid #e8e8f4; border-radius: 12px;
+    padding: 5px; box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+    max-height: 180px; overflow-y: auto;
+  }
+  .dark .om-variant-dd { background: #1a1a22; border-color: rgba(255,255,255,0.1); }
+  .om-variant-dd::-webkit-scrollbar { width: 3px; }
+  .om-variant-dd::-webkit-scrollbar-thumb { background: #e0e0ea; border-radius: 3px; }
+
+  .om-variant-opt {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 9px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 500; color: #4a4a60;
+    transition: background .1s ease;
+  }
+  .dark .om-variant-opt { color: #a0a0c0; }
+  .om-variant-opt:hover { background: #f5f5fa; }
+  .dark .om-variant-opt:hover { background: rgba(255,255,255,0.05); }
+  .om-variant-opt.sel { background: rgba(139,92,246,0.07); color: #7c3aed; font-weight: 600; }
+
+  /* Totals */
+  .om-totals {
+    background: #111118; border-radius: 14px; padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 6px;
+    margin-top: 4px;
+  }
+  .om-tot-row { display: flex; justify-content: space-between; align-items: center; }
+  .om-tot-label { font-size: 12px; color: #5a5a70; }
+  .om-tot-val { font-size: 12px; font-weight: 600; color: #8a8aa0; }
+  .om-tot-divider { border: none; border-top: 1px solid rgba(255,255,255,0.07); margin: 4px 0; }
+  .om-tot-main-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5a5a70; }
+  .om-tot-main-val { font-size: 22px; font-weight: 800; color: #34d399; }
+
+  /* Footer */
+  .om-footer {
+    display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+    padding: 14px 20px; border-top: 1px solid #f0f0f4; flex-shrink: 0;
+    background: #fff;
+  }
+  .dark .om-footer { border-top-color: rgba(255,255,255,0.07); background: #111114; }
+
+  .om-btn-cancel {
+    padding: 9px 18px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: #9a9ab8;
+    background: transparent; border: 1px solid #e4e4ec;
+    transition: all .15s ease;
+  }
+  .dark .om-btn-cancel { border-color: rgba(255,255,255,0.09); }
+  .om-btn-cancel:hover { color: #6a6a80; background: #f5f5f8; }
+  .dark .om-btn-cancel:hover { background: rgba(255,255,255,0.05); }
+
+  .om-btn-save {
+    padding: 9px 22px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 700; color: #fff;
+    background: #6366f1; border: 1px solid rgba(99,102,241,0.4);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.3);
+    display: flex; align-items: center; gap: 7px;
+    transition: all .15s ease;
+  }
+  .om-btn-save:hover { background: #4f46e5; box-shadow: 0 6px 20px rgba(99,102,241,0.4); transform: translateY(-1px); }
+  .om-btn-save:active { transform: scale(.98); }
+  .om-btn-save:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+
+  /* Loading overlay */
+  .om-loading {
+    position: absolute; inset: 0; border-radius: 20px; z-index: 50;
+    background: rgba(255,255,255,0.82); backdrop-filter: blur(3px);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dark .om-loading { background: rgba(17,17,20,0.85); }
+`;
+
+export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
 
-  const [editedOrder, setEditedOrder] = useState(null);
+  const [editedCart, setEditedCart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [wilayasData, setWilayaData] = useState([]);
   const [communes, setCommunes] = useState([]);
-  const [variantOptions, setVariantOptions] = useState([]);
-  const [offers, setOffers] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [productOptions, setProductOptions] = useState({});
+  const [dropdownOpenId, setDropdownOpenId] = useState(null);
 
   const token = getAccessToken();
 
-  /* ── 1. Fetch Wilayas ── */
   useEffect(() => {
     if (!isOpen) return;
     axios.get(`${baseURL}/shipping/get-shipping`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => setWilayaData(r.data || []))
-      .catch(e => console.error('wilayas:', e));
+      .catch(e => console.error(e));
   }, [isOpen]);
 
-  /* ── 2. Fetch Order ── */
   useEffect(() => {
-    if (!isOpen || !orderId) return;
-    const getOrder = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axios.get(`${baseURL}/orders/get-one/${orderId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const initPrice = Number(data.totalPrice || 0) - Number(data.priceShip || 0);
-        setEditedOrder({ ...data, initPrice });
-        if (data.productId) fetchProductData(data.productId);
-      } catch (e) {
-        console.error('order:', e);
-      } finally {
-        setLoading(false);
-      }
+    if (!isOpen || !cartData) return;
+    const initialCart = {
+      ...cartData,
+      customerWilayaId: cartData.customerWilayaId ?? cartData.customerWilaya?.id,
+      customerCommuneId: cartData.customerCommuneId ?? cartData.customerCommune?.id,
+      priceShip: parseFloat(cartData.priceShip || 0),
+      typeShip: cartData.typeShip || 'home',
+      status: cartData.status || cartData.items[0]?.status || 'pending',
+      items: cartData.items.map(item => {
+        const baseTotal = Number(item.totalPrice || 0) - Number(item.priceShip || 0);
+        const initPrice = item.quantity > 0 ? baseTotal / item.quantity : baseTotal;
+        return { ...item, initPrice, itemTotal: baseTotal };
+      })
     };
-    getOrder();
-  }, [isOpen, orderId]);
+    setEditedCart(initialCart);
+    if (initialCart.customerWilaya?.id) fetchCommunes(initialCart.customerWilaya.id);
 
-  useEffect(() => {
-    if (editedOrder?.variantDetailId && variantOptions.length > 0) {
-      handleVariantChange(editedOrder.variantDetailId);
-    }
-  }, [variantOptions]);
+    const fetchOptions = async () => {
+      const ids = [...new Set(cartData.items.map(i => i.productId))];
+      const opts = { ...productOptions };
+      await Promise.all(ids.map(async pid => {
+        if (!opts[pid]) {
+          try {
+            const [vR, oR] = await Promise.all([
+              axios.get(`${baseURL}/products/${pid}/variants`, { headers: { Authorization: `Bearer ${token}` } }),
+              axios.get(`${baseURL}/products/${pid}/offers`,   { headers: { Authorization: `Bearer ${token}` } }),
+            ]);
+            opts[pid] = { variants: vR.data || [], offers: oR.data || [] };
+          } catch (e) { console.error(e); }
+        }
+      }));
+      setProductOptions(opts);
+    };
+    fetchOptions();
+  }, [isOpen, cartData]);
 
-  /* ── 3. Fetch variants + offers ── */
-  const fetchProductData = async (productId) => {
-    try {
-      const [vRes, oRes] = await Promise.all([
-        axios.get(`${baseURL}/products/${productId}/variants`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${baseURL}/products/${productId}/offers`, { headers: { Authorization: `Bearer ${token}` } }),
-      ]);
-      setVariantOptions(vRes.data || []);
-      setOffers(oRes.data || []);
-    } catch (e) {
-      console.error('product data:', e);
-    }
+  const fetchCommunes = (wilayaId) => {
+    setCommunes([]);
+    axios.get(`${baseURL}/shipping/get-communes/${wilayaId}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setCommunes(r.data || []))
+      .catch(e => console.error(e));
   };
 
-  /* ── 4. Fetch communes on wilaya change ── */
-  useEffect(() => {
-    if (!editedOrder?.customerWilayaId) return;
-    setCommunes([]);
-    axios.get(`${baseURL}/shipping/get-communes/${editedOrder.customerWilayaId}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => setCommunes(r.data || []))
-      .catch(e => console.error('communes:', e));
-  }, [editedOrder?.customerWilayaId]);
-
-  /* ── Handlers ── */
-  const handleChange = (field, value) => setEditedOrder(prev => ({ ...prev, [field]: value }));
+  const handleGeneralChange = (field, value) => {
+    setEditedCart(prev => ({ ...prev, [field]: value }));
+    if (field === 'customerWilayaId') fetchCommunes(value);
+  };
 
   const handleWilayaChange = (wilayaId) => {
     const w = wilayasData.find(x => x.id === parseInt(wilayaId));
     if (!w) return;
-    const newShipPrice = editedOrder.typeShip === 'office'
+    const priceShip = editedCart.typeShip === 'office'
       ? parseFloat(w.livraisonOfice || 0)
       : parseFloat(w.livraisonHome || 0);
-    setEditedOrder(prev => ({
-      ...prev,
-      customerWilayaId: parseInt(wilayaId),
-      customerCommuneId: null,
-      customerWilaya: w,
-      priceShip: newShipPrice,
-      totalPrice: prev.initPrice + newShipPrice,
+    setEditedCart(prev => ({
+      ...prev, customerWilayaId: parseInt(wilayaId),
+      customerCommuneId: null, customerWilaya: w, priceShip,
     }));
+    fetchCommunes(wilayaId);
   };
 
   const handleChangeTypeShip = (typeShip) => {
-    const w = wilayasData.find(x => x.id === parseInt(editedOrder.customerWilayaId));
-    if (!w) { setEditedOrder(prev => ({ ...prev, typeShip })); return; }
-    const newShipPrice = typeShip === 'office'
+    const w = wilayasData.find(x => x.id === parseInt(editedCart.customerWilayaId));
+    if (!w) { handleGeneralChange('typeShip', typeShip); return; }
+    const priceShip = typeShip === 'office'
       ? parseFloat(w.livraisonOfice || 0)
       : parseFloat(w.livraisonHome || 0);
-    setEditedOrder(prev => ({
-      ...prev, typeShip, priceShip: newShipPrice,
-      totalPrice: prev.initPrice + newShipPrice,
-    }));
+    setEditedCart(prev => ({ ...prev, typeShip, priceShip }));
   };
 
-  const handleVariantChange = (variantId) => {
-    const v = variantOptions.find(x => String(x.id) === String(variantId));
-    if (!v) return;
-    const newInitPrice = v.price > -1 ? parseFloat(v.price || 0) : editedOrder.initPrice;
-    setEditedOrder(prev => ({
-      ...prev, variantDetail: v, variantDetailId: v.id,
-      initPrice: newInitPrice, totalPrice: newInitPrice + parseFloat(prev.priceShip || 0),
-    }));
-  };
-
-  const handleOfferChange = (offerId) => {
-    if (!offerId) {
-      const baseInit = parseFloat(editedOrder.variantDetail?.price || editedOrder.initPrice || 0);
-      setEditedOrder(prev => ({ ...prev, offerId: null, offer: null, initPrice: baseInit, totalPrice: baseInit + parseFloat(prev.priceShip || 0) }));
-      return;
-    }
-    const o = offers.find(x => String(x.id) === String(offerId));
-    if (!o) return;
-    const offerPrice = parseFloat(o.price || 0);
-    setEditedOrder(prev => ({
-      ...prev, offerId: o.id, offer: o, initPrice: offerPrice,
-      totalPrice: offerPrice + parseFloat(prev.priceShip || 0),
+  const handleItemChange = (itemId, field, value) => {
+    setEditedCart(prev => ({
+      ...prev,
+      items: prev.items.map(item => {
+        if (item.id !== itemId) return item;
+        let u = { ...item, [field]: value };
+        if (field === 'variantDetailId') {
+          const v = productOptions[item.productId]?.variants.find(x => String(x.id) === String(value));
+          if (v && v.price > -1) u.finalPrice = parseFloat(v.price);
+          u.variantDetail = v;
+        }
+        if (field === 'offerId') {
+          const o = productOptions[item.productId]?.offers.find(x => String(x.id) === String(value));
+          if (o) { u.finalPrice = parseFloat(o.price); u.offer = o; }
+          else {
+            u.finalPrice = parseFloat(u.variantDetail?.price > -1 ? u.variantDetail.price : u.product?.price || 0);
+            u.offer = null;
+          }
+        }
+        u.itemTotal = u.finalPrice * u.quantity;
+        return u;
+      })
     }));
   };
 
   const handleSave = async () => {
+    if (!editedCart.items.length) return;
     setLoading(true);
-    const payload = {
-      variantDetailId: editedOrder.variantDetailId,
-      offerId: editedOrder.offerId,
-      quantity: editedOrder.quantity,
-      typeShip: editedOrder.typeShip,
-      priceShip: editedOrder.priceShip,
-      totalPrice: editedOrder.totalPrice,
-      customerName: editedOrder.customerName,
-      customerPhone: editedOrder.customerPhone,
-      customerWilayaId: editedOrder.customerWilayaId,
-      customerCommuneId: editedOrder.customerCommuneId,
-      status: editedOrder.status,
-    };
     try {
-      await axios.patch(`${baseURL}/orders/${editedOrder.id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const dtos = editedCart.items.map((item, i) => ({
+        customerName: editedCart.customerName,
+        customerPhone: editedCart.customerPhone,
+        customerWilayaId: editedCart.customerWilayaId,
+        customerCommuneId: editedCart.customerCommuneId,
+        status: editedCart.status,
+        typeShip: editedCart.typeShip,
+        priceShip: i === 0 ? editedCart.priceShip : 0,
+        quantity: item.quantity,
+        variantDetailId: item.variantDetailId ?? null,
+        offerId: item.offerId ?? null,
+        finalPrice: item.finalPrice,
+        totalPrice: item.finalPrice * item.quantity + (i === 0 ? editedCart.priceShip : 0),
+      }));
+      await axios.patch(
+        `${baseURL}/orders/${editedCart.id}`, dtos,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       onRefresh?.();
       onClose();
     } catch (e) {
@@ -183,393 +450,306 @@ export default function OrderModal({ isOpen, onClose, orderId, onRefresh }) {
 
   if (!isOpen) return null;
 
-  /* Loading state */
-  if (!editedOrder) return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 flex flex-col items-center gap-3 shadow-2xl">
-        <Loader2 size={32} className="text-indigo-500 animate-spin" />
-        <p className="text-sm text-gray-400 font-medium">{t('list.loading')}</p>
-      </div>
-    </div>
-  );
-
-  const hasProduct = !!editedOrder.product;
-  const canEdit = hasProduct;
-
-  const statusSelectCls = (() => {
-    if (!canEdit) return 'bg-gray-100 dark:bg-zinc-800 text-gray-500 cursor-not-allowed';
-
-    const colorMap = {
-      [StatusEnum.PENDING]: 'bg-amber-400 text-white',
-      [StatusEnum.APPL1]: 'bg-orange-400 text-white',
-      [StatusEnum.APPL2]: 'bg-orange-500 text-white',
-      [StatusEnum.APPL3]: 'bg-orange-600 text-white',
-      [StatusEnum.CONFIRMED]: 'bg-emerald-500 text-white',
-      [StatusEnum.SHIPPING]: 'bg-cyan-500 text-white',
-      [StatusEnum.RETURNED]: 'bg-rose-500 text-white',
-      [StatusEnum.CANCELLED]: 'bg-purple-500 text-white',
-      [StatusEnum.DELIVERED]: 'bg-emerald-600 text-white',
-      [StatusEnum.POSTPONED]: 'bg-slate-500 text-white',
-    };
-
-    return colorMap[editedOrder.status] || 'bg-amber-400 text-white';
-  })();
-
   const statusOptions = [
-    { value: StatusEnum.PENDING, label: t('status.pending') },
-    { value: StatusEnum.APPL1, label: t('status.appl1') },
-    { value: StatusEnum.APPL2, label: t('status.appl2') },
-    { value: StatusEnum.APPL3, label: t('status.appl3') },
+    { value: StatusEnum.PENDING,   label: t('status.pending') },
+    { value: StatusEnum.APPL1,     label: t('status.appl1') },
+    { value: StatusEnum.APPL2,     label: t('status.appl2') },
+    { value: StatusEnum.APPL3,     label: t('status.appl3') },
     { value: StatusEnum.CONFIRMED, label: t('status.confirmed') },
-    { value: StatusEnum.SHIPPING, label: t('status.shipping') },
+    { value: StatusEnum.SHIPPING,  label: t('status.shipping') },
     { value: StatusEnum.DELIVERED, label: t('status.delivered') },
     { value: StatusEnum.CANCELLED, label: t('status.cancelled') },
-    { value: StatusEnum.RETURNED, label: t('status.returned') },
+    { value: StatusEnum.RETURNED,  label: t('status.returned') },
     { value: StatusEnum.POSTPONED, label: t('status.postponed') },
   ];
 
-  return (
-    <div className="fixed inset-0 z-[100] flex justify-center items-center p-2 sm:p-4" dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative bg-white dark:bg-zinc-900 w-full max-w-4xl h-full max-h-[95vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden">
-        {loading && (
-          <div className="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 z-50 flex items-center justify-center rounded-2xl">
-            <Loader2 size={32} className="text-indigo-500 animate-spin" />
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900 z-10">
-          <h2 className="text-base font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-indigo-600 rounded-full" />
-            {t('modal.title', { id: orderId })}
-          </h2>
-          <button onClick={onClose}
-            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-gray-400 hover:text-rose-500 rounded-xl transition-all">
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto flex-1 bg-gray-50/50 dark:bg-zinc-950/30">
-
-          {/* Col 1: Shipping */}
-          <div className="space-y-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-widest px-1 flex items-center gap-1.5 ${canEdit ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}>
-              <MapPin size={12} />{t('modal.section_shipping')}
-            </h3>
-
-            {!canEdit && (
-              <div className="bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-xl p-4">
-                <p className="text-sm text-rose-600 dark:text-rose-400 font-bold text-center flex items-center justify-center gap-2">
-                  <AlertCircle size={16} />{t('modal.no_product_warning')}
-                </p>
-                <p className="text-xs text-rose-400 text-center mt-1">{t('modal.no_product_subtitle')}</p>
-              </div>
-            )}
-
-            <div className={`bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4 ${!canEdit ? 'opacity-60' : ''}`}>
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                  {t('modal.customer_name')}
-                </label>
-                <input
-                  type="text"
-                  disabled={!canEdit}
-                  value={editedOrder.customerName || ''}
-                  onChange={e => handleChange('customerName', e.target.value)}
-                  className={`w-full px-4 py-2.5 rounded-xl border text-sm font-semibold outline-none transition-all dark:bg-zinc-950 dark:text-white
-                    ${!canEdit ? 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-500 cursor-not-allowed' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                  {t('modal.customer_phone')}
-                </label>
-                <input
-                  disabled
-                  type="text"
-                  dir="ltr"
-                  value={editedOrder.customerPhone || ''}
-                  className="w-full bg-gray-50 dark:bg-zinc-800 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm font-semibold outline-none dark:text-zinc-400 cursor-not-allowed"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                    {t('modal.wilaya')}
-                  </label>
-                  <select
-                    value={editedOrder.customerWilayaId || ''}
-                    onChange={e => handleWilayaChange(e.target.value)}
-                    disabled={!canEdit}
-                    className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all dark:text-white
-                      ${!canEdit ? 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-500 cursor-not-allowed' : 'border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 cursor-pointer focus:border-indigo-400'}`}
-                  >
-                    <option value="">{t('modal.select_wilaya')}</option>
-                    {wilayasData.map(w => (
-                      <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                    {t('modal.commune')}
-                  </label>
-                  <select
-                    value={editedOrder.customerCommuneId || ''}
-                    onChange={e => handleChange('customerCommuneId', parseInt(e.target.value))}
-                    disabled={!canEdit || !communes.length}
-                    className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all dark:text-white
-                      ${!canEdit ? 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-500 cursor-not-allowed' : 'border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 cursor-pointer focus:border-indigo-400 disabled:bg-gray-100 dark:disabled:bg-zinc-800'}`}
-                  >
-                    <option value="">{t('modal.select_commune')}</option>
-                    {communes.map(c => (
-                      <option key={c.id} value={c.id}>{c.ar_name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                  {t('modal.ship_type')}
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { typeShip: 'home', label: t('modal.ship_home') },
-                    { typeShip: 'office', label: t('modal.ship_office') },
-                  ].map(opt => (
-                    <button key={opt.typeShip} type="button"
-                      onClick={() => handleChangeTypeShip(opt.typeShip)}
-                      disabled={!canEdit}
-                      className={`py-2.5 rounded-xl text-xs font-bold border transition-all
-                        ${!canEdit ? 'bg-gray-100 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-400 cursor-not-allowed' :
-                          editedOrder.typeShip === opt.typeShip
-                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                            : 'bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="p-3 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-                <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                  {t('modal.status_label')}
-                </label>
-                <select
-                  value={editedOrder.status}
-                  onChange={e => handleChange('status', e.target.value)}
-                  disabled={!canEdit}
-                  className={`w-full px-4 py-2 rounded-xl text-xs font-black outline-none border-none cursor-pointer transition-all ${statusSelectCls}`}
-                >
-                  {statusOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Col 2: Product */}
-          <div className="space-y-4">
-            <h3 className={`text-[10px] font-black uppercase tracking-widest px-1 flex items-center gap-1.5 ${hasProduct ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400'}`}>
-              <Package size={12} />{t('modal.section_product')}
-            </h3>
-
-            {hasProduct ? (
-              <div className="bg-white dark:bg-zinc-900 p-5 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm space-y-4">
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                    {t('modal.product_label')}
-                  </label>
-                  <div className="px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-sm font-semibold text-gray-700 dark:text-zinc-300">
-                    {editedOrder.product?.name || editedOrder.productName || t('modal.product_unknown')}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                    {t('modal.quantity')}
-                  </label>
-                  <input
-                    type="number" min="1"
-                    value={editedOrder.quantity || 1}
-                    onChange={e => handleChange('quantity', parseInt(e.target.value) || 1)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white text-sm font-black text-center outline-none focus:border-indigo-400 transition-all"
-                  />
-                </div>
-
-                {variantOptions.length > 0 && (
-                  <div className="relative">
-                    <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                      {t('modal.variant_label')}
-                    </label>
-
-                    <button type="button"
-                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                      className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-purple-200 dark:border-purple-500/30 bg-purple-50/30 dark:bg-purple-500/5 text-sm font-semibold outline-none focus:border-purple-400 transition-all dark:text-white">
-                      <div className="flex items-center gap-2">
-                        {editedOrder.variantDetail ? (
-                          <>
-                            {Array.isArray(editedOrder.variantDetail.name) && editedOrder.variantDetail.name.map((attr, i) => (
-                              <div key={i}>
-                                {attr.displayMode === 'color' && (
-                                  <span className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-800 shadow-sm block" style={{ background: attr.value }} />
-                                )}
-                                {attr.displayMode === 'image' && (
-                                  <img src={attr.value} className="w-7 h-7 rounded-lg object-cover shadow-sm border border-white dark:border-zinc-800" alt="" />
-                                )}
-                              </div>
-                            ))}
-                            <span>
-                              {Array.isArray(editedOrder.variantDetail.name)
-                                ? editedOrder.variantDetail.name.filter(a => a.displayMode !== 'color' && a.displayMode !== 'image').map(a => a.value).join(' / ')
-                                : ''}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-gray-400 dark:text-zinc-500">{t('modal.variant_placeholder')}</span>
-                        )}
-                      </div>
-                      <ChevronDown size={16} className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {isDropdownOpen && (
-                      <div className="absolute z-50 w-full mt-1.5 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-xl shadow-2xl max-h-60 overflow-y-auto p-1">
-                        {variantOptions.map(v => {
-                          const attrs = Array.isArray(v.name) ? v.name : [];
-                          const textLabel = attrs.filter(a => a.displayMode !== 'color' && a.displayMode !== 'image').map(a => a.value).join(' / ');
-                          const isSelected = String(editedOrder.variantDetailId) === String(v.id);
-                          return (
-                            <div key={v.id}
-                              onClick={() => { handleVariantChange(v.id); setIsDropdownOpen(false); }}
-                              className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-purple-50 dark:bg-purple-500/10' : 'hover:bg-gray-50 dark:hover:bg-zinc-800'}`}>
-                              <div className="flex items-center gap-3">
-                                <div className="flex -space-x-1.5">
-                                  {attrs.map((attr, idx) => (
-                                    <div key={idx}>
-                                      {attr.displayMode === 'color' && (
-                                        <div className="w-6 h-6 rounded-full border-2 border-white dark:border-zinc-900 shadow-sm" style={{ backgroundColor: attr.value }} />
-                                      )}
-                                      {attr.displayMode === 'image' && (
-                                        <img src={attr.value} className="w-6 h-6 rounded-md border-2 border-white dark:border-zinc-900 shadow-sm object-cover" alt="" />
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {textLabel && (
-                                    <span className="text-sm font-bold border border-gray-200 dark:border-zinc-700 px-2 py-0.5 rounded-lg text-gray-700 dark:text-zinc-300">
-                                      {textLabel}
-                                    </span>
-                                  )}
-                                  {v.price > 0 && (
-                                    <span className="text-[10px] text-purple-500 dark:text-purple-400 font-bold">
-                                      {parseFloat(v.price).toLocaleString()} DA
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              {isSelected && <div className="w-2 h-2 rounded-full bg-purple-600 dark:bg-purple-400 shrink-0" />}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {offers.length > 0 && (
-                  <div>
-                    <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 block mb-1.5 uppercase tracking-wide">
-                      {t('modal.offer_label')}
-                    </label>
-                    <select
-                      value={editedOrder.offerId || ''}
-                      onChange={e => handleOfferChange(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-orange-50/30 dark:bg-orange-500/5 text-sm outline-none cursor-pointer focus:border-orange-400 dark:text-white transition-all">
-                      <option value="">{t('modal.offer_none')}</option>
-                      {offers.map(o => (
-                        <option key={o.id} value={o.id}>{o.name} — {parseFloat(o.price).toLocaleString()} DA</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <PriceSummary
-                  priceLabel={t('modal.price_product')}
-                  initPrice={editedOrder.initPrice}
-                  priceShip={editedOrder.priceShip}
-                  totalPrice={editedOrder.totalPrice}
-                  t={t}
-                />
-              </div>
-            ) : (
-              <div className="bg-gray-50 dark:bg-zinc-800/30 p-6 rounded-2xl border border-gray-200 dark:border-zinc-700 space-y-4">
-                <div className="text-center py-6">
-                  <div className="w-16 h-16 bg-gray-200 dark:bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Package size={28} className="text-gray-400 dark:text-zinc-500" />
-                  </div>
-                  <p className="text-sm font-bold text-gray-600 dark:text-zinc-300 mb-1">{t('modal.no_product_title')}</p>
-                  <p className="text-xs text-gray-400 dark:text-zinc-500 mb-2">{t('modal.no_product_desc')}</p>
-                  <span className="text-[10px] text-gray-400 bg-gray-100 dark:bg-zinc-700 px-3 py-1.5 rounded-lg inline-block">
-                    {t('modal.no_product_note')}
-                  </span>
-                </div>
-                <PriceSummary
-                  priceLabel={t('modal.price_original')}
-                  initPrice={editedOrder.initPrice}
-                  priceShip={editedOrder.priceShip}
-                  totalPrice={editedOrder.totalPrice}
-                  t={t}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-white dark:bg-zinc-900 border-t border-gray-100 dark:border-zinc-800 flex justify-end items-center gap-3 z-10">
-          <button onClick={onClose}
-            className="px-5 py-2.5 text-gray-400 dark:text-zinc-500 font-semibold text-sm hover:text-gray-600 dark:hover:text-zinc-300 transition-colors">
-            {t('modal.close')}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={loading || !canEdit}
-            className={`flex items-center gap-2 px-8 py-2.5 rounded-xl font-bold text-sm shadow-md active:scale-95 transition-all disabled:opacity-50
-              ${canEdit
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-500/20'
-                : 'bg-gray-200 dark:bg-zinc-700 text-gray-500 cursor-not-allowed'}`}>
-            {loading
-              ? <><Loader2 size={16} className="animate-spin" />{t('modal.saving')}</>
-              : <><Save size={15} />{t('modal.save')}</>}
-          </button>
-        </div>
+  if (!editedCart) return (
+    <div className="om">
+      <style>{S}</style>
+      <div className="om-backdrop">
+        <Loader2 size={28} className="text-indigo-500 animate-spin" />
       </div>
     </div>
   );
-}
 
-function PriceSummary({ priceLabel, initPrice, priceShip, totalPrice, t }) {
+  const hasItems = editedCart.items?.length > 0;
+  const totalItemsPrice = editedCart.items.reduce((s, it) => s + it.finalPrice * it.quantity, 0);
+  const finalCartTotal = totalItemsPrice + editedCart.priceShip;
+  const statusMeta = STATUS_META[editedCart.status] || STATUS_META.pending;
+  const statusLabel = statusOptions.find(s => s.value === editedCart.status)?.label || editedCart.status;
+  const shortId = (editedCart.cartId || editedCart.id || '').split('-')[0].toUpperCase();
+
   return (
-    <div className="p-4 bg-gray-900 dark:bg-zinc-950 rounded-2xl space-y-2 border border-zinc-800">
-      <div className="flex justify-between text-xs text-gray-400">
-        <span>{priceLabel}</span>
-        <span>{parseFloat(initPrice || 0).toLocaleString()} DA</span>
-      </div>
-      <div className="flex justify-between text-xs text-gray-400">
-        <span>{t('modal.price_ship')}</span>
-        <span>{parseFloat(priceShip || 0).toLocaleString()} DA</span>
-      </div>
-      <div className="border-t border-zinc-700 pt-2 flex justify-between items-center">
-        <span className="text-[10px] font-bold text-gray-400">{t('modal.price_total')}</span>
-        <span className="text-emerald-400 text-xl font-black">{parseFloat(totalPrice || 0).toLocaleString()} DA</span>
+    <div className="om" dir={isRtl ? 'rtl' : 'ltr'}>
+      <style>{S}</style>
+      <div className="om-backdrop">
+        <div style={{ position: 'absolute', inset: 0 }} onClick={onClose} />
+
+        <div className="om-panel">
+          {loading && (
+            <div className="om-loading">
+              <Loader2 size={28} className="text-indigo-500 animate-spin" />
+            </div>
+          )}
+
+          {/* Header */}
+          <div className="om-header">
+            <div className="om-header-left">
+              <div className="om-icon-box"><Package size={16} /></div>
+              <div>
+                <div className="om-title">{t('modal.section_shipping') || 'تعديل الطلب'}</div>
+                <div className="om-sub">#{shortId}</div>
+              </div>
+              <div
+                className="om-status-pill"
+                style={{ background: statusMeta.bg, color: statusMeta.color, border: `1px solid ${statusMeta.color}30` }}
+              >
+                <div className="om-status-dot" style={{ background: statusMeta.color }} />
+                {statusLabel}
+              </div>
+            </div>
+            <button className="om-x" onClick={onClose}><X size={15} /></button>
+          </div>
+
+          {/* Body */}
+          <div className="om-body">
+
+            {/* ① بيانات الزبون */}
+            <div className="om-card">
+              <div className="om-card-title">
+                <MapPin size={11} />
+                {t('modal.section_shipping') || 'بيانات الزبون والتوصيل'}
+              </div>
+
+              <div className="om-row cols2" style={{ marginBottom: 10 }}>
+                <div className="om-field">
+                  <label className="om-label">{t('modal.customer_name')}</label>
+                  <input
+                    type="text" className="om-input"
+                    value={editedCart.customerName || ''}
+                    onChange={e => handleGeneralChange('customerName', e.target.value)}
+                  />
+                </div>
+                <div className="om-field">
+                  <label className="om-label">{t('modal.customer_phone')}</label>
+                  <input type="text" dir="ltr" disabled className="om-input" value={editedCart.customerPhone || ''} />
+                </div>
+              </div>
+
+              <div className="om-row cols2" style={{ marginBottom: 10 }}>
+                <div className="om-field">
+                  <label className="om-label">{t('modal.wilaya')}</label>
+                  <select
+                    className="om-select"
+                    value={editedCart.customerWilayaId || ''}
+                    onChange={e => handleWilayaChange(e.target.value)}
+                  >
+                    <option value="">{t('modal.select_wilaya')}</option>
+                    {wilayasData.map(w => <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>)}
+                  </select>
+                </div>
+                <div className="om-field">
+                  <label className="om-label">{t('modal.commune')}</label>
+                  <select
+                    className="om-select"
+                    value={editedCart.customerCommuneId || ''}
+                    onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))}
+                    disabled={!communes.length}
+                  >
+                    <option value="">{t('modal.select_commune')}</option>
+                    {communes.map(c => <option key={c.id} value={c.id}>{c.ar_name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="om-row cols2">
+                <div className="om-field">
+                  <label className="om-label">{t('modal.ship_type')}</label>
+                  <div className="om-toggle">
+                    {[
+                      { key: 'home',   label: t('modal.ship_home'),   icon: '🏠' },
+                      { key: 'office', label: t('modal.ship_office'), icon: '🏢' },
+                    ].map(o => (
+                      <button
+                        key={o.key} type="button"
+                        className={`om-toggle-btn ${editedCart.typeShip === o.key ? 'active' : ''}`}
+                        onClick={() => handleChangeTypeShip(o.key)}
+                      >
+                        {o.icon} {o.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="om-field">
+                  <label className="om-label">{t('modal.status_label')}</label>
+                  <select
+                    className="om-select"
+                    value={editedCart.status}
+                    onChange={e => handleGeneralChange('status', e.target.value)}
+                    style={{ borderColor: `${statusMeta.color}50`, color: statusMeta.color, fontWeight: 700 }}
+                  >
+                    {statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* ② محتويات السلة */}
+            <div className="om-card">
+              <div className="om-card-title">
+                <ShoppingBag size={11} />
+                محتويات السلة
+                <span style={{ marginRight: 'auto', color: '#c0c0da', fontSize: 11, fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>
+                  {editedCart.items.length} منتج
+                </span>
+              </div>
+
+              {hasItems ? (
+                <div className="om-items-list">
+                  {editedCart.items.map((item, idx) => {
+                    const pOpts = productOptions[item.productId] || { variants: [], offers: [] };
+                    const isDropOpen = dropdownOpenId === item.id;
+                    const variantText = Array.isArray(item.variantDetail?.name)
+                      ? item.variantDetail.name
+                          .filter(a => a.displayMode !== 'color' && a.displayMode !== 'image')
+                          .map(a => a.value).join(' / ')
+                      : '';
+                    const variantVisuals = Array.isArray(item.variantDetail?.name)
+                      ? item.variantDetail.name.filter(a => a.displayMode === 'color' || a.displayMode === 'image')
+                      : [];
+
+                    return (
+                      <div key={item.id} className="om-item">
+                        <div className="om-item-header">
+                          <div className="om-item-badge">{idx + 1}</div>
+                          <div className="om-item-name">
+                            {item.product?.name || item.productName || t('modal.product_unknown')}
+                          </div>
+                          <div className="om-item-price">
+                            {parseFloat(item.finalPrice || 0).toLocaleString()} DA
+                          </div>
+                        </div>
+
+                        <div className={`om-item-controls ${pOpts.offers.length ? 'has-offer' : 'no-offer'}`}>
+                          <div className="om-field">
+                            <label className="om-label">الكمية</label>
+                            <input
+                              type="number" min="1" className="om-qty-input"
+                              value={item.quantity || 1}
+                              onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                            />
+                          </div>
+                          {pOpts.offers.length > 0 && (
+                            <div className="om-field">
+                              <label className="om-label">{t('modal.offer_label')}</label>
+                              <select
+                                className="om-offer-select"
+                                value={item.offerId || ''}
+                                onChange={e => handleItemChange(item.id, 'offerId', e.target.value)}
+                              >
+                                <option value="">{t('modal.offer_none')}</option>
+                                {pOpts.offers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        {pOpts.variants.length > 0 && (
+                          <div style={{ position: 'relative', marginTop: 8 }}>
+                            <label className="om-label" style={{ marginBottom: 5, display: 'block' }}>
+                              {t('modal.variant_label')}
+                            </label>
+                            <button type="button" className="om-variant-btn"
+                              onClick={() => setDropdownOpenId(isDropOpen ? null : item.id)}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                                {variantVisuals.map((a, i) => (
+                                  <div key={i}>
+                                    {a.displayMode === 'color' && (
+                                      <span style={{ width: 14, height: 14, borderRadius: '50%', background: a.value, border: '1px solid rgba(0,0,0,0.1)', display: 'inline-block' }} />
+                                    )}
+                                    {a.displayMode === 'image' && (
+                                      <img src={a.value} style={{ width: 16, height: 16, borderRadius: 4, objectFit: 'cover' }} alt="" />
+                                    )}
+                                  </div>
+                                ))}
+                                {variantText
+                                  ? <span>{variantText}</span>
+                                  : <span style={{ color: '#b0b0c8' }}>{t('modal.variant_placeholder')}</span>
+                                }
+                              </div>
+                              <ChevronDown size={13} style={{ flexShrink: 0, transition: 'transform .2s', transform: isDropOpen ? 'rotate(180deg)' : 'none' }} />
+                            </button>
+
+                            {isDropOpen && (
+                              <div className="om-variant-dd">
+                                {pOpts.variants.map(v => {
+                                  const attrs = Array.isArray(v.name) ? v.name : [];
+                                  const txt = attrs.filter(a => a.displayMode !== 'color' && a.displayMode !== 'image').map(a => a.value).join(' / ');
+                                  const sel = String(item.variantDetailId) === String(v.id);
+                                  return (
+                                    <div key={v.id}
+                                      className={`om-variant-opt ${sel ? 'sel' : ''}`}
+                                      onClick={() => { handleItemChange(item.id, 'variantDetailId', v.id); setDropdownOpenId(null); }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        {attrs.map((a, i) => (
+                                          <div key={i}>
+                                            {a.displayMode === 'color' && <div style={{ width: 13, height: 13, borderRadius: '50%', background: a.value, border: '1px solid rgba(0,0,0,0.1)' }} />}
+                                            {a.displayMode === 'image' && <img src={a.value} style={{ width: 14, height: 14, borderRadius: 3, objectFit: 'cover' }} alt="" />}
+                                          </div>
+                                        ))}
+                                        <span>{txt}</span>
+                                      </div>
+                                      {sel && <CheckCircle2 size={13} style={{ color: '#8b5cf6' }} />}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* الإجمالي */}
+                  <div className="om-totals">
+                    <div className="om-tot-row">
+                      <span className="om-tot-label">إجمالي المنتجات ({editedCart.items.length})</span>
+                      <span className="om-tot-val">{parseFloat(totalItemsPrice).toLocaleString()} DA</span>
+                    </div>
+                    <div className="om-tot-row">
+                      <span className="om-tot-label">{t('modal.price_ship')}</span>
+                      <span className="om-tot-val">{parseFloat(editedCart.priceShip).toLocaleString()} DA</span>
+                    </div>
+                    <hr className="om-tot-divider" />
+                    <div className="om-tot-row">
+                      <span className="om-tot-main-label">{t('modal.price_total')}</span>
+                      <span className="om-tot-main-val">{parseFloat(finalCartTotal).toLocaleString()} DA</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ padding: '24px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, color: '#b0b0c8' }}>
+                  <AlertCircle size={24} />
+                  <p style={{ fontSize: 13 }}>لا توجد منتجات</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="om-footer">
+            <button className="om-btn-cancel" onClick={onClose}>{t('modal.close')}</button>
+            <button className="om-btn-save" onClick={handleSave} disabled={loading || !hasItems}>
+              {loading
+                ? <><Loader2 size={14} className="animate-spin" />{t('modal.saving')}</>
+                : <><Save size={14} />{t('modal.save')}</>
+              }
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
