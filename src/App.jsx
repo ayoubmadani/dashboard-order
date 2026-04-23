@@ -45,6 +45,7 @@ import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
 import OrderShow from './pages/dashboard/orders/OrderEditPage';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
+import Messages from './pages/dashboard/messages/messages';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -147,6 +148,8 @@ function MyComponent() {
               <Route index  element={<Orders />} />
               <Route path=':id'  element={<OrderEditPage />} />
             </Route>
+
+            <Route path="messages" element={<Messages />} />
 
 
             <Route path="analytics" element={<Analytics />} />

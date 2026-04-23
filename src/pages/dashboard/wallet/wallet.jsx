@@ -50,7 +50,7 @@ const Skeleton = ({ className = '' }) => (
 //  Top-Up Modal
 // ─────────────────────────────────────────────
 function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmount, clearError }) {
-  const { t } = useTranslation('wallet');
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'wallet' });
 
   return (
     <div

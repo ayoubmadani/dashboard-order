@@ -1,34 +1,47 @@
 {
-  "loading": "Chargement des thèmes...",
-
+  "loading": "Chargement des modèles...",
   "my_themes": {
-    "title": "Mes Thèmes",
+    "title": "Mes thèmes",
     "default_name": "Par défaut",
     "activate_btn": "Activer",
     "empty": "Aucun thème installé"
   },
-
   "types": {
     "title": "Type",
     "all": "Tous"
   },
-
   "gallery": {
-    "title": "Galerie de thèmes",
-    "results_one": "Un résultat",
+    "title": "Galerie de modèles",
+    "results_one": "1 résultat",
     "results_other": "{{count}} résultats",
-    "empty_title": "Aucun thème trouvé",
+    "empty_title": "Aucun modèle trouvé",
     "empty_subtitle": "Essayez de choisir un type différent",
     "free_label": "Gratuit",
     "preview_btn": "Aperçu",
-    "install_btn": "Installer"
+    "install_btn": "Installer",
+    "plan_included_label": "Inclus dans votre forfait",
+    "installed_label": "Installé"
   },
-
   "alerts": {
-    "install_success": "Thème installé avec succès !",
+    "install_success": "Modèle installé avec succès !",
     "install_error": "Erreur : {{message}}",
-    "activate_success": "Thème activé avec succès !",
-    "activate_error": "Une erreur est survenue lors de l'activation du thème",
-    "no_store": "Aucune boutique trouvée pour activer ce thème"
+    "activate_success": "Modèle activé avec succès !",
+    "activate_error": "Une erreur est survenue lors de l'activation du modèle",
+    "no_store": "Aucune boutique trouvée pour activer le modèle"
+  },
+  "subscription": {
+    "title": "Forfait Thèmes",
+    "plan_free": "Gratuit",
+    "paid_desc": "Vous êtes sur le forfait {{plan}} ; les modèles inclus sont disponibles sans frais supplémentaires.",
+    "free_desc": "Le forfait gratuit ne permet d'installer qu'un seul modèle.",
+    "usage_label": "Thèmes installés",
+    "limit_reached": "Limite atteinte, veuillez passer au forfait supérieur pour en installer plus.",
+    "expires_at": "L'abonnement expire le {{date}}",
+    "upgrade_hint_title": "Des thèmes premium vous attendent",
+    "upgrade_hint_desc": "Passez au forfait supérieur pour obtenir des thèmes exclusifs sans frais supplémentaires.",
+    "upgrade_btn": "Changer de forfait",
+    "stat_installed": "Installé",
+    "stat_included": "Inclus",
+    "stat_available": "Disponible"
   }
 }

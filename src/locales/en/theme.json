@@ -1,34 +1,47 @@
 {
-  "loading": "Loading themes...",
-
+  "loading": "Loading templates...",
   "my_themes": {
     "title": "My Themes",
     "default_name": "Default",
     "activate_btn": "Activate",
     "empty": "No themes installed"
   },
-
   "types": {
     "title": "Type",
     "all": "All"
   },
-
   "gallery": {
-    "title": "Theme Gallery",
+    "title": "Template Gallery",
     "results_one": "1 result",
     "results_other": "{{count}} results",
-    "empty_title": "No themes found",
+    "empty_title": "No templates found",
     "empty_subtitle": "Try selecting a different type",
     "free_label": "Free",
     "preview_btn": "Preview",
-    "install_btn": "Install"
+    "install_btn": "Install",
+    "plan_included_label": "Included in your plan",
+    "installed_label": "Installed"
   },
-
   "alerts": {
-    "install_success": "Theme installed successfully!",
+    "install_success": "Template installed successfully!",
     "install_error": "Error: {{message}}",
-    "activate_success": "Theme activated successfully!",
-    "activate_error": "An error occurred while activating the theme",
-    "no_store": "No store found to activate the theme on"
+    "activate_success": "Template activated successfully!",
+    "activate_error": "An error occurred while activating the template",
+    "no_store": "No store found to activate the template on"
+  },
+  "subscription": {
+    "title": "Themes Plan",
+    "plan_free": "Free",
+    "paid_desc": "You are on the {{plan}} plan; included templates are available at no extra cost.",
+    "free_desc": "The free plan allows only one installed template.",
+    "usage_label": "Installed Themes",
+    "limit_reached": "Limit reached, please upgrade to install more.",
+    "expires_at": "Subscription expires on {{date}}",
+    "upgrade_hint_title": "Premium themes await you",
+    "upgrade_hint_desc": "Upgrade to get exclusive themes with no additional fees.",
+    "upgrade_btn": "Upgrade Plan",
+    "stat_installed": "Installed",
+    "stat_included": "In your plan",
+    "stat_available": "Available"
   }
 }

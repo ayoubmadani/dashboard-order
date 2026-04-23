@@ -1,18 +1,15 @@
 {
   "loading": "جاري تحميل القوالب...",
-
   "my_themes": {
     "title": "قوالبي",
     "default_name": "افتراضي",
     "activate_btn": "تفعيل",
     "empty": "لا توجد قوالب مثبّتة"
   },
-
   "types": {
     "title": "النوع",
     "all": "الكل"
   },
-
   "gallery": {
     "title": "معرض القوالب",
     "results_one": "نتيجة واحدة",
@@ -21,14 +18,30 @@
     "empty_subtitle": "جرّب اختيار نوع مختلف",
     "free_label": "مجاني",
     "preview_btn": "معاينة",
-    "install_btn": "تثبيت"
+    "install_btn": "تثبيت",
+    "plan_included_label": "مضمّن في خطتك",
+    "installed_label": "مثبّت"
   },
-
   "alerts": {
     "install_success": "تم تثبيت القالب بنجاح!",
     "install_error": "خطأ: {{message}}",
     "activate_success": "تم تفعيل القالب بنجاح!",
     "activate_error": "حدث خطأ أثناء تفعيل القالب",
     "no_store": "لم يتم العثور على متجر لتفعيل القالب عليه"
+  },
+  "subscription": {
+    "title": "خطة القوالب",
+    "plan_free": "مجاني",
+    "paid_desc": "أنت على خطة {{plan}}، القوالب المضمّنة متاحة بلا رسوم إضافية.",
+    "free_desc": "الخطة المجانية تتيح تثبيت قالب واحد فقط.",
+    "usage_label": "القوالب المثبّتة",
+    "limit_reached": "وصلت للحد الأقصى، قم بالترقية لتثبيت المزيد.",
+    "expires_at": "ينتهي الاشتراك في {{date}}",
+    "upgrade_hint_title": "قوالب مميزة بانتظارك",
+    "upgrade_hint_desc": "ترقّ للحصول على قوالب حصرية بدون رسوم إضافية.",
+    "upgrade_btn": "ترقية الخطة",
+    "stat_installed": "مثبّت",
+    "stat_included": "في خطتك",
+    "stat_available": "متاح"
   }
 }

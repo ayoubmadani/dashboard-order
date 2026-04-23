@@ -1,0 +1,35 @@
+{
+  "title": "Messages",
+  "subtitle": "Manage customer messages received through your stores",
+  "refresh": "Refresh",
+
+  "tabs": {
+    "all": "All",
+    "inbox": "Inbox",
+    "viewed": "Read",
+    "archive": "Archive"
+  },
+
+  "search_placeholder": "Search by name, phone or email...",
+  "btn_search": "Search",
+  
+  "mark_as_viewed": "Mark as read",
+  "archive": "Archive message",
+  "unarchive": "Restore from archive",
+  "delete": "Delete permanently",
+  "confirm_delete": "Are you sure you want to delete this message permanently?",
+
+  "empty_all": "No messages",
+  "empty_all_desc": "Your message box is currently empty.",
+  "empty_inbox": "Inbox is empty",
+  "empty_inbox_desc": "No new messages currently. Messages will appear here as they arrive.",
+  "empty_viewed": "No read messages",
+  "empty_viewed_desc": "You haven't viewed any messages in this section yet.",
+  "empty_archive": "Archive is empty",
+  "empty_archive_desc": "You haven't archived any messages yet.",
+
+  "error": "Failed to load messages, please try again",
+  "copy_email": "Copy Email",
+  "copy_phone": "Copy Phone",
+  "copied": "Copied"
+}

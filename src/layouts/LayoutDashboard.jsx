@@ -12,6 +12,8 @@ import Cookies from 'js-cookie';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { baseURL } from '../constents/const.';
 import { Globe } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
+import { MessageSquareText } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
@@ -129,6 +131,7 @@ export default function LayoutDashboard() {
         { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, color: '#06b6d4' },
         { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: '#22c55e' },
         { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, color: '#d946ef' },
+        { name: t('nav.messages', 'الرسائل'), href: '/dashboard/messages', icon: MessageSquareText, color: '#0000ff' },
         { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: '#64748b' },
 
     ];

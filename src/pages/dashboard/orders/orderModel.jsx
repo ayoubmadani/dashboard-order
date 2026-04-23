@@ -318,7 +318,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
     axios.get(`${baseURL}/shipping/get-shipping`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => setWilayaData(r.data || []))
       .catch(e => console.error(e));
-  }, [isOpen]);
+  }, [isOpen, token]);
 
   useEffect(() => {
     if (!isOpen || !cartData) return;
@@ -332,14 +332,19 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
       items: cartData.items.map(item => {
         const baseTotal = Number(item.totalPrice || 0) - Number(item.priceShip || 0);
         const initPrice = item.quantity > 0 ? baseTotal / item.quantity : baseTotal;
-        return { ...item, initPrice, itemTotal: baseTotal };
+        return { 
+          ...item, 
+          initPrice, 
+          itemTotal: baseTotal,
+          productId: item.productId || item.product?.id 
+        };
       })
     };
     setEditedCart(initialCart);
     if (initialCart.customerWilaya?.id) fetchCommunes(initialCart.customerWilaya.id);
 
     const fetchOptions = async () => {
-      const ids = [...new Set(cartData.items.map(i => i.productId))];
+      const ids = [...new Set(cartData.items.map(i => i.productId || i.product?.id).filter(Boolean))];
       const opts = { ...productOptions };
       await Promise.all(ids.map(async pid => {
         if (!opts[pid]) {
@@ -355,7 +360,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
       setProductOptions(opts);
     };
     fetchOptions();
-  }, [isOpen, cartData]);
+  }, [isOpen, cartData, token]);
 
   const fetchCommunes = (wilayaId) => {
     setCommunes([]);
@@ -418,22 +423,42 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
 
   const handleSave = async () => {
     if (!editedCart.items.length) return;
+    
+    const invalidItems = editedCart.items.filter((item) => {
+      const productId = item.productId || item.product?.id;
+      return !productId;
+    });
+    
+    if (invalidItems.length > 0) {
+      console.error('Items missing productId:', invalidItems);
+      alert(t('modal.save_failed') || 'فشل الحفظ: بعض المنتجات لا تحتوي على معرف');
+      return;
+    }
+    
     setLoading(true);
     try {
-      const dtos = editedCart.items.map((item, i) => ({
-        customerName: editedCart.customerName,
-        customerPhone: editedCart.customerPhone,
-        customerWilayaId: editedCart.customerWilayaId,
-        customerCommuneId: editedCart.customerCommuneId,
-        status: editedCart.status,
-        typeShip: editedCart.typeShip,
-        priceShip: i === 0 ? editedCart.priceShip : 0,
-        quantity: item.quantity,
-        variantDetailId: item.variantDetailId ?? null,
-        offerId: item.offerId ?? null,
-        finalPrice: item.finalPrice,
-        totalPrice: item.finalPrice * item.quantity + (i === 0 ? editedCart.priceShip : 0),
-      }));
+      const dtos = editedCart.items.map((item, i) => {
+        const productId = item.productId || item.product?.id;
+        
+        return {
+          customerName: editedCart.customerName,
+          customerPhone: editedCart.customerPhone,
+          customerWilayaId: editedCart.customerWilayaId,
+          customerCommuneId: editedCart.customerCommuneId,
+          status: editedCart.status,
+          typeShip: editedCart.typeShip,
+          priceShip: i === 0 ? editedCart.priceShip : 0,
+          productId: productId,
+          quantity: item.quantity,
+          variantDetailId: item.variantDetailId ?? null,
+          offerId: item.offerId ?? null,
+          finalPrice: item.finalPrice,
+          totalPrice: item.finalPrice * item.quantity + (i === 0 ? editedCart.priceShip : 0),
+        };
+      });
+      
+      console.log('Sending DTOs:', dtos);
+      
       await axios.patch(
         `${baseURL}/orders/${editedCart.id}`, dtos,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -441,7 +466,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
       onRefresh?.();
       onClose();
     } catch (e) {
-      alert(t('modal.save_failed'));
+      alert(t('modal.save_failed') || 'فشل حفظ التغييرات');
       console.error(e);
     } finally {
       setLoading(false);

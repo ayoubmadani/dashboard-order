@@ -1,0 +1,35 @@
+{
+  "title": "Messages",
+  "subtitle": "Gérez les messages clients reçus via vos boutiques",
+  "refresh": "Actualiser",
+
+  "tabs": {
+    "all": "Tous",
+    "inbox": "Boîte de réception",
+    "viewed": "Lus",
+    "archive": "Archives"
+  },
+
+  "search_placeholder": "Rechercher par nom, téléphone ou e-mail...",
+  "btn_search": "Rechercher",
+  
+  "mark_as_viewed": "Marquer comme lu",
+  "archive": "Archiver le message",
+  "unarchive": "Restaurer de l'archive",
+  "delete": "Supprimer définitivement",
+  "confirm_delete": "Êtes-vous sûr de vouloir supprimer définitivement ce message ?",
+
+  "empty_all": "Aucun message",
+  "empty_all_desc": "Votre boîte de messages est actuellement vide.",
+  "empty_inbox": "La boîte de réception est vide",
+  "empty_inbox_desc": "Aucun nouveau message. Les messages apparaîtront ici dès leur arrivée.",
+  "empty_viewed": "Aucun message lu",
+  "empty_viewed_desc": "Vous n'avez pas encore consulté de messages dans cette section.",
+  "empty_archive": "L'archive est vide",
+  "empty_archive_desc": "Vous n'avez pas encore archivé de messages.",
+
+  "error": "Échec du chargement des messages, veuillez réessayer",
+  "copy_email": "Copier l'e-mail",
+  "copy_phone": "Copier le téléphone",
+  "copied": "Copié"
+}

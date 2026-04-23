@@ -14,7 +14,8 @@
     "menu_label": "Menu",
     "pixels": "pixels",
     "current_store": "Current Store",
-    "domain": "domain"
+    "domain": "domain",
+    "messages" : "messages"
   },
   "store_selector": {
     "current_store": "Current Store",

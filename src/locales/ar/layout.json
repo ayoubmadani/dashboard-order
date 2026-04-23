@@ -14,7 +14,8 @@
     "menu_label": "القائمة",
     "pixels":"بيكسل",
     "current_store": "المتجر الحالي",
-    "domain" : "دومين"
+    "domain" : "دومين",
+    "messages" : "الرسائل"
   },
 
   "store_selector": {
