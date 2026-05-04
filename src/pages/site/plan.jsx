@@ -148,7 +148,7 @@ const PlanPage = () => {
                 {/* Name */}
                 <div className="mb-5 mt-1">
                   <p className={`text-xl font-black mb-2 ${isFeatured ? 'text-white dark:text-zinc-900' : 'text-gray-900 dark:text-white'}`}>
-                    {t(plan.name)}
+                    {plan.name}
                   </p>
                 </div>
 
