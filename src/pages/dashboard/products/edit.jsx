@@ -114,11 +114,20 @@ export default function EditProduct() {
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState('');
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
-  const [folder , setFolder] = useState()
+  const [folder, setFolder] = useState()
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 3000);
+  };
+
+  /* ── flatten helper ── */
+  const flattenTree = (cats, level = 0, result = []) => {
+    cats.forEach(cat => {
+      result.push({ ...cat, level });
+      if (cat.children?.length > 0) flattenTree(cat.children, level + 1, result);
+    });
+    return result;
   };
 
   /* ── Categories ── */
@@ -132,13 +141,8 @@ export default function EditProduct() {
     axios.get(`${baseURL}/stores/${storeId}/categories`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         const raw = res.data;
-        let list = [];
-        if (Array.isArray(raw)) list = raw;
-        else if (Array.isArray(raw?.data)) list = raw.data;
-        else if (Array.isArray(raw?.categories)) list = raw.categories;
-        else if (Array.isArray(raw?.items)) list = raw.items;
-        else if (Array.isArray(raw?.result)) list = raw.result;
-        setCategories(list);
+        const tree = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
+        setCategories(flattenTree(tree)); // ✅ flatten مع level
       })
       .catch(err => {
         setCategoriesError(err.response?.data?.message || err.message || t('form.category_error_fetch'));
@@ -263,11 +267,13 @@ export default function EditProduct() {
   const updateVariantValue = (attrId, variantId, value, imgId = null) => {
     setAttributes(prev => prev.map(a => {
       if (a.id !== attrId) return a;
-      return { ...a, variants: a.variants.map(v => {
-        if (v.id !== variantId) return v;
-        if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: imgId };
-        return { ...v, value, name: value };
-      })};
+      return {
+        ...a, variants: a.variants.map(v => {
+          if (v.id !== variantId) return v;
+          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: imgId };
+          return { ...v, value, name: value };
+        })
+      };
     }));
     setVariantDetails([]);
   };
@@ -303,7 +309,7 @@ export default function EditProduct() {
   const updateOffer = (id, field, val) => setOffers(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
 
   /* ── Images ── */
-  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('productVariant') ; setIsOpenModelImage(true); };
+  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('productVariant'); setIsOpenModelImage(true); };
   const handleImageSelect = (imageData) => {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
@@ -552,18 +558,25 @@ export default function EditProduct() {
                     {categories.map(cat => (
                       <button key={cat.id} type="button"
                         onClick={() => { setFormData(p => ({ ...p, categoryId: cat.id })); setCategoryDropdownOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
-                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}>
+                        className={`w-full flex items-center gap-3 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
+      ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}
+                        style={{
+                          paddingRight: isRtl ? `${16 + cat.level * 16}px` : '16px',
+                          paddingLeft: !isRtl ? `${16 + cat.level * 16}px` : '16px',
+                        }}>
+                        {cat.level > 0 && (
+                          <span className="text-gray-300 dark:text-zinc-600 shrink-0 text-[10px]">└</span>
+                        )}
                         {cat.imageUrl
                           ? <img src={cat.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
-                          : <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><FolderTree size={13} className="text-gray-400" /></div>}
+                          : <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cat.level === 0 ? 'bg-gray-100 dark:bg-zinc-800' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}>
+                            <FolderTree size={13} className={cat.level === 0 ? 'text-gray-400' : 'text-indigo-400'} />
+                          </div>
+                        }
                         <div className={`flex-1 overflow-hidden ${isRtl ? 'text-right' : 'text-left'}`}>
                           <p className="font-medium truncate">{cat.name}</p>
                           <p className="text-[10px] text-gray-400 font-mono truncate">{cat.slug}</p>
                         </div>
-                        {cat.products?.length > 0 && (
-                          <span className="text-[10px] text-gray-400 shrink-0">{t('form.category_products', { count: cat.products.length })}</span>
-                        )}
                         {formData.categoryId === cat.id && <Check size={14} className="text-indigo-500 shrink-0" />}
                       </button>
                     ))}
@@ -658,7 +671,7 @@ export default function EditProduct() {
                 <Plus size={12} className="inline mr-1" />
                 {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? t('attributes.add_color_value') :
                   attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? t('attributes.add_image_value') :
-                  attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
+                    attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
               </button>
             </div>
           </div>
@@ -819,7 +832,7 @@ export default function EditProduct() {
       {/* ── SECTION 5: Images ── */}
       <Section icon={ImageIcon} title={t('images.section_title')} color="blue">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
-          <button type="button" onClick={() => {setFolder('products') ;setIsOpenModelImage(true)}}
+          <button type="button" onClick={() => { setFolder('products'); setIsOpenModelImage(true) }}
             className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
             <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
             <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>

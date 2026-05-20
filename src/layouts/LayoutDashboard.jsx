@@ -289,15 +289,6 @@ export default function LayoutDashboard() {
                         <button className="lg:hidden p-1.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md" onClick={() => setSidebarOpen(true)}>
                             <Menu className="h-5 w-5" />
                         </button>
-
-                        <div className="hidden sm:flex items-center relative">
-                            <Search className={`absolute w-4 h-4 text-gray-400 ${isRtl ? 'right-2.5' : 'left-2.5'}`} />
-                            <input
-                                type="search"
-                                placeholder={t('search', 'بحث...')}
-                                className={`w-64 bg-gray-100 dark:bg-white/5 border-0 rounded-md py-1.5 ${isRtl ? 'pr-9 pl-3' : 'pl-9 pr-3'} text-sm focus:ring-2 focus:ring-emerald-500/20`}
-                            />
-                        </div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -305,10 +296,7 @@ export default function LayoutDashboard() {
                             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
 
-                        <button className="relative p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-md">
-                            <Bell className="w-4 h-4" />
-                            <span className="absolute top-1 right-1.5 w-1.5 h-1.5 bg-rose-500 rounded-full" />
-                        </button>
+                        
 
                         <div className="w-px h-6 bg-gray-200 dark:border-white/10 mx-1" />
 

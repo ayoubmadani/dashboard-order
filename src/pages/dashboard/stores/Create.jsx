@@ -12,6 +12,8 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
+import { Languages } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 
 const CreateStore = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -27,6 +29,7 @@ const CreateStore = () => {
     phone: '',
     email: '',
     wilaya: 'Algiers',
+    address: '', // إضافة الحقل هنا كقيم فارغة افتراضياً
     logo: null,
     primaryColor: '#000000',
     secondaryColor: '#f59e0b',
@@ -38,6 +41,7 @@ const CreateStore = () => {
     topBarText: '',
     currency: 'DZD',
     language: 'ar',
+    cart: false,
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -110,22 +114,48 @@ const CreateStore = () => {
 
   const validateForm = useCallback(() => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = t('form.validation.name_required');
-    else if (formData.name.trim().length < 2) newErrors.name = t('form.validation.name_short');
 
-    if (!formData.domain.trim()) newErrors.domain = t('form.validation.domain_required');
-    else if (!/^[a-z0-9-]+$/.test(formData.domain)) newErrors.domain = t('form.validation.domain_invalid');
-    else if (formData.domain.length < 3) newErrors.domain = t('form.validation.domain_short');
+    // اسم المتجر
+    if (!formData.name.trim()) {
+      newErrors.name = t('form.validation.name_required');
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = t('form.validation.name_short');
+    }
 
+    // الدومين
+    if (!formData.domain.trim()) {
+      newErrors.domain = t('form.validation.domain_required');
+    } else if (!/^[a-z0-9-]+$/.test(formData.domain)) {
+      newErrors.domain = t('form.validation.domain_invalid');
+    } else if (formData.domain.length < 3) {
+      newErrors.domain = t('form.validation.domain_short');
+    }
+
+    // الهاتف (اختياري: يتم التحقق فقط إذا لم يكن فارغاً)
     const phone = formData.phone?.trim();
-    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) newErrors.phone = t('form.validation.phone_invalid');
+    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) {
+      newErrors.phone = t('form.validation.phone_invalid');
+    }
 
+    // البريد الإلكتروني (اختياري: يتم التحقق فقط إذا لم يكن فارغاً)
     const email = formData.email?.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t('form.validation.email_invalid');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = t('form.validation.email_invalid');
+    }
+
+    // العنوان (اختياري: يمكنك إضافة شروط هنا إذا أردت طولاً معيناً مستقبلاً)
+    // حالياً لا توجد قيود إجبارية حسب طلبك، ولكن أضفنا التبعية لضمان مراقبة التغيير.
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData.name, formData.domain, formData.phone, formData.email, t]);
+  }, [
+    formData.name,
+    formData.domain,
+    formData.phone,
+    formData.email,
+    formData.address, // أضفنا العنوان هنا
+    t
+  ]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -146,8 +176,9 @@ const CreateStore = () => {
           name: formData.name.trim(),
           subdomain: formData.domain.trim().toLowerCase(),
           currency: formData.currency,
-          language: formData.language,
+          language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
           nicheId: formData.niche || null,
+          cart: formData.cart || false,
         },
         design: {
           primaryColor: formData.primaryColor,
@@ -164,6 +195,7 @@ const CreateStore = () => {
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
           wilaya: formData.wilaya,
+          address: formData.address?.trim() || null, // إضافة حقل العنوان هنا
         },
         hero: {
           imageUrl: formData.heroImage,
@@ -182,7 +214,8 @@ const CreateStore = () => {
         setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
-      console.error('Error creating store:', error);
+      setErrors({ ...errors, domain: t(`form.validation.${error.response?.data?.message}`) })
+      console.log('Error creating store:', error.response?.data?.message);
       showNotification('error', error.response?.data?.message || t('create.failed'));
     } finally {
       setLoading(false);
@@ -299,6 +332,23 @@ const CreateStore = () => {
               </select>
             </div>
 
+            {/* Address - العنوان */}
+            <div> {/* جعلته يمتد على عرض العمودين لأنه غالباً يحتاج مساحة */}
+              <label className={labelClass}>
+                <MapPin size={14} className="inline me-1" />
+                {t('form.address_label')}
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                placeholder={t('form.address_placeholder')}
+                className={inputClass(errors.address)}
+              />
+              {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
+            </div>
+
             {/* Niche */}
             <div>
               <label className={labelClass}>{t('form.niche_label')}</label>
@@ -308,7 +358,7 @@ const CreateStore = () => {
                 onChange={handleInputChange}
                 className={inputClass(false)}
               >
-                <option value="">🏪 {t("create.No.Specific.Niche")}</option>
+                <option value="">🏪 {t("form.create.No.Specific.Niche")}</option>
 
                 {niches && niches.map((n) => (
                   <option key={n.id} value={n.id}>
@@ -316,6 +366,60 @@ const CreateStore = () => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Language - اللغة المفضلة للمتجر */}
+            <div>
+              <label className={labelClass}>
+                <Languages size={14} className="inline me-1" />
+                {t('form.language_label')}
+              </label>
+              <select
+                name="language"
+                value={formData.language}
+                onChange={handleInputChange}
+                className={inputClass(false)}
+              >
+                <option value="ar">العربية (Arabic)</option>
+                <option value="fr">Français (French)</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            {/* Shopping Cart Toggle - Dark Mode Friendly */}
+            <div className="md:col-span-2 mt-4">
+              <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
+                <div className="flex items-center gap-4">
+                  {/* Icon Container */}
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700">
+                    <ShoppingCart size={22} />
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                      {t('form.cart_support_label')}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                      {t('form.cart_support_description')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Toggle Switch */}
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, cart: !prev.cart }))}
+                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.cart ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.cart
+                        ? (isRtl ? '-translate-x-6' : 'translate-x-6')
+                        : (isRtl ? '-translate-x-1' : 'translate-x-1')
+                      }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {/* Phone */}

@@ -108,6 +108,12 @@
     "niche_label": "التصنيف",
     "phone_label": "رقم الهاتف",
     "email_label": "البريد الإلكتروني",
+    "address_label": "العنوان الكامل",
+    "address_placeholder": "رقم الشارع، الحي، البلدية...",
+    "create.No.Specific.Niche": "لا يوجد تخصص محدد",
+    "language_label": "لغة المتجر الأساسية",
+    "cart_support_label": "تفعيل سلة المشتريات",
+    "cart_support_description": "تمكين الزبائن من جمع عدة منتجات وطلبها دفعة واحدة (بدلاً من الشراء المباشر فقط).",
     "design": "التصميم والألوان",
     "logo_label": "الشعار",
     "logo_upload": "اختر شعار",
@@ -128,7 +134,7 @@
     "preview_domain": "الدومين",
     "preview_wilaya": "الولاية",
     "required": "*",
-    "favicon_label":"اختر ايقونة الصغيرة",
+    "favicon_label": "اختر ايقونة الصغيرة",
     "validation": {
       "name_required": "اسم المتجر مطلوب",
       "name_short": "الاسم قصير جداً (حرفين على الأقل)",
@@ -136,7 +142,9 @@
       "domain_invalid": "الدومين يجب أن يحتوي على حروف صغيرة وأرقام وشرطات فقط",
       "domain_short": "الدومين قصير جداً (3 أحرف على الأقل)",
       "phone_invalid": "رقم الهاتف غير صحيح (مثال: 0557123456)",
-      "email_invalid": "البريد الإلكتروني غير صحيح"
+      "email_invalid": "البريد الإلكتروني غير صحيح",
+      "address_invalid": "العنوان غير صحيح",
+      "DOMAIN_ALREADY_EXISTS": "هذا الدومين محجوز بالفعل، يرجى اختيار اسم آخر"
     },
     "favicon_upload": "رفع الأيقونة المصغرة"
   },

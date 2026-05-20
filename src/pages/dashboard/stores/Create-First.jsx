@@ -11,6 +11,8 @@ import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken, removeAccessToken } from '../../../services/access-token';
 import axios from 'axios';
+import { ShoppingCart } from 'lucide-react';
+import { Languages } from 'lucide-react';
 
 const CreateFirstStore = () => {
   // ─── كل الـ hooks في الأعلى ───────────────────────────────────────────────
@@ -38,6 +40,7 @@ const CreateFirstStore = () => {
     currency: 'DZD',
     language: 'ar',
     favicon: null,
+    cart: false,
   });
   const [logoPreview, setLogoPreview] = useState(null);
   const [heroImagePreview, setHeroImagePreview] = useState(null);
@@ -122,23 +125,48 @@ const CreateFirstStore = () => {
 
   const validateForm = useCallback(() => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = t('form.validation.name_required');
-    else if (formData.name.trim().length < 2) newErrors.name = t('form.validation.name_short');
 
-    if (!formData.domain.trim()) newErrors.domain = t('form.validation.domain_required');
-    else if (!/^[a-z0-9-]+$/.test(formData.domain)) newErrors.domain = t('form.validation.domain_invalid');
-    else if (formData.domain.length < 3) newErrors.domain = t('form.validation.domain_short');
+    // اسم المتجر
+    if (!formData.name.trim()) {
+      newErrors.name = t('form.validation.name_required');
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = t('form.validation.name_short');
+    }
 
+    // الدومين
+    if (!formData.domain.trim()) {
+      newErrors.domain = t('form.validation.domain_required');
+    } else if (!/^[a-z0-9-]+$/.test(formData.domain)) {
+      newErrors.domain = t('form.validation.domain_invalid');
+    } else if (formData.domain.length < 3) {
+      newErrors.domain = t('form.validation.domain_short');
+    }
+
+    // الهاتف (اختياري: يتم التحقق فقط إذا لم يكن فارغاً)
     const phone = formData.phone?.trim();
-    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) newErrors.phone = t('form.validation.phone_invalid');
+    if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) {
+      newErrors.phone = t('form.validation.phone_invalid');
+    }
 
+    // البريد الإلكتروني (اختياري: يتم التحقق فقط إذا لم يكن فارغاً)
     const email = formData.email?.trim();
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t('form.validation.email_invalid');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = t('form.validation.email_invalid');
+    }
+
+    // العنوان (اختياري: يمكنك إضافة شروط هنا إذا أردت طولاً معيناً مستقبلاً)
+    // حالياً لا توجد قيود إجبارية حسب طلبك، ولكن أضفنا التبعية لضمان مراقبة التغيير.
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData.name, formData.domain, formData.phone, formData.email, t]);
-
+  }, [
+    formData.name,
+    formData.domain,
+    formData.phone,
+    formData.email,
+    formData.address, // أضفنا العنوان هنا
+    t
+  ]);
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
@@ -158,14 +186,15 @@ const CreateFirstStore = () => {
           name: formData.name.trim(),
           subdomain: formData.domain.trim().toLowerCase(),
           currency: formData.currency,
-          language: formData.language,
-          nicheId: formData.niche,
+          language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
+          nicheId: formData.niche || null,
+          cart: formData.cart || false,
         },
         design: {
           primaryColor: formData.primaryColor,
           secondaryColor: formData.secondaryColor,
           logoUrl: formData.logo,
-          faviconUrl: formData.favicon, // ← أضف
+          faviconUrl: formData.favicon,
         },
         topBar: {
           enabled: formData.showTopBar,
@@ -176,6 +205,7 @@ const CreateFirstStore = () => {
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
           wilaya: formData.wilaya,
+          address: formData.address?.trim() || null, // إضافة حقل العنوان هنا
         },
         hero: {
           imageUrl: formData.heroImage,
@@ -187,13 +217,14 @@ const CreateFirstStore = () => {
       const token = getAccessToken();
       const response = await axios.post(`${baseURL}/stores/create-full`, payload, {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      });      
+      });
 
       if (response.data.success) {
         showNotification('success', t('create.success'));
         setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
+      setErrors({ ...errors, domain: t(`form.validation.${error.response?.data?.message}`) })
       showNotification('error', error.response?.data?.message || t('create.failed'));
     } finally {
       setLoading(false);
@@ -288,16 +319,86 @@ const CreateFirstStore = () => {
                 </select>
               </div>
 
+              {/* Address - العنوان */}
+              <div> {/* جعلته يمتد على عرض العمودين لأنه غالباً يحتاج مساحة */}
+                <label className={labelClass}>
+                  <MapPin size={14} className="inline me-1" />
+                  {t('form.address_label')}
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder={t('form.address_placeholder')}
+                  className={inputClass(errors.address)}
+                />
+                {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
+              </div>
+
               <div>
                 <label className={labelClass}>{t('form.niche_label')}</label>
                 <select name="niche" value={formData.niche} onChange={handleInputChange} className={inputClass(false)}>
-                  <option value="">🏪 {t('create.No.Specific.Niche')}</option>
+                  <option value="">🏪 {t('form.create.No.Specific.Niche')}</option>
                   {niches.map((n) => (
                     <option key={n.id} value={n.id}>
                       {n.icon} {i18n.language === 'ar' ? n.name_ar : i18n.language === 'fr' ? n.name_fr : n.name_en}
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className={labelClass}>
+                  <Languages size={14} className="inline me-1" />
+                  {t('form.language_label')}
+                </label>
+                <select
+                  name="language"
+                  value={formData.language}
+                  onChange={handleInputChange}
+                  className={inputClass(false)}
+                >
+                  <option value="ar">العربية (Arabic)</option>
+                  <option value="fr">Français (French)</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+
+              {/* Shopping Cart Toggle - Dark Mode Friendly */}
+              <div className="md:col-span-2 mt-4">
+                <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
+                  <div className="flex items-center gap-4">
+                    {/* Icon Container */}
+                    <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700">
+                      <ShoppingCart size={22} />
+                    </div>
+
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                        {t('form.cart_support_label')}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                        {t('form.cart_support_description')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Toggle Switch */}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, cart: !prev.cart }))}
+                    className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.cart ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.cart
+                        ? (isRtl ? '-translate-x-6' : 'translate-x-6')
+                        : (isRtl ? '-translate-x-1' : 'translate-x-1')
+                        }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -459,16 +560,14 @@ const CreateFirstStore = () => {
 
           {/* Actions */}
           <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} gap-4`}>
-            <button type="button" onClick={() => navigate('/dashboard/stores')} className="px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl font-bold text-gray-700 dark:text-zinc-300 hover:scale-105 transition-all">
-              {t('common.cancel')}
-            </button>
+
             <button type="submit" disabled={loading} className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2">
               {loading ? <><Loader2 size={20} className="animate-spin" />{t('create.submitting')}</> : <><Save size={20} />{t('create.submit')}</>}
             </button>
           </div>
         </form>
 
-        <ModelImages isOpen={!!activeModal} onSelectImage={handleSelectImage} close={closeModal} folder={activeModal}/>
+        <ModelImages isOpen={!!activeModal} onSelectImage={handleSelectImage} close={closeModal} folder={activeModal} />
       </div>
     </div>
   );

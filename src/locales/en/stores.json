@@ -22,7 +22,7 @@
     "desc": "Manage all your stores, branches, and custom domains from a single dashboard.",
     "new_store": "New Store",
     "search_placeholder": "Search for a store, domain, or location...",
-    "clear_search": "Clear Search",
+    "clear_search": "Clear search",
     "loading_stores": "Loading stores...",
     "load_failed": "Failed to load stores",
     "stats": {
@@ -35,7 +35,7 @@
       "customers": "Customers",
       "customers_sub": "Active customers",
       "views": "Views",
-      "views_sub": "Total number of visits to your store"
+      "views_sub": "Total store visits"
     },
     "card": {
       "orders": "Order",
@@ -43,7 +43,7 @@
       "customers": "Customer",
       "visit": "Visit",
       "edit": "Edit",
-      "views": "Views"
+      "views": "View"
     },
     "table": {
       "store": "Store",
@@ -54,8 +54,8 @@
       "actions": "Actions"
     },
     "toggle": {
-      "enable": "Enable Store",
-      "disable": "Disable Store",
+      "enable": "Enable store",
+      "disable": "Disable store",
       "failed": "Failed to change store status"
     },
     "delete": {
@@ -66,18 +66,18 @@
     "empty": {
       "title": "No stores found",
       "subtitle": "Start by creating your first store",
-      "create": "Create New Store",
-      "no_results": "No results",
-      "no_results_sub": "No stores found matching your search"
+      "create": "Create new store",
+      "no_results": "No results found",
+      "no_results_sub": "No stores match your search"
     },
     "add_card": {
-      "title": "Create New Store",
+      "title": "Create new store",
       "subtitle": "Start your business journey"
     }
   },
   "create": {
     "title": "Create New Store",
-    "first-title": "Create Your First Store",
+    "first-title": "Create your first store",
     "subtitle": "Set up your online store in minutes",
     "submitting": "Creating...",
     "submit": "Create Store",
@@ -85,7 +85,7 @@
     "failed": "An error occurred while creating the store",
     "form_errors": "Please correct the errors in the form",
     "switch_account_hint": "Switch to another account",
-    "No.Specific.Niche": "General Store (No Niche)"
+    "store.not.niche": "General Store (No Niche)"
   },
   "update": {
     "title": "Edit Store",
@@ -96,27 +96,32 @@
     "failed": "An error occurred while updating the store",
     "load_failed": "Failed to load store data",
     "loading": "Loading store data...",
-    "form_errors": "Please correct the errors in the form",
-    "No.Specific.Niche": "General Store (No Niche)"
+    "form_errors": "Please correct the errors in the form"
   },
   "form": {
     "basic_info": "Basic Store Information",
     "name_label": "Store Name",
-    "name_placeholder": "e.g., Fashion Store",
+    "name_placeholder": "Example: Fashion Store",
     "domain_label": "Domain",
     "domain_placeholder": "mystore",
-    "wilaya_label": "State/Province",
-    "niche_label": "Niche/Category",
+    "wilaya_label": "State/Wilaya",
+    "niche_label": "Category",
     "phone_label": "Phone Number",
-    "email_label": "Email Address",
-    "design": "Design & Colors",
+    "email_label": "Email",
+    "address_label": "Full Address",
+    "address_placeholder": "Street number, neighborhood, municipality...",
+    "create.No.Specific.Niche": "No specific niche",
+    "language_label": "Primary Store Language",
+    "cart_support_label": "Enable Shopping Cart",
+    "cart_support_description": "Allow customers to collect multiple products and order them at once (instead of direct purchase only).",
+    "design": "Design and Colors",
     "logo_label": "Logo",
     "logo_upload": "Choose Logo",
     "primary_color": "Primary Color",
     "secondary_color": "Secondary Color",
     "hero_section": "Hero Section",
-    "hero_image": "Hero Image",
-    "hero_image_btn": "Choose Hero Image",
+    "hero_image": "Main Image",
+    "hero_image_btn": "Choose main image",
     "hero_title_label": "Main Title",
     "hero_subtitle_label": "Subtitle",
     "top_bar": "Top Bar",
@@ -130,17 +135,19 @@
     "preview_wilaya": "State",
     "required": "*",
     "favicon_label": "Choose Favicon",
-    "favicon_upload": "Upload Favicon",
     "validation": {
       "name_required": "Store name is required",
-      "name_short": "Name is too short (at least 2 characters)",
+      "name_short": "Name is too short (min 2 characters)",
       "domain_required": "Domain is required",
       "domain_invalid": "Domain must contain only lowercase letters, numbers, and hyphens",
-      "domain_short": "Domain is too short (at least 3 characters)",
+      "domain_short": "Domain is too short (min 3 characters)",
       "phone_invalid": "Invalid phone number (e.g., 0557123456)",
-      "email_invalid": "Invalid email address"
-    }
-},
+      "email_invalid": "Invalid email address",
+      "address_invalid": "Invalid address",
+      "DOMAIN_ALREADY_EXISTS": "This domain is already taken, please choose another name"
+    },
+    "favicon_upload": "Upload Favicon"
+  },
   "niches": {
     "fashion": "Fashion",
     "electronics": "Electronics",
@@ -150,9 +157,9 @@
   "show": {
     "loading": "Loading...",
     "not_found": {
-      "title": "Store Not Found",
+      "title": "Store not found",
       "subtitle": "The requested store could not be found",
-      "back": "Back to Stores"
+      "back": "Back to stores"
     },
     "copy_url": "Copy URL",
     "copied": "Copied",
@@ -185,10 +192,10 @@
     },
     "performance": {
       "title": "Performance",
-      "coming_soon": "Coming soon - Performance charts"
+      "coming_soon": "Soon - Performance Charts"
     },
     "orders_tab": {
-      "full_list": "Full Orders List",
+      "full_list": "Full Order List",
       "redirect": "You will be redirected to the orders page"
     },
     "products_tab": {
@@ -220,8 +227,8 @@
     },
     "delete_modal": {
       "title": "Delete Store",
-      "subtitle": "This action cannot be undone. All data associated with this store will be deleted.",
-      "confirm": "Yes, Delete Store",
+      "subtitle": "This action cannot be undone. All data associated with the store will be deleted.",
+      "confirm": "Yes, delete store",
       "cancel": "Cancel"
     }
   }

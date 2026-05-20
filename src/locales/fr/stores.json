@@ -13,13 +13,13 @@
     "refresh": "Actualiser",
     "active": "Actif",
     "inactive": "Inactif",
-    "enabling": "Traitement...",
+    "enabling": "En cours...",
     "currency": "DA"
   },
   "stores": {
-    "title": "Mes Boutiques",
+    "title": "Mes boutiques",
     "subtitle": "Gérez toutes vos boutiques et succursales depuis un seul endroit",
-    "desc": "Gérez toutes vos boutiques, succursales et domaines personnalisés à partir d'un tableau de bord unique.",
+    "desc": "Gérez l'ensemble de vos boutiques, succursales et domaines personnalisés depuis un tableau de bord unique.",
     "new_store": "Nouvelle boutique",
     "search_placeholder": "Rechercher une boutique, un domaine ou un lieu...",
     "clear_search": "Effacer la recherche",
@@ -35,19 +35,19 @@
       "customers": "Clients",
       "customers_sub": "Clients actifs",
       "views": "Vues",
-      "views_sub": "Nombre total de visites sur votre boutique"
+      "views_sub": "Total des visites de votre boutique"
     },
     "card": {
       "orders": "Commande",
       "products": "Produit",
       "customers": "Client",
-      "visit": "Visiter",
+      "visit": "Visite",
       "edit": "Modifier",
-      "views": "Vues"
+      "views": "Vue"
     },
     "table": {
       "store": "Boutique",
-      "status": "Statut",
+      "status": "État",
       "location": "Emplacement",
       "products": "Produits",
       "orders": "Commandes",
@@ -56,7 +56,7 @@
     "toggle": {
       "enable": "Activer la boutique",
       "disable": "Désactiver la boutique",
-      "failed": "Échec du changement de statut"
+      "failed": "Échec du changement d'état"
     },
     "delete": {
       "confirm": "Êtes-vous sûr de vouloir supprimer cette boutique ? Cette action est irréversible.",
@@ -72,24 +72,24 @@
     },
     "add_card": {
       "title": "Créer une boutique",
-      "subtitle": "Lancez votre aventure commerciale"
+      "subtitle": "Commencez votre aventure commerciale"
     }
   },
   "create": {
-    "title": "Créer une boutique",
-    "first-title": "Créer votre première boutique",
+    "title": "Créer une nouvelle boutique",
+    "first-title": "Créez votre première boutique",
     "subtitle": "Configurez votre boutique en ligne en quelques minutes",
     "submitting": "Création en cours...",
     "submit": "Créer la boutique",
     "success": "Boutique créée avec succès ! 🎉",
     "failed": "Une erreur est survenue lors de la création",
     "form_errors": "Veuillez corriger les erreurs dans le formulaire",
-    "switch_account_hint": "Passer à un autre compte",
-    "store.not.niche": "Boutique générale (Sans niche)"
+    "switch_account_hint": "Changer de compte",
+    "store.not.niche": "Boutique générale (sans spécialité)"
   },
   "update": {
     "title": "Modifier la boutique",
-    "subtitle": "Mettez à jour les informations et le design de votre boutique",
+    "subtitle": "Mettre à jour les informations et le design de votre boutique",
     "submitting": "Mise à jour...",
     "submit": "Enregistrer les modifications",
     "success": "Boutique mise à jour avec succès ! ✅",
@@ -99,46 +99,54 @@
     "form_errors": "Veuillez corriger les erreurs dans le formulaire"
   },
   "form": {
-    "basic_info": "Informations de Base du Magasin",
-    "name_label": "Nom de la Boutique",
-    "name_placeholder": "ex: Boutique de Mode",
+    "basic_info": "Informations de base",
+    "name_label": "Nom de la boutique",
+    "name_placeholder": "Ex: Boutique de Mode",
     "domain_label": "Domaine",
     "domain_placeholder": "maboutique",
     "wilaya_label": "Wilaya",
-    "niche_label": "Niche/Catégorie",
-    "phone_label": "Numéro de Téléphone",
+    "niche_label": "Catégorie",
+    "phone_label": "Numéro de téléphone",
     "email_label": "E-mail",
-    "design": "Design & Couleurs",
+    "address_label": "Adresse complète",
+    "address_placeholder": "Numéro de rue, quartier, commune...",
+    "create.No.Specific.Niche": "Aucune spécialité spécifique",
+    "language_label": "Langue principale de la boutique",
+    "cart_support_label": "Activer le panier d'achat",
+    "cart_support_description": "Permettre aux clients de grouper plusieurs produits (au lieu de l'achat direct uniquement).",
+    "design": "Design et Couleurs",
     "logo_label": "Logo",
-    "logo_upload": "Choisir un Logo",
-    "primary_color": "Couleur Primaire",
-    "secondary_color": "Couleur Secondaire",
-    "hero_section": "Section Principale (Hero)",
-    "hero_image": "Image Principale",
-    "hero_image_btn": "Choisir une Image",
-    "hero_title_label": "Titre Principal",
+    "logo_upload": "Choisir un logo",
+    "primary_color": "Couleur primaire",
+    "secondary_color": "Couleur secondaire",
+    "hero_section": "Section principale (Hero)",
+    "hero_image": "Image principale",
+    "hero_image_btn": "Choisir une image",
+    "hero_title_label": "Titre principal",
     "hero_subtitle_label": "Sous-titre",
-    "top_bar": "Barre Supérieure",
+    "top_bar": "Barre supérieure",
     "top_bar_enable": "Activer",
     "top_bar_text": "Texte",
     "top_bar_color": "Couleur",
-    "top_bar_placeholder": "Livraison gratuite pour toute commande de plus de 5000 DA 🎉",
-    "preview": "Aperçu Rapide",
+    "top_bar_placeholder": "Livraison gratuite pour les commandes de plus de 5000 DA 🎉",
+    "preview": "Aperçu rapide",
     "preview_name": "Nom de la boutique",
     "preview_domain": "Domaine",
     "preview_wilaya": "Wilaya",
     "required": "*",
-    "favicon_label": "Choisir un Favicon",
-    "favicon_upload": "Télécharger le Favicon",
+    "favicon_label": "Choisir un favicon",
     "validation": {
-      "name_required": "Le nom de la boutique est obligatoire",
-      "name_short": "Le nom est trop court (au moins 2 caractères)",
-      "domain_required": "Le domaine est obligatoire",
-      "domain_invalid": "Le domaine ne doit contenir que des lettres minuscules, des chiffres et des traits d'union",
-      "domain_short": "Le domaine est trop court (au moins 3 caractères)",
+      "name_required": "Le nom de la boutique est requis",
+      "name_short": "Nom trop court (min 2 caractères)",
+      "domain_required": "Le domaine est requis",
+      "domain_invalid": "Le domaine ne doit contenir que des lettres minuscules, chiffres et tirets",
+      "domain_short": "Domaine trop court (min 3 caractères)",
       "phone_invalid": "Numéro de téléphone invalide (ex: 0557123456)",
-      "email_invalid": "E-mail invalide"
-    }
+      "email_invalid": "Adresse e-mail invalide",
+      "address_invalid": "Adresse invalide",
+      "DOMAIN_ALREADY_EXISTS": "Ce domaine est déjà pris, veuillez en choisir un autre"
+    },
+    "favicon_upload": "Télécharger le favicon"
   },
   "niches": {
     "fashion": "Mode",
@@ -149,8 +157,8 @@
   "show": {
     "loading": "Chargement...",
     "not_found": {
-      "title": "Boutique non trouvée",
-      "subtitle": "La boutique demandée n'existe pas",
+      "title": "Boutique introuvable",
+      "subtitle": "La boutique demandée n'a pas été trouvée",
       "back": "Retour aux boutiques"
     },
     "copy_url": "Copier le lien",
@@ -162,8 +170,8 @@
       "settings": "Paramètres"
     },
     "stats": {
-      "orders": "Total Commandes",
-      "revenue": "Chiffre d'affaires",
+      "orders": "Total des commandes",
+      "revenue": "Revenu total",
       "products": "Produits",
       "customers": "Clients"
     },
@@ -179,12 +187,12 @@
       "cancelled": "Annulé"
     },
     "recent_orders": {
-      "title": "Commandes récentes",
+      "title": "Dernières commandes",
       "view_all": "Voir tout"
     },
     "performance": {
       "title": "Performance",
-      "coming_soon": "Bientôt disponible - Graphiques"
+      "coming_soon": "Bientôt - Graphiques de performance"
     },
     "orders_tab": {
       "full_list": "Liste complète des commandes",
@@ -219,7 +227,7 @@
     },
     "delete_modal": {
       "title": "Supprimer la boutique",
-      "subtitle": "Cette action est irréversible. Toutes les données liées seront supprimées.",
+      "subtitle": "Cette action est irréversible. Toutes les données associées seront supprimées.",
       "confirm": "Oui, supprimer la boutique",
       "cancel": "Annuler"
     }

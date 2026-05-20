@@ -11,6 +11,7 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import Loading from '../../../components/Loading';
+import { useEffect } from 'react';
 
 /* ── API setup ── */
 const getStoreId = () => {
@@ -33,11 +34,12 @@ apiClient.interceptors.response.use(
   (err) => Promise.reject(new Error(err.response?.data?.message || err.message || 'An error occurred'))
 );
 
-const fetchCategories    = (storeId)                  => apiClient.get(`/stores/${storeId}/categories`).then(r => r.data);
-const createCategory     = ({ storeId, data })        => apiClient.post(`/stores/${storeId}/categories`, data).then(r => r.data);
-const updateCategory     = ({ storeId, categoryId, data }) => apiClient.patch(`/stores/${storeId}/categories/${categoryId}`, data).then(r => r.data);
-const deleteCategory     = ({ storeId, categoryId }) => apiClient.delete(`/stores/${storeId}/categories/${categoryId}`).then(r => r.data);
-const searchCategories   = (storeId, searchTerm)      => apiClient.get(`/stores/${storeId}/categories/search`, { params: { q: searchTerm } }).then(r => r.data);
+const fetchCategories = (storeId) => apiClient.get(`/stores/${storeId}/categories`).then(r => r.data);
+const fetchNiches = (storeId) => apiClient.get(`/niches/category-niche/${storeId}`).then(r => r.data);
+const createCategory = ({ storeId, data }) => apiClient.post(`/stores/${storeId}/categories`, data).then(r => r.data);
+const updateCategory = ({ storeId, categoryId, data }) => apiClient.patch(`/stores/${storeId}/categories/${categoryId}`, data).then(r => r.data);
+const deleteCategory = ({ storeId, categoryId }) => apiClient.delete(`/stores/${storeId}/categories/${categoryId}`).then(r => r.data);
+const searchCategories = (storeId, searchTerm) => apiClient.get(`/stores/${storeId}/categories/search`, { params: { q: searchTerm } }).then(r => r.data);
 
 /* ── Field wrapper ── */
 const Field = ({ label, error, children }) => (
@@ -55,21 +57,21 @@ const inputCls = (err) =>
 
 /* ════════════════════════════════════════════════════════════ */
 const Categories = () => {
-const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });  
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'categories' });
   const isRtl = i18n.dir() === 'rtl';
   const queryClient = useQueryClient();
   const storeId = getStoreId();
 
-  const [searchQuery, setSearchQuery]         = useState('');
-  const [isModalOpen, setIsModalOpen]         = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [viewMode, setViewMode]               = useState('grid');
+  const [viewMode, setViewMode] = useState('tree');
   const [expandedCategories, setExpandedCategories] = useState(new Set());
 
   const [formData, setFormData] = useState({
     name: '', slug: '', description: '', imageUrl: '',
-    parentId: null, sortOrder: 0, isActive: true,
+    parentId: null, sortOrder: 0, isActive: true, categoryNicheId: null,
   });
   const [errors, setErrors] = useState({});
 
@@ -77,6 +79,13 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
   const { data: categories = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ['categories', storeId],
     queryFn: () => fetchCategories(storeId),
+    enabled: !!storeId,
+  });
+
+  const { data: niches = [] } = useQuery({
+
+    queryKey: ['niches', storeId],
+    queryFn: () => fetchNiches(storeId),
     enabled: !!storeId,
   });
 
@@ -120,7 +129,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
 
   /* ── Helpers ── */
   const resetForm = () => {
-    setFormData({ name: '', slug: '', description: '', imageUrl: '', parentId: null, sortOrder: 0, isActive: true });
+    setFormData({ name: '', slug: '', description: '', imageUrl: '', parentId: null, sortOrder: 0, isActive: true, categoryNicheId: null });
     setErrors({});
     setEditingCategory(null);
   };
@@ -145,8 +154,8 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
 
   const validateForm = () => {
     const e = {};
-    if (!formData.name.trim())  e.name = t('validation.name_required');
-    if (!formData.slug.trim())  e.slug = t('validation.slug_required');
+    if (!formData.name.trim()) e.name = t('validation.name_required');
+    if (!formData.slug.trim()) e.slug = t('validation.slug_required');
     if (editingCategory && formData.parentId === editingCategory.id)
       e.parentId = t('validation.parent_self');
     setErrors(e);
@@ -158,21 +167,45 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      slug: category.slug,
+      slug: category.slug || '',
       description: category.description || '',
       imageUrl: category.imageUrl || '',
-      parentId: category.parent?.id || null,
+      parentId: category.parentId || null,           // ✅ بدل category.parent?.id
       sortOrder: +category.sortOrder || 0,
       isActive: category.isActive ?? true,
+      categoryNicheId: category.categoryNicheId || null,  // ✅ بدل category.categoryNiche?.id
     });
     setErrors({});
     setIsModalOpen(true);
   };
 
+  // ── select الـ parent: أضف indentation لإظهار المستوى ==
+  const getAvailableParentsWithLevel = () => {
+    const result = [];
+    const traverse = (cats, level = 0) => {
+      cats.forEach(cat => {
+        if (editingCategory && cat.id === editingCategory.id) return;
+        result.push({ ...cat, level });
+        if (cat.children?.length > 0) traverse(cat.children, level + 1);
+      });
+    };
+    traverse(editingCategory
+      ? categories  // الشجرة بالكامل
+      : categories
+    );
+    return result;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    const payload = { ...formData, parentId: formData.parentId || undefined };
+    const payload = {
+      ...formData,
+      parentId: formData.parentId || undefined,
+      categoryNicheId: formData.categoryNicheId || undefined,
+    };
+
+
     if (editingCategory) {
       updateMutation.mutate({ storeId, categoryId: editingCategory.id, data: payload });
     } else {
@@ -211,15 +244,49 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
     });
   };
 
-  const getAvailableParents = () =>
-    editingCategory ? categories.filter(c => c.id !== editingCategory.id) : categories;
+  // ── flatten الشجرة لجلب كل التصنيفات ==
+  const flattenCategories = (cats, result = []) => {
+    cats.forEach(cat => {
+      result.push(cat);
+      if (cat.children?.length > 0) flattenCategories(cat.children, result);
+    });
+    return result;
+  };
+
+  // ── getAvailableParents: flat list بدون الـ category الحالي وأبنائه ==
+  const getAvailableParents = () => {
+    const flat = flattenCategories(categories);
+    if (!editingCategory) return flat;
+
+    // استثناء الـ category نفسه وكل أبنائه لمنع الحلقة
+    const getDescendantIds = (cat) => {
+      const ids = new Set([cat.id]);
+      (cat.children || []).forEach(child => {
+        getDescendantIds(child).forEach(id => ids.add(id));
+      });
+      return ids;
+    };
+
+    const editingNode = flat.find(c => c.id === editingCategory.id);
+    const excludedIds = editingNode ? getDescendantIds(editingNode) : new Set([editingCategory.id]);
+
+    return flat.filter(c => !excludedIds.has(c.id));
+  };
+
+
+  const getNicheName = (niche) => {
+    if (!niche) return '';
+    if (i18n.language === 'ar') return niche.name_ar;
+    if (i18n.language === 'fr') return niche.name_fr;
+    return niche.name_en;
+  };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   /* ── Tree Node ── */
   const TreeNode = ({ category, level = 0 }) => {
     const hasChildren = category.children?.length > 0;
-    const isExpanded  = expandedCategories.has(category.id);
+    const isExpanded = expandedCategories.has(category.id);
 
     return (
       <div className="select-none">
@@ -282,11 +349,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
   };
 
   /* ── Loading ── */
-  if (isLoading) {
-    return (
-      <Loading />
-    );
-  }
+  if (isLoading) return <Loading />;
 
   /* ── Error ── */
   if (isError) {
@@ -329,18 +392,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
             </div>
 
             <div className="flex items-center gap-3">
-              {/* View toggle */}
-              <div className="flex bg-gray-100 dark:bg-zinc-800 rounded-xl p-1 gap-0.5">
-                {[
-                  { mode: 'grid', icon: <LayoutGrid size={15} />, label: t('header.view_grid') },
-                  { mode: 'tree', icon: <List size={15} />,        label: t('header.view_tree') },
-                ].map(v => (
-                  <button key={v.mode} onClick={() => setViewMode(v.mode)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === v.mode ? 'bg-white dark:bg-zinc-700 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200'}`}>
-                    {v.icon}{v.label}
-                  </button>
-                ))}
-              </div>
+
 
               {/* New button */}
               <button
@@ -388,98 +440,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
       {/* ── Body ── */}
       <div className="max-w-6xl mx-auto px-6 py-8">
 
-        {/* Grid View */}
-        {viewMode === 'grid' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {categories.map((cat) => (
-              <div key={cat.id}
-                className="group bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden hover:shadow-lg hover:border-gray-300 dark:hover:border-zinc-700 transition-all">
 
-                {/* Image */}
-                <div className="relative h-40 overflow-hidden">
-                  {cat.imageUrl ? (
-                    <img src={cat.imageUrl} alt={cat.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center">
-                      <ImageIcon size={32} className="text-gray-400" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                  {/* Action buttons */}
-                  <div className={`absolute top-3 ${isRtl ? 'left-3' : 'right-3'} flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity`}>
-                    <button
-                      onClick={() => openEditModal(cat)}
-                      className="p-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-xl text-gray-700 dark:text-zinc-300 hover:bg-white dark:hover:bg-zinc-900 transition-colors shadow-sm">
-                      <Edit3 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(cat)}
-                      disabled={deleteMutation.isPending && deleteMutation.variables?.categoryId === cat.id}
-                      className="p-2 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors disabled:opacity-50 shadow-sm">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-
-                  {/* Status badge */}
-                  {!cat.isActive && (
-                    <div className={`absolute top-3 ${isRtl ? 'right-3' : 'left-3'}`}>
-                      <span className="px-2 py-0.5 bg-gray-900/70 text-gray-300 text-[10px] font-bold rounded-full backdrop-blur-sm">
-                        غير نشط
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Name overlay */}
-                  <div className={`absolute bottom-3 ${isRtl ? 'right-3 left-3' : 'left-3 right-3'}`}>
-                    <h3 className="font-bold text-white text-base drop-shadow-md">{cat.name}</h3>
-                    <p className="text-white/70 text-[11px] font-mono">{cat.slug}</p>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center">
-                        <Tag size={13} className="text-gray-500 dark:text-zinc-400" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-400 dark:text-zinc-500 font-medium uppercase tracking-wider">{t('grid.products_label')}</p>
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">{cat.products?.length || 0}</p>
-                      </div>
-                    </div>
-                    {cat.children?.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center">
-                          <FolderTree size={13} className="text-indigo-500 dark:text-indigo-400" />
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-gray-400 dark:text-zinc-500 font-medium uppercase tracking-wider">{t('grid.sub_label')}</p>
-                          <p className="text-sm font-bold text-gray-900 dark:text-white">{cat.children.length}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <button className="text-xs font-medium text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                    {t('grid.view_products')}
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {/* Add card */}
-            <button
-              onClick={openAddModal}
-              className="border-2 border-dashed border-gray-300 dark:border-zinc-700 rounded-2xl flex flex-col items-center justify-center gap-3 text-gray-400 hover:border-indigo-400 hover:text-indigo-500 dark:hover:border-indigo-500/50 dark:hover:text-indigo-400 transition-all min-h-[260px]">
-              <div className="w-14 h-14 rounded-full border-2 border-dashed border-gray-300 dark:border-zinc-700 flex items-center justify-center group-hover:border-indigo-400 transition-colors">
-                <Plus size={22} />
-              </div>
-              <span className="text-sm font-semibold">{t('grid.add_new')}</span>
-            </button>
-          </div>
-        )}
 
         {/* Tree View */}
         {viewMode === 'tree' && (
@@ -567,8 +528,26 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'categories' });
                   onChange={(e) => setFormData(prev => ({ ...prev, parentId: e.target.value || null }))}
                   className={`${inputCls(errors.parentId)} cursor-pointer`}>
                   <option value="">{t('modal.parent_none')}</option>
-                  {getAvailableParents().map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  {getAvailableParentsWithLevel().map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {'　'.repeat(cat.level)}{cat.level > 0 ? '└ ' : ''}{cat.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+
+              {/* Category Niche */}
+              <Field label={t('modal.category_niche')} error={errors.categoryNicheId}>
+                <select
+                  name="categoryNicheId"
+                  value={formData.categoryNicheId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, categoryNicheId: e.target.value || null }))}
+                  className={`${inputCls(errors.categoryNicheId)} cursor-pointer`}>
+                  <option value="">{t('modal.niche_none')}</option>
+                  {niches.map(niche => (
+                    <option key={niche.id} value={niche.id}>
+                      {getNicheName(niche)}
+                    </option>
                   ))}
                 </select>
               </Field>

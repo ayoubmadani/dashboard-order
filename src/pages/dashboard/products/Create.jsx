@@ -18,6 +18,15 @@ import { getAccessToken } from '../../../services/access-token';
 const ATTRIBUTE_TYPES = { COLOR: 'color', SIZE: 'size', TEXT: 'text' };
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
 
+/* ── flatten helper ── */
+const flattenTree = (cats, level = 0, result = []) => {
+  cats.forEach(cat => {
+    result.push({ ...cat, level });
+    if (cat.children?.length > 0) flattenTree(cat.children, level + 1, result);
+  });
+  return result;
+};
+
 /* ── Rich Text Editor ── */
 const TextEditor = ({ value, onChange }) => {
   const editor = useEditor({
@@ -97,10 +106,13 @@ export default function CreateProduct() {
     name: '', desc: '', price: '', originalPrice: '',
     storeId: '', sku: '', stock: '', status: 'active', categoryId: ''
   });
+
+  // ✅ categories = flat list مع level لكل تصنيف
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categoriesError, setCategoriesError] = useState('');
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+
   const [attributes, setAttributes] = useState([]);
   const [variantDetails, setVariantDetails] = useState([]);
   const [offers, setOffers] = useState([]);
@@ -110,7 +122,7 @@ export default function CreateProduct() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
-  const [folder , setFolder] = useState()
+  const [folder, setFolder] = useState();
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -128,13 +140,8 @@ export default function CreateProduct() {
     axios.get(`${baseURL}/stores/${storeId}/categories`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => {
         const raw = res.data;
-        let list = [];
-        if (Array.isArray(raw)) list = raw;
-        else if (Array.isArray(raw?.data)) list = raw.data;
-        else if (Array.isArray(raw?.categories)) list = raw.categories;
-        else if (Array.isArray(raw?.items)) list = raw.items;
-        else if (Array.isArray(raw?.result)) list = raw.result;
-        setCategories(list);
+        const tree = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
+        setCategories(flattenTree(tree));
       })
       .catch(err => {
         setCategoriesError(err.response?.data?.message || err.message || t('form.category_error_fetch'));
@@ -179,11 +186,13 @@ export default function CreateProduct() {
   const updateVariantValue = (attrId, variantId, value, id = null) => {
     setAttributes(prev => prev.map(a => {
       if (a.id !== attrId) return a;
-      return { ...a, variants: a.variants.map(v => {
-        if (v.id !== variantId) return v;
-        if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: id };
-        return { ...v, value, name: value };
-      })};
+      return {
+        ...a, variants: a.variants.map(v => {
+          if (v.id !== variantId) return v;
+          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: id };
+          return { ...v, value, name: value };
+        })
+      };
     }));
     setVariantDetails([]);
   };
@@ -221,7 +230,7 @@ export default function CreateProduct() {
   const updateOffer = (id, field, val) => setOffers(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
 
   /* ── Images ── */
-  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('productVariant') ; setIsOpenModelImage(true); };
+  const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('productVariant'); setIsOpenModelImage(true); };
   const handleImageSelect = (imageData) => {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
@@ -253,8 +262,11 @@ export default function CreateProduct() {
     try {
       const token = getAccessToken();
       const storeId = localStorage.getItem('storeId');
-      const data = { name: formData.name, price: Number(formData.price), desc: formData.desc, storeId, categoryId: formData.categoryId || undefined, attributes, variantDetails, offers, images };
-      
+      const data = {
+        name: formData.name, price: Number(formData.price), desc: formData.desc,
+        storeId, categoryId: formData.categoryId || undefined,
+        attributes, variantDetails, offers, images
+      };
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
       showNotification('success', t('create.success'));
       setTimeout(() => navigate('/dashboard/products'), 500);
@@ -266,7 +278,8 @@ export default function CreateProduct() {
     }
   };
 
-  const marketingEmojis = ["🔥","⭐","✨","⚡","💎","🚀","🎯","🛍️","💥","👑","🌟","🎁","💖","🏆"];
+  const marketingEmojis = ["🔥", "⭐", "✨", "⚡", "💎", "🚀", "🎯", "🛍️", "💥", "👑", "🌟", "🎁", "💖", "🏆"];
+  const selectedCategory = categories.find(c => c.id === formData.categoryId);
 
   return (
     <div className="max-w-5xl mx-auto pb-20 px-4 space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -310,7 +323,6 @@ export default function CreateProduct() {
       {/* ── SECTION 1: Basic Info ── */}
       <Section icon={Info} title={t('form.basic_info')} color="indigo">
 
-        {/* Emoji bar + name */}
         <Field label={t('form.product_name')} required error={errors.name}>
           <div className="flex gap-1.5 overflow-x-auto pb-2 mb-2 no-scrollbar">
             {marketingEmojis.map((e, i) => (
@@ -358,20 +370,19 @@ export default function CreateProduct() {
           </Field>
         </div>
 
-        {/* Category dropdown */}
+        {/* ── Category dropdown ── */}
         <Field label={t('form.category_label')}>
           <div className="relative" data-category-dropdown>
             <button type="button" onClick={() => setCategoryDropdownOpen(p => !p)}
               className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 text-sm outline-none transition-all hover:border-indigo-400 focus:border-indigo-400">
-              {formData.categoryId ? (() => {
-                const cat = categories.find(c => c.id === formData.categoryId);
-                return cat ? (
-                  <span className="flex items-center gap-2 text-gray-800 dark:text-white font-medium">
-                    {cat.imageUrl ? <img src={cat.imageUrl} alt="" className="w-5 h-5 rounded-md object-cover" /> : <FolderTree size={14} className="text-indigo-400" />}
-                    {cat.name}
-                  </span>
-                ) : <span className="text-gray-400">{t('form.category_placeholder')}</span>;
-              })() : (
+              {selectedCategory ? (
+                <span className="flex items-center gap-2 text-gray-800 dark:text-white font-medium">
+                  {selectedCategory.imageUrl
+                    ? <img src={selectedCategory.imageUrl} alt="" className="w-5 h-5 rounded-md object-cover" />
+                    : <FolderTree size={14} className="text-indigo-400" />}
+                  {selectedCategory.name}
+                </span>
+              ) : (
                 <span className="flex items-center gap-2 text-gray-400">
                   <FolderTree size={14} />{t('form.category_placeholder')}
                 </span>
@@ -419,18 +430,25 @@ export default function CreateProduct() {
                     {categories.map(cat => (
                       <button key={cat.id} type="button"
                         onClick={() => { setFormData(p => ({ ...p, categoryId: cat.id })); setCategoryDropdownOpen(false); }}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
-                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}>
+                        className={`w-full flex items-center gap-3 py-2.5 text-sm transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-500/10
+                          ${formData.categoryId === cat.id ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-200'}`}
+                        style={{
+                          paddingRight: isRtl ? `${16 + cat.level * 16}px` : '16px',
+                          paddingLeft: !isRtl ? `${16 + cat.level * 16}px` : '16px',
+                        }}>
+                        {cat.level > 0 && (
+                          <span className="text-gray-300 dark:text-zinc-600 shrink-0 text-[10px]">└</span>
+                        )}
                         {cat.imageUrl
                           ? <img src={cat.imageUrl} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
-                          : <div className="w-7 h-7 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center shrink-0"><FolderTree size={13} className="text-gray-400" /></div>}
+                          : <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${cat.level === 0 ? 'bg-gray-100 dark:bg-zinc-800' : 'bg-indigo-50 dark:bg-indigo-500/10'}`}>
+                              <FolderTree size={13} className={cat.level === 0 ? 'text-gray-400' : 'text-indigo-400'} />
+                            </div>
+                        }
                         <div className={`flex-1 overflow-hidden ${isRtl ? 'text-right' : 'text-left'}`}>
                           <p className="font-medium truncate">{cat.name}</p>
                           <p className="text-[10px] text-gray-400 font-mono truncate">{cat.slug}</p>
                         </div>
-                        {cat.products?.length > 0 && (
-                          <span className="text-[10px] text-gray-400 shrink-0">{t('form.category_products', { count: cat.products.length })}</span>
-                        )}
                         {formData.categoryId === cat.id && <Check size={14} className="text-indigo-500 shrink-0" />}
                       </button>
                     ))}
@@ -439,23 +457,22 @@ export default function CreateProduct() {
               </div>
             )}
           </div>
-          {formData.categoryId && (() => {
-            const cat = categories.find(c => c.id === formData.categoryId);
-            return cat ? (
-              <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg w-fit">
-                <FolderTree size={12} className="text-indigo-500" />
-                <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">{cat.name}</span>
-                {cat.children?.length > 0 && <span className="text-[10px] text-indigo-400">({t('form.category_sub', { count: cat.children.length })})</span>}
-              </div>
-            ) : null;
-          })()}
+
+          {selectedCategory && (
+            <div className="flex items-center gap-2 mt-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg w-fit">
+              <FolderTree size={12} className="text-indigo-500" />
+              <span className="text-xs font-medium text-indigo-700 dark:text-indigo-300">{selectedCategory.name}</span>
+              {selectedCategory.level > 0 && (
+                <span className="text-[10px] text-indigo-400">{t('form.category_sub', { count: selectedCategory.level })}</span>
+              )}
+            </div>
+          )}
         </Field>
       </Section>
 
       {/* ── SECTION 2: Attributes ── */}
       <Section icon={Palette} title={t('attributes.section_title')} color="purple">
         {!attributes.length && <p className="text-center text-sm text-gray-400 py-4">{t('attributes.none_yet')}</p>}
-
         {attributes.map((attr) => (
           <div key={attr.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950 space-y-3">
             <div className="flex items-center gap-2">
@@ -463,14 +480,12 @@ export default function CreateProduct() {
                 {attr.type === ATTRIBUTE_TYPES.COLOR ? <Palette size={14} /> : attr.type === ATTRIBUTE_TYPES.SIZE ? <Ruler size={14} /> : <TypeIcon size={14} />}
               </div>
               <input type="text" value={attr.name} onChange={e => updateAttributeName(attr.id, e.target.value)}
-                className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
+                className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
               <button type="button" onClick={() => removeAttribute(attr.id)}
                 className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
                 <Trash2 size={14} />
               </button>
             </div>
-
             {attr.type === ATTRIBUTE_TYPES.COLOR && (
               <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg w-fit">
                 {['color', 'image'].map(mode => (
@@ -481,7 +496,6 @@ export default function CreateProduct() {
                 ))}
               </div>
             )}
-
             <div className="space-y-2">
               {attr.variants.map(variant => (
                 <div key={variant.id} className="flex items-center gap-2">
@@ -493,8 +507,7 @@ export default function CreateProduct() {
                       <input type="text" value={variant.value}
                         onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
                         placeholder="#FF0000"
-                        className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                          ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-purple-400'}`} />
+                        className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-purple-400'}`} />
                     </>
                   ) : attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? (
                     variant.value ? (
@@ -514,8 +527,7 @@ export default function CreateProduct() {
                     <input type="text" value={variant.name}
                       onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
                       placeholder={attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_placeholder') : t('attributes.value_placeholder')}
-                      className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                        ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
+                      className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
                   )}
                   <button type="button" onClick={() => removeVariant(attr.id, variant.id)}
                     className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
@@ -523,24 +535,21 @@ export default function CreateProduct() {
                   </button>
                 </div>
               ))}
-
               {errors[`attr_empty_${attr.id}`] && (
                 <p className="text-xs text-rose-500 font-medium flex items-center gap-1">
                   <AlertCircle size={11} />{t('attributes.one_variant_required')}
                 </p>
               )}
-
               <button type="button" onClick={() => addVariant(attr.id)}
                 className="w-full py-2 border border-dashed border-gray-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-gray-400 hover:text-indigo-500 hover:border-indigo-400 transition-all">
                 <Plus size={12} className="inline mr-1" />
                 {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? t('attributes.add_color_value') :
                   attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? t('attributes.add_image_value') :
-                  attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
+                    attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
               </button>
             </div>
           </div>
         ))}
-
         <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
           <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.COLOR, t('attributes.color_label'))}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-all">
@@ -571,7 +580,6 @@ export default function CreateProduct() {
               <Rocket size={13} />{t('variants.generate_now')}
             </button>
           </div>
-
           {variantDetails.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {['price', 'stock'].map(field => (
@@ -591,7 +599,6 @@ export default function CreateProduct() {
               ))}
             </div>
           )}
-
           {!variantDetails.length ? (
             <p className="text-center text-sm text-gray-400 py-4">{t('variants.none_yet')}</p>
           ) : (
@@ -600,7 +607,6 @@ export default function CreateProduct() {
                 <span className="text-xs text-gray-400 font-medium">{t('variants.total', { count: variantDetails.length })}</span>
                 <button type="button" onClick={() => setVariantDetails([])} className="text-xs text-rose-500 hover:text-rose-600 font-semibold">{t('variants.clear_all')}</button>
               </div>
-
               {variantDetails.map((detail, idx) => (
                 <div key={detail.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950">
                   <div className="flex items-center justify-between mb-3">
@@ -696,7 +702,7 @@ export default function CreateProduct() {
       {/* ── SECTION 5: Images ── */}
       <Section icon={ImageIcon} title={t('images.section_title')} color="blue">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
-          <button type="button" onClick={() => {setFolder('products') ; setIsOpenModelImage(true)}}
+          <button type="button" onClick={() => { setFolder('products'); setIsOpenModelImage(true); }}
             className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
             <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
             <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
