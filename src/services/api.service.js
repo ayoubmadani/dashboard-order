@@ -42,16 +42,15 @@ class ApiService {
 
   // حفظ التوكن في الكوكيز
   setToken(token) {
-    Cookies.set('token', token, { 
-      expires: 7, 
-      secure: true, 
-      sameSite: 'strict' 
+    Cookies.set('access_token', token, {
+      expires: 7,
+      secure: true,
+      sameSite: 'strict',
     });
   }
 
-  // حذف التوكن
   logout() {
-    Cookies.remove('token');
+    Cookies.remove('access_token');
     // إذا كنت تستخدم React Router، يمكنك عمل redirect هنا
   }
 

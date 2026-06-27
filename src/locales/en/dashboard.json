@@ -1,7 +1,9 @@
 {
   "welcome": "Welcome back 👋",
-  "summary": "Here's what's happening in your store today.",
-  "store_label": "Your Store",
+  "summary_one": "You have one active store.",
+  "summary_other": "You have {{count}} stores — consolidated stats for all of them.",
+  "all_stores": "All Stores",
+  "stores_count": "{{count}} store",
 
   "today": "Today",
   "this_week": "This Week",
@@ -22,9 +24,21 @@
     "returned_loss_sub": "{{count}} returned orders"
   },
 
+  "chart_title": "Last 7 Days Activity",
+  "chart_orders": "Orders",
+  "chart_revenue": "Revenue",
+
+  "store_breakdown": "Per-Store Performance",
+  "store_revenue": "Revenue",
+  "store_orders": "Orders",
+  "store_delivered": "Delivered",
+  "store_returned": "Returned",
+  "no_stores": "No stores found",
+
   "recent_orders": "Recent Orders",
   "view_all": "View All",
   "col_order": "Order",
+  "col_store": "Store",
   "col_customer": "Customer",
   "col_wilaya": "Wilaya",
   "col_status": "Status",
@@ -47,15 +61,11 @@
   "action_analytics": "Analytics",
   "action_settings": "Settings",
   "action_orders": "Orders",
+  "action_stores": "Stores",
 
   "inventory_title": "Inventory Alert",
   "inventory_desc": "Make sure to update your product quantities regularly to avoid stopping sales.",
   "inventory_btn": "Manage Products",
-
-  "activity_title": "Recent Activity",
-  "activity_new_order": "New order from {{name}}",
-  "activity_delivered": "Order #{{id}} delivered",
-  "activity_returned": "Returned from {{name}}",
 
   "loading": "Loading...",
   "error": "Failed to fetch data",

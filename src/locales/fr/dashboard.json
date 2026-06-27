@@ -1,7 +1,9 @@
 {
   "welcome": "Bon retour 👋",
-  "summary": "Voici ce qui se passe dans votre boutique aujourd'hui.",
-  "store_label": "Votre Boutique",
+  "summary_one": "Vous avez une boutique active.",
+  "summary_other": "Vous avez {{count}} boutiques — statistiques consolidées pour toutes.",
+  "all_stores": "Toutes les boutiques",
+  "stores_count": "{{count}} boutique",
 
   "today": "Aujourd'hui",
   "this_week": "Cette Semaine",
@@ -22,9 +24,21 @@
     "returned_loss_sub": "{{count}} commandes retournées"
   },
 
+  "chart_title": "Activité des 7 derniers jours",
+  "chart_orders": "Commandes",
+  "chart_revenue": "Chiffre d'affaires",
+
+  "store_breakdown": "Performance par boutique",
+  "store_revenue": "Chiffre d'affaires",
+  "store_orders": "Commandes",
+  "store_delivered": "Livré",
+  "store_returned": "Retourné",
+  "no_stores": "Aucune boutique trouvée",
+
   "recent_orders": "Dernières Commandes",
   "view_all": "Voir Tout",
   "col_order": "Commande",
+  "col_store": "Boutique",
   "col_customer": "Client",
   "col_wilaya": "Wilaya",
   "col_status": "Statut",
@@ -47,15 +61,11 @@
   "action_analytics": "Statistiques",
   "action_settings": "Paramètres",
   "action_orders": "Commandes",
+  "action_stores": "Boutiques",
 
   "inventory_title": "Alerte de Stock",
   "inventory_desc": "Assurez-vous de mettre à jour régulièrement vos quantités pour éviter l'arrêt des ventes.",
   "inventory_btn": "Gérer les Produits",
-
-  "activity_title": "Activité Récente",
-  "activity_new_order": "Nouvelle commande de {{name}}",
-  "activity_delivered": "Commande #{{id}} livrée",
-  "activity_returned": "Retour de {{name}}",
 
   "loading": "Chargement...",
   "error": "Échec du chargement des données",

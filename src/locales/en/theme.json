@@ -4,6 +4,7 @@
     "title": "My Themes",
     "default_name": "Default",
     "activate_btn": "Activate",
+    "activated": "Active",
     "empty": "No themes installed"
   },
   "types": {
@@ -20,7 +21,8 @@
     "preview_btn": "Preview",
     "install_btn": "Install",
     "plan_included_label": "Included in your plan",
-    "installed_label": "Installed"
+    "installed_label": "Installed",
+    "page_info": "Page {{current}} of {{total}}"
   },
   "alerts": {
     "install_success": "Template installed successfully!",

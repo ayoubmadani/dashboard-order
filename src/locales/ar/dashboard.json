@@ -24,6 +24,10 @@
     "returned_loss_sub": "{{count}} طلب مرجع"
   },
 
+  "chart_title": "نشاط آخر 7 أيام",
+  "chart_orders": "الطلبات",
+  "chart_revenue": "الإيراد",
+
   "store_breakdown": "أداء كل متجر",
   "store_revenue": "الإيراد",
   "store_orders": "الطلبات",

@@ -4,6 +4,7 @@
     "title": "Mes thèmes",
     "default_name": "Par défaut",
     "activate_btn": "Activer",
+    "activated": "Actif",
     "empty": "Aucun thème installé"
   },
   "types": {
@@ -20,7 +21,8 @@
     "preview_btn": "Aperçu",
     "install_btn": "Installer",
     "plan_included_label": "Inclus dans votre forfait",
-    "installed_label": "Installé"
+    "installed_label": "Installé",
+    "page_info": "Page {{current}} sur {{total}}"
   },
   "alerts": {
     "install_success": "Modèle installé avec succès !",

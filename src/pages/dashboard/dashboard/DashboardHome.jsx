@@ -98,7 +98,7 @@ function StatCard({ icon: Icon, label, value, sub, color, loading, onClick }) {
 }
 
 function StatusBadge({ status }) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('translation', { keyPrefix: 'dashboard' });
   const meta = STATUS_META[status] || { bg: 'bg-gray-50 dark:bg-zinc-800', text: 'text-gray-500', border: 'border-gray-200 dark:border-zinc-700', icon: Package };
   const Icon = meta.icon;
   return (
@@ -110,7 +110,7 @@ function StatusBadge({ status }) {
 }
 
 function MiniStatusBar({ status, count, total }) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('translation', { keyPrefix: 'dashboard' });
   const meta = STATUS_META[status] || { color: '#94a3b8' };
   const pct  = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
@@ -140,7 +140,7 @@ function QuickAction({ icon: Icon, label, color, onClick }) {
 
 // Per-store row in the breakdown table
 function StoreBreakdownRow({ store, orders, statusCounts, color }) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('translation', { keyPrefix: 'dashboard' });
   const delivered  = orders.filter(o => o.status === 'delivered');
   const returned   = orders.filter(o => o.status === 'returned');
   const gross      = delivered.reduce((s, o) => s + Number(o.totalPrice || 0), 0);
@@ -405,15 +405,15 @@ export default function Dashboard() {
         <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">نشاط آخر 7 أيام</h2>
+              <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('chart_title')}</h2>
               <p className="text-xs text-gray-400 dark:text-zinc-600 mt-0.5">{t('all_stores')}</p>
             </div>
             <div className="flex items-center gap-4 text-xs font-semibold">
               <span className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block" />الطلبات
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block" />{t('chart_orders')}
               </span>
               <span className="flex items-center gap-1.5 text-gray-500 dark:text-zinc-400">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />الإيراد
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />{t('chart_revenue')}
               </span>
             </div>
           </div>
@@ -434,8 +434,8 @@ export default function Dashboard() {
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} />
                 <Tooltip contentStyle={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, fontSize: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }} labelStyle={{ fontWeight: 700, marginBottom: 4 }} />
-                <Area type="monotone" dataKey="orders"  name="الطلبات" stroke="#6366f1" strokeWidth={2} fill="url(#gOrders)"  dot={false} activeDot={{ r: 4 }} />
-                <Area type="monotone" dataKey="revenue" name="الإيراد" stroke="#10b981" strokeWidth={2} fill="url(#gRevenue)" dot={false} activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="orders"  name={t('chart_orders')}  stroke="#6366f1" strokeWidth={2} fill="url(#gOrders)"  dot={false} activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="revenue" name={t('chart_revenue')} stroke="#10b981" strokeWidth={2} fill="url(#gRevenue)" dot={false} activeDot={{ r: 4 }} />
               </AreaChart>
             </ResponsiveContainer>
           )}

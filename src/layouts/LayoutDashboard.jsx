@@ -58,27 +58,19 @@ export default function LayoutDashboard() {
     }, []);
 
     useEffect(() => {
+        if (!getAccessToken() || sessionStorage.getItem('sub_init')) return;
         const initSub = async () => {
             try {
                 const token = getAccessToken();
-
-                // الوسيط الثاني: الـ Body (هنا فارغ {})
-                // الوسيط الثالث: الـ Config (يحتوي على headers)
                 await axios.post(`${baseURL}/user/init-sub`, {}, {
-                    headers: {
-                        "Authorization": `Bearer ${token}` // يفضل كتابة Bearer بحرف كبير B
-                    }
+                    headers: { Authorization: `Bearer ${token}` },
                 });
-
-                console.log("Subscription initialized successfully");
+                sessionStorage.setItem('sub_init', '1');
             } catch (error) {
-                console.error("Error initializing sub:", error.response?.data || error.message);
+                console.error('Error initializing sub:', error.response?.data || error.message);
             }
-        }
-
-        if (getAccessToken()) { // تأكد من وجود توكن قبل الطلب
-            initSub();
-        }
+        };
+        initSub();
     }, []);
 
     useEffect(() => {
@@ -173,7 +165,7 @@ export default function LayoutDashboard() {
     };
 
     const StoreSelector = ({ isMobile }) => (
-        <div className={`relative ${isMobile ? 'px-3 py-2 border-b border-gray-100 dark:border-white/5' : 'px-3 py-2 border-b border-gray-200 dark:border-white/5'}`} ref={isMobile ? dropdownRef : null}>
+        <div className={`relative ${isMobile ? 'px-3 py-2 border-b border-gray-100 dark:border-white/5' : 'px-3 py-2 border-b border-gray-200 dark:border-white/5'}`} ref={dropdownRef}>
             <button
                 onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
                 className="w-full flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-emerald-500/30 transition-all"

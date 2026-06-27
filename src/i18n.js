@@ -309,7 +309,6 @@ i18n
   .init({
     resources,
     fallbackLng: 'ar',
-    lng:"ar",
     detection: {
       order: ['localStorage', 'cookie', 'htmlTag', 'path', 'subdomain'],
       caches: ['localStorage', 'cookie'],

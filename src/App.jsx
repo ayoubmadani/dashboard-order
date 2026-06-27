@@ -43,21 +43,11 @@ import Pixels from './pages/dashboard/pixels/pixels';
 import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
-import OrderShow from './pages/dashboard/orders/OrderEditPage';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
 import Messages from './pages/dashboard/messages/messages';
 
 const App = () => {
   const { i18n } = useTranslation();
-
-function MyComponent() {
-  useEffect(() => {
-    // تغيير العنوان عند تحميل المكون
-    document.title = "صفحتي الجديدة";
-  }, []);
-
-  return <h1>مرحباً بك في موقعي</h1>;
-}
 
   // 1. منطق إدارة الوضع الليلي
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
