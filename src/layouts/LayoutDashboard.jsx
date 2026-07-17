@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, ChevronDown,
-    Search, Bell, Store, Box, Layers, ShoppingCart, Layout, Truck,
+    Search, Bell, Store, Box, Layers, ShoppingCart, Truck,
     LogOut, Sun, Moon, Sparkles, User,
     Plus, Palette, Wallet, Code2
 } from 'lucide-react';
@@ -119,8 +119,7 @@ export default function LayoutDashboard() {
         { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: '#6366f1' },
         { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
         { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: '#f43f5e' },
-        { name: t('nav.landing', 'الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: '#ec4899' },
-        { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/editor', icon: LayoutTemplate, color: '#14b8a6' },
+        { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate, color: '#14b8a6' },
         { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: '#f97316' },
         { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, color: '#06b6d4' },
         { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: '#22c55e' },

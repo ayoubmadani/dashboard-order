@@ -223,7 +223,7 @@ export default function Canvas({ blocks, selectedId, onSelect, onDelete, onDelet
         className="max-w-5xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden min-h-[400px]"
         style={{
           backgroundColor: settings?.backgroundColor || undefined,
-          maxWidth: settings?.maxWidth ? `${settings.maxWidth}px` : undefined,
+          maxWidth: `${settings?.maxWidth || 720}px`,
           padding: pagePadding || undefined,
         }}
       >

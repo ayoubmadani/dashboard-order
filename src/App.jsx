@@ -19,7 +19,6 @@ import Products from './pages/dashboard/products/Products';
 import Orders from './pages/dashboard/orders/Orders';
 import Settings from './pages/dashboard/settings/Settings';
 import Analytics from './pages/dashboard/analytics/Analytics';
-import LandingPages from './pages/dashboard/landing-pages/LandingPages';
 import Stores from './pages/dashboard/stores/Stores';
 import CreateStore from './pages/dashboard/stores/Create'; // <-- استيراد صفحة الإنشاء الجديدة
 import Shipping from './pages/dashboard/shipping/Shipping';
@@ -31,7 +30,6 @@ import ProtectedRouteDashboard from './components/ProtectedRouteDashboard';
 import ProtectedRouteAuth from './components/ProtectedRouteAuth';
 import AuthCallback from './pages/auth/success/AuthCallback';
 import CreateCategory from './pages/dashboard/categories/CreateCategory';
-import CreateLandingPage from './pages/dashboard/landing-pages/CreateLandingPage';
 import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
 import ProductShow from './pages/dashboard/products/show';
@@ -40,7 +38,6 @@ import CreateFerstStore from './pages/dashboard/stores/Create-First';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Plan from './pages/site/plan';
 import Pixels from './pages/dashboard/pixels/pixels';
-import UpdateLandingPage from './pages/dashboard/landing-pages/updateLandingPage';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
@@ -129,10 +126,8 @@ const App = () => {
             <Route path='Wallet' element={<Wallet />} />
 
 
-            <Route path="landing-pages"  >
-              <Route index element={<LandingPages />} />
-              <Route path='create' element={<CreateLandingPage />} />
-              <Route path='edit/:id' element={<UpdateLandingPage />} />
+            <Route path="landing-pages">
+              <Route index element={<PagesList />} />
             </Route>
 
 
@@ -142,10 +137,6 @@ const App = () => {
             </Route>
 
             <Route path="messages" element={<Messages />} />
-
-            <Route path="editor">
-              <Route index element={<PagesList />} />
-            </Route>
 
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />

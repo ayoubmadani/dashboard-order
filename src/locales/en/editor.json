@@ -21,7 +21,18 @@
     "productLabel": "Product (optional)",
     "domainLabel": "Domain (optional)",
     "domainPlaceholder": "Select a domain",
-    "noDomains": "No domains yet — add one in Settings"
+    "noDomains": "No domains yet — add one in Settings",
+    "active": "Active",
+    "inactive": "Inactive",
+    "views": "Views",
+    "orders": "Orders",
+    "deactivate": "Deactivate",
+    "activate": "Activate",
+    "copyLink": "Copy link",
+    "duplicate": "Duplicate page",
+    "toggleError": "Failed to change page status",
+    "duplicateError": "Failed to duplicate page",
+    "platformError": "Failed to update platform"
   },
   "topbar": {
     "backToList": "Back to pages",
@@ -137,6 +148,7 @@
     "bold": "Bold",
     "italic": "Italic",
     "underline": "Underline",
+    "transparent": "Transparent",
     "bringForward": "Bring forward (higher priority)",
     "sendBackward": "Send backward (lower priority)",
     "moveUp": "Move up",

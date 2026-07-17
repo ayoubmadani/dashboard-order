@@ -5,8 +5,8 @@ import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
   LayoutTemplate, Plus, Search, X, Trash2, Pencil,
-  ExternalLink, Loader2, AlertCircle, RefreshCw, Sparkles,
-  Package, ChevronDown, Check,
+  Loader2, AlertCircle, RefreshCw, Sparkles,
+  Package, ChevronDown, Check, Eye, Share2, Power, Copy, CopyPlus,
 } from 'lucide-react';
 import { baseURL } from '../../constents/const.';
 import { getAccessToken } from '../../services/access-token';
@@ -119,6 +119,10 @@ export default function PagesList() {
   const [selectedDomain, setSelectedDomain] = useState('');
   const [slug, setSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const [duplicatingId, setDuplicatingId] = useState(null);
+  const [updatingPlatformId, setUpdatingPlatformId] = useState(null);
 
   const storeId = localStorage.getItem('storeId');
   const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
@@ -196,6 +200,52 @@ export default function PagesList() {
     }
   };
 
+  const handleToggleStatus = async (id) => {
+    setTogglingId(id);
+    try {
+      const res = await axios.post(`${baseURL}/builder-pages/${id}/toggle-status`, {}, { headers: authHeaders() });
+      setPages((prev) => prev.map((p) => (p.id === id ? { ...p, isActive: res.data.isActive } : p)));
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t('editor.list.toggleError'));
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const handleCopyLink = (page) => {
+    if (!page.domain) return;
+    navigator.clipboard.writeText(`https://${page.domain}`);
+    setCopiedId(page.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDuplicate = async (id) => {
+    setDuplicatingId(id);
+    try {
+      await axios.post(`${baseURL}/builder-pages/${id}/duplicate`, {}, { headers: authHeaders() });
+      fetchPages();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t('editor.list.duplicateError'));
+    } finally {
+      setDuplicatingId(null);
+    }
+  };
+
+  const handlePlatformChange = (id, platform) => {
+    setPages((prev) => prev.map((p) => (p.id === id ? { ...p, platform } : p)));
+  };
+
+  const handleUpdatePlatform = async (id, platform) => {
+    setUpdatingPlatformId(id);
+    try {
+      await axios.patch(`${baseURL}/builder-pages/${id}/platform`, { platform }, { headers: authHeaders() });
+    } catch (err) {
+      toast.error(err?.response?.data?.message || t('editor.list.platformError'));
+    } finally {
+      setUpdatingPlatformId(null);
+    }
+  };
+
   const filteredPages = pages.filter((p) => p.name?.toLowerCase().includes(searchQuery.toLowerCase()));
 
   if (loading) return <Loading />;
@@ -261,6 +311,23 @@ export default function PagesList() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-6 sm:mb-8 text-sm">
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-gray-700 dark:text-zinc-300">{pages.filter((p) => p.isActive).length} {t('editor.list.active')}</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span className="text-gray-700 dark:text-zinc-300">{pages.filter((p) => !p.isActive).length} {t('editor.list.inactive')}</span>
+          </div>
+          <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-zinc-900 rounded-full border border-gray-200 dark:border-zinc-800">
+            <Eye size={14} className="text-rose-500" />
+            <span className="text-gray-700 dark:text-zinc-300">
+              {pages.reduce((acc, p) => acc + (p.showsCount || 0), 0).toLocaleString()} {t('editor.list.views')}
+            </span>
+          </div>
+        </div>
+
         {error && (
           <div className="flex items-center gap-2 p-4 mb-6 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-sm">
             <AlertCircle size={16} />
@@ -287,23 +354,97 @@ export default function PagesList() {
                 key={page.id}
                 className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 hover:shadow-xl transition-all duration-300 p-5"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="min-w-0">
-                    <h3 className="font-bold text-gray-900 dark:text-white text-base truncate">{page.name}</h3>
-                    <span
-                      className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
-                        page.publishedUrl
-                          ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                          : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400'
-                      }`}
-                    >
-                      {page.publishedUrl ? t('editor.list.published') : t('editor.list.draft')}
-                    </span>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-gray-900 dark:text-white text-base truncate">{page.name}</h3>
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${page.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-700'}`} />
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          page.publishedUrl
+                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400'
+                        }`}
+                      >
+                        {page.publishedUrl ? t('editor.list.published') : t('editor.list.draft')}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
+                        {page.platform || 'md store'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  <div className="bg-gray-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
+                    <p className="text-[10px] text-gray-500 dark:text-zinc-500 mb-1">{t('editor.list.views')}</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{(page.showsCount || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
+                    <p className="text-[10px] text-gray-500 dark:text-zinc-500 mb-1">{t('editor.list.orders')}</p>
+                    <p className="text-sm font-bold text-emerald-600">{(page.ordersCount || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="bg-emerald-50 dark:bg-emerald-500/5 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-500/10 text-center">
+                    <p className="text-[10px] text-emerald-600/70 mb-1">CR</p>
+                    <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                      {(page.showsCount || 0) > 0 ? (((page.ordersCount || 0) / page.showsCount) * 100).toFixed(1) : '0'}%
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center mb-4 bg-gray-50 dark:bg-zinc-800/80 rounded-xl border border-gray-200 dark:border-zinc-700">
+                  <Share2 size={14} className="ms-3 text-gray-400 shrink-0" />
+                  <input
+                    type="text"
+                    value={page.platform || ''}
+                    onChange={(e) => handlePlatformChange(page.id, e.target.value)}
+                    className="w-full px-3 py-2.5 bg-transparent text-xs outline-none dark:text-zinc-200"
+                  />
+                  <button
+                    onClick={() => handleUpdatePlatform(page.id, page.platform)}
+                    className="me-1 p-1.5 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
+                  >
+                    {updatingPlatformId === page.id ? <Loader2 size={14} className="animate-spin" /> : <Check size={16} />}
+                  </button>
+                </div>
+
+                {page.domain && (
+                  <div className="flex items-center gap-2 mb-4 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-gray-100 dark:border-zinc-800">
+                    <a
+                      href={`https://${page.domain}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 truncate font-mono text-[10px] text-blue-600 dark:text-blue-400"
+                    >
+                      {page.domain}
+                    </a>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between border-t border-gray-100 dark:border-zinc-800 pt-4">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleToggleStatus(page.id)}
+                      disabled={togglingId === page.id}
+                      className={`p-2 rounded-xl transition-all disabled:opacity-50 ${
+                        page.isActive
+                          ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-100'
+                          : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 hover:bg-gray-200'
+                      }`}
+                      title={page.isActive ? t('editor.list.deactivate') : t('editor.list.activate')}
+                    >
+                      {togglingId === page.id ? <Loader2 size={16} className="animate-spin" /> : <Power size={16} />}
+                    </button>
+                    <button
+                      onClick={() => handleCopyLink(page)}
+                      disabled={!page.domain}
+                      className="p-2 rounded-xl bg-gray-50 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all disabled:opacity-40"
+                      title={t('editor.list.copyLink')}
+                    >
+                      {copiedId === page.id ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
+                    </button>
                     <button
                       onClick={() => navigate(`/editor/${page.id}`)}
                       className="p-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all"
@@ -311,16 +452,14 @@ export default function PagesList() {
                     >
                       <Pencil size={16} />
                     </button>
-                    {page.publishedUrl && (
-                      <a
-                        href={page.publishedUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all"
-                      >
-                        <ExternalLink size={16} />
-                      </a>
-                    )}
+                    <button
+                      onClick={() => handleDuplicate(page.id)}
+                      disabled={duplicatingId === page.id}
+                      className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 hover:bg-amber-100 transition-all disabled:opacity-50"
+                      title={t('editor.list.duplicate')}
+                    >
+                      {duplicatingId === page.id ? <Loader2 size={16} className="animate-spin" /> : <CopyPlus size={16} />}
+                    </button>
                   </div>
 
                   <button

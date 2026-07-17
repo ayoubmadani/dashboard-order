@@ -21,7 +21,18 @@
     "productLabel": "Produit (optionnel)",
     "domainLabel": "Domaine (optionnel)",
     "domainPlaceholder": "Choisir un domaine",
-    "noDomains": "Aucun domaine — ajoutez-en un dans les paramètres"
+    "noDomains": "Aucun domaine — ajoutez-en un dans les paramètres",
+    "active": "Active",
+    "inactive": "Inactive",
+    "views": "Vues",
+    "orders": "Commandes",
+    "deactivate": "Désactiver",
+    "activate": "Activer",
+    "copyLink": "Copier le lien",
+    "duplicate": "Dupliquer la page",
+    "toggleError": "Échec du changement de statut de la page",
+    "duplicateError": "Échec de la duplication de la page",
+    "platformError": "Échec de la mise à jour de la plateforme"
   },
   "topbar": {
     "backToList": "Retour aux pages",
@@ -137,6 +148,7 @@
     "bold": "Gras",
     "italic": "Italique",
     "underline": "Souligné",
+    "transparent": "Transparent",
     "bringForward": "Avancer (priorité plus haute)",
     "sendBackward": "Reculer (priorité plus basse)",
     "moveUp": "Monter",

@@ -45,6 +45,12 @@ const IMAGE_ELEMENT_FIELDS = [
 
 const ELEMENT_ICONS = { button: MousePointerClick, image: ImageIcon, text: Type };
 
+// Classic checkerboard pattern — the only way to visually distinguish
+// "transparent" from "opaque white" on a native <input type="color">, which
+// has no way to represent alpha/transparency in its own swatch at all.
+const CHECKERED_BG =
+  'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
+
 function ProductField({ value, onChange }) {
   const { t } = useTranslation();
   const [products, setProducts] = useState([]);
@@ -192,12 +198,26 @@ function Field({ field, value, onChange }) {
         />
       )}
       {field.type === 'color' && (
-        <input
-          type="color"
-          value={value ?? '#000000'}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-9 h-9 rounded-lg border border-gray-200 dark:border-zinc-700 bg-transparent cursor-pointer"
-        />
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            value={value && value !== 'transparent' ? value : '#000000'}
+            onChange={(e) => onChange(e.target.value)}
+            style={value === 'transparent' ? { backgroundImage: CHECKERED_BG, backgroundSize: '8px 8px', backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px' } : undefined}
+            className="w-9 h-9 rounded-lg border border-gray-200 dark:border-zinc-700 bg-transparent cursor-pointer"
+          />
+          <button
+            type="button"
+            onClick={() => onChange(value === 'transparent' ? '#ffffff' : 'transparent')}
+            className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold transition-all ${
+              value === 'transparent'
+                ? 'bg-emerald-500 border-emerald-500 text-white'
+                : 'bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:border-emerald-500/40'
+            }`}
+          >
+            {t('editor.fields.transparent')}
+          </button>
+        </div>
       )}
       {field.type === 'select' && (
         <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className={commonClass}>

@@ -10,7 +10,7 @@ export default function Topbar({ name, dirty, saving, publishing, publishedUrl, 
     <header className="h-14 shrink-0 flex items-center justify-between gap-4 px-4 border-b border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
       <div className="flex items-center gap-3 min-w-0">
         <Link
-          to="/dashboard/editor"
+          to="/dashboard/landing-pages"
           className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
           title={t('editor.topbar.backToList')}
         >

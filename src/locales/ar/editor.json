@@ -21,7 +21,18 @@
     "productLabel": "المنتج (اختياري)",
     "domainLabel": "الدومين (اختياري)",
     "domainPlaceholder": "اختر دومين",
-    "noDomains": "لا توجد دومينات بعد — أضف واحدًا من الإعدادات"
+    "noDomains": "لا توجد دومينات بعد — أضف واحدًا من الإعدادات",
+    "active": "نشطة",
+    "inactive": "معطلة",
+    "views": "مشاهدات",
+    "orders": "طلبات",
+    "deactivate": "تعطيل",
+    "activate": "تفعيل",
+    "copyLink": "نسخ الرابط",
+    "duplicate": "نسخ الصفحة",
+    "toggleError": "تعذر تغيير حالة الصفحة",
+    "duplicateError": "تعذر نسخ الصفحة",
+    "platformError": "تعذر تحديث المنصة"
   },
   "topbar": {
     "backToList": "العودة للصفحات",
@@ -137,6 +148,7 @@
     "bold": "عريض",
     "italic": "مائل",
     "underline": "تسطير",
+    "transparent": "شفاف",
     "bringForward": "زيادة الأولوية (إلى الأمام)",
     "sendBackward": "تقليل الأولوية (إلى الخلف)",
     "moveUp": "نقل لأعلى",
