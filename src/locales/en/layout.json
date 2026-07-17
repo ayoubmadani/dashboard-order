@@ -15,7 +15,8 @@
     "pixels": "pixels",
     "current_store": "Current Store",
     "domain": "domain",
-    "messages" : "messages"
+    "messages" : "messages",
+    "editor" : "Page Editor"
   },
   "store_selector": {
     "current_store": "Current Store",

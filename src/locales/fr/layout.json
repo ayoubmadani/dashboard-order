@@ -15,7 +15,8 @@
     "pixels": "pixels",
     "current_store": "Boutique actuelle",
     "domain": "domaine",
-    "messages" : "messages"
+    "messages" : "messages",
+    "editor" : "Éditeur de pages"
   },
   "store_selector": {
     "current_store": "Boutique actuelle",

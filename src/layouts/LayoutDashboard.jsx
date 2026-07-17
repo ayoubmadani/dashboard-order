@@ -14,6 +14,7 @@ import { baseURL } from '../constents/const.';
 import { Globe } from 'lucide-react';
 import { MessageCircle } from 'lucide-react';
 import { MessageSquareText } from 'lucide-react';
+import { LayoutTemplate } from 'lucide-react';
 
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
@@ -119,6 +120,7 @@ export default function LayoutDashboard() {
         { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
         { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, color: '#f43f5e' },
         { name: t('nav.landing', 'الهبوط'), href: '/dashboard/landing-pages', icon: Layout, color: '#ec4899' },
+        { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/editor', icon: LayoutTemplate, color: '#14b8a6' },
         { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, color: '#f97316' },
         { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, color: '#06b6d4' },
         { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet, color: '#22c55e' },

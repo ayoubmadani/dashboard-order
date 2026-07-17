@@ -8,7 +8,7 @@ import {
   Package, AlertTriangle, ChevronDown,
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
-  Send, CheckSquare, Square, MinusSquare,
+  Send, CheckSquare, Square, MinusSquare, ShieldAlert,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -671,15 +671,19 @@ export default function Orders() {
         ) : orders.map((cart, i) => {
           const statusStyle = STATUS_STYLES[cart.status] || STATUS_STYLES.pending;
           const isSelected = selectedIds.has(cart.id);
+          const isSuspicious = !cart.customerId;
 
           return (
             <div
               key={cart.id}
               onDoubleClick={() => openModal(cart)}
-              className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-sm transition-all cursor-default ${isSelected
-                ? 'border-cyan-400 dark:border-cyan-500 shadow-sm shadow-cyan-500/10'
-                : 'border-gray-100 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/30'
-                }`}
+              className={`${isRtl ? 'pl-7' : 'pr-7'} group relative bg-white dark:bg-zinc-900 rounded-2xl border p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-sm transition-all cursor-default ${
+                isSelected
+                  ? 'border-cyan-400 dark:border-cyan-500 shadow-sm shadow-cyan-500/10'
+                  : isSuspicious
+                  ? 'border-amber-300 dark:border-amber-500/40 bg-amber-50/30 dark:bg-amber-500/5'
+                  : 'border-gray-100 dark:border-zinc-800 hover:border-indigo-200 dark:hover:border-indigo-500/30'
+              }`}
             >
               {/* Checkbox */}
               {cart.status === 'confirmed' && (
@@ -693,10 +697,18 @@ export default function Orders() {
 
               {/* Customer Info */}
               <div className="flex flex-col w-full md:w-1/4 gap-0.5">
-                <span className="font-bold text-gray-900 dark:text-white text-sm">
-                  {truncate(`${cart.customerName || '—'}`)}
-                  <span className="text-[10px] text-gray-400 font-normal ml-2">#{(currentPage - 1) * PAGE_SIZE + i + 1}</span>
-                </span>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-gray-900 dark:text-white text-sm">
+                    {truncate(`${cart.customerName || '—'}`)}
+                    <span className="text-[10px] text-gray-400 font-normal ml-2">#{(currentPage - 1) * PAGE_SIZE + i + 1}</span>
+                  </span>
+                  {isSuspicious && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[10px] font-bold border border-amber-200 dark:border-amber-500/30">
+                      <ShieldAlert size={10} />
+                      {t('list.suspicious') || 'مشتبه'}
+                    </span>
+                  )}
+                </div>
                 <span role="button" onClick={e => { e.stopPropagation(); setQuery(cart.customerPhone); }} className="text-sm text-indigo-600 dark:text-indigo-400 font-medium cursor-pointer hover:underline">
                   {cart.customerPhone}
                 </span>

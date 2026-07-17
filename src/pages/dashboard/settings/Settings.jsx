@@ -460,7 +460,10 @@ const Settings = () => {
   const handleSubscribe = async (planId, interval = 'month') => {
     setSubscribing(planId);
     try {
-      await axios.post(`${baseURL}/subscription/subscribe`, { planId, interval }, { headers: { Authorization: `Bearer ${token}` } });
+      const endpoint = subscription
+        ? `${baseURL}/subscription/upgrade`
+        : `${baseURL}/subscription/subscribe`;
+      await axios.post(endpoint, { planId, interval }, { headers: { Authorization: `Bearer ${token}` } });
       const { data } = await axios.get(`${baseURL}/subscription/my`, { headers: { Authorization: `Bearer ${token}` } });
       setSubscription(data);
       setShowSubModal(false);
@@ -525,7 +528,10 @@ const Settings = () => {
 
   const formatDate = (d) => new Date(d).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' });
   const daysLeft = (endDate) => Math.max(0, Math.ceil((new Date(endDate) - new Date()) / 86400000));
-  const upgradeablePlans = plans.filter(p => !isFree(p) && p.id !== subscription?.plan?.id);
+  const currentMonthlyPrice = subscription ? getPlanPrice(subscription.plan, 'month') : 0;
+  const upgradeablePlans = plans.filter(
+    p => !isFree(p) && p.id !== subscription?.plan?.id && getPlanPrice(p, 'month') > currentMonthlyPrice,
+  );
 
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-10 font-sans" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -820,7 +826,7 @@ const Settings = () => {
                           : <>{getPlanPrice(subscription.plan, subscription.interval).toLocaleString()}<span className="text-sm font-medium text-gray-400 dark:text-zinc-500 ms-1">{subscription.plan.currency} / {subscription.interval === 'year' ? t('sub_annual_short') : t('sub_monthly_short')}</span></>
                         }
                       </p>
-                      {isFree(subscription.plan) && upgradeablePlans.length > 0 && (
+                      {upgradeablePlans.length > 0 && (
                         <button onClick={() => setShowSubModal(true)} className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl transition-all active:scale-95 shrink-0">
                           <Zap size={13} /> {t('sub_upgrade')}
                         </button>

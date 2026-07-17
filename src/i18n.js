@@ -48,6 +48,7 @@ import arPixel from './locales/ar/pixel.json';
 import arDomain from './locales/ar/domain.json';
 import arImageModel from './locales/ar/image-mode.json';
 import arMessage from './locales/ar/message.json';
+import arEditor from './locales/ar/editor.json';
 
 
 // --- ملفات اللغة الإنجليزية ---
@@ -95,6 +96,7 @@ import enPixel from './locales/en/pixel.json';
 import enDomain from './locales/en/domain.json';
 import enImageModel from './locales/en/image-mode.json';
 import enMessage from './locales/en/message.json';
+import enEditor from './locales/en/editor.json';
 
 
 
@@ -148,6 +150,7 @@ import frPixel from './locales/fr/pixel.json';
 import frDomain from './locales/fr/domain.json';
 import frImageModel from './locales/fr/image-mode.json';
 import frMessage from './locales/fr/message.json';
+import frEditor from './locales/fr/editor.json';
 
 
 
@@ -202,7 +205,8 @@ const resources = {
       Pixels: arPixel,
       domain: arDomain,
       imageModel : arImageModel,
-      message : arMessage
+      message : arMessage,
+      editor: arEditor
     },
   },
   en: {
@@ -250,7 +254,8 @@ const resources = {
       Pixels: enPixel,
       domain: enDomain,
       imageModel : enImageModel,
-      message : enMessage
+      message : enMessage,
+      editor: enEditor
     },
   },
   fr: {
@@ -298,7 +303,8 @@ const resources = {
       Pixels: frPixel,
       domain: frDomain,
       imageModel : frImageModel,
-      message : frMessage
+      message : frMessage,
+      editor: frEditor
     },
   },
 };

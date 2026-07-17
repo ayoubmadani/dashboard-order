@@ -45,6 +45,8 @@ import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
 import Messages from './pages/dashboard/messages/messages';
+import PagesList from './pages/editor/PagesList';
+import PageEditor from './pages/editor/PageEditor';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -141,11 +143,19 @@ const App = () => {
 
             <Route path="messages" element={<Messages />} />
 
+            <Route path="editor">
+              <Route index element={<PagesList />} />
+            </Route>
 
             <Route path="analytics" element={<Analytics />} />
             <Route path="settings" element={<Settings />} />
             <Route path="shipping" element={<Shipping />} />
           </Route>
+        </Route>
+
+        {/* محرر الصفحات - شاشة كاملة بدون شريط تنقل لوحة التحكم */}
+        <Route element={<ProtectedRouteDashboard />}>
+          <Route path="/editor/:id" element={<PageEditor />} />
         </Route>
 
 

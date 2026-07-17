@@ -15,7 +15,8 @@
     "pixels":"بيكسل",
     "current_store": "المتجر الحالي",
     "domain" : "دومين",
-    "messages" : "الرسائل"
+    "messages" : "الرسائل",
+    "editor" : "محرر الصفحات"
   },
 
   "store_selector": {

@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Plus, Search, Filter, ArrowUpDown,
+  Plus, Search, Filter,
   Edit2, Trash2, Eye, Package,
-  ChevronDown, X, CheckCircle2,
+  X, CheckCircle2,
   Download, Upload, RefreshCw,
-  ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight,
-  Loader2, AlertTriangle
+  ArrowLeft, ArrowRight,
+  Loader2, AlertTriangle, TrendingUp,
+  ToggleLeft, ToggleRight, SlidersHorizontal,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -58,14 +60,10 @@ const Products = () => {
         `${baseURL}/stores/${storeId}/products?${params}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      console.log(response.data);
-      
       setProducts(response.data.products || []);
       setTotalPages(response.data.totalPages || 1);
       setTotalItems(response.data.total || 0);
     } catch (error) {
-      console.error('Error fetching products:', error);
       toast.error(t('list.toast.load_failed'));
     } finally {
       setIsLoading(false);
@@ -80,9 +78,7 @@ const Products = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setCategories(response.data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
+    } catch (error) {}
   }, [storeId]);
 
   useEffect(() => {
@@ -129,20 +125,18 @@ const Products = () => {
   };
 
   const toggleProductStatus = async (productId, currentStatus) => {
+    setProducts(prev => prev.map(p => p.id === productId ? { ...p, isActive: !p.isActive } : p));
     try {
       await axios.patch(
         `${baseURL}/stores/${storeId}/products/${productId}/toggle-active`, {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success(currentStatus ? t('list.toast.status_disabled') : t('list.toast.status_enabled'));
-      fetchProducts();
     } catch {
+      setProducts(prev => prev.map(p => p.id === productId ? { ...p, isActive: currentStatus } : p));
       toast.error(t('list.toast.status_failed'));
     }
   };
-
-  const handleSort = (field) =>
-    setSortBy(prev => ({ field, direction: prev.field === field && prev.direction === 'asc' ? 'desc' : 'asc' }));
 
   const toggleSelection = (id) =>
     setSelectedProducts(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
@@ -155,11 +149,6 @@ const Products = () => {
     return sortBy.direction === 'asc' ? (aVal > bVal ? 1 : -1) : (aVal < bVal ? 1 : -1);
   });
 
-  const getStatusConfig = (status, isActive) => {
-    if (!isActive) return { style: 'bg-gray-50 dark:bg-zinc-700 text-gray-600 dark:text-zinc-400 border-gray-200 dark:border-zinc-600', label: t('list.status_badge.disabled') };
-    return { style: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20', label: t('list.status_badge.active') };
-  };
-
   const formatPrice = (price) =>
     new Intl.NumberFormat(isRtl ? 'ar-DZ' : 'fr-DZ', { style: 'currency', currency: 'DZD', minimumFractionDigits: 0 }).format(price);
 
@@ -170,65 +159,54 @@ const Products = () => {
     return (words.length > 1 ? `${words[0]} ${words[1]}` : words[0] || '').substring(0, 15);
   })();
 
-  const tableColumns = [
-    { key: 'name', label: t('list.table.product'), sortable: true },
-    { key: 'show', label: t('list.table.show'), sortable: true },
-    { key: 'category', label: t('list.table.category'), sortable: false },
-    { key: 'price', label: t('list.table.price'), sortable: true },
-    { key: 'stock', label: t('list.table.stock'), sortable: true },
-    { key: 'status', label: t('list.table.status'), sortable: false },
-    { key: 'createdAt', label: t('list.table.date'), sortable: false },
-  ];
+  const activeCount = products.filter(p => p.isActive).length;
+  const outOfStock = products.filter(p => p.stock === 0).length;
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
       <Toaster position="top-center" richColors />
 
-      {/* ── Delete Modal ── */}
+      {/* Delete Modal */}
       {deleteModal.isOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 max-w-md w-full shadow-xl border border-rose-100 dark:border-rose-900/20">
-            <div className="flex items-center gap-3 text-rose-600 mb-4">
-              <AlertTriangle size={28} className="animate-pulse shrink-0" />
-              <h3 className="text-xl font-bold">{t('list.delete_modal.title')}</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-zinc-800">
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <Trash2 size={26} className="text-rose-600 dark:text-rose-400" />
             </div>
-            <div className="space-y-4">
-              <p className="text-gray-600 dark:text-zinc-400 leading-relaxed">
-                {t('list.delete_modal.about_to_delete')}{' '}
-                <span className="font-bold text-gray-900 dark:text-white">"{deleteModal.productName}"</span>.
-                <br />
-                <span className="text-sm text-rose-500 bg-rose-50 dark:bg-rose-900/10 px-2 py-1 rounded mt-2 inline-block">
-                  {t('list.delete_modal.warning')}
-                </span>
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-1">
+              {t('list.delete_modal.title')}
+            </h3>
+            <p className="text-sm text-center text-gray-500 dark:text-zinc-400 mb-5">
+              {t('list.delete_modal.about_to_delete')}{' '}
+              <span className="font-semibold text-gray-800 dark:text-zinc-200">"{deleteModal.productName}"</span>
+            </p>
+            <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl p-4 mb-5">
+              <p className="text-xs text-gray-500 dark:text-zinc-400 mb-2 text-center">
+                {t('list.delete_modal.type_to_confirm')}
               </p>
-              <div className="p-4 rounded-xl border border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
-                <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-3">
-                  {t('list.delete_modal.type_to_confirm')}
-                  <div className="mt-2 p-2 bg-white dark:bg-zinc-900 border border-dashed border-gray-300 dark:border-zinc-700 rounded text-center font-mono font-bold text-rose-600 select-all">
-                    {requiredText}
-                  </div>
-                </label>
-                <input
-                  type="text"
-                  placeholder={t('list.delete_modal.type_placeholder')}
-                  className="w-full px-3 py-2 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-rose-500 dark:bg-zinc-800 dark:text-white transition-all font-semibold text-center"
-                  onChange={(e) => setConfirmName(e.target.value)}
-                  value={confirmName}
-                  autoFocus
-                />
-              </div>
+              <p className="text-center font-mono font-bold text-rose-600 dark:text-rose-400 mb-3 text-sm">
+                {requiredText}
+              </p>
+              <input
+                type="text"
+                placeholder={t('list.delete_modal.type_placeholder')}
+                className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-rose-500 dark:bg-zinc-900 dark:text-white text-sm text-center font-medium transition-all"
+                onChange={(e) => setConfirmName(e.target.value)}
+                value={confirmName}
+                autoFocus
+              />
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex gap-3">
               <button
                 onClick={() => { setDeleteModal({ isOpen: false, productId: null, productName: '' }); setConfirmName(''); }}
-                className="flex-1 px-4 py-2.5 text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-xl transition-colors font-medium"
+                className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm"
               >
                 {t('list.delete_modal.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={confirmName !== requiredText}
-                className={`flex-1 px-4 py-2.5 rounded-xl font-bold text-white transition-all ${confirmName === requiredText ? 'bg-rose-600 hover:bg-rose-700 shadow-lg shadow-rose-500/30' : 'bg-gray-200 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'}`}
+                className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${confirmName === requiredText ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25' : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'}`}
               >
                 {t('list.delete_modal.confirm')}
               </button>
@@ -237,254 +215,367 @@ const Products = () => {
         </div>
       )}
 
-      {/* ── Header ── */}
-      <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-[1400px] mx-auto px-6 py-6">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl">
-                <Package size={24} className="text-indigo-600 dark:text-indigo-400" />
+      <div className="max-w-350 mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+        {/* Top bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('list.title')}</h1>
+            <p className="text-sm text-gray-500 dark:text-zinc-400 mt-0.5">{t('list.subtitle')}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchProducts}
+              disabled={isLoading}
+              className="p-2.5 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            </button>
+            <button className="p-2.5 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all">
+              <Upload size={16} />
+            </button>
+            <button className="p-2.5 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all">
+              <Download size={16} />
+            </button>
+            <Link
+              to="/dashboard/products/create"
+              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all shadow-md shadow-indigo-500/20"
+            >
+              <Plus size={16} />
+              {t('list.new_product')}
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: t('list.total', { count: '' }).replace(/\d+/, '').trim() || 'الكل', value: totalItems, color: 'text-gray-900 dark:text-white', bg: 'bg-white dark:bg-zinc-900', icon: Package, iconColor: 'text-indigo-500', iconBg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+            { label: t('list.status_active'), value: activeCount, color: 'text-emerald-700 dark:text-emerald-400', bg: 'bg-white dark:bg-zinc-900', icon: CheckCircle2, iconColor: 'text-emerald-500', iconBg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+            { label: t('list.status_inactive'), value: products.length - activeCount, color: 'text-gray-500 dark:text-zinc-400', bg: 'bg-white dark:bg-zinc-900', icon: TrendingUp, iconColor: 'text-gray-400', iconBg: 'bg-gray-50 dark:bg-zinc-800' },
+            { label: t('list.table.stock'), value: outOfStock, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-white dark:bg-zinc-900', icon: AlertTriangle, iconColor: 'text-rose-500', iconBg: 'bg-rose-50 dark:bg-rose-500/10' },
+          ].map((s, i) => (
+            <div key={i} className={`${s.bg} border border-gray-100 dark:border-zinc-800 rounded-2xl p-4 flex items-center gap-3`}>
+              <div className={`w-10 h-10 ${s.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
+                <s.icon size={18} className={s.iconColor} />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{t('list.title')}</h1>
-                <p className="text-sm text-gray-500 dark:text-zinc-400">{t('list.subtitle')}</p>
+                <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">{s.label}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <button onClick={fetchProducts} disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-zinc-300 border border-gray-300 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50">
-                <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-                {t('list.refresh')}
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-zinc-300 border border-gray-300 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
-                <Upload size={16} />{t('list.import')}
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-zinc-300 border border-gray-300 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors">
-                <Download size={16} />{t('list.export')}
-              </button>
-              <Link
-                to="/dashboard/products/create"
-                className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                <Plus size={18} />{t('list.new_product')}
-              </Link>
-            </div>
-          </div>
+          ))}
+        </div>
 
-          {/* Search + Filter bar */}
-          <div className="flex flex-col lg:flex-row gap-4">
+        {/* Search + Filter */}
+        <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${isRtl ? 'right-3.5' : 'left-3.5'}`} size={18} />
+              <Search className={`absolute top-1/2 -translate-y-1/2 text-gray-400 ${isRtl ? 'right-4' : 'left-4'}`} size={16} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('list.search_placeholder')}
-                className={`w-full py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-gray-900 dark:focus:ring-white focus:border-transparent outline-none text-sm dark:text-white ${isRtl ? 'pr-11 pl-4' : 'pl-11 pr-4'}`}
+                className={`w-full py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 outline-none text-sm dark:text-white transition-all ${isRtl ? 'pr-11 pl-4' : 'pl-11 pr-4'}`}
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-colors ${showFilters ? 'border-gray-900 dark:border-white bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
+                className={`flex items-center gap-2 px-4 py-2.5 border rounded-xl text-sm font-medium transition-all ${showFilters ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-gray-300 dark:hover:border-zinc-600'}`}
               >
-                <Filter size={16} />
+                <SlidersHorizontal size={15} />
                 {t('list.filters')}
-                <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
               </button>
-
               {selectedProducts.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 rounded-xl text-sm font-medium">
-                    <CheckCircle2 size={16} />
-                    {t('list.selected', { count: selectedProducts.length })}
-                    <button onClick={() => setSelectedProducts([])} className={isRtl ? 'mr-1' : 'ml-1'}>
-                      <X size={14} />
+                  <span className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-sm font-medium">
+                    <CheckCircle2 size={14} />
+                    {selectedProducts.length}
+                    <button onClick={() => setSelectedProducts([])} className="hover:text-indigo-800">
+                      <X size={13} />
                     </button>
-                  </div>
-                  <button onClick={handleBulkDelete}
-                    className="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
-                    title={t('list.bulk_delete_selected')}>
-                    <Trash2 size={18} />
+                  </span>
+                  <button
+                    onClick={handleBulkDelete}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
+                  >
+                    <Trash2 size={14} />
+                    {t('list.bulk_delete_selected')}
                   </button>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Expanded Filters */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-800 flex flex-wrap gap-4">
-              <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm dark:text-white outline-none">
+            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800 flex flex-wrap items-center gap-3">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl text-sm dark:text-white outline-none focus:border-indigo-400 transition-all"
+              >
                 <option value="all">{t('list.all_categories')}</option>
                 {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
               </select>
-              <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm dark:text-white outline-none">
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl text-sm dark:text-white outline-none focus:border-indigo-400 transition-all"
+              >
                 <option value="all">{t('list.all_statuses')}</option>
                 <option value="active">{t('list.status_active')}</option>
                 <option value="inactive">{t('list.status_inactive')}</option>
               </select>
               <button
                 onClick={() => { setSelectedCategory('all'); setSelectedStatus('all'); setSearchQuery(''); setCurrentPage(1); }}
-                className="flex items-center gap-1.5 px-3 py-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl text-sm font-medium transition-colors">
-                <X size={14} />{t('list.clear_filters')}
+                className="flex items-center gap-1.5 px-3 py-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl text-sm font-medium transition-colors"
+              >
+                <X size={14} />
+                {t('list.clear_filters')}
               </button>
             </div>
           )}
-
-          <div className="mt-4 text-sm text-gray-500 dark:text-zinc-400">
-            {t('list.total', { count: totalItems })}
-            {isLoading && <span className={`${isRtl ? 'mr-2' : 'ml-2'} text-indigo-600`}>{t('list.loading_inline')}</span>}
-          </div>
         </div>
-      </div>
 
-      {/* ── Table ── */}
-      <div className="h-full py-6">
-        <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-200 dark:border-zinc-800">
-
-                  {tableColumns.map(col => (
-                    <th key={col.key}
-                      onClick={() => col.sortable && handleSort(col.key)}
-                      className={`px-4 py-3 text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider ${isRtl ? 'text-right' : 'text-left'} ${col.sortable ? 'cursor-pointer hover:text-gray-700 dark:hover:text-zinc-200' : ''}`}>
-                      <div className={`flex items-center gap-1 ${isRtl ? 'flex-row-reverse justify-end' : ''}`}>
-                        {col.label}
-                        {col.sortable && <ArrowUpDown size={12} className={sortBy.field === col.key ? 'text-gray-900 dark:text-white' : ''} />}
-                      </div>
+        {/* Table */}
+        <div className="bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl overflow-hidden">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-3">
+              <Loader2 size={32} className="text-indigo-500 animate-spin" />
+              <p className="text-sm text-gray-400 dark:text-zinc-500">{t('list.loading')}</p>
+            </div>
+          ) : sortedProducts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-zinc-800 rounded-2xl flex items-center justify-center">
+                <Package size={28} className="text-gray-300 dark:text-zinc-600" />
+              </div>
+              <div className="text-center">
+                <p className="font-semibold text-gray-700 dark:text-zinc-200">{t('list.empty.title')}</p>
+                <p className="text-sm text-gray-400 dark:text-zinc-500 mt-1">
+                  {searchQuery || selectedCategory !== 'all' ? t('list.empty.search') : t('list.empty.first')}
+                </p>
+              </div>
+              {!searchQuery && selectedCategory === 'all' && (
+                <Link
+                  to="/dashboard/products/create"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all"
+                >
+                  <Plus size={16} />
+                  {t('list.new_product')}
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-100 dark:border-zinc-800">
+                    <th className="px-5 py-3.5 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.length === products.length && products.length > 0}
+                        onChange={toggleAll}
+                        className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 accent-indigo-600 cursor-pointer"
+                      />
                     </th>
-                  ))}
-                  <th className="w-20 px-4 py-3 text-center text-[11px] font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">
-                    {t('list.table.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
-                {isLoading ? (
-                  <tr><td colSpan="9" className="px-4 py-10 text-center">
-                    <Loader2 size={28} className="mx-auto text-gray-400 animate-spin mb-3" />
-                    <p className="text-xs text-gray-500">{t('list.loading')}</p>
-                  </td></tr>
-                ) : sortedProducts.length === 0 ? (
-                  <tr><td colSpan="9" className="px-4 py-10 text-center">
-                    <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Package size={20} className="text-gray-400" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{t('list.empty.title')}</h3>
-                    <p className="text-xs text-gray-500 dark:text-zinc-400">
-                      {searchQuery || selectedCategory !== 'all' ? t('list.empty.search') : t('list.empty.first')}
-                    </p>
-                  </td></tr>
-                ) : sortedProducts.map((product) => {
-                  const statusCfg = getStatusConfig(product.stock, product.isActive);
-                  return (
-                    <tr key={product.id}
-                      className={`hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors ${selectedProducts.includes(product.id) ? 'bg-indigo-50/50 dark:bg-indigo-500/5' : ''}`}>
+                    {[
+                      { key: 'name', label: t('list.table.product') },
+                      { key: 'category', label: t('list.table.category') },
+                      { key: 'price', label: t('list.table.price') },
+                      { key: 'stock', label: t('list.table.stock') },
+                      { key: 'show', label: t('list.table.show') },
+                      { key: 'status', label: t('list.table.status') },
+                      { key: 'createdAt', label: t('list.table.date') },
+                    ].map(col => (
+                      <th
+                        key={col.key}
+                        className={`px-4 py-3.5 text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider ${isRtl ? 'text-right' : 'text-left'}`}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                    <th className="px-4 py-3.5 text-xs font-semibold text-gray-400 dark:text-zinc-500 uppercase tracking-wider text-center">
+                      {t('list.table.actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedProducts.map((product, idx) => (
+                    <tr
+                      key={product.id}
+                      className={`border-b border-gray-50 dark:border-zinc-800/70 last:border-0 transition-colors group ${
+                        selectedProducts.includes(product.id)
+                          ? 'bg-indigo-50/60 dark:bg-indigo-500/5'
+                          : 'hover:bg-gray-50/70 dark:hover:bg-zinc-800/40'
+                      }`}
+                    >
+                      <td className="px-5 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.includes(product.id)}
+                          onChange={() => toggleSelection(product.id)}
+                          className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 accent-indigo-600 cursor-pointer"
+                        />
+                      </td>
 
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2.5">
-                          <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 border border-gray-200 dark:border-zinc-700">
+                      {/* Product */}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 border border-gray-100 dark:border-zinc-700">
                             <img
                               src={product.productImage || product.imagesProduct?.[0]?.imageUrl || '/placeholder-product.png'}
-                              alt={product.name} className="w-full h-full object-cover"
-                              onError={(e) => { e.target.src = '/placeholder-product.png'; }} />
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => { e.target.src = '/placeholder-product.png'; }}
+                            />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-gray-900 dark:text-white text-xs truncate hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer"
+                            <p
+                              className="text-sm font-semibold text-gray-800 dark:text-zinc-100 truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                               onClick={() => navigate(`/dashboard/products/${product.id}`)}
-                              title={product.name}>
-                              {product.name?.length > 20 ? `${product.name.substring(0, 20)}...` : product.name}
+                              title={product.name}
+                            >
+                              {product.name?.length > 22 ? `${product.name.substring(0, 22)}…` : product.name}
                             </p>
-                            <p className="text-[10px] text-gray-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
-                              {product.desc ? (product.desc.length > 20 ? `${product.desc.substring(0, 20)}...` : product.desc) : t('list.no_description')}
+                            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5 truncate">
+                              {product.desc ? (product.desc.length > 24 ? `${product.desc.substring(0, 24)}…` : product.desc) : t('list.no_description')}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-[10px] font-mono text-gray-600 dark:text-zinc-400 bg-gray-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
-                          {product.showsCount || 0}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs text-gray-700 dark:text-zinc-300">
+
+                      {/* Category */}
+                      <td className="px-4 py-4">
+                        <span className="inline-block px-2.5 py-1 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-lg text-xs font-medium">
                           {product.category?.name || t('list.uncategorized')}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-gray-900 dark:text-white text-xs">{formatPrice(product.price)}</span>
-                          {product.priceOriginal && (
-                            <span className="text-[10px] text-gray-400 line-through">{formatPrice(product.priceOriginal)}</span>
+
+                      {/* Price */}
+                      <td className="px-4 py-4">
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">{formatPrice(product.price)}</p>
+                        {product.priceOriginal && (
+                          <p className="text-xs text-gray-400 dark:text-zinc-500 line-through mt-0.5">{formatPrice(product.priceOriginal)}</p>
+                        )}
+                      </td>
+
+                      {/* Stock */}
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                          product.stock === 0
+                            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                            : product.stock < 5
+                            ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            : 'bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            product.stock === 0 ? 'bg-rose-500' : product.stock < 5 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`} />
+                          {product.stock}
+                        </span>
+                      </td>
+
+                      {/* Shows */}
+                      <td className="px-4 py-4">
+                        <span className="text-sm text-gray-600 dark:text-zinc-300 font-medium">
+                          {product.showsCount || 0}
+                        </span>
+                      </td>
+
+                      {/* Status toggle */}
+                      <td className="px-4 py-4">
+                        <button
+                          onClick={() => toggleProductStatus(product.id, product.isActive)}
+                          className="flex items-center gap-2 group/toggle"
+                        >
+                          {product.isActive ? (
+                            <ToggleRight size={22} className="text-emerald-500 group-hover/toggle:text-emerald-600 transition-colors" />
+                          ) : (
+                            <ToggleLeft size={22} className="text-gray-300 dark:text-zinc-600 group-hover/toggle:text-gray-400 transition-colors" />
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1.5">
-                          <div className={`w-1.5 h-1.5 rounded-full ${product.stock === 0 ? 'bg-rose-500' : product.stock < 5 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                          <span className={`text-xs font-medium ${product.stock === 0 ? 'text-rose-600 dark:text-rose-400' : product.stock < 5 ? 'text-amber-600 dark:text-amber-400' : 'text-gray-700 dark:text-zinc-300'}`}>
-                            {product.stock}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button onClick={() => toggleProductStatus(product.id, product.isActive)}>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusCfg.style}`}>
-                            {statusCfg.label}
+                          <span className={`text-xs font-medium ${product.isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400 dark:text-zinc-500'}`}>
+                            {product.isActive ? t('list.status_badge.active') : t('list.status_badge.disabled')}
                           </span>
                         </button>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-[11px] text-gray-500 dark:text-zinc-400">{formatDate(product.createdAt)}</span>
+
+                      {/* Date */}
+                      <td className="px-4 py-4">
+                        <span className="text-xs text-gray-400 dark:text-zinc-500">{formatDate(product.createdAt)}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-0.5">
-                          <Link to={`/dashboard/products/${product.slug || product.id}`} className="p-1 text-gray-400 hover:text-indigo-600 rounded transition-colors">
-                            <Eye size={14} />
+
+                      {/* Actions */}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center justify-center gap-1">
+                          <Link
+                            to={`/dashboard/products/${product.slug || product.id}`}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
+                          >
+                            <Eye size={15} />
                           </Link>
-                          <Link to={`/dashboard/products/edit/${product.id}`} className="p-1 text-gray-400 hover:text-indigo-600 rounded transition-colors">
-                            <Edit2 size={14} />
+                          <Link
+                            to={`/dashboard/products/edit/${product.id}`}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
+                          >
+                            <Edit2 size={15} />
                           </Link>
-                          <button onClick={() => setDeleteModal({ isOpen: true, productId: product.id, productName: product.name })} className="p-1 text-gray-400 hover:text-rose-500 rounded transition-colors">
-                            <Trash2 size={14} />
+                          <button
+                            onClick={() => setDeleteModal({ isOpen: true, productId: product.id, productName: product.name })}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all"
+                          >
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           {/* Pagination */}
           {!isLoading && totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-800/30">
-              <div className="text-[11px] text-gray-500 dark:text-zinc-400">
-                {t('list.pagination', { from: (currentPage - 1) * itemsPerPage + 1, to: Math.min(currentPage * itemsPerPage, totalItems), total: totalItems })}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-1.5 text-gray-400 disabled:opacity-30 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800">
-                  {isRtl ? <ChevronsLeft size={16} /> : <ChevronsRight size={16} />}
+            <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 dark:border-zinc-800">
+              <p className="text-xs text-gray-400 dark:text-zinc-500">
+                {t('list.pagination', {
+                  from: (currentPage - 1) * itemsPerPage + 1,
+                  to: Math.min(currentPage * itemsPerPage, totalItems),
+                  total: totalItems,
+                })}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
+                >
+                  {isRtl ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
                 </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let p = totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i));
-                    return (
-                      <button key={p} onClick={() => setCurrentPage(p)}
-                        className={`min-w-[28px] h-7 px-2 rounded-lg text-xs font-medium transition-colors ${currentPage === p ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800'}`}>
-                        {p}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-1.5 text-gray-400 disabled:opacity-30 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800">
-                  {isRtl ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let p = totalPages <= 5 ? i + 1 : (currentPage <= 3 ? i + 1 : (currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i));
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                        currentPage === p
+                          ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                          : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200 hover:bg-gray-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-all"
+                >
+                  {isRtl ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
                 </button>
               </div>
             </div>
