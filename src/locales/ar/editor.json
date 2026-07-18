@@ -79,7 +79,13 @@
     "title": "إعدادات الصفحة",
     "backgroundColor": "لون خلفية الصفحة",
     "maxWidth": "أقصى عرض (px)",
-    "padding": "الحشو الداخلي (px)"
+    "padding": "الحشو الداخلي (px)",
+    "language": "لغة الصفحة",
+    "languageOptions": {
+      "ar": "العربية",
+      "fr": "الفرنسية",
+      "en": "الإنجليزية"
+    }
   },
   "propsPanel": {
     "title": "خصائص العنصر",
@@ -92,7 +98,8 @@
     "button": { "label": "زر" },
     "image": { "label": "صورة" },
     "productForm": { "label": "نموذج طلب" },
-    "spacer": { "label": "مساحة فارغة" }
+    "spacer": { "label": "مساحة فارغة" },
+    "floatingButton": { "label": "زر عائم" }
   },
   "fields": {
     "title": "العنوان",
@@ -154,7 +161,35 @@
     "bringForward": "زيادة الأولوية (إلى الأمام)",
     "sendBackward": "تقليل الأولوية (إلى الخلف)",
     "moveUp": "نقل لأعلى",
-    "moveDown": "نقل لأسفل"
+    "moveDown": "نقل لأسفل",
+    "floatingPositionOptions": {
+      "top-right": "أعلى يمين",
+      "top-left": "أعلى يسار",
+      "top-center": "أعلى منتصف",
+      "bottom-right": "أسفل يمين",
+      "bottom-left": "أسفل يسار",
+      "bottom-center": "أسفل منتصف"
+    },
+    "floatingContentType": "نوع المحتوى",
+    "floatingContentTypeOptions": {
+      "text": "نص",
+      "icon": "أيقونة"
+    },
+    "floatingIcon": "الأيقونة",
+    "floatingIconOptions": {
+      "Phone": "هاتف",
+      "MessageCircle": "دردشة",
+      "Mail": "بريد",
+      "MapPin": "موقع",
+      "ShoppingCart": "سلة",
+      "ArrowUp": "سهم لأعلى",
+      "ArrowDown": "سهم لأسفل",
+      "Facebook": "فيسبوك",
+      "Instagram": "إنستغرام",
+      "WhatsApp": "واتساب"
+    },
+    "floatingWidth": "العرض (px)",
+    "floatingHeight": "الارتفاع (px)"
   },
   "canvasSection": {
     "elements": "العناصر",

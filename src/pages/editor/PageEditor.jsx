@@ -43,7 +43,7 @@ export default function PageEditor() {
     setSettings,
     blocks,
     setBlocks,
-    publishedUrl,
+    siteUrl,
     loading,
     error,
     saving,
@@ -251,9 +251,8 @@ export default function PageEditor() {
 
   const handlePublish = async () => {
     try {
-      const url = await publish();
+      await publish();
       toast.success(t('editor.topbar.publishSuccess'));
-      if (url && !isDemo) window.open(url, '_blank');
     } catch (err) {
       toast.error(err.response?.data?.message || t('editor.topbar.publishError'));
     }
@@ -294,7 +293,7 @@ export default function PageEditor() {
         dirty={dirty}
         saving={saving}
         publishing={publishing}
-        publishedUrl={publishedUrl}
+        publishedUrl={siteUrl}
         onSave={handleSave}
         onPublish={handlePublish}
         onOpenSettings={() => setShowSettingsModal(true)}

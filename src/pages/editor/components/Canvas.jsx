@@ -66,7 +66,7 @@ function BlockHeightHandle({ height, measureRef, onResize, visible }) {
   );
 }
 
-function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt, onDuplicate, onUpdateProps, selectedElementId, onSelectElement, pageProductId, referenceWidth }) {
+function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt, onDuplicate, onUpdateProps, selectedElementId, onSelectElement, pageProductId, referenceWidth, language }) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block?.id ?? `unknown-${index}` });
   const def = block && componentsMap[block.type];
@@ -131,7 +131,7 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
   // that page-level field existed.
   const componentProps =
     block.type === 'productForm'
-      ? { ...def.defaultProps, ...block.props, productId: pageProductId || block.props.productId }
+      ? { ...def.defaultProps, ...block.props, productId: pageProductId || block.props.productId, language }
       : isPinned
       ? { ...def.defaultProps, ...block.props, height: currentHeight, position: 'static' }
       : def.resizableHeight
@@ -221,6 +221,8 @@ export default function Canvas({ blocks, selectedId, onSelect, onDelete, onDelet
           rendered inside (any block's own content) can visually spill past
           the page card's rounded edges. */}
       <div
+        dir={(settings?.language || 'ar') === 'ar' ? 'rtl' : 'ltr'}
+        lang={settings?.language || 'ar'}
         className="max-w-5xl mx-auto bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-200 dark:border-zinc-800 overflow-hidden min-h-[400px]"
         style={{
           backgroundColor: settings?.backgroundColor || undefined,
@@ -250,6 +252,7 @@ export default function Canvas({ blocks, selectedId, onSelect, onDelete, onDelet
                 onSelectElement={onSelectElement}
                 pageProductId={pageProductId}
                 referenceWidth={settings?.maxWidth || 720}
+                language={settings?.language || 'ar'}
               />
             ))}
           </SortableContext>

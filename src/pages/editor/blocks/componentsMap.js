@@ -1,7 +1,11 @@
-import { Image as ImageIcon, SeparatorHorizontal, ClipboardList } from 'lucide-react';
+import { Image as ImageIcon, SeparatorHorizontal, ClipboardList, Pin } from 'lucide-react';
 import ImageBlock from './ImageBlock';
 import SpacerBlock from './SpacerBlock';
 import ProductFormBlock from './ProductFormBlock';
+import FloatingButtonBlock from './FloatingButtonBlock';
+import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
+
+const FLOATING_BUTTON_POSITIONS = ['top-right', 'top-left', 'top-center', 'bottom-right', 'bottom-left', 'bottom-center'];
 
 // Shared registry: same block Components render in the editor canvas (selectable/draggable)
 // and, later, in the storefront (view-only). Keep block Components free of Tailwind —
@@ -143,6 +147,66 @@ export const componentsMap = {
           { key: 'buttonBorderColor', labelKey: 'editor.fields.buttonBorderColor' },
         ],
       },
+    ],
+  },
+  floatingButton: {
+    labelKey: 'editor.blocks.floatingButton.label',
+    icon: Pin,
+    Component: FloatingButtonBlock,
+    singleton: true, // one page-wide floating button makes sense per page
+    defaultProps: {
+      link: '',
+      linkType: 'external',
+      position: 'bottom-right',
+      contentType: 'icon',
+      text: 'تواصل معنا',
+      icon: 'MessageCircle',
+      width: 56,
+      height: 56,
+      backgroundColor: '#10b981',
+      textColor: '#ffffff',
+    },
+    fields: [
+      {
+        key: 'linkType',
+        labelKey: 'editor.fields.linkType',
+        type: 'select',
+        options: [
+          { value: 'external', labelKey: 'editor.fields.linkTypeOptions.external' },
+          { value: 'form', labelKey: 'editor.fields.linkTypeOptions.form' },
+        ],
+      },
+      // Only relevant for an external link — jumping to the order form
+      // doesn't need a URL, it scrolls to the productForm block already on
+      // the page (same behavior as a floating element's own button type).
+      { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (v) => (v.linkType || 'external') !== 'form' },
+      {
+        key: 'position',
+        labelKey: 'editor.fields.position',
+        type: 'select',
+        options: FLOATING_BUTTON_POSITIONS.map((value) => ({ value, labelKey: `editor.fields.floatingPositionOptions.${value}` })),
+      },
+      {
+        key: 'contentType',
+        labelKey: 'editor.fields.floatingContentType',
+        type: 'select',
+        options: [
+          { value: 'icon', labelKey: 'editor.fields.floatingContentTypeOptions.icon' },
+          { value: 'text', labelKey: 'editor.fields.floatingContentTypeOptions.text' },
+        ],
+      },
+      { key: 'text', labelKey: 'editor.fields.text', type: 'text', showIf: (v) => v.contentType === 'text' },
+      {
+        key: 'icon',
+        labelKey: 'editor.fields.floatingIcon',
+        type: 'select',
+        options: Object.keys(FLOATING_BUTTON_ICONS).map((name) => ({ value: name, labelKey: `editor.fields.floatingIconOptions.${name}` })),
+        showIf: (v) => (v.contentType || 'icon') === 'icon',
+      },
+      { key: 'width', labelKey: 'editor.fields.floatingWidth', type: 'number', min: 32, max: 300 },
+      { key: 'height', labelKey: 'editor.fields.floatingHeight', type: 'number', min: 32, max: 300 },
+      { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
+      { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
     ],
   },
 };

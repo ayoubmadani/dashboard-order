@@ -67,6 +67,21 @@ export default function PageSettingsModal({ open, onClose, settings, onChange })
               className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-1.5">
+              {t('editor.pageSettings.language')}
+            </label>
+            <select
+              value={settings?.language || 'ar'}
+              onChange={(e) => update({ language: e.target.value })}
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+            >
+              <option value="ar">{t('editor.pageSettings.languageOptions.ar')}</option>
+              <option value="fr">{t('editor.pageSettings.languageOptions.fr')}</option>
+              <option value="en">{t('editor.pageSettings.languageOptions.en')}</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>

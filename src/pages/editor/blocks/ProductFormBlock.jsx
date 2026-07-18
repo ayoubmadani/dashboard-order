@@ -6,6 +6,7 @@ import {
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import { getProductFormStrings } from './productFormTranslations';
 
 // Mirrors store/src/components/productForm/productForm.tsx (+ ProductClient.tsx's
 // variant/offer picker) field names, layout, and POST /orders payload exactly —
@@ -23,8 +24,6 @@ function variantMatches(detail, selected) {
     detail.name?.some((entry) => entry.attrName === attrName && entry.value === value)
   );
 }
-
-const formatPrice = (n) => `${Number(n || 0).toLocaleString('ar-DZ')} د.ج`;
 
 function FieldWrapper({ label, labelColor, error, children }) {
   return (
@@ -62,7 +61,10 @@ export default function ProductFormBlock({
   inputTextColor,
   paddingX,
   borderRadius,
+  language,
 }) {
+  const t = getProductFormStrings(language);
+  const formatPrice = (n) => `${Number(n || 0).toLocaleString('ar-DZ')} ${t.currency}`;
   const [product, setProduct] = useState(null);
   const [wilayas, setWilayas] = useState([]);
   const [communes, setCommunes] = useState([]);
@@ -176,7 +178,7 @@ export default function ProductFormBlock({
 
     const normalizedPhone = form.customerPhone.trim().replace(/^\+213/, '0');
     if (!/^(05|06|07)\d{8}$/.test(normalizedPhone)) {
-      setError('رقم الهاتف غير صحيح (يجب أن يبدأ بـ 05 أو 06 أو 07)');
+      setError(t.errorPhone);
       return;
     }
 
@@ -204,7 +206,7 @@ export default function ProductFormBlock({
       if (res.data?.customerId) localStorage.setItem('customerId', res.data.customerId);
       setSubmitted(true);
     } catch {
-      setError('تعذر إرسال الطلب، حاول مرة أخرى');
+      setError(t.submitError);
     } finally {
       setSubmitting(false);
     }
@@ -232,17 +234,17 @@ export default function ProductFormBlock({
         <div style={{ padding: '18px 22px', borderBottom: `1px solid ${baseInputStyle.borderColor}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <ShoppingCart size={18} style={{ opacity: 0.8 }} />
-            <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>{title || 'أدخل بيانات التسليم'}</p>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>{title || t.formTitle}</p>
           </div>
-          <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.6 }}>سنتواصل معك خلال 24 ساعة لتأكيد طلبك</p>
+          <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.6 }}>{t.formSubtitle}</p>
         </div>
 
         <div style={{ padding: 20 }}>
           {!productId ? (
-            <p style={{ textAlign: 'center', fontSize: 14, opacity: 0.6 }}>لم يتم اختيار منتج لهذه الصفحة</p>
+            <p style={{ textAlign: 'center', fontSize: 14, opacity: 0.6 }}>{t.noProductSelected}</p>
           ) : submitted ? (
             <p style={{ textAlign: 'center', fontSize: 15, fontWeight: 600, color: accentColor }}>
-              تم استلام طلبك بنجاح، سنتواصل معك قريبًا!
+              {t.submitSuccess}
             </p>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -285,7 +287,7 @@ export default function ProductFormBlock({
                           onChange={() => setSelectedOffer(selectedOffer === offer.id ? null : offer.id)}
                           style={{ accentColor }}
                         />
-                        {offer.name} <span style={{ opacity: 0.6 }}>({offer.quantity} قطع)</span>
+                        {offer.name} <span style={{ opacity: 0.6 }}>({offer.quantity} {t.pieces})</span>
                       </span>
                       <span style={{ fontWeight: 700 }}>{formatPrice(offer.price)}</span>
                     </label>
@@ -370,12 +372,12 @@ export default function ProductFormBlock({
 
               {/* Name + Phone */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
-                <FieldWrapper label="الاسم الكامل" labelColor={muted}>
+                <FieldWrapper label={t.fullName} labelColor={muted}>
                   <div style={{ position: 'relative' }}>
                     <User size={15} style={iconInFieldStyle} />
                     <input
                       type="text"
-                      placeholder="محمد أحمد"
+                      placeholder={t.fullNamePlaceholder}
                       value={form.customerName}
                       onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                       required
@@ -384,7 +386,7 @@ export default function ProductFormBlock({
                     />
                   </div>
                 </FieldWrapper>
-                <FieldWrapper label="رقم الهاتف" labelColor={muted}>
+                <FieldWrapper label={t.phone} labelColor={muted}>
                   <div style={{ position: 'relative' }}>
                     <Phone size={15} style={iconInFieldStyle} />
                     <input
@@ -403,7 +405,7 @@ export default function ProductFormBlock({
 
               {/* Wilaya + Commune */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <FieldWrapper label="الولاية" labelColor={muted}>
+                <FieldWrapper label={t.wilaya} labelColor={muted}>
                   <div style={{ position: 'relative' }}>
                     <MapPin size={15} style={iconInFieldStyle} />
                     <select
@@ -413,7 +415,7 @@ export default function ProductFormBlock({
                       style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer' })}
                       {...fieldHandlers('wilayaId')}
                     >
-                      <option value="">اختر الولاية</option>
+                      <option value="">{t.selectWilaya}</option>
                       {wilayas.map((w) => (
                         <option key={w.id} value={w.id}>{w.ar_name || w.name}</option>
                       ))}
@@ -421,7 +423,7 @@ export default function ProductFormBlock({
                     <ChevronDown size={14} style={chevronInFieldStyle} />
                   </div>
                 </FieldWrapper>
-                <FieldWrapper label="البلدية" labelColor={muted}>
+                <FieldWrapper label={t.commune} labelColor={muted}>
                   <div style={{ position: 'relative' }}>
                     <MapPin size={15} style={iconInFieldStyle} />
                     <select
@@ -431,7 +433,7 @@ export default function ProductFormBlock({
                       style={fieldStyle('communeId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer', opacity: form.wilayaId ? 1 : 0.6 })}
                       {...fieldHandlers('communeId')}
                     >
-                      <option value="">اختر البلدية</option>
+                      <option value="">{t.selectCommune}</option>
                       {communes.map((c) => (
                         <option key={c.id} value={c.id}>{c.ar_name || c.name}</option>
                       ))}
@@ -443,11 +445,11 @@ export default function ProductFormBlock({
 
               {/* Delivery type */}
               <div>
-                <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>نوع التوصيل</p>
+                <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {[
-                    { type: 'home', Icon: Home, label: 'توصيل للمنزل' },
-                    { type: 'office', Icon: Building2, label: 'استلام من المكتب' },
+                    { type: 'home', Icon: Home, label: t.home },
+                    { type: 'office', Icon: Building2, label: t.office },
                   ].map((opt) => {
                     const isSelected = form.typeShip === opt.type;
                     return (
@@ -482,12 +484,12 @@ export default function ProductFormBlock({
                   })}
                 </div>
                 {!selectedWilaya && (
-                  <p style={{ fontSize: 11, opacity: 0.5, marginTop: 6, textAlign: 'center' }}>اختر الولاية لعرض تكلفة التوصيل</p>
+                  <p style={{ fontSize: 11, opacity: 0.5, marginTop: 6, textAlign: 'center' }}>{t.selectWilayaForPrice}</p>
                 )}
               </div>
 
               {/* Quantity */}
-              <FieldWrapper label="الكمية" labelColor={muted}>
+              <FieldWrapper label={t.quantity} labelColor={muted}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <button
                     type="button"
@@ -507,7 +509,7 @@ export default function ProductFormBlock({
                   >
                     <Plus size={14} strokeWidth={2.5} />
                   </button>
-                  <span style={{ fontSize: 12, opacity: 0.5, fontWeight: 500 }}>قطعة</span>
+                  <span style={{ fontSize: 12, opacity: 0.5, fontWeight: 500 }}>{t.piece}</span>
                 </div>
               </FieldWrapper>
 
@@ -515,7 +517,7 @@ export default function ProductFormBlock({
               {product && (
                 <div style={{ borderRadius: 16, backgroundColor: shade(baseInputStyle.backgroundColor), border: `1px solid ${baseInputStyle.borderColor}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Package size={14} /> المنتج</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Package size={14} /> {t.product}</span>
                     <span style={{ fontWeight: 700, opacity: 1, maxWidth: '55%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</span>
                   </div>
 
@@ -524,7 +526,7 @@ export default function ProductFormBlock({
                     if (!offer) return null;
                     return (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.75 }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Tag size={13} color="#f59e0b" /> العرض</span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Tag size={13} color="#f59e0b" /> {t.offer}</span>
                         <span style={{ color: '#d97706', fontWeight: 700, backgroundColor: '#fffbeb', padding: '3px 8px', borderRadius: 8, fontSize: 11, border: '1px solid #fde68a' }}>{offer.name}</span>
                       </div>
                     );
@@ -547,23 +549,23 @@ export default function ProductFormBlock({
                   })}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Truck size={14} /> التوصيل</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Truck size={14} /> {t.delivery}</span>
                     <span style={{ fontWeight: 600, opacity: 1 }}>
-                      {form.typeShip === 'home' ? 'المنزل' : 'المكتب'}
+                      {form.typeShip === 'home' ? t.homeShort : t.officeShort}
                       {form.wilayaId && <span style={{ opacity: 0.6 }}> ({formatPrice(priceShip)})</span>}
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span>سعر القطعة</span>
+                    <span>{t.unitPrice}</span>
                     <span style={{ fontWeight: 700, opacity: 1 }}>{formatPrice(getUnitPrice())}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span>الكمية</span>
+                    <span>{t.quantity}</span>
                     <span style={{ fontWeight: 700, opacity: 1 }}>× {form.quantity}</span>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1.5px dashed ${baseInputStyle.borderColor}` }}>
-                    <span style={{ fontWeight: 700, fontSize: 14 }}>الإجمالي الكلي</span>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>{t.total}</span>
                     <span style={{ fontSize: 19, fontWeight: 800 }}>
                       {formatPrice(totalPrice)}
                     </span>
@@ -572,7 +574,7 @@ export default function ProductFormBlock({
               )}
 
               {outOfStock && (
-                <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>هذا الخيار غير متوفر حاليًا</p>
+                <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{t.outOfStock}</p>
               )}
               {error && <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{error}</p>}
 
@@ -599,19 +601,19 @@ export default function ProductFormBlock({
                 {submitting ? (
                   <>
                     <span style={spinnerStyle(buttonTextColor || '#ffffff')} />
-                    جارٍ الإرسال...
+                    {t.submitting}
                   </>
                 ) : (
                   <>
                     <ShoppingCart size={17} />
-                    {buttonText || 'اطلب الآن'}
+                    {buttonText || t.submit}
                   </>
                 )}
               </button>
 
               <p style={{ margin: 0, fontSize: 11, textAlign: 'center', opacity: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                 <Shield size={12} />
-                بياناتك آمنة ومشفرة 100%
+                {t.secure}
               </p>
             </form>
           )}

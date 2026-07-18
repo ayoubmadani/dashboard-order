@@ -19,8 +19,13 @@ export default function usePageBuilder(pageId) {
 
   const [name, setName] = useState('');
   const [productId, setProductId] = useState(null);
+  const [domain, setDomain] = useState(null);
   const [settings, setSettings] = useState({});
   const [blocks, setBlocks] = useState([]);
+  // `publishedUrl` (from the backend) is the raw R2 JSON artifact the page
+  // tree gets published to — never meant for a person to open. The real,
+  // customer-facing page lives at the page's own domain instead, same as
+  // every link in PagesList.jsx (`https://${page.domain}`).
   const [publishedUrl, setPublishedUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +55,7 @@ export default function usePageBuilder(pageId) {
       const res = await axios.get(`${baseURL}/builder-pages/${pageId}`, { headers: authHeaders() });
       setName(res.data?.name ?? '');
       setProductId(res.data?.productId ?? null);
+      setDomain(res.data?.domain ?? null);
       setSettings(res.data?.settings && typeof res.data.settings === 'object' ? res.data.settings : {});
       setBlocks(Array.isArray(res.data?.tree) ? res.data.tree : []);
       setPublishedUrl(res.data?.publishedUrl ?? null);
@@ -125,14 +131,22 @@ export default function usePageBuilder(pageId) {
     }
   }, [pageId, isDemo]);
 
+  // The real, customer-facing page — only meaningful once the page has
+  // actually been published (publishedUrl set) and has a domain assigned
+  // (a page can be published without one, since domain is optional at
+  // creation; without it there's no real URL to send anyone to).
+  const siteUrl = domain && publishedUrl ? `https://${domain}` : null;
+
   return {
     name,
     productId,
+    domain,
     settings,
     setSettings: updateSettings,
     blocks,
     setBlocks: updateBlocks,
     publishedUrl,
+    siteUrl,
     loading,
     error,
     saving,

@@ -598,7 +598,9 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
           </div>
 
           <div className="space-y-4">
-            {def.fields.map((field) =>
+            {def.fields
+              .filter((field) => !field.showIf || field.showIf(values))
+              .map((field) =>
               field.type === 'colorGroup' ? (
                 <ColorGroupField
                   key={field.key}

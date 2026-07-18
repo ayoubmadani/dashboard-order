@@ -79,7 +79,13 @@
     "title": "Paramètres de la page",
     "backgroundColor": "Couleur de fond de la page",
     "maxWidth": "Largeur max (px)",
-    "padding": "Marge intérieure (px)"
+    "padding": "Marge intérieure (px)",
+    "language": "Langue de la page",
+    "languageOptions": {
+      "ar": "Arabe",
+      "fr": "Français",
+      "en": "Anglais"
+    }
   },
   "propsPanel": {
     "title": "Propriétés du bloc",
@@ -92,7 +98,8 @@
     "button": { "label": "Bouton" },
     "image": { "label": "Image" },
     "productForm": { "label": "Formulaire de commande" },
-    "spacer": { "label": "Espacement" }
+    "spacer": { "label": "Espacement" },
+    "floatingButton": { "label": "Bouton flottant" }
   },
   "fields": {
     "title": "Titre",
@@ -154,7 +161,35 @@
     "bringForward": "Avancer (priorité plus haute)",
     "sendBackward": "Reculer (priorité plus basse)",
     "moveUp": "Monter",
-    "moveDown": "Descendre"
+    "moveDown": "Descendre",
+    "floatingPositionOptions": {
+      "top-right": "Haut droite",
+      "top-left": "Haut gauche",
+      "top-center": "Haut centre",
+      "bottom-right": "Bas droite",
+      "bottom-left": "Bas gauche",
+      "bottom-center": "Bas centre"
+    },
+    "floatingContentType": "Type de contenu",
+    "floatingContentTypeOptions": {
+      "text": "Texte",
+      "icon": "Icône"
+    },
+    "floatingIcon": "Icône",
+    "floatingIconOptions": {
+      "Phone": "Téléphone",
+      "MessageCircle": "Chat",
+      "Mail": "E-mail",
+      "MapPin": "Localisation",
+      "ShoppingCart": "Panier",
+      "ArrowUp": "Flèche vers le haut",
+      "ArrowDown": "Flèche vers le bas",
+      "Facebook": "Facebook",
+      "Instagram": "Instagram",
+      "WhatsApp": "WhatsApp"
+    },
+    "floatingWidth": "Largeur (px)",
+    "floatingHeight": "Hauteur (px)"
   },
   "canvasSection": {
     "elements": "Éléments",
