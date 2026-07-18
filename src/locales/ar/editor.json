@@ -135,6 +135,8 @@
     "showProductName": "إظهار اسم المنتج",
     "productNameOverride": "اسم منتج مخصص (اختياري)",
     "containerBackgroundColor": "لون خلفية الحاوية",
+    "paddingX": "الحشو الجانبي (%)",
+    "borderRadius": "استدارة الحواف (px)",
     "loadingProducts": "جارٍ التحميل...",
     "buttonBackgroundColor": "لون خلفية الزر",
     "buttonTextColor": "لون كتابة الزر",

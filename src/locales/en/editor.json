@@ -135,6 +135,8 @@
     "showProductName": "Show product name",
     "productNameOverride": "Custom product name (optional)",
     "containerBackgroundColor": "Container background color",
+    "paddingX": "Side padding (%)",
+    "borderRadius": "Corner radius (px)",
     "loadingProducts": "Loading...",
     "buttonBackgroundColor": "Button background color",
     "buttonTextColor": "Button text color",

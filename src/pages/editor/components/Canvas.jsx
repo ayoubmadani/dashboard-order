@@ -66,7 +66,7 @@ function BlockHeightHandle({ height, measureRef, onResize, visible }) {
   );
 }
 
-function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt, onDuplicate, onUpdateProps, selectedElementId, onSelectElement, pageProductId }) {
+function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt, onDuplicate, onUpdateProps, selectedElementId, onSelectElement, pageProductId, referenceWidth }) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block?.id ?? `unknown-${index}` });
   const def = block && componentsMap[block.type];
@@ -135,7 +135,7 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
       : isPinned
       ? { ...def.defaultProps, ...block.props, height: currentHeight, position: 'static' }
       : def.resizableHeight
-      ? { ...def.defaultProps, ...block.props, height: currentHeight }
+      ? { ...def.defaultProps, ...block.props, height: currentHeight, referenceWidth }
       : { ...def.defaultProps, ...block.props };
 
   return (
@@ -152,7 +152,7 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
           {t(pinnedLabelKey)}
         </div>
       )}
-      <div ref={wrapperRef} style={{ position: 'relative' }}>
+      <div ref={wrapperRef} style={{ position: 'relative', containerType: 'inline-size' }}>
         <div className="pointer-events-none">
           <Component {...componentProps} />
         </div>
@@ -164,6 +164,7 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
           onActiveElementChange={(elementId) => onSelectElement(block.id, elementId)}
           blockHeight={currentHeight}
           onGrowBlockHeight={(minHeight) => onUpdateProps(block.id, { height: Math.max(currentHeight ?? 0, minHeight) })}
+          referenceWidth={referenceWidth}
         />
         {def.resizableHeight && !block.props.locked && (
           <BlockHeightHandle
@@ -248,6 +249,7 @@ export default function Canvas({ blocks, selectedId, onSelect, onDelete, onDelet
                 selectedElementId={selectedElementId}
                 onSelectElement={onSelectElement}
                 pageProductId={pageProductId}
+                referenceWidth={settings?.maxWidth || 720}
               />
             ))}
           </SortableContext>

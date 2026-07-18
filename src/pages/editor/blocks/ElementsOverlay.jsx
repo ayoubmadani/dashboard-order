@@ -85,6 +85,7 @@ export default function ElementsOverlay({
   onActiveElementChange,
   blockHeight,
   onGrowBlockHeight,
+  referenceWidth = 720,
 }) {
   const containerRef = useRef(null);
   const [draggingId, setDraggingId] = useState(null);
@@ -436,6 +437,13 @@ export default function ElementsOverlay({
         }
 
         // text element
+        // Mirrors store/BuilderPageRenderer.tsx's FloatingElements exactly —
+        // a fixed px fontSize only looks right at the width it was set at
+        // (referenceWidth, the page's own maxWidth); clamping it to a cqw
+        // value scaled from that reference keeps this block's own preview
+        // in sync with how it'll actually shrink on a real phone screen,
+        // instead of only ever showing the fixed-width desktop look.
+        const basePx = el.fontSize || 24;
         return (
           <div
             key={el.id}
@@ -448,7 +456,7 @@ export default function ElementsOverlay({
             }}
             style={{
               ...commonStyle,
-              fontSize: el.fontSize || 24,
+              fontSize: `clamp(10px, ${(basePx / referenceWidth) * 100}cqw, ${basePx}px)`,
               fontWeight: el.fontWeight || 700,
               fontStyle: el.fontStyle || 'normal',
               textDecoration: el.textDecoration || 'none',

@@ -99,6 +99,12 @@ export const componentsMap = {
       inputBackgroundColor: '#f9fafb',
       inputBorderColor: '#e4e4e7',
       inputTextColor: '#18181b',
+      // ~20px at the page's 720px reference width, expressed as a
+      // percentage of the container's own width so it stays proportional
+      // at any screen size instead of using up more and more of a narrow
+      // phone screen the way a fixed px value would.
+      paddingX: 3,
+      borderRadius: 0,
     },
     fields: [
       { key: 'title', labelKey: 'editor.fields.title', type: 'text' },
@@ -106,6 +112,8 @@ export const componentsMap = {
       { key: 'productName', labelKey: 'editor.fields.productNameOverride', type: 'text' },
       { key: 'buttonText', labelKey: 'editor.fields.buttonText', type: 'text' },
       { key: 'containerBackgroundColor', labelKey: 'editor.fields.containerBackgroundColor', type: 'color' },
+      { key: 'paddingX', labelKey: 'editor.fields.paddingX', type: 'number', min: 0, max: 50 },
+      { key: 'borderRadius', labelKey: 'editor.fields.borderRadius', type: 'number', min: 0, max: 60 },
       {
         key: 'formColors',
         type: 'colorGroup',

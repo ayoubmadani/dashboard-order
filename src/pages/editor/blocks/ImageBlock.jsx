@@ -5,7 +5,7 @@ export default function ImageBlock({ src, alt, caption, width, align, height }) 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: justify }}>
       {src ? (
-        <div style={{ width: `${widthPct}%`, maxWidth: '100%', height: height || undefined, overflow: 'hidden', borderRadius: 12 }}>
+        <div style={{ width: `${widthPct}%`, maxWidth: '100%', height: height || undefined, overflow: 'hidden' }}>
           <img
             src={src}
             alt={alt || ''}
@@ -26,7 +26,6 @@ export default function ImageBlock({ src, alt, caption, width, align, height }) 
           style={{
             width: `${widthPct}%`,
             aspectRatio: '16 / 9',
-            borderRadius: 12,
             backgroundColor: 'var(--md-surface, #f4f4f5)',
             border: '1px dashed var(--md-border, #d4d4d8)',
           }}

@@ -60,6 +60,8 @@ export default function ProductFormBlock({
   inputBackgroundColor,
   inputBorderColor,
   inputTextColor,
+  paddingX,
+  borderRadius,
 }) {
   const [product, setProduct] = useState(null);
   const [wilayas, setWilayas] = useState([]);
@@ -214,8 +216,18 @@ export default function ProductFormBlock({
     // Stable id a "jump to order form" button (see ElementsOverlay.jsx)
     // scrolls to — works from anywhere on the page without needing to know
     // this block's own generated id.
-    <div id="md-product-form" style={{ padding: 20, width: '100%', height: '100%', boxSizing: 'border-box', backgroundColor: containerBackgroundColor || 'transparent' }}>
-      <div style={{ borderRadius: 24, backgroundColor: backgroundColor || '#ffffff', color: muted, overflow: 'hidden', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08)', border: `1px solid ${baseInputStyle.borderColor}` }}>
+    <div
+      id="md-product-form"
+      style={{
+        paddingBlock: 20,
+        paddingInline: `${paddingX ?? 0}%`,
+        width: '100%',
+        height: '100%',
+        boxSizing: 'border-box',
+        backgroundColor: containerBackgroundColor || 'transparent',
+      }}
+    >
+      <div style={{ backgroundColor: backgroundColor || '#ffffff', color: muted, overflow: 'hidden', borderRadius: borderRadius ?? 0, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08)', border: `1px solid ${baseInputStyle.borderColor}` }}>
         {/* Header */}
         <div style={{ padding: '18px 22px', borderBottom: `1px solid ${baseInputStyle.borderColor}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

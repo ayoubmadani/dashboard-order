@@ -135,6 +135,8 @@
     "showProductName": "Afficher le nom du produit",
     "productNameOverride": "Nom de produit personnalisé (optionnel)",
     "containerBackgroundColor": "Couleur de fond du conteneur",
+    "paddingX": "Marge latérale (%)",
+    "borderRadius": "Rayon des angles (px)",
     "loadingProducts": "Chargement...",
     "buttonBackgroundColor": "Couleur de fond du bouton",
     "buttonTextColor": "Couleur du texte du bouton",
