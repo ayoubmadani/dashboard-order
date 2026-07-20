@@ -1,17 +1,10 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 // استيراد المكونات
 import { Otp, Register, NewPassword, Login, ForgotPassword } from './pages/auth/imports';
 import LayoutAuth from './layouts/LayoutAuth';
-import LayoutSite from './layouts/LayoutSite';
-import HomeSite from './pages/site/home';
-import About from './pages/site/about';
-import Contact from './pages/site/contact';
-import Privacy from './pages/site/Privacy';
-import Terms from './pages/site/Terms';
-import Cookies from './pages/site/Cookies';
 import LayoutDashboard from './layouts/LayoutDashboard';
 import DashboardHome from './pages/dashboard/dashboard/DashboardHome';
 import Categories from './pages/dashboard/categories/Categories';
@@ -25,7 +18,6 @@ import Shipping from './pages/dashboard/shipping/Shipping';
 import Update from './pages/dashboard/stores/update';
 import Show from './pages/dashboard/stores/Show';
 import CreateProduct from './pages/dashboard/products/Create';
-import FakeProductDetails from './pages/site/FakeProductDetails';
 import ProtectedRouteDashboard from './components/ProtectedRouteDashboard';
 import ProtectedRouteAuth from './components/ProtectedRouteAuth';
 import AuthCallback from './pages/auth/success/AuthCallback';
@@ -36,7 +28,6 @@ import ProductShow from './pages/dashboard/products/show';
 import Theme from './pages/dashboard/theme/Theme';
 import CreateFerstStore from './pages/dashboard/stores/Create-First';
 import Wallet from './pages/dashboard/wallet/wallet';
-import Plan from './pages/site/plan';
 import Pixels from './pages/dashboard/pixels/pixels';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
@@ -70,20 +61,8 @@ const App = () => {
     <BrowserRouter>
     <Title title={"MD store"} />
       <Routes>
-        {/* 1. قسم الموقع العام */}
-        <Route path="/" element={<LayoutSite />}>
-          <Route index element={<HomeSite />} />
-          <Route path="about" element={<About />} />
-          <Route path="contact" element={<Contact />} />
-          <Route path="privacy" element={<Privacy />} />
-          <Route path="terms" element={<Terms />} />
-          <Route path="cookies" element={<Cookies />} />
-          <Route path="plan" element={<Plan />} />
-
-
-        </Route>
-
-        <Route path="fake-product" element={<FakeProductDetails />} />
+        {/* المسارات التسويقية (home/about/contact/plan/privacy/terms/cookies) انتقلت إلى مشروع store لدعم الـ SEO */}
+        <Route path="/" element={<Navigate to="/auth/login" replace />} />
 
         {/* 2. قسم لوحة التحكم */}
         <Route element={<ProtectedRouteDashboard />}>
