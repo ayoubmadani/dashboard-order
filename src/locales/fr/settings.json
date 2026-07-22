@@ -9,7 +9,19 @@
   "personal_info": "Informations personnelles",
   "username": "Nom d'utilisateur",
   "email": "Adresse e-mail",
-  
+
+  "security_title": "Sécurité et connexion",
+  "security_change_password": "Changer le mot de passe",
+  "security_set_password": "Définissez un mot de passe pour aussi vous connecter par e-mail",
+  "security_current_password": "Mot de passe actuel",
+  "security_new_password": "Nouveau mot de passe",
+  "security_confirm_password": "Confirmer le nouveau mot de passe",
+  "security_save_password": "Enregistrer le mot de passe",
+  "security_password_mismatch": "Les mots de passe ne correspondent pas",
+  "security_password_too_short": "Le mot de passe doit contenir au moins 8 caractères",
+  "security_password_updated": "Mot de passe mis à jour avec succès",
+  "security_password_error": "Une erreur s'est produite, veuillez réessayer",
+
   "platform_pref": "Préférences de la plateforme",
   "language": "Langue du tableau de bord",
   "lang_ar": "العربية",

@@ -9,7 +9,19 @@
   "personal_info": "Personal Information",
   "username": "Username",
   "email": "Email Address",
-  
+
+  "security_title": "Security & Login",
+  "security_change_password": "Change your password",
+  "security_set_password": "Set a password to also sign in with your email",
+  "security_current_password": "Current Password",
+  "security_new_password": "New Password",
+  "security_confirm_password": "Confirm New Password",
+  "security_save_password": "Save Password",
+  "security_password_mismatch": "Passwords do not match",
+  "security_password_too_short": "Password must be at least 8 characters",
+  "security_password_updated": "Password updated successfully",
+  "security_password_error": "Something went wrong, please try again",
+
   "platform_pref": "Platform Preferences",
   "language": "Dashboard Language",
   "lang_ar": "العربية",

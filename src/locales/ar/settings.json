@@ -9,7 +9,19 @@
   "personal_info": "المعلومات الشخصية",
   "username": "اسم المستخدم",
   "email": "عنوان البريد الإلكتروني",
-  
+
+  "security_title": "الأمان وتسجيل الدخول",
+  "security_change_password": "تغيير كلمة المرور",
+  "security_set_password": "أضف كلمة مرور لتتمكن أيضاً من الدخول بالبريد الإلكتروني",
+  "security_current_password": "كلمة المرور الحالية",
+  "security_new_password": "كلمة المرور الجديدة",
+  "security_confirm_password": "تأكيد كلمة المرور الجديدة",
+  "security_save_password": "حفظ كلمة المرور",
+  "security_password_mismatch": "كلمتا المرور غير متطابقتين",
+  "security_password_too_short": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
+  "security_password_updated": "تم تحديث كلمة المرور بنجاح",
+  "security_password_error": "حدث خطأ ما، حاول مرة أخرى",
+
   "platform_pref": "تفضيلات المنصة",
   "language": "لغة لوحة التحكم",
   "lang_ar": "العربية",
