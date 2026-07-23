@@ -22,18 +22,30 @@ export default function PageEditor() {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  // Sidebar/PropsPanel are docked side-by-side on desktop regardless of
+  // this — only relevant below md, where they render as full-screen
+  // overlays instead (see Sidebar.jsx/PropsPanel.jsx's own comments). Only
+  // one can be open at a time there, so a single slot tracks which.
+  const [mobileDrawer, setMobileDrawer] = useState(null); // null | 'sidebar' | 'props'
 
   // Selecting a different block always drops any element selected inside the
   // previous one — the element fields shown at the top of PropsPanel only
-  // make sense while their parent block is the active selection.
+  // make sense while their parent block is the active selection. On mobile,
+  // picking a block is also how you get to its properties at all (there's no
+  // room to show Sidebar/Canvas/PropsPanel at once), so selecting one closes
+  // the block-palette drawer and opens the properties drawer in its place;
+  // deselecting (tapping empty canvas) closes the properties drawer back to
+  // just the canvas instead of showing it empty.
   const handleSelectBlock = (blockId) => {
     setSelectedId(blockId);
     setSelectedElementId(null);
+    setMobileDrawer(blockId ? 'props' : null);
   };
 
   const handleSelectElement = (blockId, elementId) => {
     setSelectedId(blockId);
     setSelectedElementId(elementId);
+    setMobileDrawer('props');
   };
 
   const {
@@ -297,6 +309,8 @@ export default function PageEditor() {
         onSave={handleSave}
         onPublish={handlePublish}
         onOpenSettings={() => setShowSettingsModal(true)}
+        onOpenMobileSidebar={() => setMobileDrawer('sidebar')}
+        onOpenMobileProps={() => setMobileDrawer('props')}
         isRtl={isRtl}
         isDemo={isDemo}
       />
@@ -315,7 +329,12 @@ export default function PageEditor() {
       />
       <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragEnd={handleDragEnd}>
         <div className="flex-1 flex overflow-hidden">
-          <Sidebar onOpenGenerate={() => setShowGenerateModal(true)} blocks={blocks} />
+          <Sidebar
+            onOpenGenerate={() => setShowGenerateModal(true)}
+            blocks={blocks}
+            mobileOpen={mobileDrawer === 'sidebar'}
+            onMobileClose={() => setMobileDrawer(null)}
+          />
           <Canvas
             blocks={blocks}
             pageProductId={productId}
@@ -338,6 +357,8 @@ export default function PageEditor() {
             onSelectElement={setSelectedElementId}
             onSelectBlock={handleSelectBlock}
             onReorderBlock={handleReorderBlock}
+            mobileOpen={mobileDrawer === 'props'}
+            onMobileClose={() => setMobileDrawer(null)}
           />
         </div>
       </DndContext>

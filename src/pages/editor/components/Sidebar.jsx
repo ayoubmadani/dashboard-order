@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { useTranslation } from 'react-i18next';
 import { Lock, Type, MousePointerClick, Image as ImageIcon } from 'lucide-react';
 import { componentsMap, blockTypes } from '../blocks/componentsMap';
+import MobileDrawer from './MobileDrawer';
 
 function ElementPaletteItem({ elementType, icon, label }) {
   const Icon = icon;
@@ -58,12 +59,13 @@ function PaletteItem({ blockType, disabled }) {
   );
 }
 
-export default function Sidebar({ blocks }) {
+// Placing a block also closes this drawer on mobile — see PageEditor.jsx.
+export default function Sidebar({ blocks, mobileOpen, onMobileClose }) {
   const { t } = useTranslation();
   const placedTypes = new Set((blocks || []).map((b) => b.type));
 
   return (
-    <aside className="w-64 shrink-0 h-full overflow-y-auto border-e border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 p-3">
+    <MobileDrawer open={mobileOpen} onClose={onMobileClose} widthClass="md:w-64" borderClass="border-e" className="p-3">
       {/* "Generate with AI" trigger hidden for now — onOpenGenerate/GenerateModal
           are untouched, just not linked to any visible UI, so this is a
           one-line revert (re-add the button below) when it comes back. */}
@@ -91,6 +93,6 @@ export default function Sidebar({ blocks }) {
         <ElementPaletteItem elementType="button" icon={MousePointerClick} label={t('editor.canvasSection.addButton')} />
         <ElementPaletteItem elementType="image" icon={ImageIcon} label={t('editor.canvasSection.addImage')} />
       </div>
-    </aside>
+    </MobileDrawer>
   );
 }

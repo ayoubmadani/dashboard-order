@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Trash2, Layers, Upload, Loader2, X, Type, MousePointerClick, ChevronLeft, ChevronRight, Bold, Italic, Underline, Image as ImageIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { Trash2, Layers, X, Type, MousePointerClick, ChevronLeft, ChevronRight, Bold, Italic, Underline, Image as ImageIcon, ArrowUp, ArrowDown, Images } from 'lucide-react';
 import { componentsMap } from '../blocks/componentsMap';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import ModelImages from '../../../components/ModelImages';
+import MobileDrawer from './MobileDrawer';
 
 const TEXT_ELEMENT_FIELDS = [
   { key: 'content', labelKey: 'editor.fields.content', type: 'textarea' },
@@ -87,29 +89,14 @@ function ProductField({ value, onChange }) {
 
 function ImageField({ value, onChange }) {
   const { t } = useTranslation();
-  const inputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await axios.post(`${baseURL}/images/upload?folder=builder-pages`, formData, {
-        headers: { Authorization: `Bearer ${getAccessToken()}`, 'Content-Type': 'multipart/form-data' },
-      });
-      onChange(res.data?.url || '');
-    } finally {
-      setUploading(false);
-    }
-  };
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   return (
-    <div>
-      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    <div className="space-y-2">
+      {/* No direct file input here — uploading only happens *inside* the
+          library modal (it has its own dropzone), so every image, new or
+          reused, goes through the same store-wide media library instead of
+          two disconnected upload paths. */}
       {value ? (
         <div className="relative group">
           <img src={value} alt="" className="w-full h-28 object-cover rounded-lg border border-gray-200 dark:border-zinc-700" />
@@ -120,23 +107,27 @@ function ImageField({ value, onChange }) {
             <X size={13} />
           </button>
           <button
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
+            onClick={() => setLibraryOpen(true)}
             className="absolute inset-x-1.5 bottom-1.5 py-1 rounded-md bg-black/60 text-white text-[11px] opacity-0 group-hover:opacity-100 transition-opacity"
           >
-            {uploading ? t('editor.fields.uploading') : t('editor.fields.changeImage')}
+            {t('editor.fields.changeImage')}
           </button>
         </div>
       ) : (
         <button
-          onClick={() => inputRef.current?.click()}
-          disabled={uploading}
-          className="w-full h-28 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 text-gray-400 hover:border-emerald-500 hover:text-emerald-500 transition-all disabled:opacity-60"
+          onClick={() => setLibraryOpen(true)}
+          className="w-full h-28 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 text-gray-400 hover:border-emerald-500 hover:text-emerald-500 transition-all"
         >
-          {uploading ? <Loader2 size={18} className="animate-spin" /> : <Upload size={18} />}
-          <span className="text-xs">{uploading ? t('editor.fields.uploading') : t('editor.fields.uploadImage')}</span>
+          <Images size={18} />
+          <span className="text-xs">{t('editor.fields.chooseFromLibrary')}</span>
         </button>
       )}
+      <ModelImages
+        isOpen={libraryOpen}
+        close={() => setLibraryOpen(false)}
+        onSelectImage={(img) => { onChange(img.url); setLibraryOpen(false); }}
+        initialFolder="landingPage"
+      />
     </div>
   );
 }
@@ -426,14 +417,16 @@ function BlocksList({ blocks, selectedBlockId, onSelectBlock, onReorderBlock, el
   );
 }
 
-export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete, selectedElementId, onSelectElement, onSelectBlock, onReorderBlock }) {
+// This drawer opens automatically whenever a block is selected (see
+// PageEditor.jsx) and closes here or via its own close button.
+export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete, selectedElementId, onSelectElement, onSelectBlock, onReorderBlock, mobileOpen, onMobileClose }) {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === 'ar';
   const BackIcon = isRtl ? ChevronRight : ChevronLeft;
 
   if (!block) {
     return (
-      <aside className="w-72 shrink-0 h-full overflow-y-auto border-s border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 p-4">
+      <MobileDrawer open={mobileOpen} onClose={onMobileClose} widthClass="md:w-72" borderClass="border-s" className="p-4">
         {blocks?.length > 0 ? (
           <BlocksList
             blocks={blocks}
@@ -452,7 +445,7 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
             <p className="text-xs text-gray-400 dark:text-zinc-600">{t('editor.propsPanel.empty')}</p>
           </div>
         )}
-      </aside>
+      </MobileDrawer>
     );
   }
 
@@ -462,7 +455,7 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
   // offer to delete it instead of crashing on the missing definition.
   if (!def) {
     return (
-      <aside className="w-72 shrink-0 h-full overflow-y-auto border-s border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 p-6 flex flex-col items-center justify-center text-center">
+      <MobileDrawer open={mobileOpen} onClose={onMobileClose} widthClass="md:w-72" borderClass="border-s" className="p-6 items-center justify-center text-center">
         <p className="text-xs text-rose-500 mb-3">{`Unknown block type: ${block.type}`}</p>
         <button
           onClick={() => onDelete(block.id)}
@@ -471,7 +464,7 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
         >
           <Trash2 size={14} />
         </button>
-      </aside>
+      </MobileDrawer>
     );
   }
 
@@ -506,7 +499,7 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
   const selectedElementIndex = selectedElement ? elements.findIndex((el) => el.id === selectedElement.id) : -1;
 
   return (
-    <aside className="w-72 shrink-0 h-full overflow-y-auto border-s border-gray-200 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-950 p-4">
+    <MobileDrawer open={mobileOpen} onClose={onMobileClose} widthClass="md:w-72" borderClass="border-s" className="p-4">
       <div className="pb-4 mb-4 border-b border-gray-200 dark:border-zinc-800">
         <BlocksList
           blocks={blocks}
@@ -624,6 +617,6 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
           </div>
         </>
       )}
-    </aside>
+    </MobileDrawer>
   );
 }

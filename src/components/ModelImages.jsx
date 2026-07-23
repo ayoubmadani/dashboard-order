@@ -726,13 +726,13 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                       onKeyDown={(e) => e.key === 'Enter' && handleSelectImage(img, index)}
                       onFocus={() => setFocusedIndex(index)}
                       className={`
-                        group relative ${currentConfig.aspectRatio} overflow-hidden rounded-xl 
-                        bg-gray-100 dark:bg-zinc-800 cursor-pointer 
-                        border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600 
+                        group relative ${currentConfig.aspectRatio} overflow-hidden rounded-xl
+                        bg-gray-100 dark:bg-zinc-800 cursor-pointer
+                        border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600
                         focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
-                        transition-all duration-200 
+                        transition-all duration-200
                         ${currentFolder === 'hero' ? 'col-span-full' : ''}
-                        ${prefersReducedMotion ? '' : 'hover:scale-[1.02] active:scale-95'}
+                        ${prefersReducedMotion ? '' : 'hover:scale-[1.02]'}
                         touch-manipulation
                       `}
                     >
@@ -744,25 +744,39 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                         decoding="async"
                       />
                       
-                      {/* Hover/Touch Overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 group-active:bg-black/40 transition-all duration-200 flex items-end justify-between p-2 sm:p-2.5 opacity-0 group-hover:opacity-100 group-active:opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                        <span className="text-white text-[10px] font-medium truncate max-w-[65%] drop-shadow">
-                          {(img.size / 1024).toFixed(0)} KB
-                        </span>
-                        <button
-                          onClick={(e) => handleDeleteImage(img.id, e)}
-                          className="w-7 h-7 sm:w-6 sm:h-6 rounded-lg bg-red-500 hover:bg-red-600 active:bg-red-700 flex items-center justify-center transition-colors flex-shrink-0 touch-manipulation"
-                          title={t('ui.delete')}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                      
-                      {/* Mobile Selection Indicator */}
+                      {/* Desktop-only hover tint + size label — purely
+                          cosmetic, doesn't gate the delete button below.
+                          Delete used to live inside this hover/touch-reactive
+                          overlay and was hard to press: the card itself had
+                          `active:scale-95` (now removed, above), which
+                          shrinks the whole card — delete button included,
+                          since it's a descendant — for the duration of the
+                          press. 5% of a small square thumbnail is a couple
+                          pixels; 5% of a full-width aspect-video hero/
+                          landingPage card is tens of pixels, enough to carry
+                          the button out from under the finger/cursor before
+                          release, so the tap landed on the image behind it
+                          instead. Delete is now its own always-visible
+                          button, on a card that no longer moves on press. */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 pointer-events-none" />
+                      <span className="absolute bottom-2 start-2 sm:bottom-2.5 sm:start-2.5 text-white text-[10px] font-medium truncate max-w-[60%] drop-shadow opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                        {(img.size / 1024).toFixed(0)} KB
+                      </span>
+                      <button
+                        onClick={(e) => handleDeleteImage(img.id, e)}
+                        className="absolute top-1.5 end-1.5 sm:top-2 sm:end-2 w-7 h-7 sm:w-6 sm:h-6 rounded-full bg-black/60 hover:bg-red-600 active:bg-red-700 backdrop-blur-sm flex items-center justify-center transition-colors touch-manipulation shadow-sm"
+                        title={t('ui.delete')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+
+                      {/* Mobile Selection Indicator — moved to the opposite
+                          corner from the delete button above so the two
+                          never overlap. */}
                       {isMobile && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-white/90 dark:bg-zinc-800/90 flex items-center justify-center opacity-0 group-active:opacity-100 shadow-sm">
+                        <div className="absolute top-1.5 start-1.5 w-6 h-6 rounded-full bg-white/90 dark:bg-zinc-800/90 flex items-center justify-center opacity-0 group-active:opacity-100 shadow-sm pointer-events-none">
                           <svg className="w-3 h-3 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />

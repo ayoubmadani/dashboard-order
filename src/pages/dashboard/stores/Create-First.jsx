@@ -251,7 +251,7 @@ const CreateFirstStore = () => {
 
   /* ══════════════════════════════════════════════════════════════════════════ */
   return (
-    <div className="h-screen w-screen fixed top-0 left-0 bg-gray-50 z-50 overflow-auto">
+    <div className="h-screen w-screen fixed top-0 left-0 bg-gray-50 dark:bg-zinc-950 z-50 overflow-auto">
       <div className="max-w-5xl mx-auto px-4 py-8" dir={isRtl ? 'rtl' : 'ltr'}>
 
         {/* Notification */}

@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Save, Rocket, Loader2, ExternalLink, Circle, Settings2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Rocket, Loader2, ExternalLink, Circle, Settings2, Blocks, SlidersHorizontal } from 'lucide-react';
 
-export default function Topbar({ name, dirty, saving, publishing, publishedUrl, onSave, onPublish, onOpenSettings, isRtl, isDemo }) {
+export default function Topbar({
+  name, dirty, saving, publishing, publishedUrl, onSave, onPublish, onOpenSettings, isRtl, isDemo,
+  onOpenMobileSidebar, onOpenMobileProps,
+}) {
   const { t } = useTranslation();
   const BackIcon = isRtl ? ArrowRight : ArrowLeft;
 
@@ -48,6 +51,22 @@ export default function Topbar({ name, dirty, saving, publishing, publishedUrl, 
         )}
 
         <button
+          onClick={onOpenMobileSidebar}
+          title={t('editor.sidebar.title')}
+          className="md:hidden p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+        >
+          <Blocks size={17} />
+        </button>
+
+        <button
+          onClick={onOpenMobileProps}
+          title={t('editor.propsPanel.title')}
+          className="md:hidden p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+        >
+          <SlidersHorizontal size={17} />
+        </button>
+
+        <button
           onClick={onOpenSettings}
           title={t('editor.pageSettings.title')}
           className="p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
@@ -58,19 +77,19 @@ export default function Topbar({ name, dirty, saving, publishing, publishedUrl, 
         <button
           onClick={onSave}
           disabled={saving || !dirty}
-          className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="flex items-center gap-2 px-2.5 sm:px-3.5 py-2 text-sm font-semibold rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-          {t('editor.topbar.save')}
+          <span className="hidden sm:inline">{t('editor.topbar.save')}</span>
         </button>
 
         <button
           onClick={onPublish}
           disabled={publishing}
-          className="flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-sm"
+          className="flex items-center gap-2 px-2.5 sm:px-3.5 py-2 text-sm font-semibold rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-sm"
         >
           {publishing ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />}
-          {t('editor.topbar.publish')}
+          <span className="hidden sm:inline">{t('editor.topbar.publish')}</span>
         </button>
       </div>
     </header>
