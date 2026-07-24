@@ -35,6 +35,7 @@ import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
 import Messages from './pages/dashboard/messages/messages';
 import PagesList from './pages/editor/PagesList';
 import PageEditor from './pages/editor/PageEditor';
+import SelectLang from './halper/select-lang';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -82,6 +83,7 @@ const App = () => {
 
             <Route path='pixels'  element={<Pixels />}/>
             <Route path='domain'  element={<Domain />}/>
+            
 
             <Route path='theme'>
               <Route index element={<Theme />} />
@@ -145,7 +147,7 @@ const App = () => {
 
         <Route path="auth/callback" element={<AuthCallback />} />
 
-
+        <Route path='select-lang/:lang' element={<SelectLang />} />
       </Routes>
     </BrowserRouter>
   );
