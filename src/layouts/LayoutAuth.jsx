@@ -68,6 +68,23 @@ const LayoutAuth = () => {
         ${isRtl ? 'rounded-l-[2.5rem] lg:rounded-r-none' : 'rounded-r-[2.5rem] lg:rounded-l-none'} 
         rounded-[2.5rem] transition-all duration-500 shadow-inner border border-gray-100 dark:border-none`}>
 
+        {/* أزرار اللغة - أقصى اليسار */}
+        <div className={`absolute top-10 ${isRtl ? 'right-10' : 'left-10'} z-20 flex items-center gap-1 p-1 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-full`}>
+          {['ar', 'fr', 'en'].map((lng) => (
+            <button
+              key={lng}
+              type="button"
+              onClick={() => i18n.changeLanguage(lng)}
+              className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${i18n.language === lng
+                  ? 'bg-brand-primary text-white shadow-md'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                }`}
+            >
+              {lng === 'ar' ? 'العربية' : lng === 'fr' ? 'Français' : 'English'}
+            </button>
+          ))}
+        </div>
+
         {/* الشعار - تأكد من أن النص يتغير لونه */}
         <Link to="/" className={`absolute top-10 ${isRtl ? 'left-10' : 'right-10'} flex items-center gap-2 group`}>
           <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter italic transition-colors">MdStore</span>
