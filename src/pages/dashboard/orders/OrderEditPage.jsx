@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
-  ChevronDown, CheckCircle2, ShoppingBag, Trash2
+  ShoppingBag, Trash2, CheckCircle2
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
@@ -31,6 +31,42 @@ const STATUS_META = {
   postponed: { color: '#a855f7', bg: 'rgba(168,85,247,0.12)', label: 'مؤجل' },
 };
 
+// attrId isn't reliably populated on existing data (often ""), so attributes are
+// grouped/matched by attrName instead — it's the value that's actually unique per attribute.
+function attrKey(a) {
+  return a.attrName || a.attrId || '';
+}
+
+function getVariantAttributeGroups(variants) {
+  const groups = [];
+  const index = {};
+  (variants || []).forEach(v => {
+    const attrs = Array.isArray(v.name) ? v.name : [];
+    attrs.forEach(a => {
+      const key = attrKey(a);
+      if (!index[key]) {
+        index[key] = { key, attrName: a.attrName, displayMode: a.displayMode, options: [] };
+        groups.push(index[key]);
+      }
+      if (!index[key].options.some(o => o.value === a.value)) {
+        index[key].options.push({ value: a.value });
+      }
+    });
+  });
+  return groups;
+}
+
+function findVariantForAttrSelection(variants, currentAttrs, key, newValue) {
+  const target = {};
+  (currentAttrs || []).forEach(a => { target[attrKey(a)] = a.value; });
+  target[key] = newValue;
+  const exact = (variants || []).find(
+    v => Array.isArray(v.name) && v.name.length > 0 && v.name.every(a => target[attrKey(a)] === a.value)
+  );
+  if (exact) return exact;
+  return (variants || []).find(v => Array.isArray(v.name) && v.name.some(a => attrKey(a) === key && a.value === newValue)) || null;
+}
+
 export default function OrderEditPage() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
@@ -48,7 +84,6 @@ export default function OrderEditPage() {
   const [wilayasData, setWilayaData] = useState([]);
   const [communes, setCommunes] = useState([]);
   const [productOptions, setProductOptions] = useState({});
-  const [dropdownOpenId, setDropdownOpenId] = useState(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState(null);
 
@@ -316,6 +351,13 @@ export default function OrderEditPage() {
     }));
   };
 
+  const handleVariantAttrChange = (item, key, newValue) => {
+    const variants = productOptions[item.productId]?.variants || [];
+    const currentAttrs = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name : [];
+    const match = findVariantForAttrSelection(variants, currentAttrs, key, newValue);
+    if (match) handleItemChange(item.id, 'variantDetailId', match.id);
+  };
+
   const handleDeleteItem = (itemId) => {
     if (editedCart.items.length <= 1) {
       alert(t('edit.cannot_delete_last_item') || 'لا يمكن حذف آخر منتج في الطلب');
@@ -508,9 +550,8 @@ export default function OrderEditPage() {
                 <div className="p-6 space-y-4">
                   {editedCart.items.map((item, idx) => {
                     const pOpts = productOptions[item.productId] || { variants: [], offers: [] };
-                    const isDropOpen = dropdownOpenId === item.id;
-                    const variantText = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name.filter(a => a.displayMode !== 'color' && a.displayMode !== 'image').map(a => a.value).join(' / ') : '';
-                    const variantVisuals = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name.filter(a => a.displayMode === 'color' || a.displayMode === 'image') : [];
+                    const attributeGroups = getVariantAttributeGroups(pOpts.variants);
+                    const currentAttrs = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name : [];
 
                     return (
                       <div key={item.id} className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-300">
@@ -584,72 +625,58 @@ export default function OrderEditPage() {
                             )}
                           </div>
 
-                          {/* اختيار المتغير (Variant) */}
-                          {pOpts.variants.length > 0 && (
-                            <div className="relative space-y-1.5">
-                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">المتغير المختار</label>
-                              <button
-                                onClick={() => setDropdownOpenId(isDropOpen ? null : item.id)}
-                                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border transition-all ${isDropOpen
-                                  ? 'border-indigo-500 bg-white dark:bg-zinc-800 shadow-sm'
-                                  : 'border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50'
-                                  }`}
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="flex -space-x-1.5">
-                                    {variantVisuals.map((a, i) => (
-                                      <div key={i} className="ring-2 ring-white dark:ring-zinc-900 rounded-full overflow-hidden">
-                                        {a.displayMode === 'color'
-                                          ? <span className="w-4 h-4 block" style={{ background: a.value }} />
-                                          : <img src={a.value} className="w-4 h-4 object-cover" alt="" />
-                                        }
+                          {/* اختيار المتغير (Variant) — سطر منفصل لكل خاصية */}
+                          {attributeGroups.length > 0 && (
+                            <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/30 p-3.5 space-y-3">
+                              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">المتغير المختار</div>
+                              {attributeGroups.map(group => {
+                                const selectedAttr = currentAttrs.find(a => attrKey(a) === group.key);
+                                const selectedValue = selectedAttr?.value ?? '';
+                                const isSwatch = group.displayMode === 'color' || group.displayMode === 'image';
+                                return (
+                                  <div key={group.key} className="flex items-center justify-between gap-3">
+                                    <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300 shrink-0">
+                                      {group.attrName || 'خاصية'}
+                                    </span>
+                                    {isSwatch ? (
+                                      <div className="flex flex-wrap justify-end gap-2.5">
+                                        {group.options.map(o => {
+                                          const isSel = selectedValue === o.value;
+                                          return (
+                                            <button
+                                              key={o.value}
+                                              type="button"
+                                              onClick={() => handleVariantAttrChange(item, group.key, o.value)}
+                                              className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'}`}
+                                            >
+                                              {group.displayMode === 'color'
+                                                ? <span className="w-full h-full block" style={{ background: o.value }} />
+                                                : <img src={o.value} className="w-full h-full object-cover" alt="" />
+                                              }
+                                              {isSel && (
+                                                <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                  <CheckCircle2 size={16} className="text-white" strokeWidth={2.5} />
+                                                </span>
+                                              )}
+                                            </button>
+                                          );
+                                        })}
                                       </div>
-                                    ))}
+                                    ) : (
+                                      <select
+                                        value={selectedValue}
+                                        onChange={e => handleVariantAttrChange(item, group.key, e.target.value)}
+                                        className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                      >
+                                        {!selectedValue && <option value="" disabled>اختر {group.attrName}</option>}
+                                        {group.options.map(o => (
+                                          <option key={o.value} value={o.value}>{o.value}</option>
+                                        ))}
+                                      </select>
+                                    )}
                                   </div>
-                                  <span className="text-xs font-semibold text-gray-700 dark:text-zinc-300">
-                                    {variantText || 'تخصيص المنتج'}
-                                  </span>
-                                </div>
-                                <ChevronDown size={14} className={`text-gray-400 transition-transform duration-300 ${isDropOpen ? 'rotate-180 text-indigo-500' : ''}`} />
-                              </button>
-
-                              {/* القائمة المنسدلة */}
-                              {isDropOpen && (
-                                <div className="absolute z-50 left-0 right-0 mt-2 bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-2xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                                  <div className="max-h-60 overflow-y-auto p-1.5">
-                                    {pOpts.variants.map(v => {
-                                      const attrs = Array.isArray(v.name) ? v.name : [];
-                                      const txt = attrs.filter(a => a.displayMode !== 'color' && a.displayMode !== 'image').map(a => a.value).join(' / ');
-                                      const sel = String(item.variantDetailId) === String(v.id);
-                                      return (
-                                        <div
-                                          key={v.id}
-                                          onClick={() => { handleItemChange(item.id, 'variantDetailId', v.id); setDropdownOpenId(null); }}
-                                          className={`flex items-center justify-between px-3 py-3 mb-1 last:mb-0 rounded-lg cursor-pointer transition-colors ${sel ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600' : 'hover:bg-gray-50 dark:hover:bg-zinc-700/50 text-gray-700 dark:text-zinc-300'
-                                            }`}
-                                        >
-                                          <div className="flex items-center gap-3">
-                                            <div className="flex gap-1">
-                                              {attrs.map((a, i) => (
-                                                <div key={i} className="rounded-full border border-gray-200 dark:border-zinc-600 overflow-hidden">
-                                                  {a.displayMode === 'color'
-                                                    ? <span className="w-3 h-3 block" style={{ background: a.value }} />
-                                                    : <img src={a.value} className="w-3 h-3 object-cover" alt="" />
-                                                  }
-                                                </div>
-                                              ))}
-                                            </div>
-                                            <span className="text-xs font-medium">{txt}</span>
-                                          </div>
-                                          {sel && <CheckCircle2 size={16} className="text-indigo-500" />}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-
-
+                                );
+                              })}
                             </div>
                           )}
 
