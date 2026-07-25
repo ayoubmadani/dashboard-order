@@ -64,37 +64,54 @@ const LayoutAuth = () => {
       </div>
 
       {/* القسم الأبيض/الداكن - تم تحسين تفاعله مع الألوان */}
-      <div className={`w-full lg:w-1/2 bg-white dark:bg-zinc-950 flex items-center justify-center p-8 relative 
-        ${isRtl ? 'rounded-l-[2.5rem] lg:rounded-r-none' : 'rounded-r-[2.5rem] lg:rounded-l-none'} 
+      <div className={`w-full lg:w-1/2 bg-white dark:bg-zinc-950 flex flex-col p-6 sm:p-8 relative
+        ${isRtl ? 'rounded-l-[2.5rem] lg:rounded-r-none' : 'rounded-r-[2.5rem] lg:rounded-l-none'}
         rounded-[2.5rem] transition-all duration-500 shadow-inner border border-gray-100 dark:border-none`}>
 
-        {/* أزرار اللغة - أقصى اليسار */}
-        <div className={`absolute top-10 ${isRtl ? 'right-10' : 'left-10'} z-20 flex items-center gap-1 p-1 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-full`}>
-          {['ar', 'fr', 'en'].map((lng) => (
-            <button
-              key={lng}
-              type="button"
-              onClick={() => i18n.changeLanguage(lng)}
-              className={`px-2.5 py-1.5 rounded-full text-xs font-bold transition-all ${i18n.language === lng
-                  ? 'bg-brand-primary text-white shadow-md'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
-                }`}
+        {/* شريط علوي: زر العودة (موبايل فقط) + أزرار اللغة | الشعار - تدفّق طبيعي بدل absolute حتى لا يتداخلوا على الشاشات الصغيرة */}
+        <div className="w-full flex items-center justify-between gap-2 mb-8">
+          <div className="flex items-center gap-2 min-w-0">
+            <a
+              href={storeURL}
+              aria-label={t('auth.back_home', 'العودة للرئيسية')}
+              title={t('auth.back_home', 'العودة للرئيسية')}
+              className="lg:hidden flex items-center justify-center w-10 h-10 shrink-0 rounded-full bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all"
             >
-              {lng === 'ar' ? 'العربية' : lng === 'fr' ? 'Français' : 'English'}
-            </button>
-          ))}
+              {isRtl ?
+                <ArrowRight className="w-4 h-4" /> :
+                <ArrowLeft className="w-4 h-4" />
+              }
+            </a>
+
+            <div className="flex items-center gap-1 p-1 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-full shrink-0">
+              {['ar', 'fr', 'en'].map((lng) => (
+                <button
+                  key={lng}
+                  type="button"
+                  onClick={() => i18n.changeLanguage(lng)}
+                  className={`px-2.5 py-1.5 rounded-full text-xs font-bold uppercase transition-all ${i18n.language === lng
+                      ? 'bg-brand-primary text-white shadow-md'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                    }`}
+                >
+                  {lng}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Link to="/" className="flex items-center gap-2 group shrink-0">
+            <span className="hidden sm:inline text-xl font-black text-gray-900 dark:text-white tracking-tighter italic transition-colors">MdStore</span>
+            <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform shadow-lg shadow-brand-primary/20">
+              <span className="text-white text-xs font-bold font-sans">M</span>
+            </div>
+          </Link>
         </div>
 
-        {/* الشعار - تأكد من أن النص يتغير لونه */}
-        <Link to="/" className={`absolute top-10 ${isRtl ? 'left-10' : 'right-10'} flex items-center gap-2 group`}>
-          <span className="text-xl font-black text-gray-900 dark:text-white tracking-tighter italic transition-colors">MdStore</span>
-          <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center group-hover:rotate-12 transition-transform shadow-lg shadow-brand-primary/20">
-            <span className="text-white text-xs font-bold font-sans">M</span>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-full max-w-sm text-gray-900 dark:text-white">
+            <Outlet />
           </div>
-        </Link>
-
-        <div className="w-full max-w-sm text-gray-900 dark:text-white">
-          <Outlet />
         </div>
       </div>
 
