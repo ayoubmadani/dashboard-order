@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Globe2 } from 'lucide-react';
+import { storeURL } from '../constents/const.';
 
 // ... (الواردات تبقى كما هي)
 
@@ -21,16 +22,16 @@ const LayoutAuth = () => {
         ${isRtl ? 'rounded-r-[2.5rem]' : 'rounded-l-[2.5rem]'} shadow-2xl transition-all duration-700`}>
 
         {/* زر العودة للموقع */}
-        <Link
-          to="/"
-          className={`absolute top-10 ${isRtl ? 'right-10' : 'left-10'} z-20 flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-full hover:bg-white/20 transition-all group`}
+        <a
+          href={storeURL}
+          className={`absolute top-10 ${isRtl ? 'right-10' : 'left-10'} cursor-pointer z-20 flex items-center gap-2 px-5 py-2.5 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-full hover:bg-white/20 transition-all group`}
         >
           {isRtl ?
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /> :
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
           }
           <span className="text-sm font-bold tracking-tight">{t('auth.back_home', 'العودة للرئيسية')}</span>
-        </Link>
+        </a>
 
         {/* أيقونة ديكورية كبيرة في الخلفية */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 pointer-events-none">
