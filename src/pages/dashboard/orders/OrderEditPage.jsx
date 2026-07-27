@@ -19,16 +19,16 @@ export const StatusEnum = {
 };
 
 const STATUS_META = {
-  pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', label: 'معلق' },
-  appl1: { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', label: 'محاولة 1' },
-  appl2: { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', label: 'محاولة 2' },
-  appl3: { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)', label: 'محاولة 3' },
-  confirmed: { color: '#10b981', bg: 'rgba(16,185,129,0.12)', label: 'مؤكد' },
-  shipping: { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)', label: 'في الشحن' },
-  delivered: { color: '#22c55e', bg: 'rgba(34,197,94,0.12)', label: 'تم التوصيل' },
-  cancelled: { color: '#ef4444', bg: 'rgba(239,68,68,0.12)', label: 'ملغى' },
-  returned: { color: '#f97316', bg: 'rgba(249,115,22,0.12)', label: 'مسترجع' },
-  postponed: { color: '#a855f7', bg: 'rgba(168,85,247,0.12)', label: 'مؤجل' },
+  pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  appl1: { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+  appl2: { color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
+  appl3: { color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
+  confirmed: { color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  shipping: { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)' },
+  delivered: { color: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+  cancelled: { color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
+  returned: { color: '#f97316', bg: 'rgba(249,115,22,0.12)' },
+  postponed: { color: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
 };
 
 // attrId isn't reliably populated on existing data (often ""), so attributes are
@@ -216,7 +216,7 @@ export default function OrderEditPage() {
 
     } catch (e) {
       console.error('Failed to load order:', e);
-      setError(t('edit.load_error') || 'فشل تحميل بيانات الطلب');
+      setError(t('edit.load_error'));
     } finally {
       setLoading(false);
     }
@@ -360,11 +360,11 @@ export default function OrderEditPage() {
 
   const handleDeleteItem = (itemId) => {
     if (editedCart.items.length <= 1) {
-      alert(t('edit.cannot_delete_last_item') || 'لا يمكن حذف آخر منتج في الطلب');
+      alert(t('edit.cannot_delete_last_item'));
       return;
     }
 
-    if (window.confirm(t('edit.confirm_delete_item') || 'هل أنت متأكد من حذف هذا المنتج؟')) {
+    if (window.confirm(t('edit.confirm_delete_item'))) {
       // 1. حساب القائمة الجديدة
       const updatedItems = editedCart.items.filter(item => item.id !== itemId);
 
@@ -421,11 +421,11 @@ export default function OrderEditPage() {
       setHasChanges(false);
 
       if (!isDelete) {
-        alert(t('edit.save_success') || 'تم حفظ التغييرات بنجاح');
+        alert(t('edit.save_success'));
       }
     } catch (e) {
       console.error("Save Error:", e);
-      alert('حدث خطأ أثناء الحفظ');
+      alert(t('edit.save_failed'));
     } finally {
       setSaving(false);
     }
@@ -433,7 +433,7 @@ export default function OrderEditPage() {
 
   const handleBack = () => {
     if (hasChanges) {
-      if (window.confirm(t('edit.unsaved_changes') || 'لديك تغييرات غير محفوظة. هل تريد المغادرة؟')) {
+      if (window.confirm(t('edit.unsaved_changes'))) {
         navigate('/dashboard/orders');
       }
     } else {
@@ -446,7 +446,7 @@ export default function OrderEditPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 size={40} className="animate-spin text-indigo-500" />
-          <p className="text-gray-500 dark:text-zinc-400">{t('edit.loading') || 'جاري التحميل...'}</p>
+          <p className="text-gray-500 dark:text-zinc-400">{t('edit.loading')}</p>
         </div>
       </div>
     );
@@ -457,11 +457,11 @@ export default function OrderEditPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex items-center justify-center" dir={isRtl ? 'rtl' : 'ltr'}>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-8 shadow-lg border border-red-200 dark:border-red-900/30 max-w-md text-center">
           <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('edit.error_title') || 'خطأ'}</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('edit.error_title')}</h2>
           <p className="text-gray-500 dark:text-zinc-400 mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
-            <button onClick={fetchOrderData} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">إعادة المحاولة</button>
-            <button onClick={() => navigate('/dashboard/orders')} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">رجوع</button>
+            <button onClick={fetchOrderData} className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700">{t('edit.retry')}</button>
+            <button onClick={() => navigate('/dashboard/orders')} className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50">{t('edit.back')}</button>
           </div>
         </div>
       </div>
@@ -469,6 +469,10 @@ export default function OrderEditPage() {
   }
 
   if (!editedCart) return null;
+
+  const statusOptions = Object.entries(StatusEnum).map(([, value]) => ({
+    value, label: t(`status.${value}`),
+  }));
 
   const totals = calculateTotals();
   const statusMeta = STATUS_META[editedCart.status] || STATUS_META.pending;
@@ -485,33 +489,33 @@ export default function OrderEditPage() {
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50">
                   <div className="flex items-center gap-2">
                     <MapPin size={16} className="text-indigo-500" />
-                    <h2 className="font-bold text-gray-900 dark:text-white">بيانات الزبون والتوصيل</h2>
+                    <h2 className="font-bold text-gray-900 dark:text-white">{t('edit.customer_section_title')}</h2>
                   </div>
                 </div>
                 <div className="p-6 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">اسم الزبون</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.customer_name')}</label>
                       <input type="text" value={editedCart.customerName || ''} onChange={e => handleGeneralChange('customerName', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none" />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">رقم الهاتف</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.customer_phone')}</label>
                       <input type="tel" dir="ltr" value={editedCart.customerPhone || ''} onChange={e => handleGeneralChange('customerPhone', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none" />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">الولاية</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.wilaya')}</label>
                       <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none">
-                        <option value="">اختر الولاية</option>
+                        <option value="">{t('edit.select_wilaya')}</option>
                         {wilayasData.map(w => <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">البلدية</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.commune')}</label>
                       <select value={editedCart.customerCommuneId || ''} onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))} disabled={!communes.length} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none disabled:opacity-50">
-                        <option value="">اختر البلدية</option>
+                        <option value="">{t('edit.select_commune')}</option>
                         {communes.map(c => <option key={c.id} value={c.id}>{c.ar_name}</option>)}
                       </select>
                     </div>
@@ -519,9 +523,9 @@ export default function OrderEditPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">نوع التوصيل</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.ship_type')}</label>
                       <div className="grid grid-cols-2 gap-3">
-                        {[{ key: 'home', label: 'المنزل', icon: '🏠' }, { key: 'office', label: 'المكتب', icon: '🏢' }].map(o => (
+                        {[{ key: 'home', label: t('edit.ship_home'), icon: '🏠' }, { key: 'office', label: t('edit.ship_office'), icon: '🏢' }].map(o => (
                           <button key={o.key} onClick={() => handleChangeTypeShip(o.key)} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${editedCart.typeShip === o.key ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
                             <span>{o.icon}</span>{o.label}
                           </button>
@@ -529,9 +533,9 @@ export default function OrderEditPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">حالة الطلب</label>
+                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.status_label')}</label>
                       <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
-                        {Object.entries(StatusEnum).map(([key, value]) => <option key={value} value={value}>{STATUS_META[value]?.label || value}</option>)}
+                        {statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
                     </div>
                   </div>
@@ -543,7 +547,7 @@ export default function OrderEditPage() {
                 <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ShoppingBag size={16} className="text-indigo-500" />
-                    <h2 className="font-bold text-gray-900 dark:text-white">المنتجات</h2>
+                    <h2 className="font-bold text-gray-900 dark:text-white">{t('edit.products_section_title')}</h2>
                     <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">{editedCart.items.length}</span>
                   </div>
                 </div>
@@ -569,7 +573,7 @@ export default function OrderEditPage() {
                           <div className="flex-1 flex flex-col justify-between py-0.5">
                             <div className="flex justify-between items-center">
                               <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
-                                {item.product?.name || item.productName || 'منتج غير معروف'}
+                                {item.product?.name || item.productName || t('edit.product_unknown')}
                               </h3>
                               <button
                                 onClick={() => handleDeleteItem(item.id)}
@@ -597,7 +601,7 @@ export default function OrderEditPage() {
                           <div className="grid grid-cols-2 gap-3">
                             {/* حقل الكمية بتصميم أنظف */}
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">الكمية</label>
+                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.quantity')}</label>
                               <div className="relative">
                                 <input
                                   type="number"
@@ -612,13 +616,13 @@ export default function OrderEditPage() {
                             {/* اختيار العرض */}
                             {pOpts.offers.length > 0 && (
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">العرض الترويجي</label>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.offer_label')}</label>
                                 <select
                                   value={item.offerId || ''}
                                   onChange={e => handleItemChange(item.id, 'offerId', e.target.value)}
                                   className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-2 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 focus:ring-2 focus:ring-amber-500/20 outline-none appearance-none"
                                 >
-                                  <option value="">بدون عرض</option>
+                                  <option value="">{t('edit.offer_none')}</option>
                                   {pOpts.offers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
                                 </select>
                               </div>
@@ -628,15 +632,16 @@ export default function OrderEditPage() {
                           {/* اختيار المتغير (Variant) — سطر منفصل لكل خاصية */}
                           {attributeGroups.length > 0 && (
                             <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/30 p-3.5 space-y-3">
-                              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">المتغير المختار</div>
+                              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.variant_selected')}</div>
                               {attributeGroups.map(group => {
                                 const selectedAttr = currentAttrs.find(a => attrKey(a) === group.key);
                                 const selectedValue = selectedAttr?.value ?? '';
                                 const isSwatch = group.displayMode === 'color' || group.displayMode === 'image';
+                                const attrLabel = group.attrName || t('edit.attribute_fallback');
                                 return (
                                   <div key={group.key} className="flex items-center justify-between gap-3">
                                     <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300 shrink-0">
-                                      {group.attrName || 'خاصية'}
+                                      {attrLabel}
                                     </span>
                                     {isSwatch ? (
                                       <div className="flex flex-wrap justify-end gap-2.5">
@@ -668,7 +673,7 @@ export default function OrderEditPage() {
                                         onChange={e => handleVariantAttrChange(item, group.key, e.target.value)}
                                         className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
                                       >
-                                        {!selectedValue && <option value="" disabled>اختر {group.attrName}</option>}
+                                        {!selectedValue && <option value="" disabled>{t('edit.choose_attr', { attr: attrLabel })}</option>}
                                         {group.options.map(o => (
                                           <option key={o.value} value={o.value}>{o.value}</option>
                                         ))}
@@ -703,10 +708,10 @@ export default function OrderEditPage() {
 
                     <div className="text-center z-10">
                       <span className="block text-sm font-black text-gray-900 dark:text-zinc-100 uppercase tracking-wide">
-                        إضافة منتج جديد
+                        {t('edit.add_product_title')}
                       </span>
                       <span className="text-[11px] text-gray-400 dark:text-zinc-500 font-medium mt-1 block">
-                        تصفح القائمة وإضافة عناصر للسلة
+                        {t('edit.add_product_subtitle')}
                       </span>
                     </div>
 
@@ -722,14 +727,14 @@ export default function OrderEditPage() {
               <div className="sticky top-24 space-y-4">
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden">
                   <div className="px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-gray-50/50">
-                    <h2 className="font-bold text-gray-900 dark:text-white">ملخص الطلبية</h2>
+                    <h2 className="font-bold text-gray-900 dark:text-white">{t('edit.summary_title')}</h2>
                   </div>
                   <div className="p-6 space-y-4">
-                    <div className="flex justify-between text-sm"><span className="text-gray-500">عدد المنتجات</span><span className="font-semibold">{editedCart.items.length}</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-gray-500">مجموع المنتجات</span><span className="font-semibold">{parseFloat(totals.items).toLocaleString()} DA</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-gray-500">تكلفة الشحن</span><span className="font-semibold">{parseFloat(totals.shipping).toLocaleString()} DA</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.items_count')}</span><span className="font-semibold">{editedCart.items.length}</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.items_total')}</span><span className="font-semibold">{parseFloat(totals.items).toLocaleString()} DA</span></div>
+                    <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.shipping_cost')}</span><span className="font-semibold">{parseFloat(totals.shipping).toLocaleString()} DA</span></div>
                     <div className="h-px bg-gray-200" />
-                    <div className="flex justify-between"><span className="text-sm font-bold uppercase">الإجمالي</span><span className="text-2xl font-black text-emerald-600">{parseFloat(totals.total).toLocaleString()} DA</span></div>
+                    <div className="flex justify-between"><span className="text-sm font-bold uppercase">{t('edit.total')}</span><span className="text-2xl font-black text-emerald-600">{parseFloat(totals.total).toLocaleString()} DA</span></div>
                   </div>
                 </div>
 
@@ -737,7 +742,7 @@ export default function OrderEditPage() {
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center"><Package size={14} className="text-indigo-600" /></div>
                     <div>
-                      <p className="text-sm font-semibold text-indigo-900">رقم الطلب</p>
+                      <p className="text-sm font-semibold text-indigo-900">{t('edit.order_number')}</p>
                       <p className="text-xs text-indigo-600/70 font-mono">{editedCart.id}</p>
                     </div>
                   </div>
@@ -746,12 +751,12 @@ export default function OrderEditPage() {
                 <div className="flex flex-col items-center gap-3 mt-10">
 
                   <button onClick={handleSave} disabled={saving || !hasChanges} className="flex w-full justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-all shadow-lg">
-                    {saving ? <><Loader2 size={16} className="animate-spin" /> جاري الحفظ...</> : <><Save size={16} /> حفظ التغييرات</>}
+                    {saving ? <><Loader2 size={16} className="animate-spin" /> {t('edit.saving')}</> : <><Save size={16} /> {t('edit.save')}</>}
                   </button>
                   {hasChanges && (
                     <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold border border-amber-200">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                      تغييرات غير محفوظة
+                      {t('edit.unsaved_badge')}
                     </span>
                   )}
                 </div>
@@ -767,7 +772,7 @@ export default function OrderEditPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[80vh] flex flex-col">
             <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('select_product_title') || 'Products'}</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">{t('edit.select_product_title')}</h2>
               <button onClick={() => setIsProductModalOpen(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg">
                 <X size={20} />
               </button>
@@ -780,7 +785,7 @@ export default function OrderEditPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t('search_placeholder') || 'Search...'}
+                  placeholder={t('edit.search_placeholder')}
                   className={`w-full ${isRtl ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none dark:text-white`}
                 />
               </div>
@@ -805,7 +810,7 @@ export default function OrderEditPage() {
                     </button>
                   ))
                 ) : (
-                  <p className="text-center text-gray-500 py-4">{t('no_products') || 'No products found'}</p>
+                  <p className="text-center text-gray-500 py-4">{t('edit.no_products')}</p>
                 )}
               </div>
             </div>
