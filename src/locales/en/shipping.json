@@ -13,6 +13,7 @@
   "col_action": "Action",
 
   "save_row": "Save",
+  "edit_row": "Edit",
   "save_all": "Save All Changes",
   "bulk_save": "Bulk Save",
 
@@ -37,5 +38,45 @@
     "save_all_success": "All changes saved successfully",
     "save_all_error": "Failed to save changes",
     "toggle_error": "Failed to change state status"
+  },
+
+  "provider": {
+    "active": "Active",
+    "unverified": "Unverified",
+    "not_configured": "No shipping provider activated",
+    "not_configured_hint": "You must choose a shipping company to create shipping orders",
+    "change": "Change",
+    "select": "Select"
+  },
+
+  "accounts": {
+    "selector_title": "Choose the active shipping account",
+    "selector_subtitle": "The selected account is used to create delivery orders",
+    "none_title": "No shipping accounts configured",
+    "none_hint": "Go to Settings to add a shipping account",
+    "goto_settings": "Go to Settings",
+    "manage_link": "Manage shipping accounts in Settings",
+    "edit_tooltip": "Edit account credentials",
+    "verified_badge": "Verified ✓",
+    "unverified_badge": "Unverified"
+  },
+
+  "editAccount": {
+    "title": "Edit shipping account",
+    "account_name_label": "Account name",
+    "credentials_label": "Shipping company credentials",
+    "result_ok": "Saved and credentials verified successfully",
+    "result_fail": "Saved, but credential verification failed",
+    "result_error": "An error occurred while saving",
+    "save_button": "Save changes"
+  },
+
+  "fetchRates": {
+    "button": "Fetch shipping company rates",
+    "subtitle": "Choose a shipping company to fetch its rates and edit them in the table",
+    "none_hint": "You must add a shipping account with its credentials first, from Settings",
+    "fetch_error": "Could not fetch rates from this company. Check the credentials or whether this company supports fetching rates.",
+    "applied_success": "Fetched rates for {{count}} states from {{account}}, please review before saving",
+    "applied_none": "No readable rates were found from {{account}}"
   }
 }

@@ -13,6 +13,7 @@
   "col_action": "Action",
 
   "save_row": "Enregistrer",
+  "edit_row": "Modifier",
   "save_all": "Enregistrer toutes les modifications",
   "bulk_save": "Enregistrement groupé",
 
@@ -37,5 +38,45 @@
     "save_all_success": "Toutes les modifications ont été enregistrées",
     "save_all_error": "Échec de l'enregistrement des modifications",
     "toggle_error": "Échec du changement de statut de la wilaya"
+  },
+
+  "provider": {
+    "active": "Actif",
+    "unverified": "Non vérifié",
+    "not_configured": "Aucun prestataire de livraison activé",
+    "not_configured_hint": "Vous devez choisir une société de livraison pour créer des commandes de livraison",
+    "change": "Changer",
+    "select": "Choisir"
+  },
+
+  "accounts": {
+    "selector_title": "Choisir le compte de livraison actif",
+    "selector_subtitle": "Le compte sélectionné est utilisé pour créer les commandes de livraison",
+    "none_title": "Aucun compte de livraison configuré",
+    "none_hint": "Allez dans les paramètres pour ajouter un compte de livraison",
+    "goto_settings": "Aller aux paramètres",
+    "manage_link": "Gérer les comptes de livraison dans les paramètres",
+    "edit_tooltip": "Modifier les identifiants du compte",
+    "verified_badge": "Vérifié ✓",
+    "unverified_badge": "Non vérifié"
+  },
+
+  "editAccount": {
+    "title": "Modifier le compte de livraison",
+    "account_name_label": "Nom du compte",
+    "credentials_label": "Identifiants de la société de livraison",
+    "result_ok": "Enregistré et identifiants vérifiés avec succès",
+    "result_fail": "Enregistré, mais la vérification des identifiants a échoué",
+    "result_error": "Une erreur est survenue lors de l'enregistrement",
+    "save_button": "Enregistrer les modifications"
+  },
+
+  "fetchRates": {
+    "button": "Récupérer les tarifs d'une société de livraison",
+    "subtitle": "Choisissez une société de livraison pour récupérer ses tarifs et les modifier dans le tableau",
+    "none_hint": "Vous devez d'abord ajouter un compte de livraison avec ses identifiants, depuis les paramètres",
+    "fetch_error": "Impossible de récupérer les tarifs de cette société. Vérifiez les identifiants ou si cette société prend en charge la récupération des tarifs.",
+    "applied_success": "Tarifs récupérés pour {{count}} wilayas depuis {{account}}, veuillez vérifier avant d'enregistrer",
+    "applied_none": "Aucun tarif lisible n'a été trouvé depuis {{account}}"
   }
 }

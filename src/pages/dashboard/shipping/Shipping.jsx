@@ -5,6 +5,8 @@ import {
   Filter, Plus, Sparkles, Loader2,
   CheckCircle2, XCircle, RotateCcw,
   Truck, Star, ShieldX, Settings2,
+  Pencil, Eye, EyeOff, Shield, ShieldCheck, X,
+  Download,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +22,7 @@ function useAuthHeaders() {
 // ─────────────────────────────────────────────
 //  Sub-component: price input cell
 // ─────────────────────────────────────────────
-function PriceCell({ value, onChange, focusRing }) {
+function PriceCell({ value, onChange, focusRing, disabled }) {
   return (
     <div className="relative flex items-center" dir="ltr">
       <input
@@ -29,7 +31,12 @@ function PriceCell({ value, onChange, focusRing }) {
         dir="ltr"
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl py-2 pl-3 pr-10 text-sm font-bold text-gray-700 dark:text-zinc-200 ${focusRing} outline-none transition-all`}
+        disabled={disabled}
+        className={`w-full border rounded-xl py-2 pl-3 pr-10 text-sm font-bold outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0 ${
+          disabled
+            ? 'bg-gray-50 dark:bg-zinc-800/40 border-gray-100 dark:border-zinc-800 text-gray-400 dark:text-zinc-500 cursor-not-allowed'
+            : `bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 ${focusRing}`
+        }`}
       />
       <span className="absolute right-3 text-xs font-semibold text-gray-400 dark:text-zinc-500 pointer-events-none select-none">DA</span>
     </div>
@@ -59,7 +66,7 @@ function StatusToggle({ isActive, onToggle, loading }) {
 //  Sub-component: empty state
 // ─────────────────────────────────────────────
 function EmptyState({ onInitialize, isLoading }) {
-  const { t } = useTranslation('shipping');
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   return (
     <tr>
       <td colSpan={6}>
@@ -94,9 +101,15 @@ function EmptyState({ onInitialize, isLoading }) {
 //  Sub-component: wilaya row
 // ─────────────────────────────────────────────
 function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, saveLoading }) {
-  const { t } = useTranslation('shipping');
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const isSaving   = saveLoading  === wilaya.id;
   const isToggling = toggleLoading === wilaya.id;
+  const [isEditing, setIsEditing] = useState(false);
+
+  const handleSave = async () => {
+    await onSave(wilaya);
+    setIsEditing(false);
+  };
 
   return (
     <tr className="group border-t border-gray-100 dark:border-zinc-800 hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 transition-colors">
@@ -109,26 +122,36 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, sav
         </div>
       </td>
       <td className="px-4 py-3 w-36">
-        <PriceCell value={wilaya.livraisonHome} onChange={(v) => onPriceChange(wilaya.id, 'livraisonHome', v)} focusRing="focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
+        <PriceCell value={wilaya.livraisonHome} onChange={(v) => onPriceChange(wilaya.id, 'livraisonHome', v)} focusRing="focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" disabled={!isEditing} />
       </td>
       <td className="px-4 py-3 w-36">
-        <PriceCell value={wilaya.livraisonOfice} onChange={(v) => onPriceChange(wilaya.id, 'livraisonOfice', v)} focusRing="focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" />
+        <PriceCell value={wilaya.livraisonOfice} onChange={(v) => onPriceChange(wilaya.id, 'livraisonOfice', v)} focusRing="focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" disabled={!isEditing} />
       </td>
       <td className="px-4 py-3 w-36">
-        <PriceCell value={wilaya.livraisonReturn} onChange={(v) => onPriceChange(wilaya.id, 'livraisonReturn', v)} focusRing="focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10" />
+        <PriceCell value={wilaya.livraisonReturn} onChange={(v) => onPriceChange(wilaya.id, 'livraisonReturn', v)} focusRing="focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10" disabled={!isEditing} />
       </td>
       <td className="px-4 py-3 text-center">
         <StatusToggle isActive={wilaya.isActive} onToggle={() => onToggle(wilaya.id)} loading={isToggling} />
       </td>
       <td className="px-4 py-3 text-center">
-        <button
-          onClick={() => onSave(wilaya)}
-          disabled={isSaving}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-          {t('save_row')}
-        </button>
+        {isEditing ? (
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+            {t('save_row')}
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-all active:scale-95"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            {t('edit_row')}
+          </button>
+        )}
       </td>
     </tr>
   );
@@ -139,17 +162,21 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, sav
 //  يختار الحساب النشط من الحسابات المُعدَّة في الإعدادات
 // ─────────────────────────────────────────────
 function AccountSelectorModal({ storeId, headers, isRtl, onClose, onSelected }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [settingId, setSettingId] = useState(null);
+  const [editingAccount, setEditingAccount] = useState(null);
 
-  useEffect(() => {
+  const loadAccounts = () => {
     axios.get(`${baseURL}/stores/${storeId}/shipping/accounts`, headers)
       .then(r => setAccounts(r.data))
       .catch(console.error)
       .finally(() => setIsLoading(false));
-  }, [storeId]);
+  };
+
+  useEffect(() => { loadAccounts(); }, [storeId]);
 
   const handleSelect = async (accountId) => {
     setSettingId(accountId);
@@ -175,8 +202,8 @@ function AccountSelectorModal({ storeId, headers, isRtl, onClose, onSelected }) 
               <Truck className="w-4 h-4 text-indigo-500" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-gray-900 dark:text-white">اختر حساب الشحن النشط</h2>
-              <p className="text-xs text-gray-400 dark:text-zinc-500">الحساب المحدد يُستخدم لإنشاء طلبات التوصيل</p>
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('accounts.selector_title')}</h2>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('accounts.selector_subtitle')}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 transition-colors text-lg font-bold">✕</button>
@@ -193,21 +220,350 @@ function AccountSelectorModal({ storeId, headers, isRtl, onClose, onSelected }) 
               <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
                 <ShieldX className="w-6 h-6 text-amber-400" />
               </div>
-              <p className="text-sm font-bold text-gray-700 dark:text-white">لا توجد حسابات شحن مُعدَّة</p>
-              <p className="text-xs text-gray-400 dark:text-zinc-500">اذهب إلى الإعدادات لإضافة حسابات الشحن</p>
+              <p className="text-sm font-bold text-gray-700 dark:text-white">{t('accounts.none_title')}</p>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('accounts.none_hint')}</p>
               <button
                 onClick={() => { onClose(); navigate('/dashboard/settings'); }}
                 className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all"
               >
-                الذهاب إلى الإعدادات
+                {t('accounts.goto_settings')}
+              </button>
+            </div>
+          ) : (
+            accounts.map(account => (
+              <div
+                key={account.id}
+                className={`w-full flex items-center gap-2 p-3.5 rounded-xl border-2 transition-all ${
+                  account.isDefault
+                    ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-900/20'
+                    : 'border-gray-100 dark:border-zinc-700 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60'
+                }`}
+              >
+                <button
+                  onClick={() => handleSelect(account.id)}
+                  disabled={!!settingId}
+                  className={`flex-1 min-w-0 flex items-center gap-3 text-${isRtl ? 'right' : 'left'} disabled:opacity-60`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${account.isVerified ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                    <Truck className={`w-4 h-4 ${account.isVerified ? 'text-emerald-500' : 'text-amber-500'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-gray-800 dark:text-white">{account.accountName}</p>
+                      {account.isDefault && <Star className="w-3 h-3 text-indigo-500 shrink-0" />}
+                    </div>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">{account.providerName} · {account.isVerified ? t('accounts.verified_badge') : t('accounts.unverified_badge')}</p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setEditingAccount(account)}
+                  title={t('accounts.edit_tooltip')}
+                  className="p-2 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-white dark:hover:bg-zinc-700 transition-colors shrink-0"
+                >
+                  <Pencil className="w-3.5 h-3.5" />
+                </button>
+                {settingId === account.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-indigo-500 shrink-0" />
+                ) : account.isDefault ? (
+                  <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
+                ) : null}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Footer link to settings */}
+        {accounts.length > 0 && (
+          <div className="px-5 py-3 border-t border-gray-100 dark:border-zinc-800">
+            <button
+              onClick={() => { onClose(); navigate('/dashboard/settings'); }}
+              className="text-xs text-indigo-500 hover:underline font-semibold flex items-center gap-1"
+            >
+              <Settings2 className="w-3 h-3" /> {t('accounts.manage_link')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {editingAccount && (
+        <EditAccountModal
+          storeId={storeId}
+          headers={headers}
+          isRtl={isRtl}
+          account={editingAccount}
+          onClose={() => setEditingAccount(null)}
+          onSaved={loadAccounts}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: credential input (with show/hide for secrets)
+// ─────────────────────────────────────────────
+function CredentialField({ label, value, onChange, isPassword }) {
+  const [visible, setVisible] = useState(false);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">{label}</label>
+      <div className="relative">
+        <input
+          type={isPassword && !visible ? 'password' : 'text'}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          dir="ltr"
+          className="w-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl py-2.5 px-3 pr-10 text-sm font-medium text-gray-700 dark:text-zinc-200 outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setVisible(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors"
+          >
+            {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: Edit account modal (accountName + credentials)
+// ─────────────────────────────────────────────
+function EditAccountModal({ storeId, headers, isRtl, account, onClose, onSaved }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
+  const credentialKeys = (() => {
+    if (['Yalidine', 'Yalitec'].includes(account.providerName)) return ['id', 'token'];
+    if (account.providerName === 'ZRExpress') return ['token', 'key'];
+    return ['token'];
+  })();
+
+  const parsedCredentials = (() => {
+    try { return JSON.parse(account.credentials || '{}'); } catch { return {}; }
+  })();
+
+  const [accountName, setAccountName] = useState(account.accountName);
+  const [credentials, setCredentials] = useState(parsedCredentials);
+  const [isSaving, setIsSaving] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const isFilled = accountName.trim() && credentialKeys.every(k => credentials[k]?.trim());
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setResult(null);
+    try {
+      const { data } = await axios.patch(
+        `${baseURL}/stores/${storeId}/shipping/accounts/${account.id}`,
+        { accountName, credentials },
+        headers,
+      );
+      onSaved();
+      setResult(data.isVerified ? 'ok' : 'fail');
+    } catch (e) {
+      console.error(e);
+      setResult('error');
+    } finally { setIsSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[85vh] flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+              <Pencil className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('editAccount.title')}</h2>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{account.providerName}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-gray-500 dark:text-zinc-400 uppercase tracking-wide">{t('editAccount.account_name_label')}</label>
+            <input
+              type="text"
+              value={accountName}
+              onChange={(e) => setAccountName(e.target.value)}
+              className="w-full bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl py-2.5 px-3 text-sm font-medium text-gray-700 dark:text-zinc-200 outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 transition-all"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+              <Shield className="w-3.5 h-3.5" /> {t('editAccount.credentials_label')}
+            </p>
+            {credentialKeys.map(key => (
+              <CredentialField
+                key={key}
+                label={key.toUpperCase()}
+                value={credentials[key] ?? ''}
+                onChange={(v) => { setCredentials(p => ({ ...p, [key]: v })); setResult(null); }}
+                isPassword={key === 'token' || key === 'key'}
+              />
+            ))}
+          </div>
+
+          {result && (
+            <div className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold ${
+              result === 'ok'
+                ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600'
+                : 'bg-rose-50 dark:bg-rose-900/20 text-rose-500'
+            }`}>
+              {result === 'ok'
+                ? <><ShieldCheck className="w-4 h-4 shrink-0" /> {t('editAccount.result_ok')}</>
+                : result === 'fail'
+                  ? <><ShieldX className="w-4 h-4 shrink-0" /> {t('editAccount.result_fail')}</>
+                  : <><ShieldX className="w-4 h-4 shrink-0" /> {t('editAccount.result_error')}</>
+              }
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-gray-100 dark:border-zinc-800">
+          <button
+            onClick={handleSave}
+            disabled={!isFilled || isSaving}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {t('editAccount.save_button')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: extract a home/office price from a carrier's raw rate object
+//  كل شركة توصيل ترجع تسمية حقول مختلفة، لذا نجرب أكثر الأسماء شيوعاً
+// ─────────────────────────────────────────────
+function pickPrice(rate, candidates) {
+  for (const key of candidates) {
+    const raw = rate?.[key];
+    if (raw === undefined || raw === null || raw === '') continue;
+    const num = Number(raw);
+    if (Number.isFinite(num)) return num;
+  }
+  return undefined;
+}
+
+function extractHomeOfficePrices(rate) {
+  return {
+    home: pickPrice(rate, ['tarif_domicile', 'domicile', 'home', 'express_home', 'TarifDomicile', 'tarif', 'Tarif', 'price']),
+    office: pickPrice(rate, ['tarif_stopdesk', 'stopdesk', 'desk', 'express_desk', 'TarifStopDesk', 'bureau']),
+  };
+}
+
+function findRateForWilaya(rates, wilayaId) {
+  return rates.find(r => Number(r?.wilaya_id ?? r?.IDWilaya ?? r?.id) === Number(wilayaId));
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: Fetch rates modal — اختيار شركة التوصيل لجلب أسعارها
+// ─────────────────────────────────────────────
+function FetchRatesModal({ storeId, headers, isRtl, onClose, onApplied }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
+  const navigate = useNavigate();
+  const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchingId, setFetchingId] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/stores/${storeId}/shipping/accounts`, headers)
+      .then(r => setAccounts(r.data))
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, [storeId]);
+
+  const handlePick = async (account) => {
+    setFetchingId(account.id);
+    setError(null);
+    try {
+      if (!account.isDefault) {
+        await axios.patch(`${baseURL}/stores/${storeId}/shipping/accounts/${account.id}/default`, {}, headers);
+      }
+      const { data: rates } = await axios.get(`${baseURL}/stores/${storeId}/shipping/rates`, headers);
+      onApplied(Array.isArray(rates) ? rates : [], account);
+      onClose();
+    } catch (e) {
+      console.error(e);
+      setError(t('fetchRates.fetch_error'));
+    } finally { setFetchingId(null); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[80vh] flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+              <Download className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('fetchRates.button')}</h2>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('fetchRates.subtitle')}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-5 mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 text-xs font-semibold">
+            <ShieldX className="w-4 h-4 shrink-0" /> {error}
+          </div>
+        )}
+
+        {/* Accounts list */}
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
+            </div>
+          ) : accounts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-3 text-center px-4">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                <ShieldX className="w-6 h-6 text-amber-400" />
+              </div>
+              <p className="text-sm font-bold text-gray-700 dark:text-white">{t('accounts.none_title')}</p>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('fetchRates.none_hint')}</p>
+              <button
+                onClick={() => { onClose(); navigate('/dashboard/settings'); }}
+                className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all"
+              >
+                {t('accounts.goto_settings')}
               </button>
             </div>
           ) : (
             accounts.map(account => (
               <button
                 key={account.id}
-                onClick={() => handleSelect(account.id)}
-                disabled={!!settingId}
+                onClick={() => handlePick(account)}
+                disabled={!!fetchingId}
                 className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 text-${isRtl ? 'right' : 'left'} transition-all disabled:opacity-60 ${
                   account.isDefault
                     ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-900/20'
@@ -222,29 +578,13 @@ function AccountSelectorModal({ storeId, headers, isRtl, onClose, onSelected }) 
                     <p className="text-sm font-bold text-gray-800 dark:text-white">{account.accountName}</p>
                     {account.isDefault && <Star className="w-3 h-3 text-indigo-500 shrink-0" />}
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-zinc-500">{account.providerName} · {account.isVerified ? 'مُتحقق ✓' : 'غير مُتحقق'}</p>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">{account.providerName} · {account.isVerified ? t('accounts.verified_badge') : t('accounts.unverified_badge')}</p>
                 </div>
-                {settingId === account.id ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-500 shrink-0" />
-                ) : account.isDefault ? (
-                  <CheckCircle2 className="w-4 h-4 text-indigo-500 shrink-0" />
-                ) : null}
+                {fetchingId === account.id && <Loader2 className="w-4 h-4 animate-spin text-indigo-500 shrink-0" />}
               </button>
             ))
           )}
         </div>
-
-        {/* Footer link to settings */}
-        {accounts.length > 0 && (
-          <div className="px-5 py-3 border-t border-gray-100 dark:border-zinc-800">
-            <button
-              onClick={() => { onClose(); navigate('/dashboard/settings'); }}
-              className="text-xs text-indigo-500 hover:underline font-semibold flex items-center gap-1"
-            >
-              <Settings2 className="w-3 h-3" /> إدارة حسابات الشحن في الإعدادات
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -254,7 +594,7 @@ function AccountSelectorModal({ storeId, headers, isRtl, onClose, onSelected }) 
 //  Sub-component: Active provider banner
 // ─────────────────────────────────────────────
 function ActiveAccountBanner({ settings, onChangeAccount }) {
-  const { t } = useTranslation('shipping');
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   if (!settings?.configured) return null;
 
   const { metadata, isVerified, providerName, accountName } = settings;
@@ -281,7 +621,7 @@ function ActiveAccountBanner({ settings, onChangeAccount }) {
               ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
               : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
           }`}>
-            {isVerified ? t('provider.active', 'نشط') : t('provider.unverified', 'غير مُتحقق')}
+            {isVerified ? t('provider.active') : t('provider.unverified')}
           </span>
         </div>
         <p className="text-xs text-gray-400 dark:text-zinc-500 truncate">{metadata?.description ?? providerName}</p>
@@ -292,7 +632,7 @@ function ActiveAccountBanner({ settings, onChangeAccount }) {
         className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-gray-600 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-all shrink-0"
       >
         <Settings2 className="w-3.5 h-3.5" />
-        تغيير
+        {t('provider.change')}
       </button>
     </div>
   );
@@ -316,6 +656,7 @@ export default function Shipping() {
   const [saveLoading,      setSaveLoading]      = useState(null);
   const [toast,            setToast]            = useState(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showRatesModal,   setShowRatesModal]   = useState(false);
   const [providerSettings, setProviderSettings] = useState(null);
 
   const showToast = (type, msg) => {
@@ -395,6 +736,27 @@ export default function Shipping() {
   const handlePriceChange = (id, field, value) =>
     setWilayas(prev => prev.map(r => r.id === id ? { ...r, [field]: value } : r));
 
+  const handleRatesApplied = (rates, account) => {
+    let matched = 0;
+    setWilayas(prev => prev.map(w => {
+      const rate = findRateForWilaya(rates, w.code ?? w.id);
+      if (!rate) return w;
+      const { home, office } = extractHomeOfficePrices(rate);
+      if (home === undefined && office === undefined) return w;
+      matched += 1;
+      return {
+        ...w,
+        livraisonHome:  home   ?? w.livraisonHome,
+        livraisonOfice: office ?? w.livraisonOfice,
+      };
+    }));
+    if (matched > 0) {
+      showToast('success', t('fetchRates.applied_success', { count: matched, account: account.accountName }));
+    } else {
+      showToast('error', t('fetchRates.applied_none', { account: account.accountName }));
+    }
+  };
+
   const toggleStatus = async (id) => {
     const wilaya = wilayas.find(w => w.id === id);
     if (!wilaya) return;
@@ -424,6 +786,17 @@ export default function Shipping() {
         />
       )}
 
+      {/* ── Fetch rates modal ── */}
+      {showRatesModal && storeId && (
+        <FetchRatesModal
+          storeId={storeId}
+          headers={headers}
+          isRtl={isRtl}
+          onClose={() => setShowRatesModal(false)}
+          onApplied={(rates, account) => { handleRatesApplied(rates, account); loadProviderSettings(); }}
+        />
+      )}
+
       {/* ── Toast ── */}
       {toast && (
         <div className={`fixed top-5 ${isRtl ? 'left-5' : 'right-5'} z-50 flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white transition-all animate-in fade-in slide-in-from-top-2 duration-300 ${toast.type === 'success' ? 'bg-emerald-500' : 'bg-rose-500'}`}>
@@ -443,7 +816,15 @@ export default function Shipping() {
         </div>
 
         <div className="flex items-center gap-2">
-          
+          {storeId && (
+            <button
+              onClick={() => setShowRatesModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all"
+            >
+              <Download className="w-4 h-4" />
+              {t('fetchRates.button')}
+            </button>
+          )}
 
           {wilayas.length > 0 && (
             <button
@@ -471,11 +852,11 @@ export default function Shipping() {
         <div className="flex items-center gap-3 px-5 py-4 mb-5 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30">
           <ShieldX className="w-5 h-5 text-amber-500 shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t('provider.not_configured', 'لم يتم تفعيل مزود شحن')}</p>
-            <p className="text-xs text-amber-600/70 dark:text-amber-500/70">{t('provider.not_configured_hint', 'يجب اختيار شركة توصيل لإنشاء طلبات الشحن')}</p>
+            <p className="text-sm font-bold text-amber-700 dark:text-amber-400">{t('provider.not_configured')}</p>
+            <p className="text-xs text-amber-600/70 dark:text-amber-500/70">{t('provider.not_configured_hint')}</p>
           </div>
           <button onClick={() => setShowAccountModal(true)} className="px-3 py-2 bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded-xl text-xs font-semibold transition-all">
-            اختيار
+            {t('provider.select')}
           </button>
         </div>
       )}
