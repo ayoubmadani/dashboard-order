@@ -5,7 +5,7 @@ import { getAccessToken } from './access-token'; // تأكد أن الاسم م�
 class ApiService {
   constructor(baseURL) {
     this.api = axios.create({
-      baseURL: baseURL || 'https://api.mdstore.dz/v1',
+      baseURL: baseURL || 'https://api.mdstore.top/v1',
       headers: {
         'Content-Type': 'application/json',
         // أزلنا Authorization من هنا لأنه سيُضاف ديناميكياً في الـ Interceptor

@@ -307,7 +307,7 @@ const CreateFirstStore = () => {
                 <label className={labelClass}>{t('form.domain_label')} <span className="text-rose-500">{t('form.required')}</span></label>
                 <div className="relative">
                   <input type="text" name="domain" value={formData.domain} onChange={handleInputChange} placeholder={t('form.domain_placeholder')} className={`${inputClass(errors.domain)} ${isRtl ? 'pl-28' : 'pr-28'}`} dir="ltr" />
-                  <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>.mdstore.dz</span>
+                  <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>.mdstore.top</span>
                 </div>
                 {errors.domain && <p className="text-rose-500 text-xs mt-1">{errors.domain}</p>}
               </div>
@@ -541,7 +541,7 @@ const CreateFirstStore = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
                 { label: t('form.preview_name'), val: formData.name || '—' },
-                { label: t('form.preview_domain'), val: formData.domain ? `${formData.domain}.mdstore.dz` : '—', highlight: true },
+                { label: t('form.preview_domain'), val: formData.domain ? `${formData.domain}.mdstore.top` : '—', highlight: true },
                 { label: t('form.preview_wilaya'), val: formData.wilaya },
               ].map(({ label, val, highlight }) => (
                 <div key={label} className="bg-white dark:bg-zinc-900 p-4 rounded-xl">

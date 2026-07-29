@@ -312,7 +312,7 @@ const Stores = () => {
                             rel="noopener noreferrer"
                             className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate font-mono font-bold transition-all hover:underline underline-offset-4 decoration-2"
                           >
-                            {store.subdomain}.mdstore.dz
+                            {store.subdomain}.mdstore.top
                           </a>
                         </div>
 

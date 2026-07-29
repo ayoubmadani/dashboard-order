@@ -370,7 +370,7 @@ const UpdateStore = () => {
                   dir="ltr"
                 />
                 <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>
-                  .mdstore.dz
+                  .mdstore.top
                 </span>
               </div>
               {errors.domain && <p className="text-rose-500 text-xs mt-1">{errors.domain}</p>}

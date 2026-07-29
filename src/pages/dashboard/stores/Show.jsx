@@ -58,7 +58,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
   };
 
   const handleCopyUrl = () => {
-    navigator.clipboard.writeText(`https://${store.domain}.mdstore.dz`);
+    navigator.clipboard.writeText(`https://${store.domain}.mdstore.top`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -199,12 +199,12 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
                 <div className="flex items-center gap-2 mt-1">
                   <Globe size={14} className="text-gray-400" />
                   <a
-                    href={`https://${store.domain}.mdstore.dz`}
+                    href={`https://${store.domain}.mdstore.top`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
                   >
-                    {store.domain}.mdstore.dz
+                    {store.domain}.mdstore.top
                   </a>
                   <button
                     onClick={handleCopyUrl}
