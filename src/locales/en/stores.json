@@ -58,10 +58,19 @@
       "disable": "Disable store",
       "failed": "Failed to change store status"
     },
-    "delete": {
-      "confirm": "Are you sure you want to delete this store? This action cannot be undone.",
-      "success": "Store deleted successfully",
-      "failed": "Failed to delete store"
+    "delete_modal": {
+      "title": "Delete store",
+      "about_to_delete": "You are about to delete the store",
+      "warning": "This will permanently delete {{products}} product(s), {{orders}} order(s), and everything linked to this store (design, messages, domains...). This action cannot be undone.",
+      "type_to_confirm": "To confirm, type the following:",
+      "type_placeholder": "Type DELETE",
+      "cancel": "Cancel",
+      "confirm": "Permanently delete store",
+      "failed": "Failed to delete store",
+      "deleting_title": "Deleting...",
+      "deleting_in": "\"{{name}}\" will be deleted in {{seconds}}s. You can still undo.",
+      "undo": "Undo",
+      "skip_now": "Skip, delete now"
     },
     "empty": {
       "title": "No stores found",

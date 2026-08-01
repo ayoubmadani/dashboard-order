@@ -58,10 +58,19 @@
       "disable": "Désactiver la boutique",
       "failed": "Échec du changement d'état"
     },
-    "delete": {
-      "confirm": "Êtes-vous sûr de vouloir supprimer cette boutique ? Cette action est irréversible.",
-      "success": "Boutique supprimée avec succès",
-      "failed": "Échec de la suppression de la boutique"
+    "delete_modal": {
+      "title": "Supprimer la boutique",
+      "about_to_delete": "Vous êtes sur le point de supprimer la boutique",
+      "warning": "Cela supprimera définitivement {{products}} produit(s), {{orders}} commande(s), et tout ce qui est lié à cette boutique (design, messages, domaines...). Cette action est irréversible.",
+      "type_to_confirm": "Pour confirmer, tapez le mot suivant :",
+      "type_placeholder": "Tapez DELETE",
+      "cancel": "Annuler",
+      "confirm": "Supprimer définitivement",
+      "failed": "Échec de la suppression de la boutique",
+      "deleting_title": "Suppression en cours...",
+      "deleting_in": "\"{{name}}\" sera supprimée dans {{seconds}}s. Vous pouvez encore annuler.",
+      "undo": "Annuler",
+      "skip_now": "Passer, supprimer maintenant"
     },
     "empty": {
       "title": "Aucune boutique trouvée",

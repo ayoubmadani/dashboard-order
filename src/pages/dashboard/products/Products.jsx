@@ -154,10 +154,8 @@ const Products = () => {
 
   const formatDate = (d) => new Date(d).toLocaleDateString(isRtl ? 'ar-DZ' : 'fr-DZ');
 
-  const requiredText = (() => {
-    const words = deleteModal.productName.trim().split(/\s+/);
-    return (words.length > 1 ? `${words[0]} ${words[1]}` : words[0] || '').substring(0, 15);
-  })();
+  const requiredText = 'DELETE';
+  const isDeleteConfirmed = confirmName.trim().toUpperCase() === requiredText;
 
   const activeCount = products.filter(p => p.isActive).length;
   const outOfStock = products.filter(p => p.stock === 0).length;
@@ -205,8 +203,8 @@ const Products = () => {
               </button>
               <button
                 onClick={handleDelete}
-                disabled={confirmName !== requiredText}
-                className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${confirmName === requiredText ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25' : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'}`}
+                disabled={!isDeleteConfirmed}
+                className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${isDeleteConfirmed ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25' : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'}`}
               >
                 {t('list.delete_modal.confirm')}
               </button>

@@ -39,12 +39,26 @@
   },
 
   "delete": {
+    "title": "Supprimer la catégorie",
     "confirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ?",
-    "warning_header": "\n\nAttention :",
-    "has_children": "\n- Contient {{count}} sous-catégories",
-    "has_products": "\n- Contient {{count}} produits",
-    "warning_footer": "\n\nLa suppression échouera si les données sont liées !",
+    "warning_header": "\n\nRemarque :",
+    "has_children": "\n- Contient {{count}} sous-catégories (seront aussi supprimées)",
+    "has_products": "\n- Contient {{count}} produits (seront simplement dissociés, pas supprimés)",
+    "cancel": "Annuler",
+    "confirm_btn": "Supprimer",
     "success": "Catégorie supprimée avec succès"
+  },
+
+  "bulk_delete": {
+    "title": "Supprimer les catégories sélectionnées",
+    "select_all": "Tout sélectionner",
+    "selected_count": "{{count}} sélectionné(s)",
+    "delete_selected": "Supprimer la sélection",
+    "deleting": "Suppression en cours...",
+    "confirm": "Voulez-vous vraiment supprimer {{count}} catégories ? Les produits liés seront simplement dissociés, pas supprimés.",
+    "success": "{{count}} catégories supprimées avec succès",
+    "all_failed": "Échec de la suppression de toutes les catégories sélectionnées",
+    "partial": "{{succeeded}} supprimée(s), {{failed}} échouée(s)"
   },
 
   "modal": {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Edit3, Trash2, X, Search, Tag, Image as ImageIcon,
-  ChevronRight, FolderTree, RefreshCw, Package, LayoutGrid, List
+  ChevronRight, FolderTree, RefreshCw, Package, LayoutGrid, List, Loader2,
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -11,7 +11,6 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import Loading from '../../../components/Loading';
-import { useEffect } from 'react';
 
 /* ── API setup ── */
 const getStoreId = () => {
@@ -68,6 +67,9 @@ const Categories = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [viewMode, setViewMode] = useState('tree');
   const [expandedCategories, setExpandedCategories] = useState(new Set());
+  const [selectedCategories, setSelectedCategories] = useState(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null); // { type: 'single', category } | { type: 'bulk' }
 
   const [formData, setFormData] = useState({
     name: '', slug: '', description: '', imageUrl: '',
@@ -213,7 +215,9 @@ const Categories = () => {
     }
   };
 
-  const handleDelete = (category) => {
+  const handleDelete = (category) => setPendingDelete({ type: 'single', category });
+
+  const getSingleDeleteMessage = (category) => {
     const hasChildren = category.children?.length > 0;
     const hasProducts = category.products?.length > 0;
     let msg = t('delete.confirm', { name: category.name });
@@ -221,9 +225,79 @@ const Categories = () => {
       msg += t('delete.warning_header');
       if (hasChildren) msg += t('delete.has_children', { count: category.children.length });
       if (hasProducts) msg += t('delete.has_products', { count: category.products.length });
-      msg += t('delete.warning_footer');
     }
-    if (window.confirm(msg)) deleteMutation.mutate({ storeId, categoryId: category.id });
+    return msg;
+  };
+
+  const toggleCategorySelection = (id) => {
+    setSelectedCategories(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  // ── flatten الشجرة لجلب كل التصنيفات ==
+  const flattenCategories = (cats, result = []) => {
+    cats.forEach(cat => {
+      result.push(cat);
+      if (cat.children?.length > 0) flattenCategories(cat.children, result);
+    });
+    return result;
+  };
+
+  const allCategoryIds = flattenCategories(categories).map(c => c.id);
+  const allSelected = allCategoryIds.length > 0 && allCategoryIds.every(id => selectedCategories.has(id));
+
+  const toggleSelectAllCategories = () => {
+    setSelectedCategories(allSelected ? new Set() : new Set(allCategoryIds));
+  };
+
+  const clearSelection = () => setSelectedCategories(new Set());
+
+  const handleBulkDelete = () => {
+    if (!selectedCategories.size) return;
+    setPendingDelete({ type: 'bulk' });
+  };
+
+  const runBulkDelete = async () => {
+    const ids = Array.from(selectedCategories);
+    if (!ids.length) return;
+
+    setIsBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(
+        ids.map(id => deleteCategory({ storeId, categoryId: id }))
+      );
+      const failed = results.filter(r => r.status === 'rejected').length;
+      const succeeded = ids.length - failed;
+
+      if (failed === 0) {
+        toast.success(t('bulk_delete.success', { count: succeeded }));
+      } else if (succeeded === 0) {
+        toast.error(t('bulk_delete.all_failed'));
+      } else {
+        toast.warning(t('bulk_delete.partial', { succeeded, failed }));
+      }
+
+      setSelectedCategories(new Set());
+      queryClient.invalidateQueries({ queryKey: ['categories', storeId] });
+    } finally {
+      setIsBulkDeleting(false);
+      setPendingDelete(null);
+    }
+  };
+
+  const confirmPendingDelete = () => {
+    if (!pendingDelete) return;
+    if (pendingDelete.type === 'single') {
+      deleteMutation.mutate(
+        { storeId, categoryId: pendingDelete.category.id },
+        { onSettled: () => setPendingDelete(null) },
+      );
+    } else if (pendingDelete.type === 'bulk') {
+      runBulkDelete();
+    }
   };
 
   const handleSearch = (e) => {
@@ -244,14 +318,6 @@ const Categories = () => {
     });
   };
 
-  // ── flatten الشجرة لجلب كل التصنيفات ==
-  const flattenCategories = (cats, result = []) => {
-    cats.forEach(cat => {
-      result.push(cat);
-      if (cat.children?.length > 0) flattenCategories(cat.children, result);
-    });
-    return result;
-  };
 
   // ── getAvailableParents: flat list بدون الـ category الحالي وأبنائه ==
   const getAvailableParents = () => {
@@ -287,13 +353,22 @@ const Categories = () => {
   const TreeNode = ({ category, level = 0 }) => {
     const hasChildren = category.children?.length > 0;
     const isExpanded = expandedCategories.has(category.id);
+    const isSelected = selectedCategories.has(category.id);
 
     return (
       <div className="select-none">
         <div
-          className={`flex items-center gap-2 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 rounded-xl transition-colors ${level > 0 ? `${isRtl ? 'mr-4 border-r-2' : 'ml-4 border-l-2'} border-gray-200 dark:border-zinc-800` : ''}`}
+          className={`flex items-center gap-2 p-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 rounded-xl transition-colors ${isSelected ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''} ${level > 0 ? `${isRtl ? 'mr-4 border-r-2' : 'ml-4 border-l-2'} border-gray-200 dark:border-zinc-800` : ''}`}
           style={level > 0 ? { [isRtl ? 'marginRight' : 'marginLeft']: `${level * 16}px` } : {}}
         >
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => toggleCategorySelection(category.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 shrink-0 cursor-pointer"
+          />
+
           <button
             onClick={() => hasChildren && toggleExpand(category.id)}
             className={`p-1 rounded-lg transition-all ${hasChildren ? 'hover:bg-gray-200 dark:hover:bg-zinc-700' : 'invisible'}`}
@@ -375,6 +450,45 @@ const Categories = () => {
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
 
+      {/* ── Delete confirm modal (single + bulk) ── */}
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-zinc-800" dir={isRtl ? 'rtl' : 'ltr'}>
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <Trash2 size={26} className="text-rose-600 dark:text-rose-400" />
+            </div>
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">
+              {pendingDelete.type === 'single' ? t('delete.title') : t('bulk_delete.title')}
+            </h3>
+            <p className="text-sm text-center text-gray-500 dark:text-zinc-400 whitespace-pre-line mb-2">
+              {pendingDelete.type === 'single'
+                ? getSingleDeleteMessage(pendingDelete.category)
+                : t('bulk_delete.confirm', { count: selectedCategories.size })}
+            </p>
+
+            <div className="flex gap-3 mt-5">
+              <button
+                type="button"
+                onClick={() => setPendingDelete(null)}
+                disabled={deleteMutation.isPending || isBulkDeleting}
+                className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm disabled:opacity-50"
+              >
+                {t('delete.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={confirmPendingDelete}
+                disabled={deleteMutation.isPending || isBulkDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25 disabled:opacity-60"
+              >
+                {(deleteMutation.isPending || isBulkDeleting) && <Loader2 size={16} className="animate-spin" />}
+                {t('delete.confirm_btn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800">
         <div className="max-w-6xl mx-auto px-6 py-6">
@@ -440,7 +554,39 @@ const Categories = () => {
       {/* ── Body ── */}
       <div className="max-w-6xl mx-auto px-6 py-8">
 
+        {/* Bulk actions bar */}
+        {categories.length > 0 && (
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={toggleSelectAllCategories}
+                className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+              />
+              {t('bulk_delete.select_all')}
+            </label>
 
+            {selectedCategories.size > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 px-3 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-sm font-medium">
+                  {t('bulk_delete.selected_count', { count: selectedCategories.size })}
+                  <button onClick={clearSelection} className="hover:text-indigo-800 dark:hover:text-indigo-300">
+                    <X size={13} />
+                  </button>
+                </span>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors disabled:opacity-50"
+                >
+                  {isBulkDeleting ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                  {isBulkDeleting ? t('bulk_delete.deleting') : t('bulk_delete.delete_selected')}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Tree View */}
         {viewMode === 'tree' && (

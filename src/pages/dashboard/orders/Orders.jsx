@@ -505,7 +505,7 @@ export default function Orders() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await axios.delete(`${baseURL}/orders/${deleteTarget.cartId}`, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.delete(`${baseURL}/orders/${deleteTarget.id}`, { headers: { Authorization: `Bearer ${token}` } });
       setOrders(prev => prev.filter(o => o.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (e) { console.error(e); alert(t('delete_modal.failed')); }

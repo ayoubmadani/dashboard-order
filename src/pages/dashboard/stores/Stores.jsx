@@ -1,12 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Store, Plus, Search, MapPin,
   Globe, LayoutGrid, X,
   Package,
   Edit2, Trash2, Eye,
-  Loader2, AlertCircle,
+  Loader2, AlertCircle, AlertTriangle,
   RefreshCw, TrendingUp, ShoppingBag,
+  Undo2, SkipForward,
 } from 'lucide-react';
 import { Link, useNavigate, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
@@ -97,6 +98,18 @@ const Stores = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [deletingStoreId, setDeletingStoreId] = useState(null);
   const [togglingStoreId, setTogglingStoreId] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, store: null, phase: 'confirm' });
+  const [confirmText, setConfirmText] = useState('');
+  const [countdown, setCountdown] = useState(10);
+  const requiredDeleteText = 'DELETE';
+  const isDeleteConfirmed = confirmText.trim().toUpperCase() === requiredDeleteText;
+  const countdownIntervalRef = useRef(null);
+  const countdownTimeoutRef = useRef(null);
+
+  useEffect(() => () => {
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    if (countdownTimeoutRef.current) clearTimeout(countdownTimeoutRef.current);
+  }, []);
 
   const { myStores, fetchStores } = useOutletContext();
   const stores = myStores || [];
@@ -118,8 +131,12 @@ const Stores = () => {
     }
   }, [t, fetchStores]);
 
-  const handleDeleteStore = async (storeId) => {
-    if (!window.confirm(t('stores.delete.confirm'))) return;
+  const clearCountdownTimers = () => {
+    if (countdownIntervalRef.current) { clearInterval(countdownIntervalRef.current); countdownIntervalRef.current = null; }
+    if (countdownTimeoutRef.current) { clearTimeout(countdownTimeoutRef.current); countdownTimeoutRef.current = null; }
+  };
+
+  const executeStoreDelete = async (storeId) => {
     try {
       setDeletingStoreId(storeId);
       const token = getAccessToken();
@@ -128,10 +145,40 @@ const Stores = () => {
       });
       await fetchStores();
     } catch (err) {
-      alert(t('stores.delete.failed'));
+      alert(t('stores.delete_modal.failed'));
     } finally {
       setDeletingStoreId(null);
+      setDeleteModal({ isOpen: false, store: null, phase: 'confirm' });
+      setConfirmText('');
+      setCountdown(10);
     }
+  };
+
+  const startDeleteCountdown = () => {
+    const storeId = deleteModal.store?.id;
+    if (!storeId) return;
+    setDeleteModal(prev => ({ ...prev, phase: 'countdown' }));
+    setCountdown(10);
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdown(prev => Math.max(prev - 1, 0));
+    }, 1000);
+    countdownTimeoutRef.current = setTimeout(() => {
+      clearCountdownTimers();
+      executeStoreDelete(storeId);
+    }, 10000);
+  };
+
+  const cancelDeleteCountdown = () => {
+    clearCountdownTimers();
+    setDeleteModal({ isOpen: false, store: null, phase: 'confirm' });
+    setConfirmText('');
+    setCountdown(10);
+  };
+
+  const skipDeleteCountdown = () => {
+    const storeId = deleteModal.store?.id;
+    clearCountdownTimers();
+    if (storeId) executeStoreDelete(storeId);
   };
 
   if (loading) return <Loading />;
@@ -153,6 +200,117 @@ const Stores = () => {
   return (
     <>
       <style>{styles}</style>
+
+      {/* Delete Modal */}
+      {deleteModal.isOpen && deleteModal.store && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-zinc-800">
+
+            {deleteModal.phase === 'confirm' ? (
+              <>
+                <div className="w-14 h-14 bg-rose-100 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                  <Trash2 size={26} className="text-rose-600 dark:text-rose-400" />
+                </div>
+                <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-1">
+                  {t('stores.delete_modal.title')}
+                </h3>
+                <p className="text-sm text-center text-gray-500 dark:text-zinc-400 mb-4">
+                  {t('stores.delete_modal.about_to_delete')}{' '}
+                  <span className="font-semibold text-gray-800 dark:text-zinc-200">"{deleteModal.store.name}"</span>
+                </p>
+
+                <div className="flex items-start gap-2.5 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 rounded-2xl p-3.5 mb-5">
+                  <AlertTriangle size={18} className="text-rose-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-rose-700 dark:text-rose-300 leading-relaxed">
+                    {t('stores.delete_modal.warning', {
+                      products: getCount(deleteModal.store, 'products'),
+                      orders: getCount(deleteModal.store, 'orders'),
+                    })}
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 dark:bg-zinc-800 rounded-2xl p-4 mb-5">
+                  <p className="text-xs text-gray-500 dark:text-zinc-400 mb-2 text-center">
+                    {t('stores.delete_modal.type_to_confirm')}
+                  </p>
+                  <p className="text-center font-mono font-bold text-rose-600 dark:text-rose-400 mb-3 text-sm">
+                    {requiredDeleteText}
+                  </p>
+                  <input
+                    type="text"
+                    placeholder={t('stores.delete_modal.type_placeholder')}
+                    className="w-full px-4 py-2.5 border-2 border-gray-200 dark:border-zinc-700 rounded-xl focus:outline-none focus:border-rose-500 dark:bg-zinc-900 dark:text-white text-sm text-center font-medium transition-all"
+                    onChange={(e) => setConfirmText(e.target.value)}
+                    value={confirmText}
+                    autoFocus
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelDeleteCountdown}
+                    className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm"
+                  >
+                    {t('stores.delete_modal.cancel')}
+                  </button>
+                  <button
+                    onClick={startDeleteCountdown}
+                    disabled={!isDeleteConfirmed}
+                    className={`flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${isDeleteConfirmed ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25' : 'bg-gray-100 dark:bg-zinc-800 text-gray-400 cursor-not-allowed'}`}
+                  >
+                    {t('stores.delete_modal.confirm')}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5 relative">
+                  <svg className="absolute inset-0 -rotate-90" viewBox="0 0 64 64">
+                    <circle cx="32" cy="32" r="28" fill="none" strokeWidth="4" className="stroke-gray-100 dark:stroke-zinc-800" />
+                    <circle
+                      cx="32" cy="32" r="28" fill="none" strokeWidth="4"
+                      strokeLinecap="round"
+                      className="stroke-rose-500"
+                      style={{
+                        strokeDasharray: 2 * Math.PI * 28,
+                        strokeDashoffset: 2 * Math.PI * 28 * (1 - countdown / 10),
+                        transition: 'stroke-dashoffset 1s linear',
+                      }}
+                    />
+                  </svg>
+                  <span className="text-xl font-black text-rose-600 dark:text-rose-400">{countdown}</span>
+                </div>
+                <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-1">
+                  {t('stores.delete_modal.deleting_title')}
+                </h3>
+                <p className="text-sm text-center text-gray-500 dark:text-zinc-400 mb-6">
+                  {t('stores.delete_modal.deleting_in', { seconds: countdown, name: deleteModal.store.name })}
+                </p>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={cancelDeleteCountdown}
+                    className="flex-1 px-4 py-2.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 rounded-xl transition-colors font-semibold text-sm flex items-center justify-center gap-2"
+                  >
+                    <Undo2 size={16} />
+                    {t('stores.delete_modal.undo')}
+                  </button>
+                  <button
+                    onClick={skipDeleteCountdown}
+                    disabled={deletingStoreId === deleteModal.store.id}
+                    className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl transition-colors font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {deletingStoreId === deleteModal.store.id
+                      ? <Loader2 size={16} className="animate-spin" />
+                      : <SkipForward size={16} />}
+                    {t('stores.delete_modal.skip_now')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="stores-root min-h-screen bg-gray-50 dark:bg-zinc-950 pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
 
@@ -341,7 +499,7 @@ const Stores = () => {
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDeleteStore(store.id)}
+                          onClick={() => setDeleteModal({ isOpen: true, store, phase: 'confirm' })}
                           disabled={deletingStoreId === store.id}
                           className="p-2 rounded-xl bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-all disabled:opacity-50"
                         >

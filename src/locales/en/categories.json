@@ -39,12 +39,26 @@
   },
 
   "delete": {
+    "title": "Delete category",
     "confirm": "Are you sure you want to delete \"{{name}}\"?",
-    "warning_header": "\n\nWarning:",
-    "has_children": "\n- Contains {{count}} sub-categories",
-    "has_products": "\n- Contains {{count}} products",
-    "warning_footer": "\n\nDeletion will fail if data is linked!",
+    "warning_header": "\n\nNote:",
+    "has_children": "\n- Contains {{count}} sub-categories (will also be deleted)",
+    "has_products": "\n- Contains {{count}} products (will be unlinked, not deleted)",
+    "cancel": "Cancel",
+    "confirm_btn": "Delete",
     "success": "Category deleted successfully"
+  },
+
+  "bulk_delete": {
+    "title": "Delete selected categories",
+    "select_all": "Select all",
+    "selected_count": "{{count}} selected",
+    "delete_selected": "Delete selected",
+    "deleting": "Deleting...",
+    "confirm": "Are you sure you want to delete {{count}} categories? Any linked products will only be unlinked, not deleted.",
+    "success": "{{count}} categories deleted successfully",
+    "all_failed": "Failed to delete all selected categories",
+    "partial": "{{succeeded}} deleted, {{failed}} failed"
   },
 
   "modal": {

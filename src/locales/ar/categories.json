@@ -39,12 +39,26 @@
   },
 
   "delete": {
+    "title": "حذف التصنيف",
     "confirm": "هل أنت متأكد من حذف \"{{name}}\"؟",
-    "warning_header": "\n\nتحذير:",
-    "has_children": "\n- يحتوي على {{count}} تصنيفات فرعية",
-    "has_products": "\n- يحتوي على {{count}} منتجات",
-    "warning_footer": "\n\nسيفشل الحذف إذا كانت البيانات مرتبطة!",
+    "warning_header": "\n\nتنبيه:",
+    "has_children": "\n- يحتوي على {{count}} تصنيفات فرعية (سيتم حذفها أيضاً)",
+    "has_products": "\n- يحتوي على {{count}} منتجات (سيتم إلغاء ربطها بالتصنيف)",
+    "cancel": "إلغاء",
+    "confirm_btn": "حذف",
     "success": "تم حذف التصنيف بنجاح"
+  },
+
+  "bulk_delete": {
+    "title": "حذف التصنيفات المحددة",
+    "select_all": "تحديد الكل",
+    "selected_count": "{{count}} محدد",
+    "delete_selected": "حذف المحدد",
+    "deleting": "جاري الحذف...",
+    "confirm": "هل أنت متأكد من حذف {{count}} تصنيف؟ أي منتجات مرتبطة بها سيتم إلغاء ربطها فقط دون حذفها.",
+    "success": "تم حذف {{count}} تصنيف بنجاح",
+    "all_failed": "فشل حذف كل التصنيفات المحددة",
+    "partial": "تم حذف {{succeeded}} تصنيف، وفشل حذف {{failed}}"
   },
 
   "modal": {
