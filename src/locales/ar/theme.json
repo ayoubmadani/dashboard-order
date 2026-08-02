@@ -24,7 +24,9 @@
     "installed_label": "مثبّت",
     "preview_btn": "معاينة",
     "install_btn": "تثبيت",
-    "page_info": "صفحة {{current}} من {{total}}"
+    "page_info": "صفحة {{current}} من {{total}}",
+    "free_label": "مجاني",
+    "price_label": "{{price}} دج"
   },
 
   "alerts": {
@@ -33,5 +35,15 @@
     "activate_success": "تم تفعيل القالب بنجاح!",
     "activate_error": "حدث خطأ أثناء تفعيل القالب",
     "no_store": "لم يتم العثور على متجر"
+  },
+
+  "coupon": {
+    "placeholder": "أدخل كود الخصم",
+    "apply": "تطبيق",
+    "applied": "تم تطبيق كود الخصم ({{value}})",
+    "invalid": "كود الخصم غير صالح",
+    "modal_title": "تثبيت القالب",
+    "cancel": "إلغاء",
+    "confirm": "تثبيت"
   }
 }

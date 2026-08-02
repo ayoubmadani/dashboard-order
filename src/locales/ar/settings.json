@@ -62,6 +62,11 @@
   "sub_auto_renew_on": "سيتم تجديد اشتراكك تلقائياً",
   "sub_auto_renew_off": "لن يتم تجديد اشتراكك تلقائياً",
   "free": "مجاني",
+
+  "coupon_placeholder": "أدخل كود الخصم",
+  "coupon_apply": "تطبيق",
+  "coupon_applied": "تم تطبيق كود الخصم ({{value}})",
+  "coupon_invalid": "كود الخصم غير صالح",
   
   "feat_stores": "متاجر",
   "feat_products": "منتجات",

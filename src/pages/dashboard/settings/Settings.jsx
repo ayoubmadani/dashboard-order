@@ -12,6 +12,7 @@ import {
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import CouponInput from '../../../components/CouponInput';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,14 @@ const isFree = (plan) =>
 
 const getPlanPrice = (plan, interval) =>
   interval === 'year' ? Number(plan?.yearlyPrice ?? 0) : Number(plan?.monthlyPrice ?? 0);
+
+const getDiscountedPrice = (price, couponInfo) => {
+  if (!couponInfo || price <= 0) return price;
+  const discount = couponInfo.discountType === 'percentage'
+    ? price * (Number(couponInfo.discountValue) / 100)
+    : Number(couponInfo.discountValue);
+  return Math.max(0, Number((price - Math.min(discount, price)).toFixed(2)));
+};
 
 const buildFeatureSummary = (features, t) => {
   if (!features) return [];
@@ -383,9 +392,13 @@ const Settings = () => {
   const [subLoading, setSubLoading] = useState(false);
   const [plans, setPlans] = useState([]);
   const [subscribing, setSubscribing] = useState(null);
-  const [subInterval, setSubInterval] = useState('month');
+  const [subInterval, setSubInterval] = useState('year');
   const [subToast, setSubToast] = useState(null);
   const [showSubModal, setShowSubModal] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponInfo, setCouponInfo] = useState(null);
+  const [couponError, setCouponError] = useState('');
   const [loadSaveChange, setLoadSaveChange] = useState(false);
   const [loadToggle, setLoadToggle] = useState(false);
 
@@ -470,15 +483,34 @@ const Settings = () => {
       const endpoint = subscription
         ? `${baseURL}/subscription/upgrade`
         : `${baseURL}/subscription/subscribe`;
-      await axios.post(endpoint, { planId, interval }, { headers: { Authorization: `Bearer ${token}` } });
+      const couponCodeToSend = couponInfo ? couponCode.trim() : undefined;
+      await axios.post(endpoint, { planId, interval, couponCode: couponCodeToSend }, { headers: { Authorization: `Bearer ${token}` } });
       const { data } = await axios.get(`${baseURL}/subscription/my`, { headers: { Authorization: `Bearer ${token}` } });
       setSubscription(data);
       setShowSubModal(false);
+      setCouponCode(''); setCouponInfo(null); setCouponError('');
       showSubToast(t('sub_success'), 'success');
     } catch (err) {
       setShowSubModal(false);
       showSubToast(err?.response?.data?.message || t('sub_error'), 'error');
     } finally { setSubscribing(null); }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponChecking(true); setCouponError(''); setCouponInfo(null);
+    try {
+      const { data } = await axios.post(`${baseURL}/coupons/validate`,
+        { code: couponCode.trim(), scope: 'plan' },
+        { headers: { Authorization: `Bearer ${token}` } });
+      setCouponInfo(data);
+    } catch (err) {
+      setCouponError(err?.response?.data?.message || t('coupon_invalid'));
+    } finally { setCouponChecking(false); }
+  };
+
+  const handleClearCoupon = () => {
+    setCouponCode(''); setCouponInfo(null); setCouponError('');
   };
 
   const showSubToast = (msg, type = 'success') => {
@@ -861,12 +893,37 @@ const Settings = () => {
               ) : !subscription ? (
                 <div className="space-y-5">
                   <p className="text-sm text-gray-500 dark:text-zinc-400">{t('sub_no_plan_hint')}</p>
+                  {plans.length > 0 && (
+                    <CouponInput
+                      code={couponCode}
+                      onCodeChange={setCouponCode}
+                      onApply={handleApplyCoupon}
+                      onClear={handleClearCoupon}
+                      checking={couponChecking}
+                      error={couponError}
+                      appliedText={couponInfo ? t('coupon_applied', {
+                        value: couponInfo.discountType === 'percentage' ? `${couponInfo.discountValue}%` : `${couponInfo.discountValue} DZD`,
+                      }) : ''}
+                      placeholder={t('coupon_placeholder')}
+                      applyLabel={t('coupon_apply')}
+                    />
+                  )}
                   {plans.length === 0
                     ? <p className="text-sm text-gray-400 dark:text-zinc-600 text-center py-8">{t('sub_no_available_plans')}</p>
                     : (
                       <div className="space-y-3">
+                        <div className="flex gap-1 bg-gray-100 dark:bg-zinc-800 rounded-xl p-1 w-fit">
+                          {['year', 'month'].map(iv => (
+                            <button key={iv} onClick={() => setSubInterval(iv)} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors ${subInterval === iv ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400'}`}>
+                              {iv === 'month' ? t('sub_monthly') : t('sub_annual')}
+                            </button>
+                          ))}
+                        </div>
                         {plans.map(plan => {
-                          const price = getPlanPrice(plan, 'month');
+                          const price = getPlanPrice(plan, subInterval);
+                          const discountedPrice = getDiscountedPrice(price, couponInfo);
+                          const hasDiscount = couponInfo && !isFree(plan) && discountedPrice < price;
+                          const savings = plan.monthlyPrice > 0 ? Math.round((1 - Number(plan.yearlyPrice) / (Number(plan.monthlyPrice) * 12)) * 100) : 0;
                           return (
                             <div key={plan.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-800 rounded-2xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
                               <div className="flex items-center gap-3">
@@ -878,13 +935,21 @@ const Settings = () => {
                                   <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                                     {isFree(plan)
                                       ? <span className="font-bold text-emerald-500">{t('free')}</span>
-                                      : <><span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span> / {t('sub_monthly')}</>
+                                      : hasDiscount
+                                        ? <>
+                                            <span className="line-through me-1.5">{price.toLocaleString()}</span>
+                                            <span className="font-bold text-emerald-500">{discountedPrice.toLocaleString()} {plan.currency}</span> / {subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}
+                                          </>
+                                        : <><span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span> / {subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}</>
                                     }
                                   </p>
+                                  {!isFree(plan) && subInterval === 'year' && savings > 0 && (
+                                    <p className="text-[10px] text-emerald-500 font-bold mt-0.5">{t('save_pct', { pct: savings })}</p>
+                                  )}
                                 </div>
                               </div>
                               <button
-                                onClick={() => handleSubscribe(plan.id, 'month')}
+                                onClick={() => handleSubscribe(plan.id, subInterval)}
                                 disabled={!!subscribing}
                                 className="flex items-center gap-1.5 px-4 py-2 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-black rounded-xl hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all"
                               >
@@ -927,7 +992,7 @@ const Settings = () => {
                         }
                       </p>
                       {upgradeablePlans.length > 0 && (
-                        <button onClick={() => setShowSubModal(true)} className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl transition-all active:scale-95 shrink-0">
+                        <button onClick={() => { handleClearCoupon(); setShowSubModal(true); }} className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl transition-all active:scale-95 shrink-0">
                           <Zap size={13} /> {t('sub_upgrade')}
                         </button>
                       )}
@@ -1011,23 +1076,49 @@ const Settings = () => {
                 <p className="px-6 pb-2 text-xs text-gray-400 dark:text-zinc-500">{t('sub_current_label')}: <span className="font-bold text-gray-600 dark:text-zinc-300">{subscription?.plan?.name}</span></p>
                 <div className="px-6 pb-4">
                   <div className="flex gap-1 bg-gray-100 dark:bg-zinc-800 rounded-xl p-1 w-fit">
-                    {['month', 'year'].map(iv => (
+                    {['year', 'month'].map(iv => (
                       <button key={iv} onClick={() => setSubInterval(iv)} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors ${subInterval === iv ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-400'}`}>
                         {iv === 'month' ? t('sub_monthly') : t('sub_annual')}
                       </button>
                     ))}
                   </div>
                 </div>
+                <div className="px-6 pb-4">
+                  <CouponInput
+                    code={couponCode}
+                    onCodeChange={setCouponCode}
+                    onApply={handleApplyCoupon}
+                    onClear={handleClearCoupon}
+                    checking={couponChecking}
+                    error={couponError}
+                    appliedText={couponInfo ? t('coupon_applied', {
+                      value: couponInfo.discountType === 'percentage' ? `${couponInfo.discountValue}%` : `${couponInfo.discountValue} DZD`,
+                    }) : ''}
+                    placeholder={t('coupon_placeholder')}
+                    applyLabel={t('coupon_apply')}
+                  />
+                </div>
                 <div className="px-6 pb-6 space-y-3">
                   {upgradeablePlans.map(plan => {
                     const price = getPlanPrice(plan, subInterval);
+                    const discountedPrice = getDiscountedPrice(price, couponInfo);
+                    const hasDiscount = couponInfo && discountedPrice < price;
                     const savings = plan.monthlyPrice > 0 ? Math.round((1 - Number(plan.yearlyPrice) / (Number(plan.monthlyPrice) * 12)) * 100) : 0;
                     const featureRows = buildFeatureSummary(plan.features, t);
                     return (
                       <div key={plan.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-800 rounded-2xl hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
                         <div>
                           <p className="font-black text-sm text-gray-900 dark:text-white">{plan.name}</p>
-                          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5"><span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span>{' / '}{subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}</p>
+                          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                            {hasDiscount
+                              ? <>
+                                  <span className="line-through me-1.5">{price.toLocaleString()}</span>
+                                  <span className="font-bold text-emerald-500">{discountedPrice.toLocaleString()} {plan.currency}</span>
+                                </>
+                              : <span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span>
+                            }
+                            {' / '}{subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}
+                          </p>
                           {subInterval === 'year' && savings > 0 && <p className="text-[10px] text-emerald-500 font-bold mt-0.5">{t('save_pct', { pct: savings })}</p>}
                           {featureRows.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">

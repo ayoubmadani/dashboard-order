@@ -62,6 +62,11 @@
   "sub_auto_renew_on": "Votre abonnement sera renouvelé automatiquement",
   "sub_auto_renew_off": "Votre abonnement ne sera pas renouvelé automatiquement",
   "free": "Gratuit",
+
+  "coupon_placeholder": "Entrez le code promo",
+  "coupon_apply": "Appliquer",
+  "coupon_applied": "Code promo appliqué ({{value}})",
+  "coupon_invalid": "Code promo invalide",
   
   "feat_stores": "Boutiques",
   "feat_products": "Produits",

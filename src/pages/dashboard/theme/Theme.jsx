@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import {
   Loader2, Palette, LayoutGrid,
   ExternalLink, Download, CheckCircle2,
-  ChevronLeft, ChevronRight, Crown,
+  ChevronLeft, ChevronRight, Crown, X, Tag,
 } from 'lucide-react';
 import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import Loading from '../../../components/Loading';
+import CouponInput from '../../../components/CouponInput';
 
 const DEFAULT_IMAGE = 'https://bloomidea.com/sites/default/files/styles/og_image/public/blog/Tipos%20de%20come%CC%81rcio%20electro%CC%81nico_0.png?itok=jC9MlQZq';
 const ITEMS_PER_PAGE = 100;
@@ -16,6 +17,12 @@ const ITEMS_PER_PAGE = 100;
 function useAuthHeaders() {
   const token = getAccessToken();
   return { headers: { Authorization: `Bearer ${token}` } };
+}
+
+function getLocalizedThemeText(item, field, lang) {
+  if (!item) return '';
+  const suffix = lang === 'ar' ? '_ar' : lang === 'fr' ? '_fr' : '_en';
+  return item[`${field}${suffix}`] || item[`${field}_en`] || '';
 }
 
 // ─────────────────────────────────────────────
@@ -148,16 +155,22 @@ function Pagination({ currentPage, totalPages, onPageChange, isRtl }) {
 //  Gallery Card
 // ─────────────────────────────────────────────
 function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInstall }) {
-  const { t } = useTranslation('translation', { keyPrefix: 'theme' });
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'theme' });
+  const name = getLocalizedThemeText(item, 'name', i18n.language);
+  const desc = getLocalizedThemeText(item, 'desc', i18n.language);
+  const isFree = isIncludedInPlan || Number(item.price) === 0;
 
   return (
-    <div className="group bg-gray-50 dark:bg-zinc-950 rounded-2xl overflow-hidden border border-gray-100 dark:border-zinc-800 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-      <div className="relative h-44 bg-gray-100 dark:bg-zinc-800 overflow-hidden">
+    <div className="group bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+      {/* Image with bottom gradient scrim — name & price live directly on the photo */}
+      <div className="relative h-52 overflow-hidden">
         <img
           src={item.imageUrl || DEFAULT_IMAGE}
-          alt={item.name_en}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          alt={name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+
         <div className="absolute top-3 end-3 flex flex-col gap-1.5 items-end">
           {isIncludedInPlan && (
             <span className="flex items-center gap-1 bg-indigo-600 text-white px-2.5 py-1 rounded-full text-[9px] font-black shadow-lg">
@@ -170,15 +183,22 @@ function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInst
             </span>
           )}
         </div>
+
+        <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-2">
+          <h3 className="font-black text-white text-base leading-tight drop-shadow-sm">{name}</h3>
+          <span className={`shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black backdrop-blur-sm ${
+            isFree ? 'bg-emerald-500/90 text-white' : 'bg-white/90 text-gray-900'
+          }`}>
+            <Tag size={11} />
+            {isFree ? t('gallery.free_label') : t('gallery.price_label', { price: Number(item.price).toLocaleString() })}
+          </span>
+        </div>
       </div>
 
       <div className="p-4 space-y-3">
-        <div>
-          <h3 className="font-black text-sm text-gray-900 dark:text-white">{item.name_en}</h3>
-          {item.desc_en && (
-            <p className="text-xs text-gray-400 dark:text-zinc-500 line-clamp-2 mt-1">{item.desc_en}</p>
-          )}
-        </div>
+        {desc && (
+          <p className="text-xs text-gray-400 dark:text-zinc-500 line-clamp-2">{desc}</p>
+        )}
 
         <div className="flex gap-2">
           <a
@@ -190,7 +210,7 @@ function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInst
             <ExternalLink size={13} />{t('gallery.preview_btn')}
           </a>
           <button
-            onClick={() => onInstall(item.id)}
+            onClick={() => onInstall(item)}
             disabled={installingId === item.id || isInstalled}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-black transition-all ${
               isInstalled
@@ -231,6 +251,12 @@ export default function Theme() {
   const [idActive,     setIdActive]     = useState('');
   const [currentPage,  setCurrentPage]  = useState(1);
   const [activeTab,    setActiveTab]    = useState('my');
+
+  const [installTarget,          setInstallTarget]          = useState(null);
+  const [installCouponCode,      setInstallCouponCode]      = useState('');
+  const [installCouponChecking,  setInstallCouponChecking]  = useState(false);
+  const [installCouponInfo,      setInstallCouponInfo]      = useState(null);
+  const [installCouponError,     setInstallCouponError]     = useState('');
 
   /* ── Initial fetch ── */
   const getInitialData = async () => {
@@ -293,16 +319,35 @@ export default function Theme() {
     } finally { setActivatingId(null); }
   };
 
-  const handleInstallTheme = async (themeId) => {
+  const handleInstallTheme = async (themeId, couponCode) => {
     if (!themeId) return;
     setInstallingId(themeId);
     try {
-      const { data } = await axios.post(`${baseURL}/theme/install-theme/${themeId}`, {}, headers);
+      const { data } = await axios.post(`${baseURL}/theme/install-theme/${themeId}`, { couponCode }, headers);
       if (data.success === false) { alert(t('alerts.install_error', { message: data.message })); return; }
       alert(t('alerts.install_success'));
+      setInstallTarget(null);
+      setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
       getInitialData();
     } catch (err) { console.error(err); }
     finally { setInstallingId(null); }
+  };
+
+  const handleApplyInstallCoupon = async () => {
+    if (!installCouponCode.trim() || !installTarget) return;
+    setInstallCouponChecking(true); setInstallCouponError(''); setInstallCouponInfo(null);
+    try {
+      const { data } = await axios.post(`${baseURL}/coupons/validate`,
+        { code: installCouponCode.trim(), scope: 'theme', basePrice: Number(installTarget.price) },
+        headers);
+      setInstallCouponInfo(data);
+    } catch (err) {
+      setInstallCouponError(err?.response?.data?.message || t('coupon.invalid'));
+    } finally { setInstallCouponChecking(false); }
+  };
+
+  const handleClearInstallCoupon = () => {
+    setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
   };
 
   const totalPages      = Math.ceil(themes.length / ITEMS_PER_PAGE);
@@ -353,7 +398,7 @@ export default function Theme() {
               <ThemeCard
                 key={item.id}
                 image={item.imageUrl}
-                name={item.name_en}
+                name={getLocalizedThemeText(item, 'name', i18n.language)}
                 isActivating={activatingId === item.id}
                 isActive={idActive === item.id}
                 onActivate={() => handleActiveTheme(item.id)}
@@ -373,7 +418,7 @@ export default function Theme() {
                 <ThemeCardPlan
                   key={item.id}
                   image={item.imageUrl}
-                  name={item.name_en}
+                  name={getLocalizedThemeText(item, 'name', i18n.language)}
                   isActivating={activatingId === item.id}
                   isActive={idActive === item.id}
                   onActivate={() => handleActiveThemePlan(item.id)}
@@ -423,7 +468,14 @@ export default function Theme() {
                     isInstalled={myTheme.some(m => m.id === item.id)}
                     isIncludedInPlan={planThemeIds.includes(item.id)}
                     installingId={installingId}
-                    onInstall={handleInstallTheme}
+                    onInstall={(theme) => {
+                      if (Number(theme.price) > 0 && !planThemeIds.includes(theme.id)) {
+                        setInstallTarget(theme);
+                        setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
+                      } else {
+                        handleInstallTheme(theme.id);
+                      }
+                    }}
                   />
                 ))}
               </div>
@@ -437,6 +489,63 @@ export default function Theme() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* ── Install confirm modal (paid themes) ── */}
+      {installTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={e => { if (e.target === e.currentTarget) setInstallTarget(null); }}>
+          <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden" dir={isRtl ? 'rtl' : 'ltr'}>
+            <div className="flex items-center justify-between px-6 pt-6 pb-2">
+              <h2 className="font-black text-gray-900 dark:text-white text-base">{t('coupon.modal_title')}</h2>
+              <button onClick={() => setInstallTarget(null)} className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors">
+                <X size={16} />
+              </button>
+            </div>
+            <div className="px-6 pb-2">
+              <p className="font-black text-sm text-gray-900 dark:text-white">{getLocalizedThemeText(installTarget, 'name', i18n.language)}</p>
+              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                {installCouponInfo
+                  ? <>
+                      <span className="line-through me-1.5">{Number(installTarget.price).toLocaleString()}</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">{installCouponInfo.finalPrice?.toLocaleString()} DZD</span>
+                    </>
+                  : <span className="font-bold text-gray-700 dark:text-zinc-300">{Number(installTarget.price).toLocaleString()} DZD</span>
+                }
+              </p>
+            </div>
+            <div className="px-6 py-4">
+              <CouponInput
+                code={installCouponCode}
+                onCodeChange={setInstallCouponCode}
+                onApply={handleApplyInstallCoupon}
+                onClear={handleClearInstallCoupon}
+                checking={installCouponChecking}
+                error={installCouponError}
+                appliedText={installCouponInfo ? t('coupon.applied', {
+                  value: installCouponInfo.discountType === 'percentage' ? `${installCouponInfo.discountValue}%` : `${installCouponInfo.discountValue} DZD`,
+                }) : ''}
+                placeholder={t('coupon.placeholder')}
+                applyLabel={t('coupon.apply')}
+              />
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={() => setInstallTarget(null)}
+                className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm"
+              >
+                {t('coupon.cancel')}
+              </button>
+              <button
+                onClick={() => handleInstallTheme(installTarget.id, installCouponInfo ? installCouponCode.trim() : undefined)}
+                disabled={installingId === installTarget.id}
+                className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-black rounded-xl active:scale-95 disabled:opacity-50 transition-all"
+              >
+                {installingId === installTarget.id ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                {t('coupon.confirm')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

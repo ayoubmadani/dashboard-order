@@ -18,6 +18,7 @@
     "empty_title": "No templates found",
     "empty_subtitle": "Try selecting a different type",
     "free_label": "Free",
+    "price_label": "{{price}} DZD",
     "preview_btn": "Preview",
     "install_btn": "Install",
     "plan_included_label": "Included in your plan",
@@ -45,5 +46,15 @@
     "stat_installed": "Installed",
     "stat_included": "In your plan",
     "stat_available": "Available"
+  },
+
+  "coupon": {
+    "placeholder": "Enter coupon code",
+    "apply": "Apply",
+    "applied": "Coupon applied ({{value}})",
+    "invalid": "Invalid coupon code",
+    "modal_title": "Install theme",
+    "cancel": "Cancel",
+    "confirm": "Install"
   }
 }
