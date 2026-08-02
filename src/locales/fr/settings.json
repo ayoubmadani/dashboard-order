@@ -67,6 +67,12 @@
   "coupon_apply": "Appliquer",
   "coupon_applied": "Code promo appliqué ({{value}})",
   "coupon_invalid": "Code promo invalide",
+
+  "upgrade_confirm_title": "Confirmer la mise à niveau",
+  "upgrade_confirm_desc": "{{price}} {{currency}} seront déduits de votre portefeuille pour passer au forfait {{plan}}.",
+  "upgrade_confirm_proration_note": "Un crédit pour les jours restants de votre forfait actuel peut être automatiquement déduit de ce montant.",
+  "upgrade_confirm_cancel": "Annuler",
+  "upgrade_confirm_confirm": "Confirmer et payer",
   
   "feat_stores": "Boutiques",
   "feat_products": "Produits",

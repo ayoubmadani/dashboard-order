@@ -67,6 +67,12 @@
   "coupon_apply": "Apply",
   "coupon_applied": "Coupon applied ({{value}})",
   "coupon_invalid": "Invalid coupon code",
+
+  "upgrade_confirm_title": "Confirm upgrade",
+  "upgrade_confirm_desc": "{{price}} {{currency}} will be deducted from your wallet to upgrade to the {{plan}} plan.",
+  "upgrade_confirm_proration_note": "A credit for the remaining days on your current plan may be automatically deducted from this amount.",
+  "upgrade_confirm_cancel": "Cancel",
+  "upgrade_confirm_confirm": "Confirm & pay",
   
   "feat_stores": "Stores",
   "feat_products": "Products",

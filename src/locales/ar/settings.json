@@ -67,6 +67,12 @@
   "coupon_apply": "تطبيق",
   "coupon_applied": "تم تطبيق كود الخصم ({{value}})",
   "coupon_invalid": "كود الخصم غير صالح",
+
+  "upgrade_confirm_title": "تأكيد الترقية",
+  "upgrade_confirm_desc": "سيتم خصم {{price}} {{currency}} من محفظتك مقابل الترقية إلى خطة {{plan}}.",
+  "upgrade_confirm_proration_note": "قد يُخصم من هذا المبلغ رصيد الأيام المتبقية من خطتك الحالية تلقائياً.",
+  "upgrade_confirm_cancel": "إلغاء",
+  "upgrade_confirm_confirm": "تأكيد والدفع",
   
   "feat_stores": "متاجر",
   "feat_products": "منتجات",

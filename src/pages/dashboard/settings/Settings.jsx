@@ -395,6 +395,7 @@ const Settings = () => {
   const [subInterval, setSubInterval] = useState('year');
   const [subToast, setSubToast] = useState(null);
   const [showSubModal, setShowSubModal] = useState(false);
+  const [confirmUpgrade, setConfirmUpgrade] = useState(null);
   const [couponCode, setCouponCode] = useState('');
   const [couponChecking, setCouponChecking] = useState(false);
   const [couponInfo, setCouponInfo] = useState(null);
@@ -1128,13 +1129,58 @@ const Settings = () => {
                             </div>
                           )}
                         </div>
-                        <button onClick={() => handleSubscribe(plan.id, subInterval)} disabled={!!subscribing} className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl active:scale-95 disabled:opacity-50 transition-all shrink-0 ms-3">
+                        <button
+                          onClick={() => setConfirmUpgrade({ plan, price, discountedPrice, hasDiscount })}
+                          disabled={!!subscribing}
+                          className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl active:scale-95 disabled:opacity-50 transition-all shrink-0 ms-3"
+                        >
                           {subscribing === plan.id ? <Loader2 size={13} className="animate-spin" /> : <Zap size={13} />}
                           {t('sub_activate')}
                         </button>
                       </div>
                     );
                   })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── Upgrade Confirm Modal ── */}
+          {confirmUpgrade && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={e => { if (e.target === e.currentTarget && !subscribing) setConfirmUpgrade(null); }}>
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] w-full max-w-sm shadow-2xl p-6" dir={isRtl ? 'rtl' : 'ltr'}>
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mx-auto mb-4">
+                  <Zap size={20} className="text-indigo-500" />
+                </div>
+                <h3 className="text-base font-black text-center text-gray-900 dark:text-white mb-1">
+                  {t('upgrade_confirm_title')}
+                </h3>
+                <p className="text-sm text-center text-gray-500 dark:text-zinc-400 mb-4">
+                  {t('upgrade_confirm_desc', {
+                    plan: confirmUpgrade.plan.name,
+                    price: (confirmUpgrade.hasDiscount ? confirmUpgrade.discountedPrice : confirmUpgrade.price).toLocaleString(),
+                    currency: confirmUpgrade.plan.currency,
+                  })}
+                </p>
+                <p className="text-[11px] text-center text-gray-400 dark:text-zinc-500 mb-5">
+                  {t('upgrade_confirm_proration_note')}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setConfirmUpgrade(null)}
+                    disabled={!!subscribing}
+                    className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm disabled:opacity-50"
+                  >
+                    {t('upgrade_confirm_cancel')}
+                  </button>
+                  <button
+                    onClick={async () => { const p = confirmUpgrade.plan; setConfirmUpgrade(null); await handleSubscribe(p.id, subInterval); }}
+                    disabled={!!subscribing}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-black text-sm active:scale-95 disabled:opacity-50 transition-all"
+                  >
+                    {subscribing === confirmUpgrade.plan.id && <Loader2 size={14} className="animate-spin" />}
+                    {t('upgrade_confirm_confirm')}
+                  </button>
                 </div>
               </div>
             </div>
