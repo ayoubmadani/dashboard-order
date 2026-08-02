@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast, Toaster } from 'sonner';
 import {
   Loader2, Palette, LayoutGrid,
   ExternalLink, Download, CheckCircle2,
@@ -158,7 +159,7 @@ function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInst
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'theme' });
   const name = getLocalizedThemeText(item, 'name', i18n.language);
   const desc = getLocalizedThemeText(item, 'desc', i18n.language);
-  const isFree = isIncludedInPlan || Number(item.price) === 0;
+  const isFree = Number(item.price) === 0;
 
   return (
     <div className="group bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
@@ -221,7 +222,7 @@ function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInst
             {installingId === item.id
               ? <Loader2 size={13} className="animate-spin" />
               : isInstalled ? <CheckCircle2 size={13} /> : <Download size={13} />}
-            {isInstalled ? t('gallery.installed_label') : t('gallery.install_btn')}
+            {isInstalled ? t('gallery.installed_label') : isFree ? t('gallery.install_btn') : t('gallery.buy_btn')}
           </button>
         </div>
       </div>
@@ -299,23 +300,23 @@ export default function Theme() {
 
   /* ── Handlers ── */
   const handleActiveTheme = async (themeId) => {
-    if (!storeId) { alert(t('alerts.no_store')); return; }
+    if (!storeId) { toast.error(t('alerts.no_store')); return; }
     setActivatingId(themeId ?? 'default');
     try {
       const res = await axios.post(`${baseURL}/theme/active-theme`, { themeId, storeId }, headers);
-      if (res.data.success) { setIdActive(themeId); }
-    } catch { alert(t('alerts.activate_error')); }
+      if (res.data.success) { setIdActive(themeId); toast.success(t('alerts.activate_success')); }
+    } catch { toast.error(t('alerts.activate_error')); }
     finally { setActivatingId(null); }
   };
 
   const handleActiveThemePlan = async (themeId) => {
-    if (!storeId) { alert(t('alerts.no_store')); return; }
+    if (!storeId) { toast.error(t('alerts.no_store')); return; }
     setActivatingId(themeId ?? 'default');
     try {
       const res = await axios.post(`${baseURL}/theme/active-theme-plan`, { themeId, storeId }, headers);
-      if (res.status === 200 || res.status === 201) { setIdActive(themeId); }
+      if (res.status === 200 || res.status === 201) { setIdActive(themeId); toast.success(t('alerts.activate_success')); }
     } catch (err) {
-      alert(err.response?.data?.message || t('alerts.activate_error'));
+      toast.error(err.response?.data?.message || t('alerts.activate_error'));
     } finally { setActivatingId(null); }
   };
 
@@ -324,8 +325,8 @@ export default function Theme() {
     setInstallingId(themeId);
     try {
       const { data } = await axios.post(`${baseURL}/theme/install-theme/${themeId}`, { couponCode }, headers);
-      if (data.success === false) { alert(t('alerts.install_error', { message: data.message })); return; }
-      alert(t('alerts.install_success'));
+      if (data.success === false) { toast.error(t('alerts.install_error', { message: data.message })); return; }
+      toast.success(t('alerts.install_success'));
       setInstallTarget(null);
       setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
       getInitialData();
@@ -364,6 +365,7 @@ export default function Theme() {
 
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-5 font-sans animate-in fade-in duration-500">
+      <Toaster position="top-center" richColors />
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800/60 rounded-2xl">
@@ -469,7 +471,7 @@ export default function Theme() {
                     isIncludedInPlan={planThemeIds.includes(item.id)}
                     installingId={installingId}
                     onInstall={(theme) => {
-                      if (Number(theme.price) > 0 && !planThemeIds.includes(theme.id)) {
+                      if (Number(theme.price) > 0) {
                         setInstallTarget(theme);
                         setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
                       } else {

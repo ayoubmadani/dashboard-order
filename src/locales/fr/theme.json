@@ -21,6 +21,7 @@
     "price_label": "{{price}} DZD",
     "preview_btn": "Aperçu",
     "install_btn": "Installer",
+    "buy_btn": "Acheter",
     "plan_included_label": "Inclus dans votre forfait",
     "installed_label": "Installé",
     "page_info": "Page {{current}} sur {{total}}"
@@ -53,8 +54,8 @@
     "apply": "Appliquer",
     "applied": "Code promo appliqué ({{value}})",
     "invalid": "Code promo invalide",
-    "modal_title": "Installer le thème",
+    "modal_title": "Acheter le thème",
     "cancel": "Annuler",
-    "confirm": "Installer"
+    "confirm": "Acheter"
   }
 }

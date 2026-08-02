@@ -24,6 +24,7 @@
     "installed_label": "مثبّت",
     "preview_btn": "معاينة",
     "install_btn": "تثبيت",
+    "buy_btn": "شراء",
     "page_info": "صفحة {{current}} من {{total}}",
     "free_label": "مجاني",
     "price_label": "{{price}} دج"
@@ -42,8 +43,8 @@
     "apply": "تطبيق",
     "applied": "تم تطبيق كود الخصم ({{value}})",
     "invalid": "كود الخصم غير صالح",
-    "modal_title": "تثبيت القالب",
+    "modal_title": "شراء القالب",
     "cancel": "إلغاء",
-    "confirm": "تثبيت"
+    "confirm": "شراء"
   }
 }

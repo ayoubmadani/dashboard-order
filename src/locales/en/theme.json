@@ -21,6 +21,7 @@
     "price_label": "{{price}} DZD",
     "preview_btn": "Preview",
     "install_btn": "Install",
+    "buy_btn": "Buy",
     "plan_included_label": "Included in your plan",
     "installed_label": "Installed",
     "page_info": "Page {{current}} of {{total}}"
@@ -53,8 +54,8 @@
     "apply": "Apply",
     "applied": "Coupon applied ({{value}})",
     "invalid": "Invalid coupon code",
-    "modal_title": "Install theme",
+    "modal_title": "Buy theme",
     "cancel": "Cancel",
-    "confirm": "Install"
+    "confirm": "Buy"
   }
 }
