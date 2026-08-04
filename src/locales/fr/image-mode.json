@@ -13,6 +13,8 @@
   "upload": {
     "compressing": "Compression de l'image...",
     "uploading": "Téléchargement...",
+    "uploading_batch": "Téléchargement de l'image {{current}} sur {{total}}...",
+    "batch_hint": "jusqu'à {{max}} images à la fois",
     "saved_size": "{{percent}}% de taille économisée ({{oldSize}} → {{newSize}})",
     "drop_here": "Déposez l'image ici",
     "click_or_drag": "Glissez-déposez ou cliquez pour télécharger"
@@ -50,6 +52,7 @@
   "alerts": {
     "unsupported_type": "Type de fichier non supporté. Seuls JPG, PNG, GIF et WEBP sont autorisés.",
     "file_too_large": "Le fichier est trop volumineux. Taille maximale 50 Mo",
+    "max_batch_upload": "Vous pouvez télécharger jusqu'à {{max}} images à la fois. Seules les {{max}} premières ont été sélectionnées.",
     "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette image ?",
     "upload_failed": "Échec du téléchargement",
     "delete_failed": "Échec de la suppression"

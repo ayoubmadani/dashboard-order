@@ -13,6 +13,8 @@
   "upload": {
     "compressing": "Compressing image...",
     "uploading": "Uploading...",
+    "uploading_batch": "Uploading image {{current}} of {{total}}...",
+    "batch_hint": "up to {{max}} images at once",
     "saved_size": "Saved {{percent}}% of size ({{oldSize}} → {{newSize}})",
     "drop_here": "Drop image here",
     "click_or_drag": "Drag and drop or click to upload"
@@ -50,6 +52,7 @@
   "alerts": {
     "unsupported_type": "Unsupported file type. Only JPG, PNG, GIF, and WEBP are allowed.",
     "file_too_large": "File is too large. Maximum size is 50MB",
+    "max_batch_upload": "You can upload up to {{max}} images at once. Only the first {{max}} were selected.",
     "confirm_delete": "Are you sure you want to delete this image?",
     "upload_failed": "Upload failed",
     "delete_failed": "Deletion failed"

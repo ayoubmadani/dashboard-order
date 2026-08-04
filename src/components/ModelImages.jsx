@@ -88,6 +88,10 @@ const foldersConfig = {
 
 const folderIds = Object.keys(foldersConfig);
 
+// Product images are the only folder that supports selecting/uploading
+// several files in one go — every other folder is a single-image slot.
+const MAX_PRODUCT_BATCH = 5;
+
 // ── Custom Hook: Mobile Detection ──
 const useMobileDetect = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -158,6 +162,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const [compressionProgress, setCompressionProgress] = useState(0);
   const [originalSize, setOriginalSize] = useState(0);
   const [compressedSize, setCompressedSize] = useState(0);
+  const [batchIndex, setBatchIndex] = useState(0);
+  const [batchTotal, setBatchTotal] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null); // Lightbox state
   const [focusedIndex, setFocusedIndex] = useState(-1); // Keyboard nav
 
@@ -286,19 +292,19 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setPage(1);
   };
 
-  const handleFileUpload = async (file) => {
-    if (!file) return;
+  // Uploads a single file and returns the created image record, or null if
+  // it was rejected/failed (the caller has already been alerted in that case).
+  const uploadOneFile = async (file) => {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowed.includes(file.type)) { 
-      alert(t('alerts.unsupported_type')); 
-      return; 
+    if (!allowed.includes(file.type)) {
+      alert(t('alerts.unsupported_type'));
+      return null;
     }
-    if (file.size > 50 * 1024 * 1024) { 
-      alert(t('alerts.file_too_large')); 
-      return; 
+    if (file.size > 50 * 1024 * 1024) {
+      alert(t('alerts.file_too_large'));
+      return null;
     }
 
-    setIsUploading(true);
     setOriginalSize(file.size);
     let fileToUpload = file;
 
@@ -315,15 +321,15 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         fileToUpload = await compressImage(file, opts);
         setCompressedSize(fileToUpload.size);
         setCompressionProgress(100);
-      } catch { 
-        fileToUpload = file; 
-        setCompressedSize(file.size); 
+      } catch {
+        fileToUpload = file;
+        setCompressedSize(file.size);
       }
-      finally { 
-        setTimeout(() => setIsCompressing(false), prefersReducedMotion ? 0 : 500); 
+      finally {
+        setTimeout(() => setIsCompressing(false), prefersReducedMotion ? 0 : 500);
       }
-    } else { 
-      setCompressedSize(file.size); 
+    } else {
+      setCompressedSize(file.size);
     }
 
     setUploadProgress(0);
@@ -336,19 +342,50 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
         onUploadProgress: (e) => setUploadProgress(Math.round((e.loaded * 100) / e.total)),
       });
-      const uploaded = res.data;
-      setImages(prev => [uploaded, ...prev]);
-      setFolderCounts(prev => ({ ...prev, [currentFolder]: (prev[currentFolder] || 0) + 1 }));
-      if (onSelectImage) { 
-        onSelectImage(uploaded); 
-        close(); 
-      }
+      return res.data;
     } catch (e) {
       console.error(e);
       alert(e.response?.data?.message || t('alerts.upload_failed'));
-    } finally { 
-      setIsUploading(false); 
-      setCompressionProgress(0); 
+      return null;
+    }
+  };
+
+  const handleFilesUpload = async (fileList) => {
+    const files = Array.from(fileList || []).filter(Boolean);
+    if (files.length === 0) return;
+
+    const maxBatch = currentFolder === 'products' ? MAX_PRODUCT_BATCH : 1;
+    let queue = files;
+    if (files.length > maxBatch) {
+      alert(t('alerts.max_batch_upload', { max: maxBatch }));
+      queue = files.slice(0, maxBatch);
+    }
+
+    setIsUploading(true);
+    setBatchTotal(queue.length);
+
+    const uploaded = [];
+    for (let i = 0; i < queue.length; i++) {
+      setBatchIndex(i + 1);
+      const result = await uploadOneFile(queue[i]);
+      if (result) uploaded.push(result);
+    }
+
+    setIsUploading(false);
+    setBatchIndex(0);
+    setBatchTotal(0);
+    setUploadProgress(0);
+    setCompressionProgress(0);
+
+    if (uploaded.length === 0) return;
+
+    // Prepend newest-first, matching the previous single-upload behavior.
+    setImages(prev => [...uploaded.slice().reverse(), ...prev]);
+    setFolderCounts(prev => ({ ...prev, [currentFolder]: (prev[currentFolder] || 0) + uploaded.length }));
+
+    if (onSelectImage) {
+      uploaded.forEach(img => onSelectImage(img));
+      close();
     }
   };
 
@@ -614,18 +651,19 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
             {/* Upload Zone */}
             <div className="px-4 sm:px-6 pt-3 sm:pt-4 flex-shrink-0">
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                hidden 
-                onChange={(e) => handleFileUpload(e.target.files[0])} 
-                accept="image/*" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                hidden
+                onChange={(e) => handleFilesUpload(e.target.files)}
+                accept="image/*"
+                multiple={currentFolder === 'products'}
                 disabled={isUploading}
                 capture={isMobile ? "environment" : undefined} // Allow camera on mobile
               />
               <div
                 onClick={() => !isUploading && fileInputRef.current?.click()}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFileUpload(e.dataTransfer.files[0]); }}
+                onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFilesUpload(e.dataTransfer.files); }}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 className={`rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 active:scale-[0.99] touch-manipulation ${
@@ -638,7 +676,9 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                   <div className="px-4 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-gray-600 dark:text-zinc-300">
-                        {isCompressing ? t('upload.compressing') : t('upload.uploading')}
+                        {batchTotal > 1
+                          ? t('upload.uploading_batch', { current: batchIndex, total: batchTotal })
+                          : isCompressing ? t('upload.compressing') : t('upload.uploading')}
                       </span>
                       <span className="text-xs font-mono font-semibold" style={{ color: currentConfig.color }}>{progress}%</span>
                     </div>
@@ -674,6 +714,9 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                       </p>
                       <p className="text-[11px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                         JPG, PNG, GIF, WebP · Max 50MB
+                        {currentFolder === 'products' && (
+                          <span className="ml-1"> · {t('upload.batch_hint', { max: MAX_PRODUCT_BATCH })}</span>
+                        )}
                         {isMobile && <span className="ml-1 text-blue-500">· {t('upload.tap_camera')}</span>}
                       </p>
                     </div>

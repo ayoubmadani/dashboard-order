@@ -13,6 +13,8 @@
     "upload": {
         "compressing": "جاري ضغط الصورة...",
         "uploading": "جاري الرفع...",
+        "uploading_batch": "جاري رفع الصورة {{current}} من {{total}}...",
+        "batch_hint": "حتى {{max}} صور دفعة واحدة",
         "saved_size": "تم توفير {{percent}}% من الحجم ({{oldSize}} → {{newSize}})",
         "drop_here": "أفلت الصورة هنا",
         "click_or_drag": "اسحب الصورة أو انقر للرفع"
@@ -50,6 +52,7 @@
     "alerts": {
         "unsupported_type": "نوع الملف غير مدعوم. يسمح فقط بـ: JPG, PNG, GIF, WEBP",
         "file_too_large": "حجم الملف كبير جداً. الحد الأقصى 50MB",
+        "max_batch_upload": "يمكنك رفع {{max}} صور كحد أقصى في المرة الواحدة. تم اختيار أول {{max}} صور فقط.",
         "confirm_delete": "هل أنت متأكد من حذف هذه الصورة؟",
         "upload_failed": "فشل رفع الصورة",
         "delete_failed": "فشل حذف الصورة"
