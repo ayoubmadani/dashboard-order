@@ -55,10 +55,7 @@ const AuthCallback = () => {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-zinc-950">
-            <div className="w-12 h-12 border-4 border-zinc-200 border-t-zinc-900 dark:border-zinc-800 dark:border-t-white rounded-full animate-spin mb-4"></div>
-            <p className="text-lg font-bold animate-pulse text-zinc-900 dark:text-white">
-                جاري التحقق من الحساب...
-            </p>
+            <div className="w-6 h-6 border-2 border-zinc-200 border-t-zinc-900 dark:border-zinc-800 dark:border-t-white rounded-full animate-spin mb-4"></div>
         </div>
     );
 };

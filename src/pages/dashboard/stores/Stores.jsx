@@ -465,7 +465,7 @@ const Stores = () => {
                           <Globe size={14} className="text-gray-400 shrink-0 group-hover/link:text-blue-500 transition-colors" />
 
                           <a
-                            href={`https://${store.subdomain}.${import.meta.env.VITE_STORE_URL}`}
+                            href={`https://${store.subdomain}.mdstore.top`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate font-mono font-bold transition-all hover:underline underline-offset-4 decoration-2"
