@@ -124,6 +124,47 @@ const Products = () => {
     }
   };
 
+  const handleBulkSetActive = async (active) => {
+    const idsToUpdate = selectedProducts.filter(id => {
+      const p = products.find(p => p.id === id);
+      return p && p.isActive !== active;
+    });
+    if (!idsToUpdate.length) {
+      toast.info(active ? t('list.toast.bulk_already_active') : t('list.toast.bulk_already_inactive'));
+      return;
+    }
+    const confirmMessage = active
+      ? t('list.toast.bulk_activate_confirm', { count: idsToUpdate.length })
+      : t('list.toast.bulk_deactivate_confirm', { count: idsToUpdate.length });
+    if (!window.confirm(confirmMessage)) return;
+
+    setProducts(prev => prev.map(p => idsToUpdate.includes(p.id) ? { ...p, isActive: active } : p));
+
+    const results = await Promise.allSettled(
+      idsToUpdate.map(id =>
+        axios.patch(`${baseURL}/stores/${storeId}/products/${id}/toggle-active`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      )
+    );
+
+    const failedIds = idsToUpdate.filter((_, i) => results[i].status === 'rejected');
+    if (failedIds.length) {
+      setProducts(prev => prev.map(p => failedIds.includes(p.id) ? { ...p, isActive: !active } : p));
+    }
+
+    const successCount = idsToUpdate.length - failedIds.length;
+    if (failedIds.length === 0) {
+      toast.success(active
+        ? t('list.toast.bulk_activate_success', { count: successCount })
+        : t('list.toast.bulk_deactivate_success', { count: successCount }));
+    } else if (successCount > 0) {
+      toast.warning(t('list.toast.bulk_status_partial_fail'));
+    } else {
+      toast.error(t('list.toast.bulk_status_partial_fail'));
+    }
+
+    setSelectedProducts([]);
+  };
+
   const toggleProductStatus = async (productId, currentStatus) => {
     setProducts(prev => prev.map(p => p.id === productId ? { ...p, isActive: !p.isActive } : p));
     try {
@@ -295,6 +336,20 @@ const Products = () => {
                       <X size={13} />
                     </button>
                   </span>
+                  <button
+                    onClick={() => handleBulkSetActive(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
+                  >
+                    <ToggleRight size={14} />
+                    {t('list.bulk_activate_selected')}
+                  </button>
+                  <button
+                    onClick={() => handleBulkSetActive(false)}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 rounded-xl text-sm font-medium hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    <ToggleLeft size={14} />
+                    {t('list.bulk_deactivate_selected')}
+                  </button>
                   <button
                     onClick={handleBulkDelete}
                     className="flex items-center gap-1.5 px-3 py-2 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 rounded-xl text-sm font-medium hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"

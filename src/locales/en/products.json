@@ -20,6 +20,8 @@
     "no_description": "No description",
     "uncategorized": "Uncategorized",
     "bulk_delete_selected": "Delete Selected",
+    "bulk_activate_selected": "Activate Selected",
+    "bulk_deactivate_selected": "Deactivate Selected",
     "pagination": "Showing {{from}} to {{to}} of {{total}}",
     "table": {
       "product": "Product",
@@ -51,6 +53,13 @@
       "bulk_success": "{{count}} products deleted successfully",
       "bulk_confirm": "Are you sure you want to delete {{count}} products?",
       "bulk_partial_fail": "Failed to delete some products",
+      "bulk_activate_confirm": "Are you sure you want to activate {{count}} products?",
+      "bulk_deactivate_confirm": "Are you sure you want to deactivate {{count}} products?",
+      "bulk_activate_success": "{{count}} products activated successfully",
+      "bulk_deactivate_success": "{{count}} products deactivated successfully",
+      "bulk_already_active": "Selected products are already active",
+      "bulk_already_inactive": "Selected products are already inactive",
+      "bulk_status_partial_fail": "Failed to change status for some products",
       "status_enabled": "Product enabled",
       "status_disabled": "Product disabled",
       "status_failed": "Failed to change product status"

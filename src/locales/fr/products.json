@@ -20,6 +20,8 @@
     "no_description": "Pas de description",
     "uncategorized": "Non classé",
     "bulk_delete_selected": "Supprimer la sélection",
+    "bulk_activate_selected": "Activer la sélection",
+    "bulk_deactivate_selected": "Désactiver la sélection",
     "pagination": "Affichage de {{from}} à {{to}} sur {{total}}",
     "table": {
       "product": "Produit",
@@ -51,6 +53,13 @@
       "bulk_success": "{{count}} produits supprimés avec succès",
       "bulk_confirm": "Êtes-vous sûr de vouloir supprimer {{count}} produits ?",
       "bulk_partial_fail": "Échec de la suppression de certains produits",
+      "bulk_activate_confirm": "Êtes-vous sûr de vouloir activer {{count}} produits ?",
+      "bulk_deactivate_confirm": "Êtes-vous sûr de vouloir désactiver {{count}} produits ?",
+      "bulk_activate_success": "{{count}} produits activés avec succès",
+      "bulk_deactivate_success": "{{count}} produits désactivés avec succès",
+      "bulk_already_active": "Les produits sélectionnés sont déjà actifs",
+      "bulk_already_inactive": "Les produits sélectionnés sont déjà inactifs",
+      "bulk_status_partial_fail": "Échec de la modification du statut de certains produits",
       "status_enabled": "Produit activé",
       "status_disabled": "Produit désactivé",
       "status_failed": "Échec de la modification du statut du produit"

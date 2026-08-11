@@ -20,6 +20,8 @@
     "no_description": "لا يوجد وصف",
     "uncategorized": "غير مصنف",
     "bulk_delete_selected": "حذف المحدد",
+    "bulk_activate_selected": "تفعيل المحدد",
+    "bulk_deactivate_selected": "تعطيل المحدد",
     "pagination": "عرض {{from}} إلى {{to}} من {{total}}",
     "table": {
       "product": "المنتج",
@@ -52,6 +54,13 @@
       "bulk_success": "تم حذف {{count}} منتج بنجاح",
       "bulk_confirm": "هل أنت متأكد من حذف {{count}} منتج؟",
       "bulk_partial_fail": "فشل في حذف بعض المنتجات",
+      "bulk_activate_confirm": "هل أنت متأكد من تفعيل {{count}} منتج؟",
+      "bulk_deactivate_confirm": "هل أنت متأكد من تعطيل {{count}} منتج؟",
+      "bulk_activate_success": "تم تفعيل {{count}} منتج بنجاح",
+      "bulk_deactivate_success": "تم تعطيل {{count}} منتج بنجاح",
+      "bulk_already_active": "المنتجات المحددة مفعّلة بالفعل",
+      "bulk_already_inactive": "المنتجات المحددة معطّلة بالفعل",
+      "bulk_status_partial_fail": "فشل في تغيير حالة بعض المنتجات",
       "status_enabled": "تم تفعيل المنتج",
       "status_disabled": "تم تعطيل المنتج",
       "status_failed": "فشل في تغيير حالة المنتج"
