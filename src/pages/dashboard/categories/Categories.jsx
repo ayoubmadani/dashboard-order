@@ -157,7 +157,6 @@ const Categories = () => {
   const validateForm = () => {
     const e = {};
     if (!formData.name.trim()) e.name = t('validation.name_required');
-    if (!formData.slug.trim()) e.slug = t('validation.slug_required');
     if (editingCategory && formData.parentId === editingCategory.id)
       e.parentId = t('validation.parent_self');
     setErrors(e);
@@ -682,8 +681,8 @@ const Categories = () => {
                 </select>
               </Field>
 
-              {/* Category Niche */}
-              <Field label={t('modal.category_niche')} error={errors.categoryNicheId}>
+              {/* Category Niche — hidden for now, revisit later */}
+              {/* <Field label={t('modal.category_niche')} error={errors.categoryNicheId}>
                 <select
                   name="categoryNicheId"
                   value={formData.categoryNicheId || ''}
@@ -696,7 +695,7 @@ const Categories = () => {
                     </option>
                   ))}
                 </select>
-              </Field>
+              </Field> */}
 
               {/* Name */}
               <Field label={t('modal.name_label')} error={errors.name}>
@@ -707,44 +706,18 @@ const Categories = () => {
                   className={inputCls(errors.name)} />
               </Field>
 
-              {/* Slug */}
-              <Field label={t('modal.slug_label')} error={errors.slug}>
-                <input
-                  type="text" name="slug" value={formData.slug} dir="ltr"
-                  onChange={handleChange}
-                  placeholder={t('modal.slug_placeholder')}
-                  className={`${inputCls(errors.slug)} font-mono text-xs`} />
-                <p className="text-[11px] text-gray-400 dark:text-zinc-500">{t('modal.slug_hint')}</p>
+              {/* Status */}
+              <Field label={t('modal.status_label')}>
+                <div className="flex items-center gap-2.5 h-[42px]">
+                  <input
+                    type="checkbox" name="isActive" id="isActive"
+                    checked={formData.isActive} onChange={handleChange}
+                    className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
+                  <label htmlFor="isActive" className="text-sm text-gray-600 dark:text-zinc-400 cursor-pointer select-none">
+                    {t('modal.status_active')}
+                  </label>
+                </div>
               </Field>
-
-              {/* Description */}
-              <Field label={t('modal.description_label')}>
-                <textarea
-                  name="description" value={formData.description}
-                  onChange={handleChange} rows={3}
-                  placeholder={t('modal.description_placeholder')}
-                  className={`${inputCls()} resize-none`} />
-              </Field>
-
-              {/* Sort + Status */}
-              <div className="grid grid-cols-2 gap-4">
-                <Field label={t('modal.sort_label')}>
-                  <input type="number" name="sortOrder" value={formData.sortOrder}
-                    onChange={handleChange} min="0"
-                    className={inputCls()} />
-                </Field>
-                <Field label={t('modal.status_label')}>
-                  <div className="flex items-center gap-2.5 h-[42px]">
-                    <input
-                      type="checkbox" name="isActive" id="isActive"
-                      checked={formData.isActive} onChange={handleChange}
-                      className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                    <label htmlFor="isActive" className="text-sm text-gray-600 dark:text-zinc-400 cursor-pointer select-none">
-                      {t('modal.status_active')}
-                    </label>
-                  </div>
-                </Field>
-              </div>
 
               {/* Footer buttons */}
               <div className="flex gap-3 pt-2 border-t border-gray-200 dark:border-zinc-800">
