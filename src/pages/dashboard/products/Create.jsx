@@ -14,6 +14,7 @@ import ModelImages from '../../../components/ModelImages';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import NoStoreState from '../../../components/NoStoreState';
 
 const ATTRIBUTE_TYPES = { COLOR: 'color', SIZE: 'size', TEXT: 'text' };
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -101,6 +102,7 @@ export default function CreateProduct() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'products' });
   const navigate = useNavigate();
   const isRtl = i18n.dir() === 'rtl';
+  const [storeId] = useState(() => localStorage.getItem('storeId'));
 
   const [formData, setFormData] = useState({
     name: '', desc: '', price: '', originalPrice: '',
@@ -131,7 +133,6 @@ export default function CreateProduct() {
 
   /* ── Categories ── */
   const loadCategories = () => {
-    const storeId = localStorage.getItem('storeId');
     if (!storeId) { setCategoriesError(t('form.category_error_store')); return; }
     const token = getAccessToken();
     if (!token) { setCategoriesError(t('form.category_error_token')); return; }
@@ -258,10 +259,10 @@ export default function CreateProduct() {
 
   const handleSubmit = async () => {
     if (!validate()) { showNotification('error', t('create.fix_errors')); return; }
+    if (!storeId) { showNotification('error', t('list.toast.store_not_found')); return; }
     setLoading(true);
     try {
       const token = getAccessToken();
-      const storeId = localStorage.getItem('storeId');
       const data = {
         name: formData.name, price: Number(formData.price), desc: formData.desc,
         storeId, categoryId: formData.categoryId || undefined,
@@ -280,6 +281,8 @@ export default function CreateProduct() {
 
   const marketingEmojis = ["🔥", "⭐", "✨", "⚡", "💎", "🚀", "🎯", "🛍️", "💥", "👑", "🌟", "🎁", "💖", "🏆"];
   const selectedCategory = categories.find(c => c.id === formData.categoryId);
+
+  if (!storeId) return <NoStoreState title={t('no_store.title')} subtitle={t('no_store.subtitle')} cta={t('no_store.cta')} isRtl={isRtl} />;
 
   return (
     <div className="max-w-5xl mx-auto pb-20 px-4 space-y-4" dir={isRtl ? 'rtl' : 'ltr'}>

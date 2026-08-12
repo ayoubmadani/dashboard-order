@@ -1,4 +1,9 @@
 {
+  "no_store": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Créez d'abord une boutique pour gérer les pages",
+    "cta": "Créer une boutique"
+  },
   "list": {
     "title": "Éditeur de pages",
     "pagesCount": "pages",
@@ -12,6 +17,7 @@
     "noResultsSub": "Essayez un autre terme de recherche",
     "confirmDelete": "Voulez-vous vraiment supprimer cette page ?",
     "fetchError": "Impossible de charger les pages",
+    "noStore": "Aucune boutique sélectionnée",
     "deleteError": "Impossible de supprimer la page",
     "createError": "Impossible de créer la page",
     "untitled": "Page sans titre",

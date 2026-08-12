@@ -266,7 +266,7 @@ export default function Theme() {
         axios.get(`${baseURL}/theme/type`),
         axios.get(`${baseURL}/theme/my`, headers),
         axios.get(`${baseURL}/theme/plan-sub`, headers),
-        axios.get(`${baseURL}/stores/${storeId}`, headers),
+        storeId ? axios.get(`${baseURL}/stores/${storeId}`, headers) : Promise.resolve({ data: { data: null } }),
         axios.get(`${baseURL}/theme/plan-info`, headers),
       ]);
       setTypes(typesRes.data ?? []);

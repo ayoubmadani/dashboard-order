@@ -9,6 +9,12 @@
     "retry": "Retry"
   },
 
+  "no_store": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to manage categories",
+    "cta": "Create a store"
+  },
+
   "header": {
     "view_grid": "Grid",
     "view_tree": "Tree",

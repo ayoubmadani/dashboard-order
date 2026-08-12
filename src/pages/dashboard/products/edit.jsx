@@ -336,9 +336,10 @@ export default function EditProduct() {
 
   const handleSubmit = async () => {
     if (!validate()) { showNotification('error', t('edit.fix_errors')); return; }
+    const storeId = localStorage.getItem('storeId');
+    if (!storeId) { showNotification('error', t('list.toast.store_not_found')); return; }
     setLoading(true);
     try {
-      const storeId = localStorage.getItem('storeId');
       const token = getAccessToken();
       const data = {
         name: formData.name,

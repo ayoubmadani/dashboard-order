@@ -9,6 +9,12 @@
     "retry": "Réessayer"
   },
 
+  "no_store": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Créez d'abord une boutique pour gérer les catégories",
+    "cta": "Créer une boutique"
+  },
+
   "header": {
     "view_grid": "Grille",
     "view_tree": "Arborescence",

@@ -11,13 +11,10 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import Loading from '../../../components/Loading';
+import NoStoreState from '../../../components/NoStoreState';
 
 /* ── API setup ── */
-const getStoreId = () => {
-  const storeId = localStorage.getItem('storeId');
-  if (!storeId) throw new Error('Store ID not found.');
-  return storeId;
-};
+const getStoreId = () => localStorage.getItem('storeId');
 
 const apiClient = axios.create({ baseURL });
 
@@ -421,6 +418,11 @@ const Categories = () => {
       </div>
     );
   };
+
+  /* ── No store selected ── */
+  if (!storeId) {
+    return <NoStoreState title={t('no_store.title')} subtitle={t('no_store.subtitle')} cta={t('no_store.cta')} isRtl={isRtl} />;
+  }
 
   /* ── Loading ── */
   if (isLoading) return <Loading />;

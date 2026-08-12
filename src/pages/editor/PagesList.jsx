@@ -11,6 +11,7 @@ import {
 import { baseURL } from '../../constents/const.';
 import { getAccessToken } from '../../services/access-token';
 import Loading from '../../components/Loading';
+import NoStoreState from '../../components/NoStoreState';
 
 const slugify = (str) =>
   str
@@ -128,6 +129,12 @@ export default function PagesList() {
   const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
 
   const fetchPages = useCallback(async () => {
+    if (!storeId) {
+      setPages([]);
+      setError(t('editor.list.noStore'));
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -170,6 +177,7 @@ export default function PagesList() {
   };
 
   const handleCreate = async () => {
+    if (!storeId) { toast.error(t('editor.list.noStore')); return; }
     setCreating(true);
     try {
       const domain = selectedDomain && slug.trim() ? `${selectedDomain}/lp/${slug.trim()}` : undefined;
@@ -248,6 +256,7 @@ export default function PagesList() {
 
   const filteredPages = pages.filter((p) => p.name?.toLowerCase().includes(searchQuery.toLowerCase()));
 
+  if (!storeId) return <NoStoreState title={t('editor.no_store.title')} subtitle={t('editor.no_store.subtitle')} cta={t('editor.no_store.cta')} isRtl={isRtl} />;
   if (loading) return <Loading />;
 
   return (

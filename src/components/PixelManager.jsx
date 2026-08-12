@@ -62,6 +62,7 @@ export const PixelManager = ({ storeId }) => {
   });
 
   const fetchPixels = useCallback(async () => {
+    if (!storeId) { setPixels([]); setLoading(false); return; }
     try {
       const token = getAccessToken();
       const response = await axios.get(`${baseURL}/stores/${storeId}/pixels`, {
@@ -82,7 +83,11 @@ export const PixelManager = ({ storeId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+    if (!editingPixel && !storeId) {
+      alert(t('noStore'));
+      return;
+    }
+
     try {
       const token = getAccessToken();
       const url = editingPixel 
@@ -191,20 +196,28 @@ export const PixelManager = ({ storeId }) => {
         </div>
         <button
           type="button"
+          disabled={!storeId}
           onClick={(e) => {
             e.preventDefault();
             resetForm();
             setEditingPixel(null);
             setShowModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Plus size={18} />
           {t('addNew')}
         </button>
       </div>
 
-      {pixels.length === 0 ? (
+      {!storeId ? (
+        <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+          <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-500 dark:text-zinc-400">
+            {t('noStore')}
+          </p>
+        </div>
+      ) : pixels.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
           <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
           <p className="text-gray-500 dark:text-zinc-400">

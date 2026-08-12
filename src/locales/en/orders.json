@@ -1,4 +1,9 @@
 {
+  "no_store_page": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to manage orders",
+    "cta": "Create a store"
+  },
   "status": {
     "pending": "Pending",
     "appl1": "Attempt 1",

@@ -1,4 +1,9 @@
 {
+  "no_store": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to manage pages",
+    "cta": "Create a store"
+  },
   "list": {
     "title": "Page Editor",
     "pagesCount": "pages",
@@ -12,6 +17,7 @@
     "noResultsSub": "Try a different search term",
     "confirmDelete": "Are you sure you want to delete this page?",
     "fetchError": "Failed to load pages",
+    "noStore": "No store selected",
     "deleteError": "Failed to delete page",
     "createError": "Failed to create page",
     "untitled": "Untitled page",

@@ -3,6 +3,12 @@
   "subtitle": "Facebook Pixel, TikTok Pixel et plus",
   "addNew": "Ajouter un Pixel",
   "emptyState": "Aucun pixel ajouté pour le moment. Ajoutez un pixel pour suivre les performances de vos publicités.",
+  "noStore": "Aucune boutique sélectionnée",
+  "noStorePage": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Créez d'abord une boutique pour gérer les pixels",
+    "cta": "Créer une boutique"
+  },
   "idLabel": "ID",
   "eventsCount": "événements",
   "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce pixel ?",

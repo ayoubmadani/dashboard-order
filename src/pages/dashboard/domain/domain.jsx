@@ -8,6 +8,7 @@ import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { Zap } from 'lucide-react';
+import NoStoreState from '../../../components/NoStoreState';
 
 // ─────────────────────────────────────────────
 //  Constants — shared for ALL domains
@@ -237,6 +238,7 @@ export default function Domain() {
   const handleAdd = async () => {
     const val = inputDomain.trim().toLowerCase();
     if (!val) return;
+    if (!storeId) { setInputError(t('no_store')); return; }
     setInputError(null);
     setAdding(true);
     try {
@@ -262,6 +264,7 @@ export default function Domain() {
   /* ── Delete ── */
   const handleDelete = async (id) => {
     const storeId = localStorage.getItem('storeId');
+    if (!storeId) { alert(t('no_store')); return; }
     try {
       // ندمج كل شيء في الوسيط الثاني (config)
       await axios.post(`${baseURL}/domain/delete/${id}`, {storeId} , headers);
@@ -274,6 +277,10 @@ export default function Domain() {
   };
 
   // ── Render ──────────────────────────────────
+  if (!storeId) {
+    return <NoStoreState title={t('no_store_page.title')} subtitle={t('no_store_page.subtitle')} cta={t('no_store_page.cta')} isRtl={isRtl} />;
+  }
+
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="mx-auto space-y-5 font-sans animate-in fade-in duration-500">
 

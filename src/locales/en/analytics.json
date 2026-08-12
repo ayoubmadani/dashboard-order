@@ -7,6 +7,12 @@
   "no_returns": "No returns found",
 
   "error": "Failed to fetch data. Check your server connection.",
+  "no_store": "No store selected",
+  "no_store_page": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to view statistics",
+    "cta": "Create a store"
+  },
 
   "range": {
     "week": "Week",

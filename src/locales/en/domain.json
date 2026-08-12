@@ -7,6 +7,12 @@
   "add_btn": "Add",
   "adding": "Adding…",
   "add_error": "Error adding domain",
+  "no_store": "No store selected",
+  "no_store_page": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to manage domains",
+    "cta": "Create a store"
+  },
 
   "dns_section_title": "DNS Setup — same values for all domains",
   "dns_section_desc": "Add this record in your domain provider's control panel for any domain you want to link",

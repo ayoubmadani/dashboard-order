@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
+import NoStoreState from '../../../components/NoStoreState';
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -211,6 +212,14 @@ export default function Analytics() {
 
   /* ── Fetch ── */
   const fetchData = async (silent = false) => {
+    if (!storeId) {
+      setOrders([]);
+      setStatusCounts([]);
+      setError(t('no_store'));
+      setLoading(false);
+      setRefreshing(false);
+      return;
+    }
     if (!silent) setLoading(true); else setRefreshing(true);
     setError(null);
     try {
@@ -364,6 +373,10 @@ const grossRevenue = delivered.reduce((s, o) => {
   );
 
   // ── Render ──────────────────────────────────
+  if (!storeId) {
+    return <NoStoreState title={t('no_store_page.title')} subtitle={t('no_store_page.subtitle')} cta={t('no_store_page.cta')} isRtl={isRtl} />;
+  }
+
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 p-4 md:p-6 lg:p-8 font-sans">
 

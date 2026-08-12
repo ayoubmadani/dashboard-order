@@ -14,6 +14,7 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import OrderModal from './orderModel';
 import Loading from '../../../components/Loading';
+import NoStoreState from '../../../components/NoStoreState';
 
 export const StatusEnum = {
   PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
@@ -383,7 +384,11 @@ function ShipButton({ order, onResult, t }) {
         />
       )}
       <button
-        onClick={e => { e.stopPropagation(); setShowPicker(true); }}
+        onClick={e => {
+          e.stopPropagation();
+          if (!storeId) { onResult({ type: 'error', message: t('ship.no_store') }); return; }
+          setShowPicker(true);
+        }}
         disabled={loading}
         className="px-5 md:px-1.5 py-0.5 cursor-pointer flex justify-center items-center gap-2 font-bold rounded-lg bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500 hover:text-white transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
@@ -431,6 +436,13 @@ export default function Orders() {
   const statusKeys = Object.values(StatusEnum);
 
   const fetchOrders = useCallback(async () => {
+    if (!storeId) {
+      setOrders([]);
+      setTotalPages(0);
+      setError(t('ship.no_store'));
+      setLoading(false);
+      return;
+    }
     setLoading(true); setError(null);
     try {
       const { data } = await axios.get(`${baseURL}/orders/${storeId}`, {
@@ -519,6 +531,9 @@ export default function Orders() {
 
   const paginated = orders;
 
+  if (!storeId) {
+    return <NoStoreState title={t('no_store_page.title')} subtitle={t('no_store_page.subtitle')} cta={t('no_store_page.cta')} isRtl={isRtl} />;
+  }
   if (loading) return <Loading />;
   if (error) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-zinc-950 gap-4" dir={isRtl ? 'rtl' : 'ltr'}>

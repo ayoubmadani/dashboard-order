@@ -3,6 +3,12 @@
   "subtitle": "Facebook Pixel, TikTok Pixel and more",
   "addNew": "Add Pixel",
   "emptyState": "No pixels added yet. Add a pixel to track your ad performance.",
+  "noStore": "No store selected",
+  "noStorePage": {
+    "title": "No store selected",
+    "subtitle": "Create a store first to manage pixels",
+    "cta": "Create a store"
+  },
   "idLabel": "ID",
   "eventsCount": "events",
   "confirmDelete": "Are you sure you want to delete this pixel?",

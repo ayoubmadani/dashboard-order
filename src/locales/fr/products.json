@@ -1,4 +1,9 @@
 {
+  "no_store": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Créez d'abord une boutique pour gérer les produits",
+    "cta": "Créer une boutique"
+  },
   "list": {
     "title": "Produits",
     "subtitle": "Gestion de l'inventaire du magasin",

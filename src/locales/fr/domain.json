@@ -7,6 +7,12 @@
   "add_btn": "Ajouter",
   "adding": "Ajout en cours…",
   "add_error": "Erreur lors de l'ajout",
+  "no_store": "Aucune boutique sélectionnée",
+  "no_store_page": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Créez d'abord une boutique pour gérer les domaines",
+    "cta": "Créer une boutique"
+  },
 
   "dns_section_title": "Configuration DNS — mêmes valeurs pour tous les domaines",
   "dns_section_desc": "Ajoutez cet enregistrement dans le panneau de contrôle de votre fournisseur de domaine pour tout domaine que vous souhaitez lier",

@@ -15,6 +15,7 @@ import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import NoStoreState from '../../../components/NoStoreState';
 
 const Products = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'products' });
@@ -32,18 +33,12 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [storeId, setStoreId] = useState(null);
+  const [storeId] = useState(() => localStorage.getItem('storeId'));
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, productId: null, productName: '' });
-
-  useEffect(() => {
-    const storedStoreId = localStorage.getItem('storeId');
-    if (storedStoreId) setStoreId(storedStoreId);
-    else toast.error(t('list.toast.store_not_found'));
-  }, []);
 
   const fetchProducts = useCallback(async () => {
     if (!storeId) return;
@@ -200,6 +195,8 @@ const Products = () => {
 
   const activeCount = products.filter(p => p.isActive).length;
   const outOfStock = products.filter(p => p.stock === 0).length;
+
+  if (!storeId) return <NoStoreState title={t('no_store.title')} subtitle={t('no_store.subtitle')} cta={t('no_store.cta')} isRtl={isRtl} />;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-950" dir={isRtl ? 'rtl' : 'ltr'}>
