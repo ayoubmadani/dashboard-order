@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import axios from 'axios';
-import { baseURL } from '../../../constents/const.'; // تأكد من صحة إملاء كلمة constants
 
 const AuthCallback = () => {
     const [searchParams] = useSearchParams();
@@ -17,33 +15,11 @@ const AuthCallback = () => {
             await new Promise(resolve => setTimeout(resolve, 500));
 
             if (tokenValue) {
-                try {
-                    // جلب بيانات المتجر للتأكد من وجود متجر للمستخدم
-                    const response = await axios.get(`${baseURL}/stores/user/me`, {
-                        headers: { Authorization: `Bearer ${tokenValue}` },
-                    });
-
-                    const stores = response.data.data;
-
-                    // إذا لم يكن لدى المستخدم أي متجر، نوجهه لإنشاء متجر
-                    if (!stores || stores.length === 0) {
-                        console.log('No stores found, redirecting to create...');
-                        // حفظ التوكن أولاً ليتمكن المستخدم من إنشاء متجر وهو مسجل الدخول
-                        Cookies.set('access_token', tokenValue, { expires: 7, path: '/' });
-                        navigate('/dashboard/stores/create-first');
-                        return; 
-                    }
-
-                    // إذا كان لديه متجر، نكمل العملية بشكل طبيعي
-                    console.log('Success: User has stores');
-                    Cookies.set('access_token', tokenValue, { expires: 7, path: '/' });
-                    navigate('/dashboard');
-
-                } catch (error) {
-                    console.error("Error fetching stores:", error);
-                    // في حال فشل طلب الـ API، يفضل توجيه المستخدم لصفحة تسجيل الدخول أو إظهار خطأ
-                    // navigate('/auth/login'); 
-                }
+                // أول شيء عند تسجيل الدخول: حذف storeId القديم (قد يخص حساب آخر)
+                localStorage.removeItem('storeId');
+                // ينتقل إلى dashboard دائماً، سواء كان لدى المستخدم متجر أو لا
+                Cookies.set('access_token', tokenValue, { expires: 7, path: '/' });
+                navigate('/dashboard');
             } else {
                 console.error("Login failed or no token provided:", errorValue);
                 // navigate('/auth/login');

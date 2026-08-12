@@ -138,12 +138,17 @@ export default function LayoutDashboard() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const dataStores = response.data.data;
-            if (dataStores.length === 0) navigate('/dashboard/stores/create-first');
+            // ينتقل إلى dashboard عادي، سواء كان لدى المستخدم متجر أو لا
             if (response.data.success) {
-                if (!localStorage.getItem('storeId')) localStorage.setItem('storeId', dataStores[0].id);
-                else {
-                    const getStore = dataStores.find(s => s.id == localStorage.getItem('storeId'));
-                    if (!getStore) localStorage.setItem('storeId', dataStores[0].id);
+                if (dataStores.length > 0) {
+                    if (!localStorage.getItem('storeId')) localStorage.setItem('storeId', dataStores[0].id);
+                    else {
+                        const getStore = dataStores.find(s => s.id == localStorage.getItem('storeId'));
+                        if (!getStore) localStorage.setItem('storeId', dataStores[0].id);
+                    }
+                } else {
+                    // آخر متجر تم حذفه — لا تترك storeId قديم في localStorage
+                    localStorage.removeItem('storeId');
                 }
                 setMyStores(response.data.data || []);
             }
@@ -157,6 +162,8 @@ export default function LayoutDashboard() {
             const savedStoreId = localStorage.getItem('storeId');
             const savedStore = savedStoreId ? myStores.find(s => s.id?.toString() === savedStoreId.toString()) : null;
             setSelectedProject(savedStore || myStores[0]);
+        } else {
+            setSelectedProject(null);
         }
     }, [myStores]);
 
