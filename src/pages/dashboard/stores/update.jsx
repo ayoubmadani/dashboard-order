@@ -28,6 +28,7 @@ const UpdateStore = () => {
   const [isFaviconModalOpen, setIsFaviconModalOpen] = useState(false);
   const [faviconPreview, setFaviconPreview] = useState(null);
   const [folder, setFolder] = useState()
+  const [wilayas, setWilayas] = useState([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -63,18 +64,20 @@ const UpdateStore = () => {
   const [activeModal, setActiveModal] = useState(null);
 
   useEffect(() => {
-    async function getNiches() {
-      const res = await axios.get(`${baseURL}/admin/niches`)
-      console.log(res.data);
-      setNiche(res.data)
+    async function getData() {
+      try {
+        const [nichesRes, wilayasRes] = await Promise.all([
+          axios.get(`${baseURL}/admin/niches`),
+          axios.get(`${baseURL}/shipping/wilayas`),
+        ]);
+        setNiche(nichesRes.data);
+        setWilayas(wilayasRes.data);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
     }
-    getNiches()
+    getData()
   }, [])
-
-  const wilayas = [
-    'Algiers', 'Oran', 'Constantine', 'Setif', 'Annaba', 'Blida',
-    'Batna', 'Tlemcen', 'Béjaïa', 'Tizi Ouzou',
-  ];
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
@@ -164,9 +167,6 @@ const UpdateStore = () => {
     if (!formData.name.trim()) newErrors.name = t('form.validation.name_required');
     else if (formData.name.trim().length < 2) newErrors.name = t('form.validation.name_short');
 
-    if (!formData.domain.trim()) newErrors.domain = t('form.validation.domain_required');
-    else if (!/^[a-z0-9-]+$/.test(formData.domain)) newErrors.domain = t('form.validation.domain_invalid');
-
     const phone = formData.phone?.trim();
     if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) newErrors.phone = t('form.validation.phone_invalid');
 
@@ -175,7 +175,7 @@ const UpdateStore = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData.name, formData.domain, formData.phone, formData.email, t]);
+  }, [formData.name, formData.phone, formData.email, t]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -354,56 +354,6 @@ const UpdateStore = () => {
               {errors.name && <p className="text-rose-500 text-xs mt-1">{errors.name}</p>}
             </div>
 
-            {/* Domain */}
-            <div>
-              <label className={labelClass}>
-                {t('form.domain_label')} <span className="text-rose-500">{t('form.required')}</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="domain"
-                  value={formData.domain}
-                  onChange={handleInputChange}
-                  placeholder={t('form.domain_placeholder')}
-                  className={`${inputClass(errors.domain)} ${isRtl ? 'pl-28' : 'pr-28'}`}
-                  dir="ltr"
-                />
-                <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>
-                  .mdstore.top
-                </span>
-              </div>
-              {errors.domain && <p className="text-rose-500 text-xs mt-1">{errors.domain}</p>}
-            </div>
-
-            {/* Wilaya */}
-            <div>
-              <label className={labelClass}>
-                <MapPin size={14} className="inline me-1" />
-                {t('form.wilaya_label')}
-              </label>
-              <select name="wilaya" value={formData.wilaya} onChange={handleInputChange} className={inputClass(false)}>
-                {wilayas.map((w) => <option key={w} value={w}>{w}</option>)}
-              </select>
-            </div>
-
-            {/* Address - العنوان */}
-            <div> {/* جعلته يمتد على عرض العمودين لأنه غالباً يحتاج مساحة */}
-              <label className={labelClass}>
-                <MapPin size={14} className="inline me-1" />
-                {t('form.address_label')}
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder={t('form.address_placeholder')}
-                className={inputClass(errors.address)}
-              />
-              {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
-            </div>
-
             {/* Niche */}
             <div>
               <label className={labelClass}>{t('form.niche_label')}</label>
@@ -424,25 +374,78 @@ const UpdateStore = () => {
                 ))}
               </select>
             </div>
+          </div>
 
-            {/* Language - اللغة المفضلة للمتجر */}
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            {/* Address - العنوان */}
+            <div> {/* جعلته يمتد على عرض العمودين لأنه غالباً يحتاج مساحة */}
               <label className={labelClass}>
-                <Languages size={14} className="inline me-1" />
-                {t('form.language_label')}
+                <MapPin size={14} className="inline me-1" />
+                {t('form.address_label')}
               </label>
-              <select
-                name="language"
-                value={formData.language}
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
                 onChange={handleInputChange}
-                className={inputClass(false)}
-              >
-                <option value="ar">العربية (Arabic)</option>
-                <option value="fr">Français (French)</option>
-                <option value="en">English</option>
-              </select>
+                placeholder={t('form.address_placeholder')}
+                className={inputClass(errors.address)}
+              />
+              {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
             </div>
 
+            {/* Wilaya */}
+            <div>
+              <label className={labelClass}>
+                <MapPin size={14} className="inline me-1" />
+                {t('form.wilaya_label')}
+              </label>
+              <select name="wilaya" value={formData.wilaya} onChange={handleInputChange} className={inputClass(false)}>
+                <option value="">...</option>
+                {wilayas.map((w) => <option key={w.id} value={w.name}>({w.id}) {w.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Language - اللغة المفضلة للمتجر - تمتد على عرض الصفحة الكامل */}
+          <div className="mt-6">
+            <label className={labelClass}>
+              <Languages size={14} className="inline me-1" />
+              {t('form.language_label')}
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { value: 'ar', label: 'العربية', code: 'AR' },
+                { value: 'fr', label: 'Français', code: 'FR' },
+                { value: 'en', label: 'English', code: 'EN' },
+              ].map((lang) => {
+                const active = formData.language === lang.value;
+                return (
+                  <button
+                    key={lang.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, language: lang.value }))}
+                    className={`flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl border-2 transition-all ${active
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                      : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
+                      }`}
+                  >
+                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-indigo-500' : 'border-gray-300 dark:border-zinc-600'
+                      }`}>
+                      {active && <span className="w-2 h-2 rounded-full bg-indigo-500" />}
+                    </span>
+                    <span className={`text-sm font-semibold ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-300'
+                      }`}>
+                      {lang.label}
+                    </span>
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">{lang.code}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* Shopping Cart Toggle - Dark Mode Friendly */}
             <div className="md:col-span-2 mt-4">
               <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">

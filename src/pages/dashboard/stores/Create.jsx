@@ -5,7 +5,6 @@ import {
   ArrowLeft, ArrowRight, Store, Upload, Save, Loader2,
   Image as ImageIcon, Palette, MapPin, Mail,
   Phone, Type, CheckCircle, AlertCircle,
-  ExternalLink,
   Trash2
 } from 'lucide-react';
 import ModelImages from '../../../components/ModelImages';
@@ -14,6 +13,21 @@ import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import { Languages } from 'lucide-react';
 import { ShoppingCart } from 'lucide-react';
+
+// Backend requires store.subdomain as a non-empty string, but the field is
+// no longer shown to the user — generate one from the store name instead,
+// with a random suffix so two stores with the same name don't collide.
+const generateSubdomain = (name) => {
+  const base = (name || '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'store';
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base}-${suffix}`;
+};
 
 const CreateStore = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'stores' });
@@ -25,10 +39,9 @@ const CreateStore = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    domain: '',
     phone: '',
     email: '',
-    wilaya: 'Algiers',
+    wilaya: '',
     address: '', // إضافة الحقل هنا كقيم فارغة افتراضياً
     logo: null,
     primaryColor: '#000000',
@@ -122,15 +135,6 @@ const CreateStore = () => {
       newErrors.name = t('form.validation.name_short');
     }
 
-    // الدومين
-    if (!formData.domain.trim()) {
-      newErrors.domain = t('form.validation.domain_required');
-    } else if (!/^[a-z0-9-]+$/.test(formData.domain)) {
-      newErrors.domain = t('form.validation.domain_invalid');
-    } else if (formData.domain.length < 3) {
-      newErrors.domain = t('form.validation.domain_short');
-    }
-
     // الهاتف (اختياري: يتم التحقق فقط إذا لم يكن فارغاً)
     const phone = formData.phone?.trim();
     if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) {
@@ -150,7 +154,6 @@ const CreateStore = () => {
     return Object.keys(newErrors).length === 0;
   }, [
     formData.name,
-    formData.domain,
     formData.phone,
     formData.email,
     formData.address, // أضفنا العنوان هنا
@@ -174,7 +177,7 @@ const CreateStore = () => {
       const payload = {
         store: {
           name: formData.name.trim(),
-          subdomain: formData.domain.trim().toLowerCase(),
+          subdomain: generateSubdomain(formData.name),
           currency: formData.currency,
           language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
           nicheId: formData.niche || null,
@@ -214,7 +217,6 @@ const CreateStore = () => {
         setTimeout(() => navigate('/dashboard/stores'), 500);
       }
     } catch (error) {
-      setErrors({ ...errors, domain: t(`form.validation.${error.response?.data?.message}`) })
       console.log('Error creating store:', error.response?.data?.message);
       showNotification('error', error.response?.data?.message || t('create.failed'));
     } finally {
@@ -294,61 +296,6 @@ const CreateStore = () => {
               {errors.name && <p className="text-rose-500 text-xs mt-1">{errors.name}</p>}
             </div>
 
-            {/* Domain */}
-            <div>
-              <label className={labelClass}>
-                {t('form.domain_label')} <span className="text-rose-500">{t('form.required')}</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  name="domain"
-                  value={formData.domain}
-                  onChange={handleInputChange}
-                  placeholder={t('form.domain_placeholder')}
-                  className={`${inputClass(errors.domain)} ${isRtl ? 'pl-28' : 'pr-28'}`}
-                  dir="ltr"
-                />
-                <span className={`absolute ${isRtl ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2 text-gray-400 text-xs font-mono`}>
-                  .mdstore.top
-                </span>
-              </div>
-              {errors.domain && <p className="text-rose-500 text-xs mt-1">{errors.domain}</p>}
-            </div>
-
-            {/* Wilaya */}
-            <div>
-              <label className={labelClass}>
-                <MapPin size={14} className="inline me-1" />
-                {t('form.wilaya_label')}
-              </label>
-              <select
-                name="wilaya"
-                value={formData.wilaya}
-                onChange={handleInputChange}
-                className={inputClass(false)}
-              >
-                {wilayas.map((w) => <option key={w.id} value={w.name}>({w.id}) {w.name}</option>)}
-              </select>
-            </div>
-
-            {/* Address - العنوان */}
-            <div> {/* جعلته يمتد على عرض العمودين لأنه غالباً يحتاج مساحة */}
-              <label className={labelClass}>
-                <MapPin size={14} className="inline me-1" />
-                {t('form.address_label')}
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder={t('form.address_placeholder')}
-                className={inputClass(errors.address)}
-              />
-              {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
-            </div>
-
             {/* Niche */}
             <div>
               <label className={labelClass}>{t('form.niche_label')}</label>
@@ -368,24 +315,80 @@ const CreateStore = () => {
               </select>
             </div>
 
-            {/* Language - اللغة المفضلة للمتجر */}
+            {/* Wilaya */}
             <div>
               <label className={labelClass}>
-                <Languages size={14} className="inline me-1" />
-                {t('form.language_label')}
+                <MapPin size={14} className="inline me-1" />
+                {t('form.wilaya_label')}
               </label>
               <select
-                name="language"
-                value={formData.language}
+                name="wilaya"
+                value={formData.wilaya}
                 onChange={handleInputChange}
                 className={inputClass(false)}
               >
-                <option value="ar">العربية (Arabic)</option>
-                <option value="fr">Français (French)</option>
-                <option value="en">English</option>
+                <option value="">...</option>
+                {wilayas.map((w) => <option key={w.id} value={w.name}>({w.id}) {w.name}</option>)}
               </select>
             </div>
 
+            {/* Address - العنوان */}
+            <div>
+              <label className={labelClass}>
+                <MapPin size={14} className="inline me-1" />
+                {t('form.address_label')}
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                placeholder={t('form.address_placeholder')}
+                className={inputClass(errors.address)}
+              />
+              {errors.address && <p className="text-rose-500 text-xs mt-1">{errors.address}</p>}
+            </div>
+          </div>
+
+          {/* Language - اللغة المفضلة للمتجر - تمتد على عرض الصفحة الكامل */}
+          <div className="mt-6">
+            <label className={labelClass}>
+              <Languages size={14} className="inline me-1" />
+              {t('form.language_label')}
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { value: 'ar', label: 'العربية', code: 'AR' },
+                { value: 'fr', label: 'Français', code: 'FR' },
+                { value: 'en', label: 'English', code: 'EN' },
+              ].map((lang) => {
+                const active = formData.language === lang.value;
+                return (
+                  <button
+                    key={lang.value}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, language: lang.value }))}
+                    className={`flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl border-2 transition-all ${active
+                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
+                      : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
+                      }`}
+                  >
+                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-indigo-500' : 'border-gray-300 dark:border-zinc-600'
+                      }`}>
+                      {active && <span className="w-2 h-2 rounded-full bg-indigo-500" />}
+                    </span>
+                    <span className={`text-sm font-semibold ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-300'
+                      }`}>
+                      {lang.label}
+                    </span>
+                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">{lang.code}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* Shopping Cart Toggle - Dark Mode Friendly */}
             <div className="md:col-span-2 mt-4">
               <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
@@ -704,18 +707,12 @@ const CreateStore = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: t('form.preview_name'), val: formData.name || '—' },
-              {
-                label: t('form.preview_domain'),
-                val: formData.domain ? `${formData.domain}.mdstore.top` : '—',
-                extra: formData.domain ? <ExternalLink size={12} /> : null,
-                highlight: true,
-              },
               { label: t('form.preview_wilaya'), val: formData.wilaya },
-            ].map(({ label, val, extra, highlight }) => (
+            ].map(({ label, val }) => (
               <div key={label} className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
                 <p className="text-xs text-gray-500 mb-1">{label}</p>
-                <p className={`font-bold truncate flex items-center gap-1 ${highlight ? 'text-indigo-600' : 'text-gray-900 dark:text-white'}`}>
-                  {val}{extra}
+                <p className="font-bold truncate flex items-center gap-1 text-gray-900 dark:text-white">
+                  {val}
                 </p>
               </div>
             ))}
