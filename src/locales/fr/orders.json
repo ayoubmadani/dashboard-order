@@ -10,7 +10,7 @@
     "appl2": "Tentative 2",
     "appl3": "Tentative 3",
     "confirmed": "Confirmé",
-    "shipping": "En expédition",
+    "shipping": "En livraison",
     "cancelled": "Annulé",
     "returned": "Retourné",
     "delivered": "Livré",
@@ -140,7 +140,7 @@
     "status_label": "Statut",
     "status_pending": "⏳ En attente",
     "status_confirmed": "✅ Confirmé",
-    "status_shipping": "🚚 En expédition",
+    "status_shipping": "🚚 En livraison",
     "status_delivered": "✓ Livré",
     "status_cancelled": "🚫 Annulé",
     "status_returned": "↩️ Retourné",
@@ -157,7 +157,7 @@
     "price_total": "Total:"
   },
   "ship": {
-    "success_title": "Commande envoyée pour expédition ✓",
+    "success_title": "Commande envoyée pour livraison ✓",
     "error_title": "Échec de l'envoi de la commande",
     "tracking": "Numéro de suivi",
     "close": "Fermer",
@@ -165,24 +165,24 @@
     "no_store": "Aucune boutique sélectionnée",
     "generic_error": "Une erreur s'est produite lors de l'envoi",
     "sending": "Envoi...",
-    "btn": "Expédier"
+    "btn": "Livrer"
   },
   "account_picker": {
-    "title": "Sélectionner un compte d'expédition",
+    "title": "Sélectionner un compte de livraison",
     "subtitle": "Sera utilisé uniquement pour cette commande",
-    "empty_title": "Aucun compte d'expédition",
+    "empty_title": "Aucun compte de livraison",
     "empty_subtitle": "Ajoutez des comptes dans les paramètres",
     "default_badge": "Par défaut"
   },
   "bulk_ship": {
-    "title": "Expédition groupée",
+    "title": "Livraison groupée",
     "status_running": "En cours... {{progress}} / {{total}}",
     "status_complete": "Terminé — {{okCount}} réussi, {{errorCount}} échoué",
     "close": "Fermer",
     "success": "Réussi",
     "failed": "Échoué",
-    "button_select_all": "Expédition groupée ({{count}})",
-    "button_ship_selected": "Expédier {{count}} commandes",
+    "button_select_all": "Livraison groupée ({{count}})",
+    "button_ship_selected": "Livrer {{count}} commandes",
     "clear_selection": "Annuler la sélection"
   }
 }

@@ -5,7 +5,7 @@
   "tab_preferences": "Preferences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Subscription",
-  "tab_shipping": "Shipping",
+  "tab_shipping": "Delivery",
 
   "stores_new": "New Store",
   "stores_empty_title": "No stores yet",
@@ -95,15 +95,15 @@
   
   "search_placeholder": "Search...",
   
-  "shipping_accounts_title": "Shipping Accounts",
-  "shipping_accounts_subtitle": "Add multiple shipping accounts and set the default",
+  "shipping_accounts_title": "Delivery Accounts",
+  "shipping_accounts_subtitle": "Add multiple delivery accounts and set the default",
   "shipping_add_account": "Add Account",
   "shipping_add_first_account": "Add First Account",
   "shipping_no_store_message": "Please select a store first",
-  "shipping_empty_title": "No shipping accounts",
-  "shipping_empty_subtitle": "Add a shipping account to enable delivery in your store",
+  "shipping_empty_title": "No delivery accounts",
+  "shipping_empty_subtitle": "Add a delivery account to enable it in your store",
   
-  "shipping_add_title": "Add New Shipping Account",
+  "shipping_add_title": "Add New Delivery Account",
   "shipping_add_subtitle": "Select a provider and enter credentials",
   "shipping_select_provider": "Select a provider from the list",
   "shipping_account_name_label": "Account Name",

@@ -8,11 +8,11 @@
     "subtitle": "Design the first impression your customers will see",
     "defaultTitle": "Your Cozy Era",
     "defaultSubtitle": "Get peak comfy-chic with new winter essentials.",
-    "defaultTopBar": "Free shipping on orders over 5000 DZD 🎉"
+    "defaultTopBar": "Free delivery on orders over 5000 DZD 🎉"
   },
   "business": {
     "title": "Business Settings",
-    "subtitle": "Set up shipping and payment methods"
+    "subtitle": "Set up delivery and payment methods"
   },
   "currency": {
     "dzd": "DZD"

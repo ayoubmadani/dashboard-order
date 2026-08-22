@@ -12,7 +12,6 @@ import Products from './pages/dashboard/products/Products';
 import Orders from './pages/dashboard/orders/Orders';
 import Settings from './pages/dashboard/settings/Settings';
 import Analytics from './pages/dashboard/analytics/Analytics';
-import Stores from './pages/dashboard/stores/Stores';
 import CreateStore from './pages/dashboard/stores/Create'; // <-- استيراد صفحة الإنشاء الجديدة
 import Shipping from './pages/dashboard/shipping/Shipping';
 import Update from './pages/dashboard/stores/edit';
@@ -70,13 +69,12 @@ const App = () => {
           <Route path="/dashboard" element={<LayoutDashboard />}>
             <Route index element={<DashboardHome />} />
 
-            {/* مسارات المتاجر */}
+            {/* مسارات المتاجر - لائحة/إدارة المتاجر انتقلت إلى settings/stores */}
             <Route path="stores">
-              <Route index element={<Stores />} />
-              <Route path="edit/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/edit/:id */}
+              <Route index element={<Navigate to="/dashboard/settings/stores" replace />} />
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
             </Route>
-            <Route path="store" element={<CurrentStore />} /> {/* <-- المسار: /dashboard/store (تعديل المتجر الحالي - تصميم مختلف عن /stores/edit/:id) */}
+            <Route path="store" element={<CurrentStore />} /> {/* <-- المسار: /dashboard/store (تعديل المتجر الحالي - تصميم مختلف عن /settings/stores/edit/:id) */}
 
 
 
@@ -122,6 +120,7 @@ const App = () => {
             <Route path="settings">
               <Route index element={<Navigate to="profile" replace />} />
               <Route path="stores/create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/settings/stores/create */}
+              <Route path="stores/edit/:id" element={<Update />} /> {/* <-- المسار: /dashboard/settings/stores/edit/:id */}
               <Route path=":tab" element={<Settings />} />
             </Route>
             <Route path="shipping" element={<Shipping />} />

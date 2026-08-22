@@ -466,7 +466,7 @@ export default function Dashboard() {
             <Store className="w-4 h-4 text-indigo-500" />
             <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('store_breakdown')}</h2>
           </div>
-          <button onClick={() => navigate('/dashboard/stores')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
+          <button onClick={() => navigate('/dashboard/settings/stores')} className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all">
             {t('view_all')} <ChevronRight className={`w-4 h-4 ${isRtl ? 'rotate-180' : ''}`} />
           </button>
         </div>
@@ -600,7 +600,7 @@ export default function Dashboard() {
             <h2 className="text-sm font-black text-gray-800 dark:text-zinc-200">{t('quick_actions')}</h2>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-7 gap-3">
-            <QuickAction icon={Store}     label={t('action_stores')}    color="#6366f1" onClick={() => navigate('/dashboard/stores')} />
+            <QuickAction icon={Store}     label={t('action_stores')}    color="#6366f1" onClick={() => navigate('/dashboard/settings/stores')} />
             <QuickAction icon={ShoppingBag} label={t('action_orders')}  color="#8b5cf6" onClick={() => navigate('/dashboard/orders')} />
             <QuickAction icon={Plus}      label={t('action_new_order')} color="#10b981" onClick={() => navigate('/dashboard/orders/new')} />
             <QuickAction icon={Layers}    label={t('action_products')}  color="#f59e0b" onClick={() => navigate('/dashboard/products')} />

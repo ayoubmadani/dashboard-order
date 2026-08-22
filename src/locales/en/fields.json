@@ -13,7 +13,7 @@
     "heroTitle": "Hero Title",
     "heroSubtitle": "Offer Description",
     "topBar": "Top Announcement Bar",
-    "shippingFee": "Shipping Fee",
-    "freeShippingThreshold": "Free Shipping Threshold",
+    "shippingFee": "Delivery Fee",
+    "freeShippingThreshold": "Free Delivery Threshold",
     "paymentMethods": "Payment Methods"
 }

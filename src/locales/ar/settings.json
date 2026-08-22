@@ -5,7 +5,7 @@
   "tab_preferences": "التفضيلات",
   "tab_notifications": "الإشعارات",
   "tab_subscription": "الاشتراك",
-  "tab_shipping": "الشحن",
+  "tab_shipping": "التوصيل",
 
   "stores_new": "متجر جديد",
   "stores_empty_title": "لا توجد متاجر بعد",
@@ -95,15 +95,15 @@
   
   "search_placeholder": "بحث...",
   
-  "shipping_accounts_title": "حسابات الشحن",
-  "shipping_accounts_subtitle": "أضف عدة حسابات شحن وحدد الافتراضي",
+  "shipping_accounts_title": "حسابات التوصيل",
+  "shipping_accounts_subtitle": "أضف عدة حسابات توصيل وحدد الافتراضي",
   "shipping_add_account": "إضافة حساب",
   "shipping_add_first_account": "إضافة أول حساب",
   "shipping_no_store_message": "يجب اختيار متجر أولاً",
-  "shipping_empty_title": "لا توجد حسابات شحن",
-  "shipping_empty_subtitle": "أضف حساب شحن لتفعيل التوصيل في متجرك",
+  "shipping_empty_title": "لا توجد حسابات توصيل",
+  "shipping_empty_subtitle": "أضف حساب توصيل لتفعيله في متجرك",
   
-  "shipping_add_title": "إضافة حساب شحن جديد",
+  "shipping_add_title": "إضافة حساب توصيل جديد",
   "shipping_add_subtitle": "اختر مزوداً وأدخل بيانات الاعتماد",
   "shipping_select_provider": "اختر مزوداً من القائمة",
   "shipping_account_name_label": "اسم الحساب",

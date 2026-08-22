@@ -219,8 +219,8 @@
     "status_label": "الحالة",
     "status_active": "✓ نشط",
     "status_inactive": "✕ غير نشط",
-    "shipping_free_label": "شحن مجاني",
-    "shipping_free_desc": "تقديم شحن مجاني لهذا المنتج بغض النظر عن إعدادات المتجر الافتراضية.",
+    "shipping_free_label": "توصيل مجاني",
+    "shipping_free_desc": "تقديم توصيل مجاني لهذا المنتج بغض النظر عن إعدادات المتجر الافتراضية.",
     "category_label": "التصنيف",
     "category_placeholder": "اختر تصنيفاً",
     "category_loading": "جاري التحميل...",
@@ -287,7 +287,7 @@
     "quantity": "الكمية",
     "quantity_placeholder": "مثال: 10 قطع",
     "price": "السعر",
-    "shipping_free_label": "شحن مجاني",
+    "shipping_free_label": "توصيل مجاني",
     "add_offer": "إضافة عرض جديد"
   },
 

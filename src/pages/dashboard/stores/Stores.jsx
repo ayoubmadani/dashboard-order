@@ -493,7 +493,7 @@ const Stores = () => {
                       {/* Actions */}
                       <div className={`flex items-center justify-between gap-1.5 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <button
-                          onClick={() => navigate(`/dashboard/stores/edit/${store.id}`)}
+                          onClick={() => navigate(`/dashboard/settings/stores/edit/${store.id}`)}
                           className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all"
                         >
                           <Edit2 size={16} />

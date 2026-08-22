@@ -66,7 +66,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
   const handleDelete = async () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      navigate('/dashboard/stores');
+      navigate('/dashboard/settings/stores');
     } catch (error) {
       console.error('Error deleting store:', error);
     }
@@ -112,7 +112,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{t('show.not_found.title')}</h2>
           <p className="text-gray-500 dark:text-zinc-400 mb-6">{t('show.not_found.subtitle')}</p>
           <button
-            onClick={() => navigate('/dashboard/stores')}
+            onClick={() => navigate('/dashboard/settings/stores')}
             className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
           >
             {t('show.not_found.back')}
@@ -175,7 +175,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/dashboard/stores')}
+              onClick={() => navigate('/dashboard/settings/stores')}
               className="p-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
             >
               <BackIcon size={20} className="text-gray-600 dark:text-zinc-300" />
@@ -220,7 +220,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(`/dashboard/stores/edit/${id}`)}
+              onClick={() => navigate(`/dashboard/settings/stores/edit/${id}`)}
               className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl font-bold text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
             >
               <Edit size={16} />

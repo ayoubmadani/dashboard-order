@@ -5,7 +5,7 @@
   "tab_preferences": "Préférences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Abonnement",
-  "tab_shipping": "Expédition",
+  "tab_shipping": "Livraison",
 
   "stores_new": "Nouvelle boutique",
   "stores_empty_title": "Aucune boutique pour le moment",
@@ -95,15 +95,15 @@
   
   "search_placeholder": "Rechercher...",
   
-  "shipping_accounts_title": "Comptes d'expédition",
-  "shipping_accounts_subtitle": "Ajoutez plusieurs comptes d'expédition et définissez le défaut",
+  "shipping_accounts_title": "Comptes de livraison",
+  "shipping_accounts_subtitle": "Ajoutez plusieurs comptes de livraison et définissez le défaut",
   "shipping_add_account": "Ajouter un compte",
   "shipping_add_first_account": "Ajouter le premier compte",
   "shipping_no_store_message": "Veuillez d'abord sélectionner une boutique",
-  "shipping_empty_title": "Aucun compte d'expédition",
-  "shipping_empty_subtitle": "Ajoutez un compte d'expédition pour activer la livraison dans votre boutique",
+  "shipping_empty_title": "Aucun compte de livraison",
+  "shipping_empty_subtitle": "Ajoutez un compte de livraison pour l'activer dans votre boutique",
   
-  "shipping_add_title": "Ajouter un nouveau compte d'expédition",
+  "shipping_add_title": "Ajouter un nouveau compte de livraison",
   "shipping_add_subtitle": "Sélectionnez un fournisseur et entrez les identifiants",
   "shipping_select_provider": "Sélectionnez un fournisseur dans la liste",
   "shipping_account_name_label": "Nom du compte",

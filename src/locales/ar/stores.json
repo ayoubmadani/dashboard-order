@@ -16,6 +16,11 @@
     "enabling": "جاري...",
     "currency": "دج"
   },
+  "no_store": {
+    "title": "لم يتم تحديد متجر",
+    "subtitle": "اختر أو أنشئ متجراً لإدارة إعداداته",
+    "cta": "الذهاب إلى متاجري"
+  },
   "stores": {
     "title": "متاجري",
     "subtitle": "إدارة كافة متاجرك وفروعك من مكان واحد",
@@ -125,9 +130,9 @@
     "cart_support_description": "تمكين الزبائن من جمع عدة منتجات وطلبها دفعة واحدة (بدلاً من الشراء المباشر فقط).",
     "qty_support_label": "تفعيل اختيار الكمية",
     "qty_support_description": "السماح للزبائن باختيار كمية أكبر من 1 عند الطلب.",
-    "free_shipping_support_label": "تفعيل الشحن المجاني",
-    "free_shipping_support_description": "تقديم شحن مجاني تلقائياً عند بلوغ مجموع السلة الحد الأدنى المحدد بالأسفل.",
-    "free_shipping_min_amount_label": "الحد الأدنى للمبلغ للشحن المجاني",
+    "free_shipping_support_label": "تفعيل التوصيل المجاني",
+    "free_shipping_support_description": "تقديم توصيل مجاني تلقائياً عند بلوغ مجموع السلة الحد الأدنى المحدد بالأسفل.",
+    "free_shipping_min_amount_label": "الحد الأدنى للمبلغ للتوصيل المجاني",
     "free_shipping_min_amount_placeholder": "مثال: 5000",
     "design": "التصميم والألوان",
     "logo_label": "الشعار",

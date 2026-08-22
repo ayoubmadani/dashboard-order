@@ -154,7 +154,7 @@ export default function StoresTab() {
                     {togglingId === store.id ? <Loader2 size={15} className="animate-spin" /> : <Store size={15} />}
                   </button>
                   <button
-                    onClick={() => navigate(`/dashboard/stores/edit/${store.id}`)}
+                    onClick={() => navigate(`/dashboard/settings/stores/edit/${store.id}`)}
                     className="p-2 rounded-xl text-gray-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all"
                   >
                     <Edit2 size={15} />

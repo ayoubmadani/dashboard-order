@@ -13,7 +13,7 @@
     "heroTitle": "Titre Hero",
     "heroSubtitle": "Description de l'Offre",
     "topBar": "Barre d'Annonce Supérieure",
-    "shippingFee": "Frais d'Expédition",
+    "shippingFee": "Frais de Livraison",
     "freeShippingThreshold": "Seuil de Livraison Gratuite",
     "paymentMethods": "Méthodes de Paiement"
 }

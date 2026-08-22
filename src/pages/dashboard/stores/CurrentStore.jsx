@@ -13,6 +13,7 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import Loading from '../../../components/Loading';
+import NoStoreState from '../../../components/NoStoreState';
 
 const SECTIONS = ['basic', 'design', 'hero', 'options'];
 
@@ -89,7 +90,7 @@ const CurrentStore = () => {
   }, []);
 
   const fetchStoreData = useCallback(async () => {
-    if (!storeId) return;
+    if (!storeId) { setFetchingStore(false); return; }
     try {
       setFetchingStore(true);
       const token = getAccessToken();
@@ -303,6 +304,17 @@ const CurrentStore = () => {
 
   if (fetchingStore) {
     return <Loading />;
+  }
+
+  if (!storeId) {
+    return (
+      <NoStoreState
+        title={t('no_store.title')}
+        subtitle={t('no_store.subtitle')}
+        cta={t('no_store.cta')}
+        isRtl={isRtl}
+      />
+    );
   }
 
   return (

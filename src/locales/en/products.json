@@ -218,8 +218,8 @@
     "status_label": "Status",
     "status_active": "✓ Active",
     "status_inactive": "✕ Inactive",
-    "shipping_free_label": "Free Shipping",
-    "shipping_free_desc": "Offer free shipping for this product regardless of the store's default settings.",
+    "shipping_free_label": "Free Delivery",
+    "shipping_free_desc": "Offer free delivery for this product regardless of the store's default settings.",
     "category_label": "Category",
     "category_placeholder": "Select a category",
     "category_loading": "Loading...",
@@ -286,7 +286,7 @@
     "quantity": "Quantity",
     "quantity_placeholder": "e.g., 10 units",
     "price": "Price",
-    "shipping_free_label": "Free Shipping",
+    "shipping_free_label": "Free Delivery",
     "add_offer": "Add New Offer"
   },
 

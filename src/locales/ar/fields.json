@@ -13,7 +13,7 @@
     "heroTitle": "عنوان الواجهة",
     "heroSubtitle": "وصف العرض",
     "topBar": "شريط الإعلانات العلوي",
-    "shippingFee": "رسوم الشحن",
-    "freeShippingThreshold": "الحد الأدنى للشحن المجاني",
+    "shippingFee": "رسوم التوصيل",
+    "freeShippingThreshold": "الحد الأدنى للتوصيل المجاني",
     "paymentMethods": "طرق الدفع"
 }

@@ -16,6 +16,11 @@
     "enabling": "En cours...",
     "currency": "DA"
   },
+  "no_store": {
+    "title": "Aucune boutique sélectionnée",
+    "subtitle": "Sélectionnez ou créez une boutique pour gérer ses paramètres",
+    "cta": "Aller à mes boutiques"
+  },
   "stores": {
     "title": "Mes boutiques",
     "subtitle": "Gérez toutes vos boutiques et succursales depuis un seul endroit",

@@ -110,11 +110,10 @@ export default function LayoutDashboard() {
     };
 
     const [selectedProject, setSelectedProject] = useState(null);
-    const currentStoreId = selectedProject?.id || localStorage.getItem('storeId');
 
     const navigation = [
         { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: '#10b981' },
-        { name: t('nav.stores', 'المتجر'), href: currentStoreId ? '/dashboard/store' : '/dashboard/stores', icon: Store, color: '#0ea5e9' },
+        { name: t('nav.stores', 'المتجر'), href: '/dashboard/store', icon: Store, color: '#0ea5e9' },
         { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe, color: '#64748b' }, { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: '#8b5cf6' },
         { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: '#6366f1' },
         { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
