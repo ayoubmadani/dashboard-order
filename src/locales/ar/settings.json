@@ -1,11 +1,24 @@
 {
   "title": "إعدادات الحساب",
   "tab_profile": "الملف الشخصي",
+  "tab_stores": "المتاجر",
   "tab_preferences": "التفضيلات",
   "tab_notifications": "الإشعارات",
   "tab_subscription": "الاشتراك",
   "tab_shipping": "الشحن",
-  
+
+  "stores_new": "متجر جديد",
+  "stores_empty_title": "لا توجد متاجر بعد",
+  "stores_empty_subtitle": "أنشئ متجرك الأول للبدء",
+  "stores_delete_confirm": "حذف هذا المتجر؟",
+  "stores_active": "نشط",
+  "stores_inactive": "غير نشط",
+  "stores_current": "الحالي",
+  "stores_select": "تحديد",
+  "stores_views": "مشاهدة",
+  "stores_orders": "طلب",
+  "stores_products": "منتج",
+
   "personal_info": "المعلومات الشخصية",
   "username": "اسم المستخدم",
   "email": "عنوان البريد الإلكتروني",

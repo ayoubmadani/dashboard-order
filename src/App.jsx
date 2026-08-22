@@ -15,7 +15,8 @@ import Analytics from './pages/dashboard/analytics/Analytics';
 import Stores from './pages/dashboard/stores/Stores';
 import CreateStore from './pages/dashboard/stores/Create'; // <-- استيراد صفحة الإنشاء الجديدة
 import Shipping from './pages/dashboard/shipping/Shipping';
-import Update from './pages/dashboard/stores/update';
+import Update from './pages/dashboard/stores/edit';
+import CurrentStore from './pages/dashboard/stores/CurrentStore';
 import Show from './pages/dashboard/stores/Show';
 import CreateProduct from './pages/dashboard/products/Create';
 import ProtectedRouteDashboard from './components/ProtectedRouteDashboard';
@@ -72,10 +73,10 @@ const App = () => {
             {/* مسارات المتاجر */}
             <Route path="stores">
               <Route index element={<Stores />} />
-              <Route path="create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/stores/create */}
-              <Route path="update/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/update/:id */}
+              <Route path="edit/:id" element={<Update />} /> {/* <-- المسار: /dashboard/stores/edit/:id */}
               <Route path="show/:id" element={<Show />} /> {/* <-- المسار: /dashboard/stores/show/:id */}
             </Route>
+            <Route path="store" element={<CurrentStore />} /> {/* <-- المسار: /dashboard/store (تعديل المتجر الحالي - تصميم مختلف عن /stores/edit/:id) */}
 
 
 
@@ -118,7 +119,11 @@ const App = () => {
             <Route path="messages" element={<Messages />} />
 
             <Route path="analytics" element={<Analytics />} />
-            <Route path="settings" element={<Settings />} />
+            <Route path="settings">
+              <Route index element={<Navigate to="profile" replace />} />
+              <Route path="stores/create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/settings/stores/create */}
+              <Route path=":tab" element={<Settings />} />
+            </Route>
             <Route path="shipping" element={<Shipping />} />
           </Route>
         </Route>

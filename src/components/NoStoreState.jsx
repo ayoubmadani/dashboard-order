@@ -16,7 +16,7 @@ export default function NoStoreState({ title, subtitle, cta, isRtl }) {
         <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
         <p className="text-sm text-gray-500 dark:text-zinc-400 mb-7 leading-relaxed">{subtitle}</p>
         <Link
-          to="/dashboard/stores/create"
+          to="/dashboard/settings/stores/create"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
         >
           {cta}

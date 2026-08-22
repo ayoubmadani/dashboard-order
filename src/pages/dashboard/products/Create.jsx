@@ -6,7 +6,7 @@ import {
   Tag, Bold, Italic, List, CheckCircle, AlertCircle,
   Loader2, Sparkles, Package, Rocket, Ruler,
   Type as TypeIcon, Save, ArrowRight, Grid3x3,
-  FolderTree, ChevronDown, X
+  FolderTree, ChevronDown, X, Truck
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -106,7 +106,8 @@ export default function CreateProduct() {
 
   const [formData, setFormData] = useState({
     name: '', desc: '', price: '', originalPrice: '',
-    storeId: '', sku: '', stock: '', status: 'active', categoryId: ''
+    storeId: '', sku: '', stock: '', status: 'active', categoryId: '',
+    shippingFree: false,
   });
 
   // ✅ categories = flat list مع level لكل تصنيف
@@ -226,7 +227,7 @@ export default function CreateProduct() {
   const updateVDStock = (id, stock) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, stock } : d));
 
   /* ── Offers ── */
-  const addOffer = () => setOffers(prev => [...prev, { id: `off-${Date.now()}`, name: '', quantity: '', price: '' }]);
+  const addOffer = () => setOffers(prev => [...prev, { id: `off-${Date.now()}`, name: '', subTitle: '', quantity: '', price: '', shippingFree: false }]);
   const removeOffer = (id) => setOffers(prev => prev.filter(o => o.id !== id));
   const updateOffer = (id, field, val) => setOffers(prev => prev.map(o => o.id === id ? { ...o, [field]: val } : o));
 
@@ -266,6 +267,7 @@ export default function CreateProduct() {
       const data = {
         name: formData.name, price: Number(formData.price), desc: formData.desc,
         storeId, categoryId: formData.categoryId || undefined,
+        shippingFree: formData.shippingFree,
         attributes, variantDetails, offers, images
       };
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
@@ -372,6 +374,20 @@ export default function CreateProduct() {
             </div>
           </Field>
         </div>
+
+        <Field label={t('form.shipping_free_label')}>
+          <div className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950">
+            <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-zinc-300">
+              <Truck size={14} className="text-indigo-500" />
+              {t('form.shipping_free_desc')}
+            </span>
+            <button type="button"
+              onClick={() => setFormData(p => ({ ...p, shippingFree: !p.shippingFree }))}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${formData.shippingFree ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.shippingFree ? (isRtl ? '-translate-x-6' : 'translate-x-6') : (isRtl ? '-translate-x-1' : 'translate-x-1')}`} />
+            </button>
+          </div>
+        </Field>
 
         {/* ── Category dropdown ── */}
         <Field label={t('form.category_label')}>
@@ -680,6 +696,7 @@ export default function CreateProduct() {
                 <Trash2 size={13} />
               </button>
             </div>
+            
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 { field: 'name', label: t('offers.offer_name'), type: 'text', placeholder: t('offers.offer_name_placeholder') },
@@ -693,6 +710,22 @@ export default function CreateProduct() {
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-rose-400" />
                 </div>
               ))}
+            </div>
+            <div className="mt-3">
+              <label className="text-xs text-gray-400 font-medium block mb-1">{t('offers.offer_subtitle')}</label>
+              <input type="text" value={offer.subTitle || ''} onChange={e => updateOffer(offer.id, 'subTitle', e.target.value)}
+                placeholder={t('offers.offer_subtitle_placeholder')}
+                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-rose-400" />
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800">
+              <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
+                <Truck size={12} />{t('offers.shipping_free_label')}
+              </span>
+              <button type="button"
+                onClick={() => updateOffer(offer.id, 'shippingFree', !offer.shippingFree)}
+                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-300 ${offer.shippingFree ? 'bg-rose-500' : 'bg-gray-300 dark:bg-zinc-700'}`}>
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${offer.shippingFree ? (isRtl ? '-translate-x-4' : 'translate-x-4') : (isRtl ? '-translate-x-0.5' : 'translate-x-0.5')}`} />
+              </button>
             </div>
           </div>
         ))}

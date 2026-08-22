@@ -220,7 +220,7 @@ const { t , i18n} = useTranslation('translation', { keyPrefix: 'stores' });
 
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(`/dashboard/stores/update/${id}`)}
+              onClick={() => navigate(`/dashboard/stores/edit/${id}`)}
               className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-zinc-700 rounded-xl font-bold text-sm text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
             >
               <Edit size={16} />

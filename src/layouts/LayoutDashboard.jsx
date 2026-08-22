@@ -5,7 +5,7 @@ import {
     Home, Settings, BarChart3, Menu, X, ChevronDown,
     Search, Bell, Store, Box, Layers, ShoppingCart, Truck,
     LogOut, Sun, Moon, Sparkles, User,
-    Plus, Palette, Wallet, Code2
+    Palette, Wallet, Code2
 } from 'lucide-react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -22,14 +22,12 @@ export default function LayoutDashboard() {
     const navigate = useNavigate();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
     const [myStores, setMyStores] = useState([]);
     const [scrolled, setScrolled] = useState(false);
     const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
 
-    const dropdownRef = useRef(null);
     const userDropdownRef = useRef(null);
     const isRtl = i18n.language === 'ar';
 
@@ -100,7 +98,6 @@ export default function LayoutDashboard() {
 
     useEffect(() => {
         const handleMouseUp = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setProjectDropdownOpen(false);
             if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) setUserDropdownOpen(false);
         };
         document.addEventListener("mouseup", handleMouseUp);
@@ -112,9 +109,12 @@ export default function LayoutDashboard() {
         navigate('/auth/login');
     };
 
+    const [selectedProject, setSelectedProject] = useState(null);
+    const currentStoreId = selectedProject?.id || localStorage.getItem('storeId');
+
     const navigation = [
         { name: t('nav.home', 'الرئيسية'), href: '/dashboard', icon: Home, color: '#10b981' },
-        { name: t('nav.stores', 'المتاجر'), href: '/dashboard/stores', icon: Store, color: '#0ea5e9' },
+        { name: t('nav.stores', 'المتجر'), href: currentStoreId ? '/dashboard/store' : '/dashboard/stores', icon: Store, color: '#0ea5e9' },
         { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe, color: '#64748b' }, { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, color: '#8b5cf6' },
         { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, color: '#6366f1' },
         { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, color: '#f59e0b' },
@@ -128,8 +128,6 @@ export default function LayoutDashboard() {
         { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings, color: '#64748b' },
 
     ];
-
-    const [selectedProject, setSelectedProject] = useState(null);
 
     const fetchStores = useCallback(async () => {
         try {
@@ -172,64 +170,17 @@ export default function LayoutDashboard() {
         return gradients[name ? name.charCodeAt(0) % gradients.length : 0];
     };
 
-    const StoreSelector = ({ isMobile }) => (
-        <div className={`relative ${isMobile ? 'px-3 py-2 border-b border-gray-100 dark:border-white/5' : 'px-3 py-2 border-b border-gray-200 dark:border-white/5'}`} ref={dropdownRef}>
-            <button
-                onClick={() => setProjectDropdownOpen(!projectDropdownOpen)}
-                className="w-full flex items-center gap-2 p-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:border-emerald-500/30 transition-all"
-            >
-                <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
-                    {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t('nav.current_store', 'المتجر الحالي')}</p>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
-                        {selectedProject?.name || 'Select Store'}
-                    </p>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${projectDropdownOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {projectDropdownOpen && (
-                <div className={`absolute ${isMobile ? 'left-3 right-3' : 'left-3 right-3'} top-full mt-1 bg-white dark:bg-[#1a1a1b] rounded-lg shadow-xl border border-gray-200 dark:border-white/10 z-50 overflow-hidden`}>
-                    <div className="max-h-48 overflow-y-auto py-1">
-                        {myStores.length > 0 ? (
-                            myStores.map((store) => (
-                                <button
-                                    key={store.id}
-                                    onClick={() => {
-                                        localStorage.setItem('storeId', store.id);
-                                        setSelectedProject(store);
-                                        setProjectDropdownOpen(false);
-                                        if (isMobile) setSidebarOpen(false);
-                                        navigate('/dashboard/stores');
-                                    }}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                                >
-                                    <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${getStoreGradient(store.name)} flex items-center justify-center text-xs font-bold text-white`}>
-                                        {store.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="flex-1 text-left truncate">{store.name}</span>
-                                    {selectedProject?.id === store.id && (
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                                    )}
-                                </button>
-                            ))
-                        ) : (
-                            <div className="px-3 py-2 text-sm text-gray-400 text-center">No stores</div>
-                        )}
-                    </div>
-                    <div className="border-t border-gray-100 dark:border-white/5 p-1">
-                        <button
-                            onClick={() => { if (isMobile) setSidebarOpen(false); navigate('/dashboard/stores/create'); }}
-                            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-md transition-colors"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                            {t('new_store', 'جديد')}
-                        </button>
-                    </div>
-                </div>
-            )}
+    const StoreSelector = () => (
+        <div className="flex items-center gap-2 p-2 mx-3 my-2 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white shrink-0`}>
+                {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{t('nav.current_store', 'المتجر الحالي')}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">
+                    {selectedProject?.name || '—'}
+                </p>
+            </div>
         </div>
     );
 
@@ -240,7 +191,7 @@ export default function LayoutDashboard() {
             </div>
             <div className="space-y-0.5">
                 {navigation.map((item) => {
-                    const isActive = location.pathname === item.href || (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+                    const isActive = location.pathname === item.href || (item.href !== '/dashboard' && location.pathname.startsWith(`${item.href}/`));
                     return (
                         <Link
                             key={item.href}
@@ -366,7 +317,7 @@ export default function LayoutDashboard() {
                             </button>
                         </div>
 
-                        <StoreSelector isMobile={true} />
+                        <StoreSelector />
                         <Navigation isMobile={true} />
                     </div>
                 </div>

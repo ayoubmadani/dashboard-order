@@ -216,6 +216,8 @@
     "status_label": "Statut",
     "status_active": "✓ Actif",
     "status_inactive": "✕ Inactif",
+    "shipping_free_label": "Livraison gratuite",
+    "shipping_free_desc": "Offrir la livraison gratuite pour ce produit, indépendamment des réglages par défaut de la boutique.",
     "category_label": "Catégorie",
     "category_placeholder": "Sélectionnez une catégorie",
     "category_loading": "Chargement...",
@@ -274,9 +276,12 @@
     "offer_label": "Offre {{num}}",
     "offer_name": "Nom de l'offre",
     "offer_name_placeholder": "ex: Soldes d'été",
+    "offer_subtitle": "Sous-titre",
+    "offer_subtitle_placeholder": "ex: Durée limitée",
     "quantity": "Quantité",
     "quantity_placeholder": "ex: 10 unités",
     "price": "Prix",
+    "shipping_free_label": "Livraison gratuite",
     "add_offer": "Ajouter une nouvelle offre"
   },
   "images": {

@@ -1,11 +1,24 @@
 {
   "title": "Account Settings",
   "tab_profile": "Profile",
+  "tab_stores": "Stores",
   "tab_preferences": "Preferences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Subscription",
   "tab_shipping": "Shipping",
-  
+
+  "stores_new": "New Store",
+  "stores_empty_title": "No stores yet",
+  "stores_empty_subtitle": "Create your first store to get started",
+  "stores_delete_confirm": "Delete this store?",
+  "stores_active": "Active",
+  "stores_inactive": "Inactive",
+  "stores_current": "Current",
+  "stores_select": "Select",
+  "stores_views": "Views",
+  "stores_orders": "Orders",
+  "stores_products": "Products",
+
   "personal_info": "Personal Information",
   "username": "Username",
   "email": "Email Address",

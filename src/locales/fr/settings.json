@@ -1,11 +1,24 @@
 {
   "title": "Paramètres du compte",
   "tab_profile": "Profil",
+  "tab_stores": "Boutiques",
   "tab_preferences": "Préférences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Abonnement",
   "tab_shipping": "Expédition",
-  
+
+  "stores_new": "Nouvelle boutique",
+  "stores_empty_title": "Aucune boutique pour le moment",
+  "stores_empty_subtitle": "Créez votre première boutique pour commencer",
+  "stores_delete_confirm": "Supprimer cette boutique ?",
+  "stores_active": "Active",
+  "stores_inactive": "Inactive",
+  "stores_current": "Actuelle",
+  "stores_select": "Sélectionner",
+  "stores_views": "Vues",
+  "stores_orders": "Commandes",
+  "stores_products": "Produits",
+
   "personal_info": "Informations personnelles",
   "username": "Nom d'utilisateur",
   "email": "Adresse e-mail",

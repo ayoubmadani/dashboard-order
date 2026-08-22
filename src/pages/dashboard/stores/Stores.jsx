@@ -336,7 +336,7 @@ const Stores = () => {
                   <RefreshCw size={16} />{t('common.refresh')}
                 </button>
                 <Link
-                  to="/dashboard/stores/create"
+                  to="/dashboard/settings/stores/create"
                   className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
                 >
                   <Plus size={18} />{t('stores.new_store')}
@@ -493,7 +493,7 @@ const Stores = () => {
                       {/* Actions */}
                       <div className={`flex items-center justify-between gap-1.5 mb-4 ${isRtl ? 'flex-row-reverse' : ''}`}>
                         <button
-                          onClick={() => navigate(`/dashboard/stores/update/${store.id}`)}
+                          onClick={() => navigate(`/dashboard/stores/edit/${store.id}`)}
                           className="p-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all"
                         >
                           <Edit2 size={16} />
@@ -535,7 +535,7 @@ const Stores = () => {
                 </button>
               ) : (
                 <Link
-                  to="/dashboard/stores/create"
+                  to="/dashboard/settings/stores/create"
                   className="inline-flex items-center gap-2 px-6 py-3 text-white font-bold rounded-xl text-sm hover:shadow-lg hover:shadow-amber-500/25 transition-all"
                   style={{ background: 'linear-gradient(135deg, #f59e0b, #f97316)' }}
                 >

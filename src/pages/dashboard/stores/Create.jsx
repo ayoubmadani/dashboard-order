@@ -13,6 +13,7 @@ import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import { Languages } from 'lucide-react';
 import { ShoppingCart } from 'lucide-react';
+import { Hash, Truck } from 'lucide-react';
 
 // Backend requires store.subdomain as a non-empty string, but the field is
 // no longer shown to the user — generate one from the store name instead,
@@ -55,6 +56,9 @@ const CreateStore = () => {
     currency: 'DZD',
     language: 'ar',
     cart: false,
+    supportQty: true,
+    supportFreeShipping: false,
+    freeShippingMinAmount: '',
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -182,6 +186,11 @@ const CreateStore = () => {
           language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
           nicheId: formData.niche || null,
           cart: formData.cart || false,
+          supportQty: formData.supportQty,
+          supportFreeShipping: formData.supportFreeShipping,
+          freeShippingMinAmount: formData.supportFreeShipping
+            ? (formData.freeShippingMinAmount === '' ? null : Number(formData.freeShippingMinAmount))
+            : null,
         },
         design: {
           primaryColor: formData.primaryColor,
@@ -214,7 +223,7 @@ const CreateStore = () => {
 
       if (response.data.success) {
         showNotification('success', t('create.success'));
-        setTimeout(() => navigate('/dashboard/stores'), 500);
+        setTimeout(() => navigate('/dashboard/settings/stores'), 500);
       }
     } catch (error) {
       console.log('Error creating store:', error.response?.data?.message);
@@ -256,7 +265,7 @@ const CreateStore = () => {
       {/* ── Page Header ── */}
       <div className="flex items-center gap-4 mb-8">
         <button
-          onClick={() => navigate('/dashboard/stores')}
+          onClick={() => navigate('/dashboard/settings/stores')}
           className="p-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:scale-105 transition-all"
         >
           <BackIcon size={20} />
@@ -391,14 +400,14 @@ const CreateStore = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* Shopping Cart Toggle - Dark Mode Friendly */}
             <div className="md:col-span-2 mt-4">
-              <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between gap-3 p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
+                <div className="flex items-center gap-4 min-w-0">
                   {/* Icon Container */}
-                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700">
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700 shrink-0">
                     <ShoppingCart size={22} />
                   </div>
 
-                  <div>
+                  <div className="min-w-0">
                     <h3 className="text-sm font-bold text-gray-900 dark:text-white">
                       {t('form.cart_support_label')}
                     </h3>
@@ -412,7 +421,7 @@ const CreateStore = () => {
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, cart: !prev.cart }))}
-                  className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.cart ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.cart ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
                     }`}
                 >
                   <span
@@ -422,6 +431,93 @@ const CreateStore = () => {
                       }`}
                   />
                 </button>
+              </div>
+            </div>
+
+            {/* Quantity Selector Toggle */}
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between gap-3 p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700 shrink-0">
+                    <Hash size={22} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                      {t('form.qty_support_label')}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                      {t('form.qty_support_description')}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, supportQty: !prev.supportQty }))}
+                  className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.supportQty ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
+                    }`}
+                >
+                  <span
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.supportQty
+                      ? (isRtl ? '-translate-x-6' : 'translate-x-6')
+                      : (isRtl ? '-translate-x-1' : 'translate-x-1')
+                      }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Free Shipping Toggle + Min Amount */}
+            <div className="md:col-span-2">
+              <div className="p-4 bg-indigo-50/50 dark:bg-zinc-800/50 rounded-2xl border border-indigo-100 dark:border-zinc-700 transition-all hover:shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="p-3 bg-white dark:bg-zinc-900 rounded-xl text-indigo-600 dark:text-indigo-400 shadow-sm border border-transparent dark:border-zinc-700 shrink-0">
+                      <Truck size={22} />
+                    </div>
+
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                        {t('form.free_shipping_support_label')}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
+                        {t('form.free_shipping_support_description')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, supportFreeShipping: !prev.supportFreeShipping }))}
+                    className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${formData.supportFreeShipping ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.supportFreeShipping
+                        ? (isRtl ? '-translate-x-6' : 'translate-x-6')
+                        : (isRtl ? '-translate-x-1' : 'translate-x-1')
+                        }`}
+                    />
+                  </button>
+                </div>
+
+                {formData.supportFreeShipping && (
+                  <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-zinc-700 animate-in fade-in slide-in-from-top-2">
+                    <label className={labelClass}>{t('form.free_shipping_min_amount_label')}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      name="freeShippingMinAmount"
+                      value={formData.freeShippingMinAmount}
+                      onChange={handleInputChange}
+                      placeholder={t('form.free_shipping_min_amount_placeholder')}
+                      className={inputClass(false)}
+                      dir="ltr"
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -699,35 +795,11 @@ const CreateStore = () => {
           )}
         </div>
 
-        {/* ── Quick Preview ── */}
-        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-2xl border border-indigo-200 dark:border-indigo-800 p-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-            {t('form.preview')}
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: t('form.preview_name'), val: formData.name || '—' },
-              { label: t('form.preview_wilaya'), val: formData.wilaya },
-            ].map(({ label, val }) => (
-              <div key={label} className="bg-white dark:bg-zinc-900 p-4 rounded-xl">
-                <p className="text-xs text-gray-500 mb-1">{label}</p>
-                <p className="font-bold truncate flex items-center gap-1 text-gray-900 dark:text-white">
-                  {val}
-                </p>
-              </div>
-            ))}
-            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: formData.primaryColor }} />
-              <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm" style={{ backgroundColor: formData.secondaryColor }} />
-            </div>
-          </div>
-        </div>
-
         {/* ── Action Buttons ── */}
         <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} gap-4`}>
           <button
             type="button"
-            onClick={() => navigate('/dashboard/stores')}
+            onClick={() => navigate('/dashboard/settings/stores')}
             className="px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl font-bold text-gray-700 dark:text-zinc-300 hover:scale-105 transition-all"
           >
             {t('common.cancel')}
@@ -735,7 +807,7 @@ const CreateStore = () => {
           <button
             type="submit"
             disabled={loading}
-            className="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2"
+            className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><Loader2 size={20} className="animate-spin" />{t('create.submitting')}</>
