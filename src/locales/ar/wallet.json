@@ -14,13 +14,16 @@
   "no_transactions": "لا توجد عمليات بعد",
 
   "action": {
-    "topUp": "شحن رصيد",
-    "buy": "شراء"
+    "deposit": "شحن رصيد",
+    "payment": "شراء"
   },
   "type": {
-    "wallet": "محفظة",
-    "sub": "اشتراك",
-    "theme": "قالب"
+    "plan_subscription": "اشتراك في خطة",
+    "plan_upgrade": "ترقية الخطة",
+    "store_fee": "رسوم المتجر",
+    "refund": "استرجاع",
+    "sell_theme": "شراء قالب",
+    "top_up": "شحن رصيد"
   },
 
   "modal": {

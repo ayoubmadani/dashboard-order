@@ -14,13 +14,16 @@
   "no_transactions": "Aucune transaction pour le moment",
 
   "action": {
-    "topUp": "Rechargement",
-    "buy": "Achat"
+    "deposit": "Rechargement",
+    "payment": "Achat"
   },
   "type": {
-    "wallet": "Portefeuille",
-    "sub": "Abonnement",
-    "theme": "Thème"
+    "plan_subscription": "Abonnement au plan",
+    "plan_upgrade": "Mise à niveau du plan",
+    "store_fee": "Frais de boutique",
+    "refund": "Remboursement",
+    "sell_theme": "Achat de thème",
+    "top_up": "Rechargement"
   },
 
   "modal": {

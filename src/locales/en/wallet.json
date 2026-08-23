@@ -14,13 +14,16 @@
   "no_transactions": "No transactions yet",
 
   "action": {
-    "topUp": "Top-up",
-    "buy": "Purchase"
+    "deposit": "Top-up",
+    "payment": "Purchase"
   },
   "type": {
-    "wallet": "Wallet",
-    "sub": "Subscription",
-    "theme": "Template"
+    "plan_subscription": "Plan Subscription",
+    "plan_upgrade": "Plan Upgrade",
+    "store_fee": "Store Fee",
+    "refund": "Refund",
+    "sell_theme": "Theme Purchase",
+    "top_up": "Top-up"
   },
 
   "modal": {
