@@ -10,13 +10,17 @@
     "shipping":   "أسعار التوصيل",
     "wallet":     "المحفظة",
     "analytics":  "الإحصائيات",
+    "messages" : "الرسائل",
     "settings":   "الإعدادات",
     "menu_label": "القائمة",
     "pixels":"بيكسل",
-    "current_store": "المتجر الحالي",
     "domain" : "دومين",
-    "messages" : "الرسائل",
-    "editor" : "محرر الصفحات"
+    "editor" : "محرر الصفحات",
+    "group_store":     "إدارة المتجر",
+    "group_sales":     "المبيعات",
+    "group_analytics": "التحليلات والدعم",
+    "group_system":    "النظام",
+    "stores_count":    "متاجر"
   },
 
   "store_selector": {
@@ -38,6 +42,14 @@
     "role":     "مدير",
     "settings": "الإعدادات",
     "logout":   "تسجيل الخروج"
-  }
-  
+  },
+
+  "language": {
+    "label": "اللغة",
+    "ar": "العربية",
+    "en": "English",
+    "fr": "Français"
+  },
+
+  "search": "البحث في لوحة التحكم..."
 }

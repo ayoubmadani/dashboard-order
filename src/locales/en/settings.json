@@ -2,7 +2,6 @@
   "title": "Account Settings",
   "tab_profile": "Profile",
   "tab_stores": "Stores",
-  "tab_preferences": "Preferences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Subscription",
   "tab_shipping": "Delivery",
@@ -35,15 +34,6 @@
   "security_password_updated": "Password updated successfully",
   "security_password_error": "Something went wrong, please try again",
 
-  "platform_pref": "Platform Preferences",
-  "language": "Dashboard Language",
-  "lang_ar": "العربية",
-  "lang_en": "English",
-  "lang_fr": "Français",
-  "mode": "Dashboard Theme",
-  "dark": "Dark Mode",
-  "light": "Light Mode",
-  
   "notif_title": "Push Notifications (Ntfy)",
   "notif_topic_label": "Topic ID",
   "notif_topic_placeholder": "Enter your topic ID here...",

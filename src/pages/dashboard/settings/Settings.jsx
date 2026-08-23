@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings as SettingsIcon, User, Store, Bell, Globe, Truck, CreditCard } from 'lucide-react';
+import { Settings as SettingsIcon, User, Store, Bell, Truck, CreditCard } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import SidebarNav from './components/SidebarNav';
 import ProfileTab from './components/ProfileTab';
 import StoresTab from './components/StoresTab';
-import PreferencesTab from './components/PreferencesTab';
 import NotificationsTab from './components/NotificationsTab';
 import ShippingTab from './components/ShippingTab';
 import SubscriptionTab from './components/SubscriptionTab';
 
-const TAB_IDS = ['profile', 'stores', 'store', 'notifications', 'shipping', 'subscription'];
+const TAB_IDS = ['profile', 'stores', 'notifications', 'shipping', 'subscription'];
 
 const Settings = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'settings' });
@@ -50,7 +49,6 @@ const Settings = () => {
   const tabs = [
     { id: 'profile', label: t('tab_profile'), icon: <User size={18} /> },
     { id: 'stores', label: t('tab_stores'), icon: <Store size={18} /> },
-    { id: 'store', label: t('tab_preferences'), icon: <Globe size={18} /> },
     { id: 'notifications', label: t('tab_notifications'), icon: <Bell size={18} /> },
     { id: 'shipping', label: t('tab_shipping'), icon: <Truck size={18} /> },
     { id: 'subscription', label: t('tab_subscription'), icon: <CreditCard size={18} /> },
@@ -71,7 +69,6 @@ const Settings = () => {
         <div className="flex-1 space-y-6">
           {activeTab === 'profile' && <ProfileTab userData={userData} setUserData={setUserData} />}
           {activeTab === 'stores' && <StoresTab />}
-          {activeTab === 'store' && <PreferencesTab />}
           {activeTab === 'notifications' && <NotificationsTab userData={userData} setUserData={setUserData} />}
           {activeTab === 'shipping' && <ShippingTab />}
           {activeTab === 'subscription' && <SubscriptionTab />}

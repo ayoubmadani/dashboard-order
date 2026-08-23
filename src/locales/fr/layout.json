@@ -13,10 +13,14 @@
     "settings": "Paramètres",
     "menu_label": "Menu",
     "pixels": "pixels",
-    "current_store": "Boutique actuelle",
     "domain": "domaine",
     "messages" : "messages",
-    "editor" : "Éditeur de pages"
+    "editor" : "Éditeur de pages",
+    "group_store": "Gestion de la boutique",
+    "group_sales": "Ventes",
+    "group_analytics": "Statistiques & Support",
+    "group_system": "Système",
+    "stores_count": "boutiques"
   },
   "store_selector": {
     "current_store": "Boutique actuelle",
@@ -35,5 +39,12 @@
     "role": "Admin",
     "settings": "Paramètres",
     "logout": "Déconnexion"
-  }
+  },
+  "language": {
+    "label": "Langue",
+    "ar": "العربية",
+    "en": "English",
+    "fr": "Français"
+  },
+  "search": "Rechercher dans le tableau de bord..."
 }

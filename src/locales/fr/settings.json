@@ -2,7 +2,6 @@
   "title": "Paramètres du compte",
   "tab_profile": "Profil",
   "tab_stores": "Boutiques",
-  "tab_preferences": "Préférences",
   "tab_notifications": "Notifications",
   "tab_subscription": "Abonnement",
   "tab_shipping": "Livraison",
@@ -35,15 +34,6 @@
   "security_password_updated": "Mot de passe mis à jour avec succès",
   "security_password_error": "Une erreur s'est produite, veuillez réessayer",
 
-  "platform_pref": "Préférences de la plateforme",
-  "language": "Langue du tableau de bord",
-  "lang_ar": "العربية",
-  "lang_en": "English",
-  "lang_fr": "Français",
-  "mode": "Thème du tableau de bord",
-  "dark": "Mode sombre",
-  "light": "Mode clair",
-  
   "notif_title": "Notifications push (Ntfy)",
   "notif_topic_label": "ID du sujet",
   "notif_topic_placeholder": "Entrez votre ID de sujet ici...",

@@ -13,10 +13,14 @@
     "settings": "Settings",
     "menu_label": "Menu",
     "pixels": "pixels",
-    "current_store": "Current Store",
     "domain": "domain",
     "messages" : "messages",
-    "editor" : "Page Editor"
+    "editor" : "Page Editor",
+    "group_store": "Store Management",
+    "group_sales": "Sales",
+    "group_analytics": "Analytics & Support",
+    "group_system": "System",
+    "stores_count": "stores"
   },
   "store_selector": {
     "current_store": "Current Store",
@@ -35,5 +39,12 @@
     "role": "Admin",
     "settings": "Settings",
     "logout": "Logout"
-  }
+  },
+  "language": {
+    "label": "Language",
+    "ar": "العربية",
+    "en": "English",
+    "fr": "Français"
+  },
+  "search": "Search the dashboard..."
 }

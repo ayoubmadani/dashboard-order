@@ -32,12 +32,14 @@ function useAuthHeaders() {
   return { headers: { Authorization: `Bearer ${token}` } };
 }
 
-function fmt(num) {
-  return Number(num || 0).toLocaleString('ar-DZ');
+const DATE_LOCALES = { ar: 'ar-DZ', en: 'en-US', fr: 'fr-FR' };
+
+function fmt(num, language = 'ar') {
+  return Number(num || 0).toLocaleString(DATE_LOCALES[language] || DATE_LOCALES.ar);
 }
 
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('ar-DZ', {
+function formatDate(dateStr, language = 'ar') {
+  return new Date(dateStr).toLocaleDateString(DATE_LOCALES[language] || DATE_LOCALES.ar, {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -142,7 +144,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
 //  Payment Status Modal
 // ─────────────────────────────────────────────
 function PaymentStatusModal({ status, amount, isRtl, onClose }) {
-  const { t } = useTranslation('translation', { keyPrefix: 'wallet' });
+  const { t, i18n } = useTranslation('translation', { keyPrefix: 'wallet' });
   const isSuccess = status === 'success';
 
   return (
@@ -174,7 +176,7 @@ function PaymentStatusModal({ status, amount, isRtl, onClose }) {
 
         {isSuccess && amount > 0 && (
           <p className="text-2xl font-black text-emerald-500 tabular-nums" dir="ltr">
-            +{fmt(amount)} <span className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('currency')}</span>
+            +{fmt(amount, i18n.language)} <span className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('currency')}</span>
           </p>
         )}
 
@@ -236,8 +238,17 @@ export default function WalletPage() {
 
     setStatusPayment(payment);
     if (payment === 'success') {
-      setPaymentAmount(Number(searchParams.get('amount')) || 0);
+      const amount = Number(searchParams.get('amount')) || 0;
+      setPaymentAmount(amount);
       fetchWallet();
+      if (window.gtag) {
+        window.gtag('event', 'purchase', {
+          transaction_id: `topup-${Date.now()}`,
+          value: amount,
+          currency: 'DZD',
+          items: [{ item_id: 'wallet_topup', item_name: 'Wallet Top-up', item_category: 'wallet_topup' }],
+        });
+      }
     }
 
     const next = new URLSearchParams(searchParams);
@@ -271,14 +282,11 @@ export default function WalletPage() {
   const transactions = (walletData?.user?.transactions ?? [])
     .slice().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    console.log(transactions);
-    
+  const totalTopUp = transactions.filter(tx => tx.action === 'deposit').reduce((s, tx) => s + Number(tx.amount), 0);
+  const totalSpent = transactions.filter(tx => tx.action === 'payment').reduce((s, tx) => s + Number(tx.amount), 0);
 
-  const totalTopUp = transactions.filter(tx => tx.action === 'topUp').reduce((s, tx) => s + Number(tx.amount), 0);
-  const totalSpent = transactions.filter(tx => tx.action === 'buy').reduce((s, tx) => s + Number(tx.amount), 0);
-
-  const txIcon = (action) => action === 'buy' ? ShoppingBag : ArrowUpCircle;
-  const txColor = (action) => action === 'buy'
+  const txIcon = (action) => action === 'payment' ? ShoppingBag : ArrowUpCircle;
+  const txColor = (action) => action === 'payment'
     ? { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-500' }
     : { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-500' };
 
@@ -329,7 +337,7 @@ export default function WalletPage() {
                 <Skeleton className="h-10 w-44" />
               ) : (
                 <p className="text-4xl font-black text-gray-900 dark:text-white tracking-tight" dir="ltr">
-                  {fmt(balance)}
+                  {fmt(balance, i18n.language)}
                   <span className="text-lg font-semibold text-gray-400 dark:text-zinc-500 ms-2">{t('currency')}</span>
                 </p>
               )}
@@ -354,7 +362,7 @@ export default function WalletPage() {
               <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest truncate">{t('total_top_up')}</p>
               {loading ? <Skeleton className="h-5 w-24 mt-1" /> : (
                 <p className="font-black text-gray-900 dark:text-white text-sm tabular-nums" dir="ltr">
-                  +{fmt(totalTopUp)} {t('currency')}
+                  +{fmt(totalTopUp, i18n.language)} {t('currency')}
                 </p>
               )}
             </div>
@@ -368,7 +376,7 @@ export default function WalletPage() {
               <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest truncate">{t('total_spent')}</p>
               {loading ? <Skeleton className="h-5 w-24 mt-1" /> : (
                 <p className="font-black text-gray-900 dark:text-white text-sm tabular-nums" dir="ltr">
-                  -{fmt(totalSpent)} {t('currency')}
+                  -{fmt(totalSpent, i18n.language)} {t('currency')}
                 </p>
               )}
             </div>
@@ -416,6 +424,9 @@ export default function WalletPage() {
                 const Icon = txIcon(tx.action);
                 const colors = txColor(tx.action);
                 const typeLbl = tx.type !== 'wallet' ? t(`type.${tx.type}`, tx.type) : null;
+                const itemName = tx.theme
+                  ? (tx.theme[`name_${i18n.language}`] || tx.theme.name_ar)
+                  : tx.plan?.name ?? null;
 
                 // التعديل هنا: نتحقق إذا كان الأكشن هو شحن رصيد (TOP_UP)
                 // افترضنا أن TransactionAction.TOP_UP ترسل من السيرفر كـ 'top_up'
@@ -435,12 +446,12 @@ export default function WalletPage() {
                         {t(`action.${tx.action}`, tx.action)}
                         {typeLbl && (
                           <span className="ms-1.5 text-xs text-gray-400 dark:text-zinc-500 font-normal">
-                            · {typeLbl}
+                            · {typeLbl}{itemName ? ` (${itemName})` : ''}
                           </span>
                         )}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5" dir="ltr">
-                        {formatDate(tx.createdAt)}
+                        {formatDate(tx.createdAt, i18n.language)}
                       </p>
                     </div>
 
@@ -450,7 +461,7 @@ export default function WalletPage() {
                       dir="ltr"
                     >
                       {/* إذا كان شحن يظهر + باللون الأخضر، وإذا كان خصم يظهر - باللون الأحمر */}
-                      {isCredit ? '+' : '-'}{fmt(tx.amount)} {t('currency')}
+                      {isCredit ? '+' : '-'}{fmt(tx.amount, i18n.language)} {t('currency')}
                     </span>
                   </div>
                 );

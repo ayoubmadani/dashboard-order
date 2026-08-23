@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   RefreshCcw, AlertTriangle, Phone, Mail, Store as StoreIcon,
@@ -219,6 +219,19 @@ export default function Messages() {
     fetchMessages();
   }, [activeTab]); // Fetch when tab changes
 
+  const isFirstFilterRun = useRef(true);
+  useEffect(() => {
+    if (isFirstFilterRun.current) {
+      isFirstFilterRun.current = false;
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetchMessages();
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter]); // Debounced live search as the user types
+
   const handleSearch = (e) => {
     e.preventDefault();
     fetchMessages();
@@ -233,7 +246,7 @@ export default function Messages() {
 
   const handleArchive = async (id) => {
     try {
-      const newState = activeTab === 'inbox'; // if inbox -> archive it (true)
+      const newState = activeTab !== 'archive'; // archive unless we're already viewing the archive tab
       await axios.patch(`${baseURL}/user/message-user/${id}/archive?state=${newState}`, {}, headers);
       setMessages(prev => prev.filter(m => m.id !== id));
     } catch (err) { console.error(err); }

@@ -2,7 +2,6 @@
   "title": "إعدادات الحساب",
   "tab_profile": "الملف الشخصي",
   "tab_stores": "المتاجر",
-  "tab_preferences": "التفضيلات",
   "tab_notifications": "الإشعارات",
   "tab_subscription": "الاشتراك",
   "tab_shipping": "التوصيل",
@@ -35,15 +34,6 @@
   "security_password_updated": "تم تحديث كلمة المرور بنجاح",
   "security_password_error": "حدث خطأ ما، حاول مرة أخرى",
 
-  "platform_pref": "تفضيلات المنصة",
-  "language": "لغة لوحة التحكم",
-  "lang_ar": "العربية",
-  "lang_en": "English",
-  "lang_fr": "Français",
-  "mode": "سمة لوحة التحكم",
-  "dark": "الوضع المظلم",
-  "light": "الوضع الفاتح",
-  
   "notif_title": "الإشعارات الفورية (Ntfy)",
   "notif_topic_label": "معرف الموضوع",
   "notif_topic_placeholder": "أدخل معرف الموضوع هنا...",
