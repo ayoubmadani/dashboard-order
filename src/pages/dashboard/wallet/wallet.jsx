@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { getAccessToken } from '../../../services/access-token';
 import { baseURL } from '../../../constents/const.';
+import { useSearchParams } from 'react-router-dom';
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -138,6 +139,57 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
 }
 
 // ─────────────────────────────────────────────
+//  Payment Status Modal
+// ─────────────────────────────────────────────
+function PaymentStatusModal({ status, amount, isRtl, onClose }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'wallet' });
+  const isSuccess = status === 'success';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div
+        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 w-full max-w-sm p-6 space-y-5 shadow-2xl text-center"
+        dir={isRtl ? 'rtl' : 'ltr'}
+      >
+        <div
+          className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center ${isSuccess ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-rose-50 dark:bg-rose-900/20'
+            }`}
+        >
+          {isSuccess
+            ? <CheckCircle2 className="w-7 h-7 text-emerald-500" />
+            : <XCircle className="w-7 h-7 text-rose-500" />}
+        </div>
+
+        <div className="space-y-1.5">
+          <h3 className="font-black text-gray-900 dark:text-white">
+            {t(isSuccess ? 'payment_status.success_title' : 'payment_status.failed_title')}
+          </h3>
+          <p className="text-sm text-gray-400 dark:text-zinc-500">
+            {t(isSuccess ? 'payment_status.success_desc' : 'payment_status.failed_desc')}
+          </p>
+        </div>
+
+        {isSuccess && amount > 0 && (
+          <p className="text-2xl font-black text-emerald-500 tabular-nums" dir="ltr">
+            +{fmt(amount)} <span className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('currency')}</span>
+          </p>
+        )}
+
+        <button
+          onClick={onClose}
+          className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl hover:-translate-y-0.5 transition-all active:scale-95"
+        >
+          {t('payment_status.close')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
 //  Main Component
 // ─────────────────────────────────────────────
 export default function WalletPage() {
@@ -154,6 +206,10 @@ export default function WalletPage() {
   const [topUpAmount, setTopUpAmount] = useState('');
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [statusPayment, setStatusPayment] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState(0);
 
   /* ── Fetch ── */
   const fetchWallet = async () => {
@@ -172,6 +228,24 @@ export default function WalletPage() {
   };
 
   useEffect(() => { fetchWallet(); }, []);
+
+  /* ── Payment redirect status (from backend payment-success / payment-failed) ── */
+  useEffect(() => {
+    const payment = searchParams.get('payment');
+    if (payment !== 'success' && payment !== 'failed') return;
+
+    setStatusPayment(payment);
+    if (payment === 'success') {
+      setPaymentAmount(Number(searchParams.get('amount')) || 0);
+      fetchWallet();
+    }
+
+    const next = new URLSearchParams(searchParams);
+    next.delete('payment');
+    next.delete('amount');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Top-up ── */
   const handleTopUp = async () => {
@@ -398,6 +472,16 @@ export default function WalletPage() {
           amount={topUpAmount}
           setAmount={setTopUpAmount}
           clearError={() => setTopUpError(null)}
+        />
+      )}
+
+      {/* ── Payment Status Modal ── */}
+      {statusPayment && (
+        <PaymentStatusModal
+          status={statusPayment}
+          amount={paymentAmount}
+          isRtl={isRtl}
+          onClose={() => setStatusPayment(null)}
         />
       )}
     </div>

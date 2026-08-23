@@ -36,5 +36,13 @@
     "fetch": "Échec du chargement du portefeuille",
     "min_amount": "Le montant minimum de recharge est de 100 DA",
     "top_up": "Erreur lors de la création de la session de paiement"
+  },
+
+  "payment_status": {
+    "success_title": "Paiement réussi",
+    "success_desc": "Votre solde a été rechargé avec succès.",
+    "failed_title": "Échec du paiement",
+    "failed_desc": "Une erreur s'est produite lors du traitement de votre paiement. Veuillez réessayer.",
+    "close": "Fermer"
   }
 }

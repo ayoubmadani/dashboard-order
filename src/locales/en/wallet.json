@@ -36,5 +36,13 @@
     "fetch": "Failed to load wallet data",
     "min_amount": "Minimum top-up amount is 100 DA",
     "top_up": "Error creating payment session"
+  },
+
+  "payment_status": {
+    "success_title": "Payment Successful",
+    "success_desc": "Your balance has been topped up successfully.",
+    "failed_title": "Payment Failed",
+    "failed_desc": "Something went wrong while processing your payment. Please try again.",
+    "close": "Close"
   }
 }
