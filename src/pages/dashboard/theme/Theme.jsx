@@ -327,6 +327,18 @@ export default function Theme() {
       const { data } = await axios.post(`${baseURL}/theme/install-theme/${themeId}`, { couponCode }, headers);
       if (data.success === false) { toast.error(t('alerts.install_error', { message: data.message })); return; }
       toast.success(t('alerts.install_success'));
+      if (window.gtag && installTarget && Number(installTarget.price) > 0) {
+        const finalPrice = installCouponInfo ? installCouponInfo.finalPrice : Number(installTarget.price);
+        const themeName = getLocalizedThemeText(installTarget, 'name', i18n.language);
+        window.gtag('event', 'purchase', {
+          transaction_id: `theme-${themeId}-${Date.now()}`,
+          value: finalPrice,
+          currency: 'DZD',
+          theme_id: themeId,
+          theme_name: themeName,
+          items: [{ item_id: themeId, item_name: themeName, item_category: 'theme' }],
+        });
+      }
       setInstallTarget(null);
       setInstallCouponCode(''); setInstallCouponInfo(null); setInstallCouponError('');
       getInitialData();

@@ -17,11 +17,13 @@
   },
   "types": {
     "facebook": "Facebook Pixel",
-    "tiktok": "TikTok Pixel"
+    "tiktok": "TikTok Pixel",
+    "google": "Google Analytics"
   },
   "descriptions": {
     "facebook": "Track ads and conversions on Facebook",
-    "tiktok": "Track performance on TikTok Ads"
+    "tiktok": "Track performance on TikTok Ads",
+    "google": "Track visitor traffic and behavior with Google Analytics (GA4)"
   },
   "status": {
     "active": "Active",
@@ -41,6 +43,7 @@
     "typeLabel": "Pixel Type",
     "pixelIdLabel": "Pixel ID",
     "pixelIdPlaceholder": "e.g., 1234567890",
+    "pixelIdPlaceholderGoogle": "e.g., G-XXXXXXXXXX",
     "accessTokenLabel": "Access Token (Optional)",
     "accessTokenPlaceholder": "For Conversion API",
     "eventsLabel": "Tracked Events",

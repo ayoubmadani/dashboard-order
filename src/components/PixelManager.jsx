@@ -1,35 +1,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Facebook, 
+import {
+  Facebook,
   Music2,
-  Plus, 
-  Trash2, 
-  Edit2, 
+  Plus,
+  Trash2,
+  Edit2,
   Power,
   AlertCircle,
   CheckCircle,
   Loader2
 } from 'lucide-react';
+import { FcGoogle } from 'react-icons/fc';
 import axios from 'axios';
 import { baseURL } from '../constents/const.';
 import { getAccessToken } from '../services/access-token';
 import Loading from './Loading';
 
 const PIXEL_TYPES = [
-  { 
-    id: 'facebook', 
-    labelKey: 'types.facebook', 
-    icon: Facebook, 
+  {
+    id: 'facebook',
+    labelKey: 'types.facebook',
+    icon: Facebook,
     color: '#1877F2',
     descriptionKey: 'descriptions.facebook'
   },
-  { 
-    id: 'tiktok', 
-    labelKey: 'types.tiktok', 
-    icon: Music2, 
+  {
+    id: 'tiktok',
+    labelKey: 'types.tiktok',
+    icon: Music2,
     color: '#000000',
     descriptionKey: 'descriptions.tiktok'
+  },
+  {
+    id: 'google',
+    labelKey: 'types.google',
+    icon: FcGoogle,
+    color: '#4285F4',
+    descriptionKey: 'descriptions.google'
   },
 ];
 
@@ -320,7 +328,7 @@ export const PixelManager = ({ storeId }) => {
                 <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
                   {t('form.typeLabel')}
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {PIXEL_TYPES.map((type) => (
                     <button
                       key={type.id}
@@ -348,7 +356,7 @@ export const PixelManager = ({ storeId }) => {
                   type="text"
                   value={formData.pixelId}
                   onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
-                  placeholder={t('form.pixelIdPlaceholder')}
+                  placeholder={formData.type === 'google' ? t('form.pixelIdPlaceholderGoogle') : t('form.pixelIdPlaceholder')}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
                   required
                 />

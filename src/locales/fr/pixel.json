@@ -17,11 +17,13 @@
   },
   "types": {
     "facebook": "Facebook Pixel",
-    "tiktok": "TikTok Pixel"
+    "tiktok": "TikTok Pixel",
+    "google": "Google Analytics"
   },
   "descriptions": {
     "facebook": "Suivez les publicités et les conversions sur Facebook",
-    "tiktok": "Suivez les performances sur TikTok Ads"
+    "tiktok": "Suivez les performances sur TikTok Ads",
+    "google": "Suivez le trafic et le comportement des visiteurs avec Google Analytics (GA4)"
   },
   "status": {
     "active": "Actif",
@@ -41,6 +43,7 @@
     "typeLabel": "Type de Pixel",
     "pixelIdLabel": "ID du Pixel",
     "pixelIdPlaceholder": "ex: 1234567890",
+    "pixelIdPlaceholderGoogle": "ex: G-XXXXXXXXXX",
     "accessTokenLabel": "Jeton d'accès (Optionnel)",
     "accessTokenPlaceholder": "Pour l'API de conversion",
     "eventsLabel": "Événements suivis",

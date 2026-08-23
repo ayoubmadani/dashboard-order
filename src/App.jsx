@@ -35,6 +35,7 @@ import Messages from './pages/dashboard/messages/messages';
 import PagesList from './pages/editor/PagesList';
 import PageEditor from './pages/editor/PageEditor';
 import SelectLang from './halper/select-lang';
+import GoogleAnalytics from './components/GoogleAnalytics';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -60,6 +61,7 @@ const App = () => {
   return (
     <BrowserRouter>
     <Title title={"MD store"} />
+    <GoogleAnalytics />
       <Routes>
         {/* المسارات التسويقية (home/about/contact/plan/privacy/terms/cookies) انتقلت إلى مشروع store لدعم الـ SEO */}
         <Route path="/" element={<Navigate to="/auth/login" replace />} />

@@ -56,6 +56,17 @@ export default function SubscriptionTab() {
       const { data } = await axios.get(`${baseURL}/subscription/my`, { headers: { Authorization: `Bearer ${token}` } });
       setSubscription(data);
       setShowSubModal(false);
+      if (window.gtag) {
+        const plan = plans.find(p => p.id === planId);
+        const basePrice = plan ? getPlanPrice(plan, interval) : 0;
+        const finalPrice = couponInfo ? getDiscountedPrice(basePrice, couponInfo) : basePrice;
+        window.gtag('event', 'purchase', {
+          transaction_id: `sub-${planId}-${Date.now()}`,
+          value: finalPrice,
+          currency: 'DZD',
+          items: [{ item_id: planId, item_name: plan?.name || 'Subscription Plan', item_category: 'subscription' }],
+        });
+      }
       setCouponCode(''); setCouponInfo(null); setCouponError('');
       showSubToast(t('sub_success'), 'success');
     } catch (err) {

@@ -17,11 +17,13 @@
   },
   "types": {
     "facebook": "فيسبوك بكسل (Facebook Pixel)",
-    "tiktok": "تيك توك بكسل (TikTok Pixel)"
+    "tiktok": "تيك توك بكسل (TikTok Pixel)",
+    "google": "جوجل أناليتكس (Google Analytics)"
   },
   "descriptions": {
     "facebook": "تتبع الإعلانات والتحويلات على فيسبوك",
-    "tiktok": "تتبع الأداء على إعلانات تيك توك"
+    "tiktok": "تتبع الأداء على إعلانات تيك توك",
+    "google": "تتبع زوار متجرك وسلوكهم عبر Google Analytics (GA4)"
   },
   "status": {
     "active": "نشط",
@@ -41,6 +43,7 @@
     "typeLabel": "نوع البكسل",
     "pixelIdLabel": "معرف البكسل (Pixel ID)",
     "pixelIdPlaceholder": "مثال: 1234567890",
+    "pixelIdPlaceholderGoogle": "مثال: G-XXXXXXXXXX",
     "accessTokenLabel": "رمز الوصول / التوكن (اختياري)",
     "accessTokenPlaceholder": "خاص بـ Conversion API",
     "eventsLabel": "الأحداث التي يتم تتبعها",
