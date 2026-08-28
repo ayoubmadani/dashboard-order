@@ -251,7 +251,6 @@
     "change_image": "Changer",
     "size_placeholder": "ex: XL",
     "value_placeholder": "Valeur",
-    "already_exists": "Cet attribut existe déjà",
     "name_required": "Le nom de l'attribut est requis",
     "one_variant_required": "Ajoutez au moins une valeur",
     "variant_value_required": "La valeur de la variante est requise"

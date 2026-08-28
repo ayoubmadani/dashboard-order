@@ -255,7 +255,6 @@
     "change_image": "تغيير",
     "size_placeholder": "مثال: XL",
     "value_placeholder": "القيمة",
-    "already_exists": "هذه الخاصية موجودة مسبقاً",
     "name_required": "اسم الخاصية مطلوب",
     "one_variant_required": "أضف قيمة واحدة على الأقل",
     "variant_value_required": "قيمة المتغير مطلوبة"

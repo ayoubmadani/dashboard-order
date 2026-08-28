@@ -246,9 +246,6 @@ export default function EditProduct() {
 
   /* ── Attributes ── */
   const addAttribute = (type, name = '') => {
-    if ((type === ATTRIBUTE_TYPES.COLOR || type === ATTRIBUTE_TYPES.SIZE) && attributes.some(a => a.type === type)) {
-      showNotification('error', t('attributes.already_exists')); return;
-    }
     const base = { id: `att-${Date.now()}`, type, name: name || (type === ATTRIBUTE_TYPES.COLOR ? t('attributes.colors_label') : type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_label') : '') };
     const attr = type === ATTRIBUTE_TYPES.COLOR
       ? { ...base, displayMode: 'color', variants: [] }

@@ -5,7 +5,7 @@ import { toast, Toaster } from 'sonner';
 import {
   Loader2, Palette, LayoutGrid,
   ExternalLink, Download, CheckCircle2,
-  ChevronLeft, ChevronRight, Crown, X, Tag,
+  ChevronLeft, ChevronRight, Crown, X, Tag, AlertTriangle,
 } from 'lucide-react';
 import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -60,6 +60,51 @@ function ThemeCard({ image, name, isActivating, onActivate, isActive }) {
         <div className="absolute top-2.5 start-2.5">
           <span className="flex items-center gap-1 bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow">
             <CheckCircle2 size={9} /> {t('my_themes.activated')}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  NoThemeCard — the "no theme selected" fallback state
+//  (not a real theme, so it must never look like one)
+// ─────────────────────────────────────────────
+function NoThemeCard({ isActivating, onActivate, isActive }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'theme' });
+
+  return (
+    <div className={`relative rounded-2xl overflow-hidden border-2 border-dashed transition-all duration-200 ${
+      isActive
+        ? 'border-amber-400 bg-amber-50/60 dark:bg-amber-900/10'
+        : 'border-gray-300 dark:border-zinc-700 hover:border-amber-300 dark:hover:border-amber-700'
+    }`}>
+      <div className="h-32 flex flex-col items-center justify-center gap-2 px-4 text-center bg-gray-50 dark:bg-zinc-800/60">
+        <AlertTriangle size={24} className="text-amber-500 shrink-0" />
+        <p className="text-[10px] leading-snug text-amber-700 dark:text-amber-400 font-medium line-clamp-3">
+          {t('my_themes.default_desc')}
+        </p>
+      </div>
+      <div className="flex items-center justify-between gap-2 px-3 py-3 bg-white dark:bg-zinc-900">
+        <span className="text-xs font-bold text-gray-800 dark:text-zinc-200 truncate">{t('my_themes.default_name')}</span>
+        <button
+          onClick={onActivate}
+          disabled={isActive || isActivating}
+          className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl text-[11px] font-black transition-all ${
+            isActive
+              ? 'bg-amber-400 text-white'
+              : 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-80'
+          } disabled:opacity-60`}
+        >
+          {isActivating ? <Loader2 size={11} className="animate-spin" /> : isActive ? <CheckCircle2 size={11} /> : null}
+          {isActivating ? '' : isActive ? t('my_themes.activated') : t('my_themes.activate_btn')}
+        </button>
+      </div>
+      {isActive && (
+        <div className="absolute top-2.5 start-2.5">
+          <span className="flex items-center gap-1 bg-amber-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow">
+            <AlertTriangle size={9} /> {t('my_themes.activated')}
           </span>
         </div>
       )}
@@ -401,9 +446,7 @@ export default function Theme() {
       {activeTab === 'my' && (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            <ThemeCard
-              image={DEFAULT_IMAGE}
-              name={t('my_themes.default_name')}
+            <NoThemeCard
               isActivating={activatingId === 'default'}
               isActive={!idActive}
               onActivate={() => handleActiveTheme(null)}

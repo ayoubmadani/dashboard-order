@@ -2,7 +2,8 @@
   "loading": "Loading templates...",
   "my_themes": {
     "title": "My Themes",
-    "default_name": "Default",
+    "default_name": "No theme",
+    "default_desc": "This isn't a real theme — visitors will see a blank page. Choose a template below.",
     "activate_btn": "Activate",
     "activated": "Active",
     "empty": "No themes installed"

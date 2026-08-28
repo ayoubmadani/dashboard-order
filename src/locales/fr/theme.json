@@ -2,7 +2,8 @@
   "loading": "Chargement des modèles...",
   "my_themes": {
     "title": "Mes thèmes",
-    "default_name": "Par défaut",
+    "default_name": "Aucun thème",
+    "default_desc": "Ce n'est pas un vrai thème — vos visiteurs verront une page vide. Choisissez un modèle ci-dessous.",
     "activate_btn": "Activer",
     "activated": "Actif",
     "empty": "Aucun thème installé"
