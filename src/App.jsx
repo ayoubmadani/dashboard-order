@@ -24,7 +24,6 @@ import AuthCallback from './pages/auth/success/AuthCallback';
 import CreateCategory from './pages/dashboard/categories/CreateCategory';
 import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
-import ProductShow from './pages/dashboard/products/show';
 import Theme from './pages/dashboard/theme/Theme';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Pixels from './pages/dashboard/pixels/pixels';
@@ -99,8 +98,6 @@ const App = () => {
               <Route index element={<Products />} />
               <Route path="create" element={<CreateProduct />} />
               <Route path="edit/:id" element={<EditProduct />} />
-              <Route path=":id" element={<ProductShow />} />
-
             </Route>
 
             <Route path='Wallet' element={<Wallet />} />

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Search, Filter,
-  Edit2, Trash2, Eye, Package,
+  Edit2, Trash2, Package,
   X, CheckCircle2,
   Download, Upload, RefreshCw,
   ArrowLeft, ArrowRight,
@@ -10,7 +10,7 @@ import {
   ToggleLeft, ToggleRight, SlidersHorizontal,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import { baseURL } from '../../../constents/const.';
@@ -19,7 +19,6 @@ import NoStoreState from '../../../components/NoStoreState';
 
 const Products = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'products' });
-  const navigate = useNavigate();
   const token = getAccessToken();
   const isRtl = i18n.dir() === 'rtl';
 
@@ -483,8 +482,7 @@ const Products = () => {
                           </div>
                           <div className="min-w-0">
                             <p
-                              className="text-sm font-semibold text-gray-800 dark:text-zinc-100 truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-                              onClick={() => navigate(`/dashboard/products/${product.id}`)}
+                              className="text-sm font-semibold text-gray-800 dark:text-zinc-100 truncate"
                               title={product.name}
                             >
                               {product.name?.length > 22 ? `${product.name.substring(0, 22)}…` : product.name}
@@ -559,12 +557,6 @@ const Products = () => {
                       {/* Actions */}
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-center gap-1">
-                          <Link
-                            to={`/dashboard/products/${product.id}`}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
-                          >
-                            <Eye size={15} />
-                          </Link>
                           <Link
                             to={`/dashboard/products/edit/${product.id}`}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
