@@ -5,20 +5,13 @@ import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
   LayoutTemplate, Plus, Search, X, Trash2, Pencil,
-  Loader2, AlertCircle, RefreshCw, Sparkles,
+  Loader2, AlertCircle, RefreshCw,
   Package, ChevronDown, Check, Eye, Share2, Power, Copy, CopyPlus,
 } from 'lucide-react';
 import { baseURL } from '../../constents/const.';
 import { getAccessToken } from '../../services/access-token';
 import Loading from '../../components/Loading';
 import NoStoreState from '../../components/NoStoreState';
-
-const slugify = (str) =>
-  str
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\p{L}\p{N}-]/gu, '');
 
 function ProductPicker({ selectedProductId, onSelect }) {
   const { t } = useTranslation();
@@ -115,11 +108,6 @@ export default function PagesList() {
   const [newPageName, setNewPageName] = useState('');
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
-  const [domains, setDomains] = useState([]);
-  const [domainsLoading, setDomainsLoading] = useState(false);
-  const [selectedDomain, setSelectedDomain] = useState('');
-  const [slug, setSlug] = useState('');
-  const [slugTouched, setSlugTouched] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
   const [duplicatingId, setDuplicatingId] = useState(null);
@@ -151,39 +139,20 @@ export default function PagesList() {
     fetchPages();
   }, [fetchPages]);
 
-  useEffect(() => {
-    if (!showCreateModal || !storeId) return;
-    setDomainsLoading(true);
-    axios
-      .get(`${baseURL}/domain/store/${storeId}`, { headers: authHeaders() })
-      .then((res) => setDomains(Array.isArray(res.data) ? res.data : res.data?.data ?? []))
-      .catch(() => setDomains([]))
-      .finally(() => setDomainsLoading(false));
-  }, [showCreateModal, storeId]);
-
-  const handleNameChange = (value) => {
-    setNewPageName(value);
-    if (!slugTouched) setSlug(slugify(value));
-  };
-
   const closeCreateModal = () => {
     setShowCreateModal(false);
     setNewPageName('');
     setSelectedProduct(null);
     setProductPickerOpen(false);
-    setSelectedDomain('');
-    setSlug('');
-    setSlugTouched(false);
   };
 
   const handleCreate = async () => {
     if (!storeId) { toast.error(t('editor.list.noStore')); return; }
     setCreating(true);
     try {
-      const domain = selectedDomain && slug.trim() ? `${selectedDomain}/lp/${slug.trim()}` : undefined;
       const res = await axios.post(
         `${baseURL}/builder-pages`,
-        { name: newPageName || t('editor.list.untitled'), storeId, productId: selectedProduct?.id, domain },
+        { name: newPageName || t('editor.list.untitled'), storeId, productId: selectedProduct?.id },
         { headers: authHeaders() }
       );
       navigate(`/editor/${res.data.id}`);
@@ -297,14 +266,6 @@ export default function PagesList() {
                 className="p-2.5 text-gray-500 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-all shrink-0"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-              </button>
-
-              <button
-                onClick={() => navigate('/editor/demo')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 text-sm font-semibold rounded-xl hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors shrink-0"
-              >
-                <Sparkles size={18} />
-                <span className="hidden sm:inline">{t('editor.list.tryDemo')}</span>
               </button>
 
               <button
@@ -499,7 +460,7 @@ export default function PagesList() {
               type="text"
               autoFocus
               value={newPageName}
-              onChange={(e) => handleNameChange(e.target.value)}
+              onChange={(e) => setNewPageName(e.target.value)}
               placeholder={t('editor.list.namePlaceholder')}
               className="w-full px-3 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50 mb-4"
             />
@@ -551,37 +512,6 @@ export default function PagesList() {
                     onSelect={(product) => { setSelectedProduct(product); setProductPickerOpen(false); }}
                   />
                 </div>
-              )}
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-xs font-semibold text-gray-500 dark:text-zinc-400 mb-1.5">
-                {t('editor.list.domainLabel')}
-              </label>
-              <div className="flex items-stretch">
-                <select
-                  value={selectedDomain}
-                  onChange={(e) => setSelectedDomain(e.target.value)}
-                  className="shrink-0 max-w-[42%] px-2 py-2.5 bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-s-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                >
-                  <option value="">{domainsLoading ? t('editor.fields.loadingProducts') : t('editor.list.domainPlaceholder')}</option>
-                  {domains.map((d) => (
-                    <option key={d.id} value={d.domain}>{d.domain}</option>
-                  ))}
-                </select>
-                <span className="flex items-center px-1.5 bg-gray-100 dark:bg-zinc-800 border-y border-gray-200 dark:border-zinc-700 text-xs text-gray-400 shrink-0">
-                  /lp/
-                </span>
-                <input
-                  type="text"
-                  value={slug}
-                  onChange={(e) => { setSlug(e.target.value); setSlugTouched(true); }}
-                  placeholder="example-page"
-                  className="flex-1 min-w-0 px-3 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-e-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-                />
-              </div>
-              {!domainsLoading && domains.length === 0 && (
-                <p className="text-[11px] text-gray-400 mt-1">{t('editor.list.noDomains')}</p>
               )}
             </div>
 

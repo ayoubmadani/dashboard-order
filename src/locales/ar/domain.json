@@ -25,13 +25,22 @@
   "copy": "نسخ",
 
   "domains_title": "نطاقاتك",
+  "system_domain": "دومين النظام",
   "status_active": "متصل ومؤمن",
   "status_pending": "بانتظار التفعيل",
   "check_btn": "تحقق",
   "checking": "جارٍ التحقق…",
   "delete": "حذف",
   "confirm_delete": "هل أنت متأكد من حذف هذا الدومين؟",
+  "dedicated_to_page": "مخصص لصفحة هبوط",
 
   "empty_title": "لا توجد نطاقات بعد",
-  "empty_desc": "أضف نطاقك الأول من الأعلى"
+  "empty_desc": "أضف نطاقك الأول من الأعلى",
+  "no_match_title": "لا توجد نطاقات مطابقة",
+
+  "scope_filter": {
+    "all": "الكل",
+    "store": "المتجر",
+    "landing_page": "صفحة هبوط"
+  }
 }

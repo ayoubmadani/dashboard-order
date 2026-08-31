@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Globe, Copy, CheckCircle2, Loader2, Trash2,
-  RefreshCcw, ShieldCheck, ExternalLink, Info, Plus
+  RefreshCcw, ShieldCheck, ExternalLink, Info, Plus, LayoutTemplate
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
@@ -180,6 +180,12 @@ function DomainRow({ domain, onDelete, onSync }) {
           </span>
           {active && !isSub && <ShieldCheck size={11} className="text-emerald-500" />}
           {isSub && <Zap size={11} className="text-blue-500" />} {/* أيقونة إضافية للدومين الفرعي */}
+          {domain.scope === 'landing_page' && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800">
+              <LayoutTemplate size={10} />
+              {t('dedicated_to_page')}
+            </span>
+          )}
         </div>
       </div>
 
@@ -223,6 +229,7 @@ export default function Domain() {
   const [inputDomain, setInputDomain] = useState('');
   const [adding, setAdding] = useState(false);
   const [inputError, setInputError] = useState(null);
+  const [scopeFilter, setScopeFilter] = useState('all');
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -275,6 +282,8 @@ export default function Domain() {
       
     }
   };
+
+  const filteredDomains = domains.filter(d => scopeFilter === 'all' || (d.scope || 'store') === scopeFilter);
 
   // ── Render ──────────────────────────────────
   if (!storeId) {
@@ -331,23 +340,41 @@ export default function Domain() {
 
       {/* ── Domain list ── */}
       <div className="space-y-2">
-        <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
-          {t('domains_title')}
-        </label>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
+            {t('domains_title')}
+          </label>
+          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl">
+            {['all', 'store', 'landing_page'].map(scope => (
+              <button
+                key={scope}
+                onClick={() => setScopeFilter(scope)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${scopeFilter === scope
+                  ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300'
+                  }`}
+              >
+                {t(`scope_filter.${scope}`)}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {loading ? (
           <div className="space-y-2">
             {[...Array(2)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
           </div>
-        ) : domains.length === 0 ? (
+        ) : filteredDomains.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-2xl text-center">
             <Globe size={36} className="text-gray-200 dark:text-zinc-700 mb-2" />
-            <p className="text-sm font-bold text-gray-400 dark:text-zinc-600">{t('empty_title')}</p>
+            <p className="text-sm font-bold text-gray-400 dark:text-zinc-600">
+              {domains.length === 0 ? t('empty_title') : t('no_match_title')}
+            </p>
             <p className="text-xs text-gray-300 dark:text-zinc-700 mt-0.5">{t('empty_desc')}</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {domains.map(d => (
+            {filteredDomains.map(d => (
               <DomainRow
                 key={d.id}
                 domain={d}

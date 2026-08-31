@@ -10,6 +10,8 @@ import Canvas from './components/Canvas';
 import PropsPanel from './components/PropsPanel';
 import GenerateModal from './components/GenerateModal';
 import PageSettingsModal from './components/PageSettingsModal';
+import PagePixelsModal from './components/PagePixelsModal';
+import PageDomainModal from './components/PageDomainModal';
 import Loading from '../../components/Loading';
 import usePageBuilder from './hooks/usePageBuilder';
 import { componentsMap } from './blocks/componentsMap';
@@ -22,6 +24,8 @@ export default function PageEditor() {
   const [selectedElementId, setSelectedElementId] = useState(null);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showPixelsModal, setShowPixelsModal] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
   // Sidebar/PropsPanel are docked side-by-side on desktop regardless of
   // this — only relevant below md, where they render as full-screen
   // overlays instead (see Sidebar.jsx/PropsPanel.jsx's own comments). Only
@@ -50,6 +54,7 @@ export default function PageEditor() {
 
   const {
     name,
+    storeId,
     productId,
     settings,
     setSettings,
@@ -309,6 +314,8 @@ export default function PageEditor() {
         onSave={handleSave}
         onPublish={handlePublish}
         onOpenSettings={() => setShowSettingsModal(true)}
+        onOpenPixels={() => setShowPixelsModal(true)}
+        onOpenDomain={() => setShowDomainModal(true)}
         onOpenMobileSidebar={() => setMobileDrawer('sidebar')}
         onOpenMobileProps={() => setMobileDrawer('props')}
         isRtl={isRtl}
@@ -326,6 +333,18 @@ export default function PageEditor() {
         onClose={() => setShowSettingsModal(false)}
         settings={settings}
         onChange={setSettings}
+      />
+      <PagePixelsModal
+        open={showPixelsModal}
+        onClose={() => setShowPixelsModal(false)}
+        storeId={storeId}
+        pageId={id}
+      />
+      <PageDomainModal
+        open={showDomainModal}
+        onClose={() => setShowDomainModal(false)}
+        storeId={storeId}
+        pageId={id}
       />
       <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragEnd={handleDragEnd}>
         <div className="flex-1 flex overflow-hidden">

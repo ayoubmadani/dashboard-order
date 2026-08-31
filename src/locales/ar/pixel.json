@@ -3,6 +3,12 @@
   "subtitle": "فيسبوك بكسل، تيك توك بكسل والمزيد",
   "addNew": "إضافة بكسل",
   "emptyState": "لم يتم إضافة أي بكسل بعد. أضف بكسل لتتبع أداء إعلاناتك.",
+  "noMatchState": "لا توجد بكسلات مطابقة",
+  "scopeFilter": {
+    "all": "الكل",
+    "store": "المتجر",
+    "landing_page": "صفحة هبوط"
+  },
   "noStore": "لم يتم تحديد المتجر",
   "noStorePage": {
     "title": "لم يتم تحديد المتجر",
@@ -44,9 +50,16 @@
     "pixelIdLabel": "معرف البكسل (Pixel ID)",
     "pixelIdPlaceholder": "مثال: 1234567890",
     "pixelIdPlaceholderGoogle": "مثال: G-XXXXXXXXXX",
+    "nameLabel": "اسم البكسل (اختياري)",
+    "namePlaceholder": "مثال: بكسل الحملة الرئيسية",
     "accessTokenLabel": "رمز الوصول / التوكن (اختياري)",
     "accessTokenPlaceholder": "خاص بـ Conversion API",
     "eventsLabel": "الأحداث التي يتم تتبعها",
+    "scopeLabel": "أين يعمل هذا البكسل",
+    "scope": {
+      "store": "المتجر",
+      "landing_page": "صفحة هبوط"
+    },
     "saveChanges": "حفظ التغييرات",
     "addPixel": "إضافة البكسل"
   },

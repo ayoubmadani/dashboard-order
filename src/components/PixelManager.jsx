@@ -56,16 +56,18 @@ export const PixelManager = ({ storeId }) => {
   const [showModal, setShowModal] = useState(false);
   const [editingPixel, setEditingPixel] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+  const [scopeFilter, setScopeFilter] = useState('all');
 
   const language = i18n.language
   
   
 
   const [formData, setFormData] = useState({
+    name: '',
     type: 'facebook',
     pixelId: '',
     accessToken: '',
-    events: ['PageView', 'Purchase'],
+    events: DEFAULT_EVENTS,
     isActive: true,
   });
 
@@ -149,10 +151,11 @@ export const PixelManager = ({ storeId }) => {
 
   const resetForm = () => {
     setFormData({
+      name: '',
       type: 'facebook',
       pixelId: '',
       accessToken: '',
-      events: ['PageView', 'Purchase'],
+      events: DEFAULT_EVENTS,
       isActive: true,
     });
   };
@@ -160,10 +163,11 @@ export const PixelManager = ({ storeId }) => {
   const openEdit = (pixel) => {
     setEditingPixel(pixel);
     setFormData({
+      name: pixel.name || '',
       type: pixel.type,
       pixelId: pixel.pixelId,
       accessToken: pixel.accessToken || '',
-      events: pixel.events || ['PageView'],
+      events: DEFAULT_EVENTS,
       isActive: pixel.isActive,
     });
     setShowModal(true);
@@ -175,14 +179,7 @@ export const PixelManager = ({ storeId }) => {
     return <Icon size={20} style={{ color: pixelType?.color }} />;
   };
 
-  const toggleEvent = (event) => {
-    setFormData(prev => ({
-      ...prev,
-      events: prev.events.includes(event)
-        ? prev.events.filter(e => e !== event)
-        : [...prev.events, event]
-    }));
-  };
+  const filteredPixels = pixels.filter(p => scopeFilter === 'all' || (p.scope || 'store') === scopeFilter);
 
   if (loading) {
     return (
@@ -218,6 +215,24 @@ export const PixelManager = ({ storeId }) => {
         </button>
       </div>
 
+      {storeId && pixels.length > 0 && (
+        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl mb-4 w-fit">
+          {['all', 'store', 'landing_page'].map(scope => (
+            <button
+              key={scope}
+              type="button"
+              onClick={() => setScopeFilter(scope)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${scopeFilter === scope
+                ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                : 'text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300'
+                }`}
+            >
+              {t(`scopeFilter.${scope}`)}
+            </button>
+          ))}
+        </div>
+      )}
+
       {!storeId ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
           <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
@@ -232,9 +247,16 @@ export const PixelManager = ({ storeId }) => {
             {t('emptyState')}
           </p>
         </div>
+      ) : filteredPixels.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
+          <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-500 dark:text-zinc-400">
+            {t('noMatchState')}
+          </p>
+        </div>
       ) : (
         <div className="space-y-3">
-          {pixels.map((pixel) => {
+          {filteredPixels.map((pixel) => {
             const pixelType = PIXEL_TYPES.find(p => p.id === pixel.type);
             return (
               <div
@@ -251,21 +273,24 @@ export const PixelManager = ({ storeId }) => {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900 dark:text-white">
-                      {t(pixelType?.labelKey) || pixel.type}
+                      {pixel.name || t(pixelType?.labelKey) || pixel.type}
                     </h3>
+                    {pixel.name && (
+                      <p className="text-xs text-gray-400">{t(pixelType?.labelKey) || pixel.type}</p>
+                    )}
                     <p className="text-sm text-gray-500 font-mono">
                       {t('idLabel')}: {pixel.pixelId}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        pixel.isActive 
+                        pixel.isActive
                           ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20'
                           : 'bg-gray-100 text-gray-500 dark:bg-zinc-700'
                       }`}>
                         {pixel.isActive ? t('status.active') : t('status.inactive')}
                       </span>
-                      <span className="text-xs text-gray-400">
-                        {pixel.events?.length || 0} {t('eventsCount')}
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                        {t(`form.scope.${pixel.scope || 'store'}`)}
                       </span>
                     </div>
                   </div>
@@ -347,6 +372,20 @@ export const PixelManager = ({ storeId }) => {
                 </div>
               </div>
 
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
+                  {t('form.nameLabel')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder={t('form.namePlaceholder')}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
+                />
+              </div>
+
               {/* Pixel ID */}
               <div>
                 <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
@@ -362,44 +401,6 @@ export const PixelManager = ({ storeId }) => {
                 />
               </div>
 
-              {/* Access Token (Facebook only) */}
-              {formData.type === 'facebook' && (
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                    {t('form.accessTokenLabel')}
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.accessToken}
-                    onChange={(e) => setFormData({ ...formData, accessToken: e.target.value })}
-                    placeholder={t('form.accessTokenPlaceholder')}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
-                  />
-                </div>
-              )}
-
-              {/* Events */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  {t('form.eventsLabel')}
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {DEFAULT_EVENTS.map((event) => (
-                    <button
-                      key={event}
-                      type="button"
-                      onClick={() => toggleEvent(event)}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        formData.events.includes(event)
-                          ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20'
-                          : 'bg-gray-100 text-gray-600 dark:bg-zinc-800'
-                      }`}
-                    >
-                      {event}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">

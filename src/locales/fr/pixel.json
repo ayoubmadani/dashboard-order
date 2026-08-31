@@ -3,6 +3,12 @@
   "subtitle": "Facebook Pixel, TikTok Pixel et plus",
   "addNew": "Ajouter un Pixel",
   "emptyState": "Aucun pixel ajouté pour le moment. Ajoutez un pixel pour suivre les performances de vos publicités.",
+  "noMatchState": "Aucun pixel correspondant",
+  "scopeFilter": {
+    "all": "Tous",
+    "store": "Boutique",
+    "landing_page": "Page d'atterrissage"
+  },
   "noStore": "Aucune boutique sélectionnée",
   "noStorePage": {
     "title": "Aucune boutique sélectionnée",
@@ -44,9 +50,16 @@
     "pixelIdLabel": "ID du Pixel",
     "pixelIdPlaceholder": "ex: 1234567890",
     "pixelIdPlaceholderGoogle": "ex: G-XXXXXXXXXX",
+    "nameLabel": "Nom du pixel (optionnel)",
+    "namePlaceholder": "ex: Pixel campagne principale",
     "accessTokenLabel": "Jeton d'accès (Optionnel)",
     "accessTokenPlaceholder": "Pour l'API de conversion",
     "eventsLabel": "Événements suivis",
+    "scopeLabel": "Où ce pixel s'applique",
+    "scope": {
+      "store": "Boutique",
+      "landing_page": "Page d'atterrissage"
+    },
     "saveChanges": "Enregistrer les modifications",
     "addPixel": "Ajouter le Pixel"
   },

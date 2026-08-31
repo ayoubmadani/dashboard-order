@@ -93,6 +93,65 @@
       "en": "الإنجليزية"
     }
   },
+  "pixels": {
+    "title": "بكسلات الصفحة",
+    "subtitle": "هذه البكسلات تعمل فقط على هذه الصفحة",
+    "addNew": "إضافة بكسل",
+    "emptyState": "لم تتم إضافة أي بكسل لهذه الصفحة بعد",
+    "idLabel": "المعرف (ID)",
+    "confirmDelete": "هل تريد حذف هذا البكسل؟",
+    "errors": {
+      "fetchFailed": "فشل تحميل البكسلات",
+      "saveFailed": "فشل حفظ البكسل",
+      "deleteFailed": "فشل حذف البكسل"
+    },
+    "saveSuccess": "تمت إضافة البكسل",
+    "deleteSuccess": "تم حذف البكسل",
+    "types": {
+      "facebook": "فيسبوك بكسل (Facebook Pixel)",
+      "tiktok": "تيك توك بكسل (TikTok Pixel)",
+      "google": "جوجل أناليتكس (Google Analytics)"
+    },
+    "form": {
+      "typeLabel": "نوع البكسل",
+      "pixelIdLabel": "معرف البكسل (Pixel ID)",
+      "pixelIdPlaceholder": "مثال: 1234567890",
+      "pixelIdPlaceholderGoogle": "مثال: G-XXXXXXXXXX",
+      "nameLabel": "الاسم (اختياري)",
+      "namePlaceholder": "مثال: بكسل صفحة الهبوط",
+      "addPixel": "إضافة البكسل"
+    },
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "confirm": "تأكيد"
+  },
+  "domain": {
+    "title": "دومين الصفحة",
+    "subtitle": "دومين مخصص بالكامل لهذه الصفحة",
+    "selectPlaceholder": "اختر دوميناً",
+    "assign": "ربط الدومين",
+    "unassign": "فك الربط",
+    "assignSuccess": "تم ربط الدومين بهذه الصفحة",
+    "unassignSuccess": "تم فك ربط الدومين",
+    "noAvailableDomains": "لا توجد دومينات متاحة — أضف واحداً من صفحة الدومين أولاً",
+    "goToDomainPage": "الذهاب إلى صفحة الدومين",
+    "addNewDomain": "+ إضافة دومين جديد",
+    "copied": "تم نسخ الرابط",
+    "copy": "نسخ الرابط",
+    "open": "فتح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "statusActive": "نشط",
+    "statusPending": "بانتظار التحقق",
+    "dnsHint": "أضف سجل DNS هذا لدى مزود الدومين الخاص بك",
+    "checkNow": "تحقق الآن",
+    "errors": {
+      "fetchFailed": "فشل تحميل الدومينات",
+      "assignFailed": "فشل ربط الدومين",
+      "unassignFailed": "فشل فك ربط الدومين",
+      "syncFailed": "فشل التحقق من حالة الدومين"
+    }
+  },
   "propsPanel": {
     "title": "خصائص العنصر",
     "empty": "اختر عنصرًا من الصفحة لتعديل خصائصه",

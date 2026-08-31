@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, ArrowRight, Save, Rocket, Loader2, ExternalLink, Circle, Settings2, Blocks, SlidersHorizontal } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Rocket, Loader2, ExternalLink, Circle, Settings2, Blocks, SlidersHorizontal, Radar, Globe } from 'lucide-react';
 
 export default function Topbar({
-  name, dirty, saving, publishing, publishedUrl, onSave, onPublish, onOpenSettings, isRtl, isDemo,
+  name, dirty, saving, publishing, publishedUrl, onSave, onPublish, onOpenSettings, onOpenPixels, onOpenDomain, isRtl, isDemo,
   onOpenMobileSidebar, onOpenMobileProps,
 }) {
   const { t } = useTranslation();
@@ -65,6 +65,26 @@ export default function Topbar({
         >
           <SlidersHorizontal size={17} />
         </button>
+
+        {!isDemo && (
+          <button
+            onClick={onOpenPixels}
+            title={t('editor.pixels.title')}
+            className="p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <Radar size={17} />
+          </button>
+        )}
+
+        {!isDemo && (
+          <button
+            onClick={onOpenDomain}
+            title={t('editor.domain.title')}
+            className="p-2 rounded-lg text-gray-500 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            <Globe size={17} />
+          </button>
+        )}
 
         <button
           onClick={onOpenSettings}

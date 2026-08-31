@@ -93,6 +93,65 @@
       "en": "English"
     }
   },
+  "pixels": {
+    "title": "Page pixels",
+    "subtitle": "These pixels fire only on this page",
+    "addNew": "Add pixel",
+    "emptyState": "No pixels added to this page yet",
+    "idLabel": "ID",
+    "confirmDelete": "Delete this pixel?",
+    "errors": {
+      "fetchFailed": "Failed to load pixels",
+      "saveFailed": "Failed to save pixel",
+      "deleteFailed": "Failed to delete pixel"
+    },
+    "saveSuccess": "Pixel added",
+    "deleteSuccess": "Pixel deleted",
+    "types": {
+      "facebook": "Facebook Pixel",
+      "tiktok": "TikTok Pixel",
+      "google": "Google Analytics"
+    },
+    "form": {
+      "typeLabel": "Pixel type",
+      "pixelIdLabel": "Pixel ID",
+      "pixelIdPlaceholder": "e.g. 1234567890",
+      "pixelIdPlaceholderGoogle": "e.g. G-XXXXXXXXXX",
+      "nameLabel": "Name (optional)",
+      "namePlaceholder": "e.g. Landing pixel",
+      "addPixel": "Add pixel"
+    },
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  },
+  "domain": {
+    "title": "Page domain",
+    "subtitle": "A domain dedicated entirely to this page",
+    "selectPlaceholder": "Select a domain",
+    "assign": "Assign domain",
+    "unassign": "Detach domain",
+    "assignSuccess": "Domain assigned to this page",
+    "unassignSuccess": "Domain detached",
+    "noAvailableDomains": "No available domains — add one on the Domain page first",
+    "goToDomainPage": "Go to Domain page",
+    "addNewDomain": "+ Add a new domain",
+    "copied": "Link copied",
+    "copy": "Copy link",
+    "open": "Open",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "statusActive": "Active",
+    "statusPending": "Pending verification",
+    "dnsHint": "Add this DNS record with your domain provider",
+    "checkNow": "Check now",
+    "errors": {
+      "fetchFailed": "Failed to load domains",
+      "assignFailed": "Failed to assign domain",
+      "unassignFailed": "Failed to detach domain",
+      "syncFailed": "Failed to check domain status"
+    }
+  },
   "propsPanel": {
     "title": "Block properties",
     "empty": "Select a block on the page to edit its properties",

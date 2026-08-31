@@ -25,13 +25,22 @@
   "copy": "Copy",
 
   "domains_title": "Your Domains",
+  "system_domain": "System Domain",
   "status_active": "Connected & Secured",
   "status_pending": "Pending Activation",
   "check_btn": "Verify",
   "checking": "Checking…",
   "delete": "Delete",
   "confirm_delete": "Are you sure you want to delete this domain?",
+  "dedicated_to_page": "Dedicated to a landing page",
 
   "empty_title": "No domains yet",
-  "empty_desc": "Add your first domain above"
+  "empty_desc": "Add your first domain above",
+  "no_match_title": "No matching domains",
+
+  "scope_filter": {
+    "all": "All",
+    "store": "Store",
+    "landing_page": "Landing page"
+  }
 }

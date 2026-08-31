@@ -3,6 +3,12 @@
   "subtitle": "Facebook Pixel, TikTok Pixel and more",
   "addNew": "Add Pixel",
   "emptyState": "No pixels added yet. Add a pixel to track your ad performance.",
+  "noMatchState": "No matching pixels",
+  "scopeFilter": {
+    "all": "All",
+    "store": "Store",
+    "landing_page": "Landing page"
+  },
   "noStore": "No store selected",
   "noStorePage": {
     "title": "No store selected",
@@ -44,9 +50,16 @@
     "pixelIdLabel": "Pixel ID",
     "pixelIdPlaceholder": "e.g., 1234567890",
     "pixelIdPlaceholderGoogle": "e.g., G-XXXXXXXXXX",
+    "nameLabel": "Pixel name (optional)",
+    "namePlaceholder": "e.g., Main campaign pixel",
     "accessTokenLabel": "Access Token (Optional)",
     "accessTokenPlaceholder": "For Conversion API",
     "eventsLabel": "Tracked Events",
+    "scopeLabel": "Where this pixel applies",
+    "scope": {
+      "store": "Store",
+      "landing_page": "Landing page"
+    },
     "saveChanges": "Save Changes",
     "addPixel": "Add Pixel"
   },

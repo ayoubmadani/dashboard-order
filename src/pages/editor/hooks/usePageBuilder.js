@@ -18,6 +18,7 @@ export default function usePageBuilder(pageId) {
   const isDemo = pageId === 'demo';
 
   const [name, setName] = useState('');
+  const [storeId, setStoreId] = useState(null);
   const [productId, setProductId] = useState(null);
   const [domain, setDomain] = useState(null);
   const [settings, setSettings] = useState({});
@@ -54,6 +55,7 @@ export default function usePageBuilder(pageId) {
     try {
       const res = await axios.get(`${baseURL}/builder-pages/${pageId}`, { headers: authHeaders() });
       setName(res.data?.name ?? '');
+      setStoreId(res.data?.storeId ?? null);
       setProductId(res.data?.productId ?? null);
       setDomain(res.data?.domain ?? null);
       setSettings(res.data?.settings && typeof res.data.settings === 'object' ? res.data.settings : {});
@@ -139,6 +141,7 @@ export default function usePageBuilder(pageId) {
 
   return {
     name,
+    storeId,
     productId,
     domain,
     settings,

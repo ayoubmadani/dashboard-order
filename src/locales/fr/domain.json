@@ -25,13 +25,22 @@
   "copy": "Copier",
 
   "domains_title": "Vos domaines",
+  "system_domain": "Domaine système",
   "status_active": "Connecté et sécurisé",
   "status_pending": "En attente d'activation",
   "check_btn": "Vérifier",
   "checking": "Vérification…",
   "delete": "Supprimer",
   "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce domaine ?",
+  "dedicated_to_page": "Dédié à une page d'atterrissage",
 
   "empty_title": "Aucun domaine pour le moment",
-  "empty_desc": "Ajoutez votre premier domaine ci-dessus"
+  "empty_desc": "Ajoutez votre premier domaine ci-dessus",
+  "no_match_title": "Aucun domaine correspondant",
+
+  "scope_filter": {
+    "all": "Tous",
+    "store": "Boutique",
+    "landing_page": "Page d'atterrissage"
+  }
 }

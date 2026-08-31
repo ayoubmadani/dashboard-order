@@ -93,6 +93,65 @@
       "en": "Anglais"
     }
   },
+  "pixels": {
+    "title": "Pixels de la page",
+    "subtitle": "Ces pixels ne s'activent que sur cette page",
+    "addNew": "Ajouter un pixel",
+    "emptyState": "Aucun pixel ajouté à cette page pour le moment",
+    "idLabel": "ID",
+    "confirmDelete": "Supprimer ce pixel ?",
+    "errors": {
+      "fetchFailed": "Échec du chargement des pixels",
+      "saveFailed": "Échec de l'enregistrement du pixel",
+      "deleteFailed": "Échec de la suppression du pixel"
+    },
+    "saveSuccess": "Pixel ajouté",
+    "deleteSuccess": "Pixel supprimé",
+    "types": {
+      "facebook": "Facebook Pixel",
+      "tiktok": "TikTok Pixel",
+      "google": "Google Analytics"
+    },
+    "form": {
+      "typeLabel": "Type de pixel",
+      "pixelIdLabel": "ID du pixel",
+      "pixelIdPlaceholder": "ex: 1234567890",
+      "pixelIdPlaceholderGoogle": "ex: G-XXXXXXXXXX",
+      "nameLabel": "Nom (optionnel)",
+      "namePlaceholder": "ex: Pixel page d'atterrissage",
+      "addPixel": "Ajouter le pixel"
+    },
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer"
+  },
+  "domain": {
+    "title": "Domaine de la page",
+    "subtitle": "Un domaine entièrement dédié à cette page",
+    "selectPlaceholder": "Sélectionner un domaine",
+    "assign": "Associer le domaine",
+    "unassign": "Détacher le domaine",
+    "assignSuccess": "Domaine associé à cette page",
+    "unassignSuccess": "Domaine détaché",
+    "noAvailableDomains": "Aucun domaine disponible — ajoutez-en un sur la page Domaine d'abord",
+    "goToDomainPage": "Aller à la page Domaine",
+    "addNewDomain": "+ Ajouter un nouveau domaine",
+    "copied": "Lien copié",
+    "copy": "Copier le lien",
+    "open": "Ouvrir",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "statusActive": "Actif",
+    "statusPending": "En attente de vérification",
+    "dnsHint": "Ajoutez cet enregistrement DNS chez votre fournisseur de domaine",
+    "checkNow": "Vérifier maintenant",
+    "errors": {
+      "fetchFailed": "Échec du chargement des domaines",
+      "assignFailed": "Échec de l'association du domaine",
+      "unassignFailed": "Échec du détachement du domaine",
+      "syncFailed": "Échec de la vérification du statut du domaine"
+    }
+  },
   "propsPanel": {
     "title": "Propriétés du bloc",
     "empty": "Sélectionnez un bloc sur la page pour modifier ses propriétés",
