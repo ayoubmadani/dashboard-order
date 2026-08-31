@@ -315,7 +315,7 @@ const grossRevenue = delivered.reduce((s, o) => {
       if (!map[id]) map[id] = {
         id,
         name:   o.product?.name || t('products.unknown'),
-        image:  o.product?.productImage || o.product?.imagesProduct?.[0]?.url,
+        image:  o.product?.imagesProduct?.[0]?.imageUrl,
         orders: 0, revenue: 0,
       };
       map[id].orders++;

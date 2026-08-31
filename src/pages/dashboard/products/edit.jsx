@@ -229,8 +229,6 @@ export default function EditProduct() {
 
         if (Array.isArray(product.imagesProduct) && product.imagesProduct.length > 0) {
           setImages(product.imagesProduct.map(img => img.imageUrl || img.url).filter(Boolean));
-        } else if (product.productImage) {
-          setImages([product.productImage]);
         } else if (Array.isArray(product.images)) {
           setImages(product.images);
         }

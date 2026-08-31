@@ -81,8 +81,8 @@ function ProductPicker({ selectedProductId, onSelect }) {
                 }`}
               >
                 <div className="w-9 h-9 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
-                  {product.productImage ? (
-                    <img src={product.productImage} alt="" className="w-full h-full object-cover" />
+                  {product.imagesProduct?.[0]?.imageUrl ? (
+                    <img src={product.imagesProduct[0].imageUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <Package size={14} className="text-gray-400" />
                   )}
@@ -515,8 +515,8 @@ export default function PagesList() {
                   className="w-full flex items-center gap-2.5 p-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
                 >
                   <div className="w-8 h-8 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-700 shrink-0 flex items-center justify-center">
-                    {selectedProduct.productImage ? (
-                      <img src={selectedProduct.productImage} alt="" className="w-full h-full object-cover" />
+                    {selectedProduct.imagesProduct?.[0]?.imageUrl ? (
+                      <img src={selectedProduct.imagesProduct[0].imageUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
                       <Package size={14} className="text-gray-400" />
                     )}

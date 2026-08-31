@@ -474,7 +474,7 @@ const Products = () => {
                         <div className="flex items-center gap-3">
                           <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 border border-gray-100 dark:border-zinc-700">
                             <img
-                              src={product.productImage || product.imagesProduct?.[0]?.imageUrl || '/placeholder-product.png'}
+                              src={product.imagesProduct?.[0]?.imageUrl || '/placeholder-product.png'}
                               alt={product.name}
                               className="w-full h-full object-cover"
                               onError={(e) => { e.target.src = '/placeholder-product.png'; }}

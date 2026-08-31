@@ -311,7 +311,7 @@ export default function Dashboard() {
       const id = o.productId;
       if (!map[id]) map[id] = {
         id, name: o.product?.name || t('unknown_product'),
-        image: o.product?.productImage || o.product?.imagesProduct?.[0]?.url,
+        image: o.product?.imagesProduct?.[0]?.imageUrl,
         count: 0, revenue: 0,
       };
       map[id].count++;

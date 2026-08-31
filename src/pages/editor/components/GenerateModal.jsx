@@ -72,8 +72,8 @@ function ProductPicker({ selectedProductId, onSelect }) {
                 }`}
               >
                 <div className="w-9 h-9 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
-                  {product.productImage ? (
-                    <img src={product.productImage} alt="" className="w-full h-full object-cover" />
+                  {product.imagesProduct?.[0]?.imageUrl ? (
+                    <img src={product.imagesProduct[0].imageUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <Package size={14} className="text-gray-400" />
                   )}
