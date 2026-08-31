@@ -560,7 +560,7 @@ const Products = () => {
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-center gap-1">
                           <Link
-                            to={`/dashboard/products/${product.slug || product.id}`}
+                            to={`/dashboard/products/${product.id}`}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"
                           >
                             <Eye size={15} />

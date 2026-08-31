@@ -86,7 +86,10 @@
     "unsaved_changes": "لديك تغييرات غير محفوظة. هل تريد المغادرة؟",
     "select_product_title": "المنتجات",
     "search_placeholder": "بحث...",
-    "no_products": "لا توجد منتجات"
+    "no_products": "لا توجد منتجات",
+    "free_shipping_badge": "توصيل مجاني",
+    "free_shipping_reached": "هذا الطلب مؤهل لتوصيل مجاني",
+    "free_shipping_remaining": "أضف {{amount}} أخرى ليصبح التوصيل مجانياً"
   },
   "export": {
     "customer_name": "اسم العميل",

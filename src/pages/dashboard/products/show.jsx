@@ -756,7 +756,7 @@ const ProductShow = () => {
                                                                         {/* مؤشر الاختيار */}
                                                                         {selectedVariant?.id === variant.id && (
                                                                             <div className="absolute -top-2 -left-2 bg-indigo-600 text-white rounded-full p-1 shadow-lg border-2 border-white dark:border-zinc-900">
-                                                                                <Check size={12} strokeWidth={4} />
+                                                                                <CheckCircle2 size={12} strokeWidth={4} />
                                                                             </div>
                                                                         )}
                                                                     </div>

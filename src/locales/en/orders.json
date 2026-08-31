@@ -86,7 +86,10 @@
     "unsaved_changes": "You have unsaved changes. Do you want to leave?",
     "select_product_title": "Products",
     "search_placeholder": "Search...",
-    "no_products": "No products found"
+    "no_products": "No products found",
+    "free_shipping_badge": "Free Delivery",
+    "free_shipping_reached": "This order qualifies for free delivery",
+    "free_shipping_remaining": "Add {{amount}} more to unlock free delivery"
   },
   "export": {
     "customer_name": "Customer Name",

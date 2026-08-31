@@ -67,6 +67,29 @@ function findVariantForAttrSelection(variants, currentAttrs, key, newValue) {
   return (variants || []).find(v => Array.isArray(v.name) && v.name.some(a => attrKey(a) === key && a.value === newValue)) || null;
 }
 
+// أولوية الفحص: offer.shippingFree > product.shippingFree > عتبة store (نفس منطق §19 في ثيمات المتجر)
+function isItemFreeShipping(item) {
+  return !!(item?.offer?.shippingFree || item?.product?.shippingFree);
+}
+
+function getItemsTotal(items) {
+  return (items || []).reduce((s, it) => s + (parseFloat(it.finalPrice || 0) * (it.quantity || 1)), 0);
+}
+
+// خلفية/لون صريحان على <option> — color-scheme لوحده غير كافٍ لضمان تباين مقروء
+// داخل نافذة popup الأصلية على بعض المتصفحات/الأنظمة (خصوصاً Linux/GTK)
+const OPTION_CLS = 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white';
+
+function getOrderFreeShipping(cart) {
+  if (!cart) return false;
+  if ((cart.items || []).some(isItemFreeShipping)) return true;
+  const store = cart.store;
+  if (store?.supportFreeShipping && store?.freeShippingMinAmount != null) {
+    return getItemsTotal(cart.items) >= parseFloat(store.freeShippingMinAmount);
+  }
+  return false;
+}
+
 export default function OrderEditPage() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
@@ -380,12 +403,15 @@ export default function OrderEditPage() {
   };
 
   const calculateTotals = () => {
-    if (!editedCart) return { items: 0, shipping: 0, total: 0 };
-    const itemsTotal = editedCart.items.reduce((s, it) => s + (it.finalPrice * it.quantity), 0);
+    if (!editedCart) return { items: 0, shipping: 0, total: 0, freeShipping: false };
+    const itemsTotal = getItemsTotal(editedCart.items);
+    const freeShipping = getOrderFreeShipping(editedCart);
+    const shipping = freeShipping ? 0 : parseFloat(editedCart.priceShip || 0);
     return {
       items: itemsTotal,
-      shipping: parseFloat(editedCart.priceShip || 0),
-      total: itemsTotal + parseFloat(editedCart.priceShip || 0)
+      shipping,
+      total: itemsTotal + shipping,
+      freeShipping,
     };
   };
 
@@ -395,6 +421,10 @@ export default function OrderEditPage() {
 
     !isDelete && setSaving(true);
     try {
+      const finalPriceShip = getOrderFreeShipping({ ...editedCart, items: itemsToSave })
+        ? 0
+        : parseFloat(editedCart.priceShip || 0);
+
       const dtos = itemsToSave.map((item) => ({
         customerName: editedCart.customerName,
         customerPhone: editedCart.customerPhone,
@@ -402,7 +432,7 @@ export default function OrderEditPage() {
         customerCommuneId: editedCart.customerCommuneId,
         status: editedCart.status,
         typeShip: editedCart.typeShip,
-        priceShip: editedCart.priceShip,
+        priceShip: finalPriceShip,
 
         productId: item.productId,
         quantity: item.quantity,
@@ -475,6 +505,10 @@ export default function OrderEditPage() {
   }));
 
   const totals = calculateTotals();
+  const freeShippingMin = editedCart.store?.supportFreeShipping ? editedCart.store?.freeShippingMinAmount : null;
+  const freeShippingRemaining = (!totals.freeShipping && freeShippingMin != null)
+    ? Math.max(0, parseFloat(freeShippingMin) - totals.items)
+    : 0;
   const statusMeta = STATUS_META[editedCart.status] || STATUS_META.pending;
   const shortId = (editedCart.cartId || editedCart.id || '').split('-')[0].toUpperCase();
 
@@ -507,16 +541,16 @@ export default function OrderEditPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.wilaya')}</label>
-                      <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none">
-                        <option value="">{t('edit.select_wilaya')}</option>
-                        {wilayasData.map(w => <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>)}
+                      <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none dark:[color-scheme:dark]">
+                        <option value="" className={OPTION_CLS}>{t('edit.select_wilaya')}</option>
+                        {wilayasData.map(w => <option key={w.id} value={w.id} className={OPTION_CLS}>{w.id} - {w.ar_name}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.commune')}</label>
-                      <select value={editedCart.customerCommuneId || ''} onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))} disabled={!communes.length} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none disabled:opacity-50">
-                        <option value="">{t('edit.select_commune')}</option>
-                        {communes.map(c => <option key={c.id} value={c.id}>{c.ar_name}</option>)}
+                      <select value={editedCart.customerCommuneId || ''} onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))} disabled={!communes.length} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none disabled:opacity-50 dark:[color-scheme:dark]">
+                        <option value="" className={OPTION_CLS}>{t('edit.select_commune')}</option>
+                        {communes.map(c => <option key={c.id} value={c.id} className={OPTION_CLS}>{c.ar_name}</option>)}
                       </select>
                     </div>
                   </div>
@@ -534,8 +568,8 @@ export default function OrderEditPage() {
                     </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.status_label')}</label>
-                      <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
-                        {statusOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                      <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none dark:[color-scheme:dark]" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
+                        {statusOptions.map(o => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label}</option>)}
                       </select>
                     </div>
                   </div>
@@ -583,13 +617,18 @@ export default function OrderEditPage() {
                               </button>
                             </div>
 
-                            <div className="flex items-baseline gap-2">
+                            <div className="flex items-center flex-wrap gap-2">
                               <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                                 {parseFloat(item.finalPrice || 0).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
                               </span>
                               {item.quantity > 1 && (
                                 <span className="text-xs text-gray-400 line-through">
                                   {parseFloat(item.itemTotal || 0).toLocaleString()} DA
+                                </span>
+                              )}
+                              {isItemFreeShipping(item) && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                  🚚 {t('edit.free_shipping_badge')}
                                 </span>
                               )}
                             </div>
@@ -620,10 +659,10 @@ export default function OrderEditPage() {
                                 <select
                                   value={item.offerId || ''}
                                   onChange={e => handleItemChange(item.id, 'offerId', e.target.value)}
-                                  className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-2 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 focus:ring-2 focus:ring-amber-500/20 outline-none appearance-none"
+                                  className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-2 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 focus:ring-2 focus:ring-amber-500/20 outline-none appearance-none dark:[color-scheme:dark]"
                                 >
-                                  <option value="">{t('edit.offer_none')}</option>
-                                  {pOpts.offers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                                  <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
+                                  {pOpts.offers.map(o => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
                                 </select>
                               </div>
                             )}
@@ -671,11 +710,11 @@ export default function OrderEditPage() {
                                       <select
                                         value={selectedValue}
                                         onChange={e => handleVariantAttrChange(item, group.key, e.target.value)}
-                                        className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all"
+                                        className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:[color-scheme:dark]"
                                       >
-                                        {!selectedValue && <option value="" disabled>{t('edit.choose_attr', { attr: attrLabel })}</option>}
+                                        {!selectedValue && <option value="" disabled className={OPTION_CLS}>{t('edit.choose_attr', { attr: attrLabel })}</option>}
                                         {group.options.map(o => (
-                                          <option key={o.value} value={o.value}>{o.value}</option>
+                                          <option key={o.value} value={o.value} className={OPTION_CLS}>{o.value}</option>
                                         ))}
                                       </select>
                                     )}
@@ -732,9 +771,26 @@ export default function OrderEditPage() {
                   <div className="p-6 space-y-4">
                     <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.items_count')}</span><span className="font-semibold">{editedCart.items.length}</span></div>
                     <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.items_total')}</span><span className="font-semibold">{parseFloat(totals.items).toLocaleString()} DA</span></div>
-                    <div className="flex justify-between text-sm"><span className="text-gray-500">{t('edit.shipping_cost')}</span><span className="font-semibold">{parseFloat(totals.shipping).toLocaleString()} DA</span></div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">{t('edit.shipping_cost')}</span>
+                      {totals.freeShipping ? (
+                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">🚚 {t('edit.free_shipping_badge')}</span>
+                      ) : (
+                        <span className="font-semibold">{parseFloat(totals.shipping).toLocaleString()} DA</span>
+                      )}
+                    </div>
                     <div className="h-px bg-gray-200" />
                     <div className="flex justify-between"><span className="text-sm font-bold uppercase">{t('edit.total')}</span><span className="text-2xl font-black text-emerald-600">{parseFloat(totals.total).toLocaleString()} DA</span></div>
+
+                    {totals.freeShipping ? (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
+                        🎉 {t('edit.free_shipping_reached')}
+                      </div>
+                    ) : (freeShippingRemaining > 0 && (
+                      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                        {t('edit.free_shipping_remaining', { amount: `${parseFloat(freeShippingRemaining).toLocaleString()} DA` })}
+                      </div>
+                    ))}
                   </div>
                 </div>
 
