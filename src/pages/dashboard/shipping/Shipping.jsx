@@ -6,7 +6,7 @@ import {
   CheckCircle2, XCircle, RotateCcw,
   Truck, Star, ShieldX, Settings2,
   Pencil, Eye, EyeOff, Shield, ShieldCheck, X,
-  Download,
+  Download, Copy, Trash2, AlertCircle, MapPin,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -69,7 +69,7 @@ function EmptyState({ onInitialize, isLoading }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   return (
     <tr>
-      <td colSpan={6}>
+      <td colSpan={7}>
         <div className="flex flex-col items-center justify-center py-24 gap-5 text-center">
           <div className="relative">
             <div className="w-24 h-24 rounded-3xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shadow-inner">
@@ -100,7 +100,7 @@ function EmptyState({ onInitialize, isLoading }) {
 // ─────────────────────────────────────────────
 //  Sub-component: wilaya row
 // ─────────────────────────────────────────────
-function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, saveLoading }) {
+function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, onDelete, toggleLoading, saveLoading, isSelected, onToggleSelect }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const isSaving   = saveLoading  === wilaya.id;
   const isToggling = toggleLoading === wilaya.id;
@@ -113,6 +113,14 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, sav
 
   return (
     <tr className="group border-t border-gray-100 dark:border-zinc-800 hover:bg-gray-50/60 dark:hover:bg-zinc-800/40 transition-colors">
+      <td className="px-4 py-3 w-10">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={() => onToggleSelect(wilaya.id)}
+          className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+        />
+      </td>
       <td className="px-5 py-3">
         <div className="flex items-center gap-3">
           <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-xs font-black shrink-0">
@@ -134,26 +142,245 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, toggleLoading, sav
         <StatusToggle isActive={wilaya.isActive} onToggle={() => onToggle(wilaya.id)} loading={isToggling} />
       </td>
       <td className="px-4 py-3 text-center">
-        {isEditing ? (
+        <div className="flex items-center justify-center gap-1.5">
+          {isEditing ? (
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              {t('save_row')}
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsEditing(true)}
+              title={t('edit_row')}
+              className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 transition-all active:scale-95"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-semibold transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={() => onDelete(wilaya)}
+            title={t('delete_row')}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all active:scale-95"
           >
-            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            {t('save_row')}
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
-        ) : (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-all active:scale-95"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            {t('edit_row')}
-          </button>
-        )}
+        </div>
       </td>
     </tr>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: delete confirmation modal (single wilaya or a selected group)
+// ─────────────────────────────────────────────
+function DeleteConfirmModal({ names, isRtl, isDeleting, onConfirm, onClose }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="relative z-10 w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden"
+      >
+        <div className="p-5 flex flex-col items-center text-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 text-rose-500" />
+          </div>
+          <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('delete_confirm_title')}</h2>
+          <p className="text-xs text-gray-500 dark:text-zinc-400">
+            {names.length === 1
+              ? t('delete_confirm_single', { name: names[0] })
+              : t('delete_confirm_bulk', { count: names.length })}
+          </p>
+        </div>
+        <div className="flex gap-2 px-5 pb-5">
+          <button
+            onClick={onClose}
+            disabled={isDeleting}
+            className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+          >
+            {t('delete_cancel_btn')}
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isDeleting}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
+          >
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            {t('delete_confirm_btn')}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+//  Sub-component: add-missing-wilayas modal
+//  يجلب قائمة كل الولايات، يحسب الناقصة منها محلياً، ويترك الأدمن يختار أيها يضيف
+// ─────────────────────────────────────────────
+function AddMissingWilayasModal({ headers, isRtl, existingIds, onClose, onAdded }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [missing, setMissing] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/shipping/wilayas`)
+      .then(({ data }) => {
+        const missingWilayas = (data || []).filter(w => !existingIds.has(w.id));
+        setMissing(missingWilayas);
+        setSelectedIds(new Set(missingWilayas.map(w => w.id)));
+      })
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const filteredMissing = missing.filter(
+    w => w.name.includes(searchQuery) || (w.ar_name ?? '').includes(searchQuery) || String(w.id).includes(searchQuery)
+  );
+
+  const toggleOne = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    setSelectedIds(prev => {
+      const allSelected = filteredMissing.length > 0 && filteredMissing.every(w => prev.has(w.id));
+      return allSelected ? new Set() : new Set(filteredMissing.map(w => w.id));
+    });
+  };
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      const { data } = await axios.post(
+        `${baseURL}/shipping/add-missing-shipping`,
+        { wilayaIds: Array.from(selectedIds) },
+        headers,
+      );
+      onAdded(data.wilayas, data.added);
+      onClose();
+    } catch (e) {
+      console.error(e);
+      setError(t('missingModal.submit_error'));
+    } finally { setIsSubmitting(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div
+        dir={isRtl ? 'rtl' : 'ltr'}
+        className="relative z-10 w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[85vh] flex flex-col"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('missingModal.title')}</h2>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('missingModal.subtitle')}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-5 mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 text-xs font-semibold">
+            <ShieldX className="w-4 h-4 shrink-0" /> {error}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
+          </div>
+        ) : missing.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-14 gap-3 text-center px-4">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            </div>
+            <p className="text-sm font-bold text-gray-700 dark:text-white">{t('missingModal.none_title')}</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">{t('missingModal.none_hint')}</p>
+          </div>
+        ) : (
+          <>
+            {/* Search + select all */}
+            <div className="px-5 pt-4 flex flex-col gap-3">
+              <div className="relative">
+                <Search className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-zinc-500 pointer-events-none ${isRtl ? 'right-3.5' : 'left-3.5'}`} />
+                <input
+                  type="text"
+                  placeholder={t('search_placeholder')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 rounded-xl py-2.5 ${isRtl ? 'pr-10 pl-3' : 'pl-10 pr-3'} outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-300 dark:focus:border-indigo-600 dark:text-white text-sm font-medium placeholder:text-gray-400 dark:placeholder:text-zinc-600 transition-all`}
+                />
+              </div>
+              <label className="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-zinc-400 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={filteredMissing.length > 0 && filteredMissing.every(w => selectedIds.has(w.id))}
+                  onChange={toggleAll}
+                  className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                />
+                {t('missingModal.select_all')}
+              </label>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-1.5">
+              {filteredMissing.map(wilaya => (
+                <label
+                  key={wilaya.id}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60 transition-all cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(wilaya.id)}
+                    onChange={() => toggleOne(wilaya.id)}
+                    className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <span className="w-7 h-7 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-black shrink-0">
+                    {wilaya.id}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-zinc-200">{wilaya.name}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-gray-100 dark:border-zinc-800">
+              <button
+                onClick={handleSubmit}
+                disabled={selectedIds.size === 0 || isSubmitting}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-md shadow-indigo-500/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {t('missingModal.add_btn', { count: selectedIds.size })}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -657,7 +884,15 @@ export default function Shipping() {
   const [toast,            setToast]            = useState(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showRatesModal,   setShowRatesModal]   = useState(false);
+  const [showMissingModal, setShowMissingModal] = useState(false);
   const [providerSettings, setProviderSettings] = useState(null);
+  const [bulkHome,         setBulkHome]         = useState('');
+  const [bulkOffice,       setBulkOffice]       = useState('');
+  const [bulkReturn,       setBulkReturn]       = useState('');
+  const [selectedIds,      setSelectedIds]      = useState(new Set());
+  const [deleteTarget,     setDeleteTarget]     = useState(null);
+  const [isDeleting,       setIsDeleting]       = useState(false);
+  const [isBulkToggling,   setIsBulkToggling]   = useState(false);
 
   const showToast = (type, msg) => {
     setToast({ type, msg });
@@ -708,6 +943,11 @@ export default function Shipping() {
         showToast('error', t('toast.init_error'));
       }
     } finally { setIsInitializing(false); }
+  };
+
+  const handleMissingAdded = (newWilayas, addedCount) => {
+    setWilayas(newWilayas);
+    showToast('success', t('toast.add_missing_success', { count: addedCount }));
   };
 
   const handleSaveRow = async (wilaya) => {
@@ -772,6 +1012,82 @@ export default function Shipping() {
     w => w.name.includes(searchQuery) || String(w.code ?? w.id).includes(searchQuery)
   );
 
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds(prev => {
+      const allSelected = filteredWilayas.length > 0 && filteredWilayas.every(w => prev.has(w.id));
+      return allSelected ? new Set() : new Set(filteredWilayas.map(w => w.id));
+    });
+  };
+
+  const requestDeleteRow = (wilaya) => setDeleteTarget({ ids: [wilaya.id], names: [wilaya.name] });
+
+  const requestDeleteSelected = () => {
+    const names = wilayas.filter(w => selectedIds.has(w.id)).map(w => w.name);
+    setDeleteTarget({ ids: Array.from(selectedIds), names });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await axios.post(`${baseURL}/shipping/delete-shipping`, { wilayaIds: deleteTarget.ids }, headers);
+      setWilayas(prev => prev.filter(w => !deleteTarget.ids.includes(w.id)));
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        deleteTarget.ids.forEach(id => next.delete(id));
+        return next;
+      });
+      showToast('success', t('toast.delete_success', { count: deleteTarget.ids.length }));
+      setDeleteTarget(null);
+    } catch { showToast('error', t('toast.delete_error')); }
+    finally { setIsDeleting(false); }
+  };
+
+  const setSelectedActive = async (isActive) => {
+    const ids = Array.from(selectedIds);
+    setIsBulkToggling(true);
+    try {
+      await axios.post(
+        `${baseURL}/shipping/update-shipping`,
+        ids.map(id => ({ wilayaId: id, isActive })),
+        headers,
+      );
+      setWilayas(prev => prev.map(w => (ids.includes(w.id) ? { ...w, isActive } : w)));
+      showToast('success', t(isActive ? 'toast.activate_selected_success' : 'toast.deactivate_selected_success', { count: ids.length }));
+    } catch { showToast('error', t(isActive ? 'toast.activate_selected_error' : 'toast.deactivate_selected_error')); }
+    finally { setIsBulkToggling(false); }
+  };
+
+  const applyBulkPrices = () => {
+    if (bulkHome === '' && bulkOffice === '' && bulkReturn === '') {
+      showToast('error', t('bulk.apply_empty'));
+      return;
+    }
+    const targetIds = new Set(filteredWilayas.map(w => w.id));
+    setWilayas(prev => prev.map(w => (
+      targetIds.has(w.id)
+        ? {
+            ...w,
+            livraisonHome:   bulkHome   !== '' ? bulkHome   : w.livraisonHome,
+            livraisonOfice:  bulkOffice !== '' ? bulkOffice : w.livraisonOfice,
+            livraisonReturn: bulkReturn !== '' ? bulkReturn : w.livraisonReturn,
+          }
+        : w
+    )));
+    setBulkHome('');
+    setBulkOffice('');
+    setBulkReturn('');
+    showToast('success', t('bulk.apply_success', { count: targetIds.size }));
+  };
+
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 p-4 md:p-8 font-sans">
 
@@ -794,6 +1110,28 @@ export default function Shipping() {
           isRtl={isRtl}
           onClose={() => setShowRatesModal(false)}
           onApplied={(rates, account) => { handleRatesApplied(rates, account); loadProviderSettings(); }}
+        />
+      )}
+
+      {/* ── Add missing wilayas modal ── */}
+      {showMissingModal && (
+        <AddMissingWilayasModal
+          headers={headers}
+          isRtl={isRtl}
+          existingIds={new Set(wilayas.map(w => w.id))}
+          onClose={() => setShowMissingModal(false)}
+          onAdded={handleMissingAdded}
+        />
+      )}
+
+      {/* ── Delete confirmation modal ── */}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          names={deleteTarget.names}
+          isRtl={isRtl}
+          isDeleting={isDeleting}
+          onConfirm={confirmDelete}
+          onClose={() => setDeleteTarget(null)}
         />
       )}
 
@@ -823,6 +1161,16 @@ export default function Shipping() {
             >
               <Download className="w-4 h-4" />
               {t('fetchRates.button')}
+            </button>
+          )}
+
+          {wilayas.length > 0 && (
+            <button
+              onClick={() => setShowMissingModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-semibold text-gray-600 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 shadow-sm transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              {t('add_missing_btn')}
             </button>
           )}
 
@@ -881,12 +1229,98 @@ export default function Shipping() {
         </button>
       </div>
 
+      {/* ── Bulk price bar ── */}
+      {wilayas.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3 mb-5 p-4 bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 rounded-2xl shadow-sm">
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-800 dark:text-white">{t('bulk.title')}</p>
+            <p className="text-xs text-gray-400 dark:text-zinc-500">{t('bulk.subtitle')}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2 w-full sm:w-auto">
+            <input
+              type="number" min="0" dir="ltr"
+              value={bulkHome}
+              onChange={(e) => setBulkHome(e.target.value)}
+              placeholder={t('bulk.home_placeholder')}
+              className="w-full sm:w-28 border rounded-xl py-2 px-3 text-sm font-bold outline-none bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0"
+            />
+            <input
+              type="number" min="0" dir="ltr"
+              value={bulkOffice}
+              onChange={(e) => setBulkOffice(e.target.value)}
+              placeholder={t('bulk.office_placeholder')}
+              className="w-full sm:w-28 border rounded-xl py-2 px-3 text-sm font-bold outline-none bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0"
+            />
+            <input
+              type="number" min="0" dir="ltr"
+              value={bulkReturn}
+              onChange={(e) => setBulkReturn(e.target.value)}
+              placeholder={t('bulk.return_placeholder')}
+              className="w-full sm:w-28 border rounded-xl py-2 px-3 text-sm font-bold outline-none bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0"
+            />
+          </div>
+          <button
+            onClick={applyBulkPrices}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-md shadow-indigo-500/20 transition-all active:scale-95 shrink-0"
+          >
+            <Copy className="w-4 h-4" />
+            {t('bulk.apply_btn', { count: filteredWilayas.length })}
+          </button>
+        </div>
+      )}
+
+      {/* ── Selection toolbar ── */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between gap-3 mb-5 px-5 py-3 bg-indigo-50/60 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/30 rounded-2xl">
+          <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400">{t('selected_count', { count: selectedIds.size })}</p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 transition-colors"
+            >
+              {t('clear_selection')}
+            </button>
+            <button
+              onClick={() => setSelectedActive(true)}
+              disabled={isBulkToggling}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-60"
+            >
+              {isBulkToggling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+              {t('activate_selected')}
+            </button>
+            <button
+              onClick={() => setSelectedActive(false)}
+              disabled={isBulkToggling}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-60"
+            >
+              {isBulkToggling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <EyeOff className="w-3.5 h-3.5" />}
+              {t('deactivate_selected')}
+            </button>
+            <button
+              onClick={requestDeleteSelected}
+              className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {t('delete_selected')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Table card ── */}
       <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50/80 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={filteredWilayas.length > 0 && filteredWilayas.every(w => selectedIds.has(w.id))}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded border-gray-300 dark:border-zinc-600 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                </th>
                 <th className="px-5 py-3 text-start text-xs font-bold text-gray-500 dark:text-zinc-400 uppercase tracking-wider">{t('col_state')}</th>
                 <th className="px-4 py-3 text-start text-xs font-bold text-indigo-500 uppercase tracking-wider">
                   <div className="flex items-center gap-1.5"><Home className="w-3.5 h-3.5" />{t('col_home')}</div>
@@ -906,7 +1340,7 @@ export default function Shipping() {
                 <EmptyState onInitialize={handleCreateAll} isLoading={isInitializing} />
               ) : filteredWilayas.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center text-gray-400 dark:text-zinc-600 text-sm font-medium">{t('no_results')}</td>
+                  <td colSpan={7} className="py-16 text-center text-gray-400 dark:text-zinc-600 text-sm font-medium">{t('no_results')}</td>
                 </tr>
               ) : filteredWilayas.map(wilaya => (
                 <WilayaRow
@@ -915,8 +1349,11 @@ export default function Shipping() {
                   onPriceChange={handlePriceChange}
                   onToggle={toggleStatus}
                   onSave={handleSaveRow}
+                  onDelete={requestDeleteRow}
                   toggleLoading={toggleLoading}
                   saveLoading={saveLoading}
+                  isSelected={selectedIds.has(wilaya.id)}
+                  onToggleSelect={toggleSelect}
                 />
               ))}
             </tbody>

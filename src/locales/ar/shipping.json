@@ -14,8 +14,21 @@
 
   "save_row": "حفظ",
   "edit_row": "تعديل",
+  "delete_row": "حذف",
   "save_all": "حفظ كافة التغييرات",
   "bulk_save": "حفظ جماعي",
+
+  "selected_count": "{{count}} ولاية محددة",
+  "clear_selection": "إلغاء التحديد",
+  "delete_selected": "حذف المحدد",
+  "activate_selected": "تفعيل المحدد",
+  "deactivate_selected": "إيقاف المحدد",
+  "delete_confirm_title": "تأكيد الحذف",
+  "delete_confirm_single": "هل تريد حذف \"{{name}}\" من قائمة الولايات؟ ستختفي من صفحة الشحن في متجرك.",
+  "delete_confirm_bulk": "هل تريد حذف {{count}} ولاية من القائمة؟ ستختفي من صفحة الشحن في متجرك.",
+  "delete_confirm_btn": "حذف",
+  "delete_cancel_btn": "إلغاء",
+  "add_missing_btn": "إضافة الولايات غير الموجودة",
 
   "note": "ملاحظة: هذه الأسعار تظهر للزبائن عند اختيار الولاية في المتجر.",
   "count": "{{filtered}} من {{total}} ولاية",
@@ -37,7 +50,14 @@
     "save_error": "فشل حفظ {{name}}",
     "save_all_success": "تم حفظ كافة التغييرات بنجاح",
     "save_all_error": "فشل في حفظ التغييرات",
-    "toggle_error": "فشل في تغيير حالة الولاية"
+    "toggle_error": "فشل في تغيير حالة الولاية",
+    "delete_success": "تم حذف {{count}} ولاية بنجاح",
+    "delete_error": "فشل حذف الولايات المحددة",
+    "add_missing_success": "تمت إضافة {{count}} ولاية بنجاح",
+    "activate_selected_success": "تم تفعيل {{count}} ولاية",
+    "activate_selected_error": "فشل في تفعيل الولايات المحددة",
+    "deactivate_selected_success": "تم إيقاف {{count}} ولاية",
+    "deactivate_selected_error": "فشل في إيقاف الولايات المحددة"
   },
 
   "provider": {
@@ -71,6 +91,17 @@
     "save_button": "حفظ التعديلات"
   },
 
+  "bulk": {
+    "title": "تحديث جماعي",
+    "subtitle": "عيّن سعراً واحداً لكل الولايات المعروضة دفعة واحدة، ثم اضغط حفظ",
+    "home_placeholder": "سعر المنزل",
+    "office_placeholder": "سعر المكتب",
+    "return_placeholder": "سعر الإرجاع",
+    "apply_btn": "تطبيق على {{count}} ولاية",
+    "apply_success": "تم تطبيق السعر على {{count}} ولاية، يرجى الحفظ",
+    "apply_empty": "أدخل سعراً واحداً على الأقل"
+  },
+
   "fetchRates": {
     "button": "جلب أسعار شركة التوصيل",
     "subtitle": "اختر شركة توصيل لجلب أسعارها وتعديلها في الجدول",
@@ -78,5 +109,15 @@
     "fetch_error": "تعذّر جلب الأسعار من هذه الشركة. تأكد من صحة بيانات الاعتماد أو أن الشركة تدعم جلب الأسعار.",
     "applied_success": "تم جلب أسعار {{count}} ولاية من {{account}}، يرجى المراجعة قبل الحفظ",
     "applied_none": "لم يتم العثور على أسعار قابلة للقراءة من {{account}}"
+  },
+
+  "missingModal": {
+    "title": "الولايات غير الموجودة",
+    "subtitle": "اختر الولايات التي تريد إضافتها إلى القائمة بأسعار افتراضية",
+    "select_all": "تحديد الكل",
+    "add_btn": "إضافة {{count}} ولاية",
+    "none_title": "لا توجد ولايات مفقودة",
+    "none_hint": "كل الولايات موجودة بالفعل في قائمتك",
+    "submit_error": "فشل في إضافة الولايات المحددة"
   }
 }

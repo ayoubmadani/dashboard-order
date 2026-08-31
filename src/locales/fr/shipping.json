@@ -14,8 +14,21 @@
 
   "save_row": "Enregistrer",
   "edit_row": "Modifier",
+  "delete_row": "Supprimer",
   "save_all": "Enregistrer toutes les modifications",
   "bulk_save": "Enregistrement groupé",
+
+  "selected_count": "{{count}} wilayas sélectionnées",
+  "clear_selection": "Annuler la sélection",
+  "delete_selected": "Supprimer la sélection",
+  "activate_selected": "Activer la sélection",
+  "deactivate_selected": "Désactiver la sélection",
+  "delete_confirm_title": "Confirmer la suppression",
+  "delete_confirm_single": "Supprimer \"{{name}}\" de la liste des wilayas ? Elle disparaîtra de la page de livraison de votre boutique.",
+  "delete_confirm_bulk": "Supprimer {{count}} wilayas de la liste ? Elles disparaîtront de la page de livraison de votre boutique.",
+  "delete_confirm_btn": "Supprimer",
+  "delete_cancel_btn": "Annuler",
+  "add_missing_btn": "Ajouter les wilayas manquantes",
 
   "note": "Note: Ces tarifs seront affichés aux clients lors du choix de la wilaya sur la boutique.",
   "count": "{{filtered}} sur {{total}} wilayas",
@@ -37,7 +50,14 @@
     "save_error": "Échec de l'enregistrement de {{name}}",
     "save_all_success": "Toutes les modifications ont été enregistrées",
     "save_all_error": "Échec de l'enregistrement des modifications",
-    "toggle_error": "Échec du changement de statut de la wilaya"
+    "toggle_error": "Échec du changement de statut de la wilaya",
+    "delete_success": "{{count}} wilayas supprimées avec succès",
+    "delete_error": "Échec de la suppression des wilayas sélectionnées",
+    "add_missing_success": "{{count}} wilayas ajoutées avec succès",
+    "activate_selected_success": "{{count}} wilayas activées",
+    "activate_selected_error": "Échec de l'activation des wilayas sélectionnées",
+    "deactivate_selected_success": "{{count}} wilayas désactivées",
+    "deactivate_selected_error": "Échec de la désactivation des wilayas sélectionnées"
   },
 
   "provider": {
@@ -71,6 +91,17 @@
     "save_button": "Enregistrer les modifications"
   },
 
+  "bulk": {
+    "title": "Mise à jour groupée",
+    "subtitle": "Définissez un prix unique pour toutes les wilayas affichées en une fois, puis enregistrez",
+    "home_placeholder": "Prix domicile",
+    "office_placeholder": "Prix bureau",
+    "return_placeholder": "Prix retour",
+    "apply_btn": "Appliquer à {{count}} wilayas",
+    "apply_success": "Prix appliqué à {{count}} wilayas, veuillez enregistrer",
+    "apply_empty": "Entrez au moins un prix"
+  },
+
   "fetchRates": {
     "button": "Récupérer les tarifs d'une société de livraison",
     "subtitle": "Choisissez une société de livraison pour récupérer ses tarifs et les modifier dans le tableau",
@@ -78,5 +109,15 @@
     "fetch_error": "Impossible de récupérer les tarifs de cette société. Vérifiez les identifiants ou si cette société prend en charge la récupération des tarifs.",
     "applied_success": "Tarifs récupérés pour {{count}} wilayas depuis {{account}}, veuillez vérifier avant d'enregistrer",
     "applied_none": "Aucun tarif lisible n'a été trouvé depuis {{account}}"
+  },
+
+  "missingModal": {
+    "title": "Wilayas manquantes",
+    "subtitle": "Choisissez les wilayas à ajouter à la liste avec des prix par défaut",
+    "select_all": "Tout sélectionner",
+    "add_btn": "Ajouter {{count}} wilayas",
+    "none_title": "Aucune wilaya manquante",
+    "none_hint": "Toutes les wilayas sont déjà dans votre liste",
+    "submit_error": "Échec de l'ajout des wilayas sélectionnées"
   }
 }

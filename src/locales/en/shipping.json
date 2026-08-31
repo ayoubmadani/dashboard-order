@@ -14,8 +14,21 @@
 
   "save_row": "Save",
   "edit_row": "Edit",
+  "delete_row": "Delete",
   "save_all": "Save All Changes",
   "bulk_save": "Bulk Save",
+
+  "selected_count": "{{count}} states selected",
+  "clear_selection": "Clear selection",
+  "delete_selected": "Delete selected",
+  "activate_selected": "Activate selected",
+  "deactivate_selected": "Deactivate selected",
+  "delete_confirm_title": "Confirm deletion",
+  "delete_confirm_single": "Delete \"{{name}}\" from the state list? It will disappear from your store's shipping page.",
+  "delete_confirm_bulk": "Delete {{count}} states from the list? They will disappear from your store's shipping page.",
+  "delete_confirm_btn": "Delete",
+  "delete_cancel_btn": "Cancel",
+  "add_missing_btn": "Add missing states",
 
   "note": "Note: These rates are shown to customers when selecting their state in the store.",
   "count": "{{filtered}} of {{total}} states",
@@ -37,7 +50,14 @@
     "save_error": "Failed to save {{name}}",
     "save_all_success": "All changes saved successfully",
     "save_all_error": "Failed to save changes",
-    "toggle_error": "Failed to change state status"
+    "toggle_error": "Failed to change state status",
+    "delete_success": "{{count}} states deleted successfully",
+    "delete_error": "Failed to delete the selected states",
+    "add_missing_success": "{{count}} states added successfully",
+    "activate_selected_success": "{{count}} states activated",
+    "activate_selected_error": "Failed to activate the selected states",
+    "deactivate_selected_success": "{{count}} states deactivated",
+    "deactivate_selected_error": "Failed to deactivate the selected states"
   },
 
   "provider": {
@@ -71,6 +91,17 @@
     "save_button": "Save changes"
   },
 
+  "bulk": {
+    "title": "Bulk update",
+    "subtitle": "Set one price for all shown states at once, then hit save",
+    "home_placeholder": "Home price",
+    "office_placeholder": "Office price",
+    "return_placeholder": "Return price",
+    "apply_btn": "Apply to {{count}} states",
+    "apply_success": "Price applied to {{count}} states, please save",
+    "apply_empty": "Enter at least one price"
+  },
+
   "fetchRates": {
     "button": "Fetch delivery company rates",
     "subtitle": "Choose a delivery company to fetch its rates and edit them in the table",
@@ -78,5 +109,15 @@
     "fetch_error": "Could not fetch rates from this company. Check the credentials or whether this company supports fetching rates.",
     "applied_success": "Fetched rates for {{count}} states from {{account}}, please review before saving",
     "applied_none": "No readable rates were found from {{account}}"
+  },
+
+  "missingModal": {
+    "title": "Missing states",
+    "subtitle": "Choose which states to add to the list at default prices",
+    "select_all": "Select all",
+    "add_btn": "Add {{count}} states",
+    "none_title": "No missing states",
+    "none_hint": "All states are already in your list",
+    "submit_error": "Failed to add the selected states"
   }
 }

@@ -120,6 +120,7 @@ export default function CreateProduct() {
   const [variantDetails, setVariantDetails] = useState([]);
   const [offers, setOffers] = useState([]);
   const [images, setImages] = useState([]);
+  const [dragImageIndex, setDragImageIndex] = useState(null);
   const [isOpenModelImage, setIsOpenModelImage] = useState(false);
   const [selectingImageFor, setSelectingImageFor] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -741,13 +742,33 @@ export default function CreateProduct() {
             <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
           </button>
           {images.map((img, i) => (
-            <div key={i} className="group relative aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-100 dark:bg-zinc-800">
-              <img src={img} alt="" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <div
+              key={i}
+              draggable
+              onDragStart={() => setDragImageIndex(i)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (dragImageIndex === null || dragImageIndex === i) return;
+                setImages(prev => {
+                  const next = [...prev];
+                  const [moved] = next.splice(dragImageIndex, 1);
+                  next.splice(i, 0, moved);
+                  return next;
+                });
+                setDragImageIndex(null);
+              }}
+              onDragEnd={() => setDragImageIndex(null)}
+              className={`group relative aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-100 dark:bg-zinc-800 cursor-grab active:cursor-grabbing transition-opacity ${dragImageIndex === i ? 'opacity-40' : ''}`}
+            >
+              <img src={img} alt="" draggable={false} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <button type="button" onClick={() => setImages(prev => prev.filter((_, j) => j !== i))}
                   className="p-1.5 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-all">
                   <Trash2 size={12} />
                 </button>
+              </div>
+              <div className={`absolute top-1.5 ${isRtl ? 'right-1.5' : 'left-1.5'} w-4 h-4 flex items-center justify-center bg-white/90 dark:bg-zinc-900/90 rounded-full text-[9px] font-bold text-gray-500 dark:text-zinc-400`}>
+                {i + 1}
               </div>
               {i === 0 && (
                 <div className={`absolute top-1.5 ${isRtl ? 'left-1.5' : 'right-1.5'} px-1.5 py-0.5 bg-white/90 dark:bg-zinc-900/90 rounded text-[9px] font-bold text-blue-500`}>
