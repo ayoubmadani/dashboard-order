@@ -12,8 +12,9 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ModelImages from '../../../components/ModelImages';
 import axios from 'axios';
-import { baseURL } from '../../../constents/const.';
+import { baseURL, MAX_PRODUCT_IMAGES } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import { getMyPlanFeatures } from '../../../services/plan';
 
 const ATTRIBUTE_TYPES = { COLOR: 'color', SIZE: 'size', TEXT: 'text' };
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -117,6 +118,7 @@ export default function EditProduct() {
   const [categoriesError, setCategoriesError] = useState('');
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [folder, setFolder] = useState()
+  const [maxImages, setMaxImages] = useState(MAX_PRODUCT_IMAGES);
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -154,6 +156,13 @@ export default function EditProduct() {
   };
 
   useEffect(() => { loadCategories(); }, []);
+
+  /* ── Plan image limit ── */
+  useEffect(() => {
+    getMyPlanFeatures().then(features => {
+      if (features?.productImagesNumber) setMaxImages(features.productImagesNumber);
+    });
+  }, []);
 
   useEffect(() => {
     if (!categoryDropdownOpen) return;
@@ -314,9 +323,19 @@ export default function EditProduct() {
     if (selectingImageFor) {
       updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
       setSelectingImageFor(null);
-    } else {
-      setImages(prev => [...prev, imageData.url]);
+      showNotification('success', t('images.added_success'));
+      return;
     }
+    if (images.includes(imageData.url)) {
+      showNotification('error', t('images.duplicate_error'));
+      return;
+    }
+    if (images.length >= maxImages) {
+      showNotification('error', t('images.max_images_error', { max: maxImages }));
+      return;
+    }
+    setImages(prev => [...prev, imageData.url]);
+    showNotification('success', t('images.added_success'));
   };
 
   /* ── Validate + Submit ── */
@@ -394,6 +413,7 @@ export default function EditProduct() {
         close={() => { setIsOpenModelImage(false); setSelectingImageFor(null); }}
         onSelectImage={handleImageSelect}
         initialFolder={folder}
+        maxSelectable={Math.max(1, maxImages - images.length)}
       />
 
       {/* Notification */}
@@ -864,11 +884,13 @@ export default function EditProduct() {
       {/* ── SECTION 5: Images ── */}
       <Section icon={ImageIcon} title={t('images.section_title')} color="blue">
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
-          <button type="button" onClick={() => { setFolder('products'); setIsOpenModelImage(true) }}
-            className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
-            <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
-            <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
-          </button>
+          {images.length < maxImages && (
+            <button type="button" onClick={() => { setFolder('products'); setIsOpenModelImage(true) }}
+              className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
+              <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
+              <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
+            </button>
+          )}
           {images.map((img, i) => (
             <div
               key={i}
@@ -906,9 +928,12 @@ export default function EditProduct() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">
-          <Sparkles size={12} className="text-blue-400" />
-          {t('images.hint')}
+        <p className="text-xs text-gray-400 flex items-center justify-between gap-1.5 pt-1">
+          <span className="flex items-center gap-1.5">
+            <Sparkles size={12} className="text-blue-400" />
+            {t('images.hint')}
+          </span>
+          <span className="font-mono">{images.length}/{maxImages}</span>
         </p>
       </Section>
 

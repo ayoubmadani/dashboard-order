@@ -1,7 +1,9 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
+import { Trash2, Loader2 } from 'lucide-react';
 import { baseURL } from '../constents/const.';
 import { getAccessToken } from '../services/access-token';
+import { getMyPlanFeatures } from '../services/plan';
 import { useTranslation } from 'react-i18next';
 
 // ── Utilities ──
@@ -135,7 +137,7 @@ const useReducedMotion = () => {
 };
 
 // ── Main Component ──
-export default function ModelImages({ isOpen, close, onSelectImage, initialFolder = 'products' }) {
+export default function ModelImages({ isOpen, close, onSelectImage, initialFolder = 'products', maxSelectable = MAX_PRODUCT_BATCH }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'imageModel' });
   const isRTL = i18n.language === 'ar';
   const { isMobile, isTouch, viewportHeight } = useMobileDetect();
@@ -166,6 +168,23 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const [batchTotal, setBatchTotal] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null); // Lightbox state
   const [focusedIndex, setFocusedIndex] = useState(-1); // Keyboard nav
+  const [totalImagesLimit, setTotalImagesLimit] = useState(null); // null = غير معروف بعد
+  const [toast, setToast] = useState(null); // { message, type: 'error' | 'info' } — بديل alert()
+
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  // Bulk select/delete — only offered in the 'products' folder. Selection
+  // itself is uncapped (it also drives bulk-delete, unrelated to any single
+  // product's image quota); maxSelectable only gates how many end up
+  // attached to THIS product (the "Add" button, and post-upload auto-attach).
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  // نافذة تأكيد الحذف المخصصة (نفس نمط صفحة الفئات) — { type: 'single', imageId } أو { type: 'bulk' }
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const currentConfig = foldersConfig[currentFolder] || foldersConfig.products;
 
@@ -237,6 +256,15 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   useEffect(() => { if (isOpen) fetchSize(); }, [isOpen]);
 
+  // الحد الكلي لعدد الصور في المكتبة — حقل مستقل في الخطة (نفس الحقل الذي
+  // يفرضه السيرفر في ImageService.assertTotalImagesLimitNotReached)
+  useEffect(() => {
+    if (!isOpen) return;
+    getMyPlanFeatures().then(features => {
+      if (features?.totalImagesNumber) setTotalImagesLimit(features.totalImagesNumber);
+    });
+  }, [isOpen]);
+
   useEffect(() => {
     const valid = getValidFolder(initialFolder);
     if (valid !== currentFolder) { 
@@ -284,24 +312,38 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     };
   }, [isOpen]);
 
+  // Don't carry a stale selection into the next time the modal is opened
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectionMode(false);
+      setSelectedIds(new Set());
+    }
+  }, [isOpen]);
+
   // ── Handlers ──
   const handleFolderChange = (f) => {
     if (f === currentFolder || isUploading) return;
-    setCurrentFolder(f); 
-    setImages([]); 
+    setCurrentFolder(f);
+    setImages([]);
     setPage(1);
+    setSelectionMode(false);
+    setSelectedIds(new Set());
   };
 
   // Uploads a single file and returns the created image record, or null if
   // it was rejected/failed (the caller has already been alerted in that case).
-  const uploadOneFile = async (file) => {
+  // fileIndex/totalFiles (plain args, not state — state set just before this
+  // call wouldn't be visible yet inside this closure) let the progress bar
+  // span the whole batch as one continuous fill instead of resetting to 0%
+  // for every file: file i's upload only moves it through its own 1/N slice.
+  const uploadOneFile = async (file, fileIndex = 0, totalFiles = 1) => {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowed.includes(file.type)) {
-      alert(t('alerts.unsupported_type'));
+      showToast(t('alerts.unsupported_type'));
       return null;
     }
     if (file.size > 50 * 1024 * 1024) {
-      alert(t('alerts.file_too_large'));
+      showToast(t('alerts.file_too_large'));
       return null;
     }
 
@@ -332,7 +374,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
       setCompressedSize(file.size);
     }
 
-    setUploadProgress(0);
+    setUploadProgress(Math.round((fileIndex * 100) / totalFiles));
     const formData = new FormData();
     formData.append('file', fileToUpload);
     const token = getAccessToken();
@@ -340,12 +382,15 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     try {
       const res = await axios.post(`${baseURL}/images/upload?folder=${currentFolder}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` },
-        onUploadProgress: (e) => setUploadProgress(Math.round((e.loaded * 100) / e.total)),
+        onUploadProgress: (e) => {
+          const fileProgress = e.total ? (e.loaded * 100) / e.total : 0;
+          setUploadProgress(Math.round((fileIndex * 100 + fileProgress) / totalFiles));
+        },
       });
       return res.data;
     } catch (e) {
       console.error(e);
-      alert(e.response?.data?.message || t('alerts.upload_failed'));
+      showToast(e.response?.data?.message || t('alerts.upload_failed'));
       return null;
     }
   };
@@ -353,13 +398,30 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const handleFilesUpload = async (fileList) => {
     const files = Array.from(fileList || []).filter(Boolean);
     if (files.length === 0) return;
+    if (totalImagesLimit !== null && countFolder >= totalImagesLimit) return;
 
+    // سقف الرفع نفسه ثابت (لا علاقة له بحصة المنتج المتبقية) — الصور تُرفع
+    // للمكتبة طالما لم تتخطَّ الحصة الكلية للخطة (يفرضها السيرفر لكل ملف على
+    // حدة). الحد الأدق "كم صورة تُلحق تلقائياً بهذا المنتج" يُطبَّق لاحقاً
+    // بعد نجاح الرفع، على أول maxSelectable فقط — الباقي يبقى في المكتبة.
     const maxBatch = currentFolder === 'products' ? MAX_PRODUCT_BATCH : 1;
     let queue = files;
     if (files.length > maxBatch) {
-      alert(t('alerts.max_batch_upload', { max: maxBatch }));
+      showToast(t('alerts.max_batch_upload', { max: maxBatch }), 'info');
       queue = files.slice(0, maxBatch);
     }
+
+    // نقصّ القائمة إلى الحصة الكلية المتبقية فعلياً هنا، بدل ترك كل ملف
+    // زائد يُرفض من السيرفر على حدة — كان يعرض نفس رسالة "وصلت للحد الأقصى"
+    // عدة مرات متتالية (alert لكل ملف مرفوض داخل الحلقة التسلسلية أدناه)
+    if (totalImagesLimit !== null) {
+      const remaining = Math.max(0, totalImagesLimit - countFolder);
+      if (queue.length > remaining) {
+        showToast(t('alerts.total_limit_truncated', { remaining, max: totalImagesLimit }), 'info');
+        queue = queue.slice(0, remaining);
+      }
+    }
+    if (queue.length === 0) return;
 
     setIsUploading(true);
     setBatchTotal(queue.length);
@@ -367,7 +429,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     const uploaded = [];
     for (let i = 0; i < queue.length; i++) {
       setBatchIndex(i + 1);
-      const result = await uploadOneFile(queue[i]);
+      const result = await uploadOneFile(queue[i], i, queue.length);
       if (result) uploaded.push(result);
     }
 
@@ -384,37 +446,128 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setFolderCounts(prev => ({ ...prev, [currentFolder]: (prev[currentFolder] || 0) + uploaded.length }));
 
     if (onSelectImage) {
-      uploaded.forEach(img => onSelectImage(img));
+      // كل الصور المرفوعة تبقى في المكتبة، لكن فقط أول maxSelectable منها
+      // (حصة هذا المنتج المتبقية) تُلحق تلقائياً به — الباقي مرفوع ومتاح
+      // لاستخدامه لاحقاً (لهذا المنتج بعد حذف صور، أو لمنتج آخر)
+      const toAttach = currentFolder === 'products' ? uploaded.slice(0, maxSelectable) : uploaded;
+      toAttach.forEach(img => onSelectImage(img));
+      if (toAttach.length < uploaded.length) {
+        showToast(t('alerts.uploaded_not_all_attached', { uploaded: uploaded.length, attached: toAttach.length }), 'info');
+      }
       close();
     }
   };
 
-  const handleDeleteImage = async (imageId, e) => {
+  // فتح نافذة تأكيد الحذف (نفس نمط صفحة الفئات) بدل window.confirm() الأصلي
+  const handleDeleteImage = (imageId, e) => {
     e?.stopPropagation();
-    if (!window.confirm(t('alerts.confirm_delete'))) return;
+    setPendingDelete({ type: 'single', imageId });
+  };
+
+  const performDeleteImage = async (imageId) => {
     try {
       const token = getAccessToken();
-      await axios.delete(`${baseURL}/images/${imageId}`, { 
-        headers: { Authorization: `Bearer ${token}` } 
+      await axios.delete(`${baseURL}/images/${imageId}`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
+      const deleted = images.find(img => img.id === imageId);
       setImages(prev => prev.filter(img => img.id !== imageId));
-      setFolderCounts(prev => ({ 
-        ...prev, 
-        [currentFolder]: Math.max(0, (prev[currentFolder] || 0) - 1) 
+      setFolderCounts(prev => ({
+        ...prev,
+        [currentFolder]: Math.max(0, (prev[currentFolder] || 0) - 1)
       }));
-    } catch { 
-      alert(t('alerts.delete_failed')); 
+      // countFolder/size هما العدد والحجم الكليان لكل صور الحساب (كل
+      // المجلدات مجتمعة) — يُستخدمان في atTotalLimit، فيجب تحديثهما هنا
+      // أيضاً وإلا يبقى زر الرفع معطلاً بعد الحذف حتى تُعاد فتح النافذة
+      setCountFolder(prev => Math.max(0, prev - 1));
+      if (deleted?.size) setSize(prev => Math.max(0, prev - deleted.size));
+    } catch {
+      showToast(t('alerts.delete_failed'));
     }
   };
 
-  const handleSelectImage = (image, index) => { 
+  const handleSelectImage = (image, index) => {
     if (isMobile && isTouch) {
       // On mobile, first tap shows preview, second selects
       setSelectedImage(image);
     } else {
-      if (onSelectImage) onSelectImage(image); 
-      close(); 
+      if (onSelectImage) onSelectImage(image);
+      close();
     }
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(v => !v);
+    setSelectedIds(new Set());
+  };
+
+  // لا حد هنا: نفس التحديد يُستخدم لكل من "إضافة للمنتج" و"حذف من المكتبة"،
+  // والحذف لا علاقة له بحصة صور المنتج (maxSelectable) — الحد الفعلي عند
+  // الإضافة يُفرض لاحقاً في Create/edit.jsx (handleImageSelect) صورة بصورة
+  const toggleImageSelected = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleImageClick = (img, index) => {
+    if (selectionMode) {
+      toggleImageSelected(img.id);
+    } else {
+      handleSelectImage(img, index);
+    }
+  };
+
+  const handleAddSelected = () => {
+    if (currentFolder === 'products' && selectedIds.size > maxSelectable) return;
+    const chosen = images.filter(img => selectedIds.has(img.id));
+    if (chosen.length === 0) return;
+    if (onSelectImage) chosen.forEach(img => onSelectImage(img));
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+    close();
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    setPendingDelete({ type: 'bulk' });
+  };
+
+  const performDeleteSelected = async () => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    try {
+      const token = getAccessToken();
+      await axios.delete(`${baseURL}/images/batch`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { ids },
+      });
+      const deletedSize = images
+        .filter(img => selectedIds.has(img.id))
+        .reduce((sum, img) => sum + (img.size || 0), 0);
+      setImages(prev => prev.filter(img => !selectedIds.has(img.id)));
+      setFolderCounts(prev => ({
+        ...prev,
+        [currentFolder]: Math.max(0, (prev[currentFolder] || 0) - ids.length),
+      }));
+      setCountFolder(prev => Math.max(0, prev - ids.length));
+      setSize(prev => Math.max(0, prev - deletedSize));
+      setSelectedIds(new Set());
+    } catch {
+      showToast(t('alerts.delete_multiple_failed'));
+    }
+  };
+
+  const confirmPendingDelete = async () => {
+    if (!pendingDelete) return;
+    setIsDeleting(true);
+    if (pendingDelete.type === 'single') await performDeleteImage(pendingDelete.imageId);
+    else await performDeleteSelected();
+    setIsDeleting(false);
+    setPendingDelete(null);
   };
 
   const loadMore = () => { 
@@ -459,6 +612,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   if (!isOpen) return null;
 
   const progress = isCompressing ? compressionProgress : uploadProgress;
+  const atTotalLimit = totalImagesLimit !== null && countFolder >= totalImagesLimit;
 
   // ── Sub-components ──
   const FolderTab = ({ id, mobile = false }) => {
@@ -569,6 +723,47 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   return (
     <>
+      {/* Toast — بديل alert() الأصلي */}
+      {toast && (
+        <div className={`fixed top-5 ${isRTL ? 'left-5' : 'right-5'} z-[70] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white max-w-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
+          toast.type === 'info' ? 'bg-amber-500' : 'bg-rose-500'
+        }`}>
+          {toast.message}
+        </div>
+      )}
+
+      {/* Delete confirmation — نفس نمط نافذة تأكيد الحذف في صفحة الفئات، بدل window.confirm() */}
+      {pendingDelete && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[80] p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-zinc-800" dir={isRTL ? 'rtl' : 'ltr'}>
+            <div className="w-14 h-14 bg-rose-100 dark:bg-rose-500/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
+              <Trash2 size={26} className="text-rose-600 dark:text-rose-400" />
+            </div>
+            <h3 className="text-lg font-bold text-center text-gray-900 dark:text-white mb-2">
+              {t('ui.delete_confirm_title')}
+            </h3>
+            <p className="text-sm text-center text-gray-500 dark:text-zinc-400 whitespace-pre-line mb-2">
+              {pendingDelete.type === 'single'
+                ? t('alerts.confirm_delete')
+                : t('alerts.confirm_delete_multiple', { count: selectedIds.size })}
+            </p>
+            <div className="flex gap-3 mt-5">
+              <button type="button" onClick={() => setPendingDelete(null)}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 text-gray-600 dark:text-zinc-300 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-xl transition-colors font-medium text-sm disabled:opacity-50">
+                {t('ui.cancel')}
+              </button>
+              <button type="button" onClick={confirmPendingDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-500/25 disabled:opacity-60">
+                {isDeleting && <Loader2 size={16} className="animate-spin" />}
+                {t('ui.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className="fixed inset-0 z-50 flex flex-col bg-black/50 backdrop-blur-sm md:items-center md:justify-center md:p-4"
         dir={isRTL ? 'rtl' : 'ltr'}
@@ -606,8 +801,10 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
             <div className="p-4 border-t border-gray-100 dark:border-zinc-800 flex-shrink-0">
               <div className="text-xs text-gray-400 dark:text-zinc-500 flex items-center justify-between">
-                <span>{t('ui.storage')}</span>
-                <span className="font-mono font-medium text-gray-600 dark:text-zinc-300">{formatBytes(size)}</span>
+                <span>{t('ui.images')}</span>
+                <span className="font-mono font-medium text-gray-600 dark:text-zinc-300">
+                  {countFolder}{totalImagesLimit !== null ? `/${totalImagesLimit}` : ''}
+                </span>
               </div>
             </div>
           </aside>
@@ -631,6 +828,18 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                 <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 font-mono md:hidden">
                   {formatBytes(size)}
                 </span>
+                {currentFolder === 'products' && images.length > 0 && (
+                  <button
+                    onClick={toggleSelectionMode}
+                    className={`text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all touch-manipulation ${
+                      selectionMode
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+                    }`}
+                  >
+                    {selectionMode ? t('ui.cancel_selection') : t('ui.select_multiple')}
+                  </button>
+                )}
                 <button
                   onClick={close}
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 active:scale-95 transition-all touch-manipulation"
@@ -658,21 +867,41 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                 onChange={(e) => handleFilesUpload(e.target.files)}
                 accept="image/*"
                 multiple={currentFolder === 'products'}
-                disabled={isUploading}
+                disabled={isUploading || atTotalLimit}
                 capture={isMobile ? "environment" : undefined} // Allow camera on mobile
               />
               <div
-                onClick={() => !isUploading && fileInputRef.current?.click()}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFilesUpload(e.dataTransfer.files); }}
-                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onClick={() => !isUploading && !atTotalLimit && fileInputRef.current?.click()}
+                onDrop={(e) => { e.preventDefault(); setIsDragging(false); if (!atTotalLimit) handleFilesUpload(e.dataTransfer.files); }}
+                onDragOver={(e) => { e.preventDefault(); if (!atTotalLimit) setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
-                className={`rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 active:scale-[0.99] touch-manipulation ${
-                  isDragging
-                    ? 'border-blue-400 bg-blue-50 dark:bg-blue-500/5'
-                    : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 bg-gray-50/50 dark:bg-zinc-800/30'
+                className={`rounded-xl border-2 border-dashed transition-all duration-200 touch-manipulation ${
+                  atTotalLimit
+                    ? 'cursor-not-allowed opacity-60 border-gray-200 dark:border-zinc-700 bg-gray-50/50 dark:bg-zinc-800/30'
+                    : `cursor-pointer active:scale-[0.99] ${
+                        isDragging
+                          ? 'border-blue-400 bg-blue-50 dark:bg-blue-500/5'
+                          : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600 bg-gray-50/50 dark:bg-zinc-800/30'
+                      }`
                 }`}
               >
-                {isUploading ? (
+                {atTotalLimit ? (
+                  <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0 bg-amber-50 dark:bg-amber-500/10">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-amber-600 dark:text-amber-400">
+                        {t('upload.total_limit_reached', { count: countFolder, max: totalImagesLimit })}
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                        {t('upload.total_limit_hint')}
+                      </p>
+                    </div>
+                  </div>
+                ) : isUploading ? (
                   <div className="px-4 sm:px-6 py-3 sm:py-4">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs font-medium text-gray-600 dark:text-zinc-300">
@@ -725,8 +954,44 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
               </div>
             </div>
 
+            {/* Selection Toolbar */}
+            {selectionMode && (() => {
+              const exceedsLimit = currentFolder === 'products' && selectedIds.size > maxSelectable;
+              return (
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 flex-shrink-0 border-b border-gray-100 dark:border-zinc-800 bg-blue-50/60 dark:bg-blue-500/5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                    {t('ui.selected_count', { count: selectedIds.size })}
+                  </span>
+                  {exceedsLimit && (
+                    <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                      {t('ui.add_exceeds_limit', { max: maxSelectable })}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDeleteSelected}
+                    disabled={selectedIds.size === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                  >
+                    {t('ui.delete_selected', { count: selectedIds.size })}
+                  </button>
+                  <button
+                    onClick={handleAddSelected}
+                    disabled={selectedIds.size === 0 || exceedsLimit}
+                    title={exceedsLimit ? t('ui.add_exceeds_limit', { max: maxSelectable }) : undefined}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all touch-manipulation"
+                  >
+                    {t('ui.add_selected', { count: selectedIds.size })}
+                  </button>
+                </div>
+              </div>
+              );
+            })()}
+
             {/* Images Grid */}
-            <div 
+            <div
               ref={gridRef}
               className="flex-1 overflow-y-auto p-4 sm:p-6 overscroll-contain"
             >
@@ -760,18 +1025,20 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
               {/* Grid */}
               {images.length > 0 && (
                 <div className={`grid ${activeGridCols} gap-2 sm:gap-3`}>
-                  {images.map((img, index) => (
+                  {images.map((img, index) => {
+                    const isSelected = selectedIds.has(img.id);
+                    return (
                     <div
                       key={img.id}
                       id={`img-${index}`}
                       tabIndex={0}
-                      onClick={() => handleSelectImage(img, index)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSelectImage(img, index)}
+                      onClick={() => handleImageClick(img, index)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleImageClick(img, index)}
                       onFocus={() => setFocusedIndex(index)}
                       className={`
                         group relative ${currentConfig.aspectRatio} overflow-hidden rounded-xl
                         bg-gray-100 dark:bg-zinc-800 cursor-pointer
-                        border-2 border-transparent hover:border-gray-300 dark:hover:border-zinc-600
+                        border-2 ${isSelected ? 'border-blue-500' : 'border-transparent hover:border-gray-300 dark:hover:border-zinc-600'}
                         focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
                         transition-all duration-200
                         ${currentFolder === 'hero' ? 'col-span-full' : ''}
@@ -815,10 +1082,20 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                         </svg>
                       </button>
 
-                      {/* Mobile Selection Indicator — moved to the opposite
-                          corner from the delete button above so the two
-                          never overlap. */}
-                      {isMobile && (
+                      {/* Bulk-selection checkbox — takes over the corner
+                          used by the (now-hidden) decorative mobile
+                          indicator below while selection mode is active. */}
+                      {selectionMode ? (
+                        <div className={`absolute top-1.5 start-1.5 w-6 h-6 rounded-full flex items-center justify-center shadow-sm pointer-events-none transition-colors ${
+                          isSelected ? 'bg-blue-600' : 'bg-white/90 dark:bg-zinc-800/90'
+                        }`}>
+                          {isSelected && (
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                      ) : isMobile && (
                         <div className="absolute top-1.5 start-1.5 w-6 h-6 rounded-full bg-white/90 dark:bg-zinc-800/90 flex items-center justify-center opacity-0 group-active:opacity-100 shadow-sm pointer-events-none">
                           <svg className="w-3 h-3 text-gray-600 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -827,7 +1104,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                         </div>
                       )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
 

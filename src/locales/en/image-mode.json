@@ -8,11 +8,21 @@
     "empty_folder": "Folder is empty",
     "empty_folder_desc": "No images in {{folder}} yet. Start by uploading your first image.",
     "select": "Select",
-    "delete": "Delete"
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "delete_confirm_title": "Confirm deletion",
+    "select_multiple": "Select multiple",
+    "cancel_selection": "Cancel selection",
+    "selected_count": "{{count}} selected",
+    "add_selected": "Add ({{count}})",
+    "add_exceeds_limit": "Max {{max}} images — reduce selection to add",
+    "delete_selected": "Delete ({{count}})"
   },
   "upload": {
     "compressing": "Compressing image...",
     "uploading": "Uploading...",
+    "total_limit_reached": "You've reached your limit ({{count}}/{{max}} images)",
+    "total_limit_hint": "Delete some images from your library to upload new ones",
     "uploading_batch": "Uploading image {{current}} of {{total}}...",
     "batch_hint": "up to {{max}} images at once",
     "saved_size": "Saved {{percent}}% of size ({{oldSize}} → {{newSize}})",
@@ -53,9 +63,13 @@
     "unsupported_type": "Unsupported file type. Only JPG, PNG, GIF, and WEBP are allowed.",
     "file_too_large": "File is too large. Maximum size is 50MB",
     "max_batch_upload": "You can upload up to {{max}} images at once. Only the first {{max}} were selected.",
+    "total_limit_truncated": "Only {{remaining}} slots left in your plan (max {{max}} images) — uploaded the first {{remaining}} only.",
+    "uploaded_not_all_attached": "{{uploaded}} images were uploaded to your library, but only {{attached}} were added to this product (limit reached). Find the rest in the library.",
     "confirm_delete": "Are you sure you want to delete this image?",
+    "confirm_delete_multiple": "Are you sure you want to delete {{count}} images?",
     "upload_failed": "Upload failed",
-    "delete_failed": "Deletion failed"
+    "delete_failed": "Deletion failed",
+    "delete_multiple_failed": "Failed to delete the selected images"
   },
   "errors": {
     "fetch_counts": "Error fetching count:",

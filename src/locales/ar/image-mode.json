@@ -8,11 +8,21 @@
         "empty_folder": "المجلد فارغ",
         "empty_folder_desc": "لا توجد صور في مجلد {{folder}} بعد. ابدأ برفع صورتك الأولى.",
         "select": "اختيار",
-        "delete": "حذف"
+        "delete": "حذف",
+        "cancel": "إلغاء",
+        "delete_confirm_title": "تأكيد الحذف",
+        "select_multiple": "تحديد متعدد",
+        "cancel_selection": "إلغاء التحديد",
+        "selected_count": "{{count}} محددة",
+        "add_selected": "إضافة ({{count}})",
+        "add_exceeds_limit": "الحد الأقصى {{max}} صورة — قلّل التحديد للإضافة",
+        "delete_selected": "حذف ({{count}})"
     },
     "upload": {
         "compressing": "جاري ضغط الصورة...",
         "uploading": "جاري الرفع...",
+        "total_limit_reached": "وصلت إلى الحد الأقصى ({{count}}/{{max}} صورة)",
+        "total_limit_hint": "احذف بعض الصور من مكتبتك لتتمكن من رفع صور جديدة",
         "uploading_batch": "جاري رفع الصورة {{current}} من {{total}}...",
         "batch_hint": "حتى {{max}} صور دفعة واحدة",
         "saved_size": "تم توفير {{percent}}% من الحجم ({{oldSize}} → {{newSize}})",
@@ -53,9 +63,13 @@
         "unsupported_type": "نوع الملف غير مدعوم. يسمح فقط بـ: JPG, PNG, GIF, WEBP",
         "file_too_large": "حجم الملف كبير جداً. الحد الأقصى 50MB",
         "max_batch_upload": "يمكنك رفع {{max}} صور كحد أقصى في المرة الواحدة. تم اختيار أول {{max}} صور فقط.",
+        "total_limit_truncated": "لم يتبقَّ سوى {{remaining}} من حصتك (الحد الأقصى {{max}} صورة) — تم رفع أول {{remaining}} فقط.",
+        "uploaded_not_all_attached": "تم رفع {{uploaded}} صورة إلى مكتبتك، لكن أُضيف منها {{attached}} فقط لهذا المنتج (وصلت للحد الأقصى). ستجد الباقي في المكتبة.",
         "confirm_delete": "هل أنت متأكد من حذف هذه الصورة؟",
+        "confirm_delete_multiple": "هل أنت متأكد من حذف {{count}} صورة؟",
         "upload_failed": "فشل رفع الصورة",
-        "delete_failed": "فشل حذف الصورة"
+        "delete_failed": "فشل حذف الصورة",
+        "delete_multiple_failed": "فشل حذف الصور المحددة"
     },
     "errors": {
         "fetch_counts": "خطأ في جلب العدد:",

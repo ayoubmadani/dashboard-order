@@ -294,7 +294,9 @@
     "add_photo": "Add",
     "primary_badge": "Primary",
     "hint": "Use images with white or solid color backgrounds and high resolution",
-    "added_success": "Image added successfully"
+    "added_success": "Image added successfully",
+    "duplicate_error": "This image is already added",
+    "max_images_error": "Maximum {{max}} images per product"
   },
 
   "create": {

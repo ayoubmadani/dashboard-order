@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
+import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
 
 const getStoreGradient = (name) => {
@@ -178,6 +179,7 @@ export default function LayoutDashboard() {
             } catch (error) {
                 if (error.response?.status === 401) {
                     removeAccessToken();
+                    clearPlanCache();
                     navigate('/auth/login');
                 }
             }
@@ -202,6 +204,7 @@ export default function LayoutDashboard() {
 
     const handleLogout = () => {
         removeAccessToken();
+        clearPlanCache();
         navigate('/auth/login');
     };
 

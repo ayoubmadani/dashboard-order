@@ -8,11 +8,21 @@
     "empty_folder": "Le dossier est vide",
     "empty_folder_desc": "Aucune image dans {{folder}} pour le moment. Commencez par télécharger votre première image.",
     "select": "Sélectionner",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "delete_confirm_title": "Confirmer la suppression",
+    "select_multiple": "Sélection multiple",
+    "cancel_selection": "Annuler la sélection",
+    "selected_count": "{{count}} sélectionnées",
+    "add_selected": "Ajouter ({{count}})",
+    "add_exceeds_limit": "Max {{max}} images — réduisez la sélection pour ajouter",
+    "delete_selected": "Supprimer ({{count}})"
   },
   "upload": {
     "compressing": "Compression de l'image...",
     "uploading": "Téléchargement...",
+    "total_limit_reached": "Vous avez atteint votre limite ({{count}}/{{max}} images)",
+    "total_limit_hint": "Supprimez des images de votre bibliothèque pour en télécharger de nouvelles",
     "uploading_batch": "Téléchargement de l'image {{current}} sur {{total}}...",
     "batch_hint": "jusqu'à {{max}} images à la fois",
     "saved_size": "{{percent}}% de taille économisée ({{oldSize}} → {{newSize}})",
@@ -53,9 +63,13 @@
     "unsupported_type": "Type de fichier non supporté. Seuls JPG, PNG, GIF et WEBP sont autorisés.",
     "file_too_large": "Le fichier est trop volumineux. Taille maximale 50 Mo",
     "max_batch_upload": "Vous pouvez télécharger jusqu'à {{max}} images à la fois. Seules les {{max}} premières ont été sélectionnées.",
+    "total_limit_truncated": "Il ne vous reste que {{remaining}} emplacements dans votre forfait (max {{max}} images) — seules les {{remaining}} premières ont été téléchargées.",
+    "uploaded_not_all_attached": "{{uploaded}} images ont été téléchargées dans votre bibliothèque, mais seulement {{attached}} ont été ajoutées à ce produit (limite atteinte). Retrouvez le reste dans la bibliothèque.",
     "confirm_delete": "Êtes-vous sûr de vouloir supprimer cette image ?",
+    "confirm_delete_multiple": "Êtes-vous sûr de vouloir supprimer {{count}} images ?",
     "upload_failed": "Échec du téléchargement",
-    "delete_failed": "Échec de la suppression"
+    "delete_failed": "Échec de la suppression",
+    "delete_multiple_failed": "Échec de la suppression des images sélectionnées"
   },
   "errors": {
     "fetch_counts": "Erreur lors de la récupération du nombre :",
