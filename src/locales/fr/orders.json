@@ -14,6 +14,7 @@
     "cancelled": "Annulé",
     "returned": "Retourné",
     "delivered": "Livré",
+    "delivered_digital": "Vendu",
     "postponed": "Reporté"
   },
   "list": {
@@ -41,12 +42,15 @@
     "prev_page": "Précédent",
     "next_page": "Suivant",
     "edit": "Modifier",
-    "delete": "Supprimer"
+    "delete": "Supprimer",
+    "digital_badge": "Numérique"
   },
   "edit": {
     "customer_section_title": "Informations client et livraison",
     "customer_name": "Nom du client",
     "customer_phone": "Numéro de téléphone",
+    "customer_email": "E-mail",
+    "customer_whatsapp": "Numéro WhatsApp",
     "wilaya": "Wilaya",
     "select_wilaya": "Sélectionner la wilaya",
     "commune": "Commune",
@@ -94,6 +98,11 @@
   "export": {
     "customer_name": "Nom du client",
     "phone": "Numéro de téléphone",
+    "customer_email": "E-mail",
+    "customer_whatsapp": "Numéro WhatsApp",
+    "type": "Type de commande",
+    "digital": "Numérique",
+    "physical": "Physique",
     "product": "Produit",
     "wilaya": "Wilaya",
     "commune": "Commune",

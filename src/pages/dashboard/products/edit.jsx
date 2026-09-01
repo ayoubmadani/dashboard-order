@@ -6,7 +6,7 @@ import {
   Tag, Bold, Italic, List, CheckCircle, AlertCircle,
   Loader2, Sparkles, Package, Rocket, Ruler,
   Type as TypeIcon, Save, ArrowRight, Grid3x3,
-  FolderTree, ChevronDown, X, Check, Truck
+  FolderTree, ChevronDown, X, Check, Truck, Download
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -100,6 +100,7 @@ export default function EditProduct() {
     name: '', desc: '', price: '', originalPrice: '',
     storeId: '', sku: '', stock: '', status: 'active', categoryId: '',
     shippingFree: false,
+    isDigital: false,
   });
   const [attributes, setAttributes] = useState([]);
   const [variantDetails, setVariantDetails] = useState([]);
@@ -199,6 +200,7 @@ export default function EditProduct() {
           status: product.isActive !== false ? 'active' : 'inactive',
           categoryId: product.category?.id || product.categoryId || '',
           shippingFree: product.shippingFree || false,
+          isDigital: product.isDigital || false,
         });
 
         if (Array.isArray(product.attributes)) {
@@ -368,6 +370,7 @@ export default function EditProduct() {
         stock: Number(formData.stock) || 0,
         isActive: formData.status === 'active',
         shippingFree: formData.shippingFree,
+        isDigital: formData.isDigital,
         priceOriginal: formData.originalPrice ? Number(formData.originalPrice) : null,
         categoryId: formData.categoryId || null,
         attributes,
@@ -529,6 +532,20 @@ export default function EditProduct() {
               onClick={() => setFormData(p => ({ ...p, shippingFree: !p.shippingFree }))}
               className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${formData.shippingFree ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'}`}>
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.shippingFree ? (isRtl ? '-translate-x-6' : 'translate-x-6') : (isRtl ? '-translate-x-1' : 'translate-x-1')}`} />
+            </button>
+          </div>
+        </Field>
+
+        <Field label={t('form.is_digital_label')}>
+          <div className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950">
+            <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-zinc-300">
+              <Download size={14} className="text-indigo-500" />
+              {t('form.is_digital_desc')}
+            </span>
+            <button type="button"
+              onClick={() => setFormData(p => ({ ...p, isDigital: !p.isDigital }))}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${formData.isDigital ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.isDigital ? (isRtl ? '-translate-x-6' : 'translate-x-6') : (isRtl ? '-translate-x-1' : 'translate-x-1')}`} />
             </button>
           </div>
         </Field>

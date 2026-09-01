@@ -14,6 +14,7 @@
     "cancelled": "ملغى",
     "returned": "مُرجع",
     "delivered": "تم التوصيل",
+    "delivered_digital": "تم البيع",
     "postponed": "مؤجل"
   },
   "list": {
@@ -41,12 +42,15 @@
     "prev_page": "السابق",
     "next_page": "التالي",
     "edit": "تعديل",
-    "delete": "حذف"
+    "delete": "حذف",
+    "digital_badge": "رقمي"
   },
   "edit": {
     "customer_section_title": "بيانات الزبون والتوصيل",
     "customer_name": "اسم الزبون",
     "customer_phone": "رقم الهاتف",
+    "customer_email": "البريد الإلكتروني",
+    "customer_whatsapp": "رقم واتساب",
     "wilaya": "الولاية",
     "select_wilaya": "اختر الولاية",
     "commune": "البلدية",
@@ -94,6 +98,11 @@
   "export": {
     "customer_name": "اسم العميل",
     "phone": "رقم الهاتف",
+    "customer_email": "البريد الإلكتروني",
+    "customer_whatsapp": "رقم واتساب",
+    "type": "نوع الطلب",
+    "digital": "رقمي",
+    "physical": "عادي",
     "product": "المنتج",
     "wilaya": "الولاية",
     "commune": "البلدية",

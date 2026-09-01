@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Minus, Plus, ShoppingCart, MapPin, Phone, User, Home,
-  ChevronDown, Truck, Shield, Package, Building2, AlertCircle, Tag,
+  ChevronDown, Truck, Shield, Package, Building2, AlertCircle, Tag, Mail, MessageCircle,
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
@@ -73,11 +73,15 @@ export default function ProductFormBlock({
   const [form, setForm] = useState({
     customerName: '',
     customerPhone: '',
+    customerEmail: '',
+    customerWhatsapp: '',
     wilayaId: '',
     communeId: '',
     typeShip: 'home',
     quantity: 1,
   });
+  // منتج رقمي فقط — أي طريقة يستخدمها الزائر للتواصل بدل الشحن
+  const [contactMethod, setContactMethod] = useState('email');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
@@ -161,12 +165,14 @@ export default function ProductFormBlock({
   };
 
   const selectedWilaya = wilayas.find((w) => String(w.id) === String(form.wilayaId));
-  const priceShip = selectedWilaya
-    ? form.typeShip === 'office'
-      ? selectedWilaya.livraisonOfice
-      : selectedWilaya.livraisonHome
-    : 0;
-  const priceLoss = selectedWilaya?.livraisonReturn || 0;
+  const priceShip = product?.isDigital
+    ? 0
+    : selectedWilaya
+      ? form.typeShip === 'office'
+        ? selectedWilaya.livraisonOfice
+        : selectedWilaya.livraisonHome
+      : 0;
+  const priceLoss = product?.isDigital ? 0 : (selectedWilaya?.livraisonReturn || 0);
   const totalPrice = getUnitPrice() * form.quantity + (priceShip || 0);
 
   const outOfStock =
@@ -181,6 +187,17 @@ export default function ProductFormBlock({
       setError(t.errorPhone);
       return;
     }
+    if (product.isDigital) {
+      if (contactMethod === 'email') {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail.trim())) {
+          setError(t.errorEmail);
+          return;
+        }
+      } else if (!/^(0|\+213)[5-7][0-9]{8}$/.test(form.customerWhatsapp.trim().replace(/\s/g, ''))) {
+        setError(t.errorWhatsapp);
+        return;
+      }
+    }
 
     setSubmitting(true);
     setError(null);
@@ -194,14 +211,20 @@ export default function ProductFormBlock({
         platform: 'mdstore',
         quantity: form.quantity,
         totalPrice,
-        typeShip: form.typeShip,
-        priceShip,
-        priceLoss,
         customerId,
         customerName: form.customerName,
         customerPhone: normalizedPhone,
-        customerWilayaId: form.wilayaId ? Number(form.wilayaId) : undefined,
-        customerCommuneId: form.communeId ? Number(form.communeId) : undefined,
+        ...(product.isDigital
+          ? (contactMethod === 'email'
+              ? { customerEmail: form.customerEmail.trim() }
+              : { customerWhatsapp: form.customerWhatsapp.trim() })
+          : {
+              typeShip: form.typeShip,
+              priceShip,
+              priceLoss,
+              customerWilayaId: form.wilayaId ? Number(form.wilayaId) : undefined,
+              customerCommuneId: form.communeId ? Number(form.communeId) : undefined,
+            }),
       });
       if (res.data?.customerId) localStorage.setItem('customerId', res.data.customerId);
       setSubmitted(true);
@@ -403,115 +426,191 @@ export default function ProductFormBlock({
                 </FieldWrapper>
               </div>
 
-              {/* Wilaya + Commune */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <FieldWrapper label={t.wilaya} labelColor={muted}>
-                  <div style={{ position: 'relative' }}>
-                    <MapPin size={15} style={iconInFieldStyle} />
-                    <select
-                      value={form.wilayaId}
-                      onChange={(e) => setForm((f) => ({ ...f, wilayaId: e.target.value, communeId: '' }))}
-                      required
-                      style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer' })}
-                      {...fieldHandlers('wilayaId')}
+              {product?.isDigital ? (
+                /* Email or WhatsApp — digital products need no shipping info */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.contactQuestion}</p>
+                  <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${inputBorderColor || inputStyle.borderColor}` }}>
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod('email')}
+                      style={{
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+                        backgroundColor: contactMethod === 'email' ? accentColor : 'transparent',
+                        color: contactMethod === 'email' ? '#ffffff' : muted,
+                        opacity: contactMethod === 'email' ? 1 : 0.6,
+                      }}
                     >
-                      <option value="">{t.selectWilaya}</option>
-                      {wilayas.map((w) => (
-                        <option key={w.id} value={w.id}>{w.ar_name || w.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={14} style={chevronInFieldStyle} />
-                  </div>
-                </FieldWrapper>
-                <FieldWrapper label={t.commune} labelColor={muted}>
-                  <div style={{ position: 'relative' }}>
-                    <MapPin size={15} style={iconInFieldStyle} />
-                    <select
-                      value={form.communeId}
-                      onChange={(e) => setForm((f) => ({ ...f, communeId: e.target.value }))}
-                      disabled={!form.wilayaId}
-                      style={fieldStyle('communeId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer', opacity: form.wilayaId ? 1 : 0.6 })}
-                      {...fieldHandlers('communeId')}
+                      <Mail size={14} />
+                      {t.contactViaEmail}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContactMethod('whatsapp')}
+                      style={{
+                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+                        backgroundColor: contactMethod === 'whatsapp' ? accentColor : 'transparent',
+                        color: contactMethod === 'whatsapp' ? '#ffffff' : muted,
+                        opacity: contactMethod === 'whatsapp' ? 1 : 0.6,
+                      }}
                     >
-                      <option value="">{t.selectCommune}</option>
-                      {communes.map((c) => (
-                        <option key={c.id} value={c.id}>{c.ar_name || c.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={14} style={chevronInFieldStyle} />
+                      <MessageCircle size={14} />
+                      {t.contactViaWhatsapp}
+                    </button>
                   </div>
-                </FieldWrapper>
-              </div>
 
-              {/* Delivery type */}
-              <div>
-                <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {[
-                    { type: 'home', Icon: Home, label: t.home },
-                    { type: 'office', Icon: Building2, label: t.office },
-                  ].map((opt) => {
-                    const isSelected = form.typeShip === opt.type;
-                    return (
-                      <button
-                        key={opt.type}
-                        type="button"
-                        onClick={() => setForm((f) => ({ ...f, typeShip: opt.type }))}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: 6,
-                          padding: '12px 8px',
-                          borderRadius: 14,
-                          border: `2px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
-                          backgroundColor: isSelected ? accentColor : 'transparent',
-                          color: isSelected ? '#ffffff' : muted,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        <opt.Icon size={20} style={{ opacity: isSelected ? 1 : 0.5 }} />
-                        <span style={{ textAlign: 'center' }}>
-                          <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700 }}>{opt.label}</span>
-                          {selectedWilaya && (
-                            <span style={{ display: 'block', fontSize: 10.5, marginTop: 2, opacity: isSelected ? 0.85 : 0.55 }}>
-                              {formatPrice(opt.type === 'home' ? selectedWilaya.livraisonHome : selectedWilaya.livraisonOfice)}
+                  {contactMethod === 'email' ? (
+                    <FieldWrapper label={t.email} labelColor={muted}>
+                      <div style={{ position: 'relative' }}>
+                        <Mail size={15} style={iconInFieldStyle} />
+                        <input
+                          type="email"
+                          dir="ltr"
+                          placeholder={t.emailPlaceholder}
+                          value={form.customerEmail}
+                          onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
+                          required
+                          style={fieldStyle('customerEmail', { paddingInlineStart: 34 })}
+                          {...fieldHandlers('customerEmail')}
+                        />
+                      </div>
+                    </FieldWrapper>
+                  ) : (
+                    <FieldWrapper label={t.whatsapp} labelColor={muted}>
+                      <div style={{ position: 'relative' }}>
+                        <MessageCircle size={15} style={iconInFieldStyle} />
+                        <input
+                          type="tel"
+                          dir="ltr"
+                          placeholder={t.whatsappPlaceholder}
+                          value={form.customerWhatsapp}
+                          onChange={(e) => setForm((f) => ({ ...f, customerWhatsapp: e.target.value }))}
+                          required
+                          style={fieldStyle('customerWhatsapp', { paddingInlineStart: 34, fontFamily: 'monospace' })}
+                          {...fieldHandlers('customerWhatsapp')}
+                        />
+                      </div>
+                    </FieldWrapper>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Wilaya + Commune */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <FieldWrapper label={t.wilaya} labelColor={muted}>
+                      <div style={{ position: 'relative' }}>
+                        <MapPin size={15} style={iconInFieldStyle} />
+                        <select
+                          value={form.wilayaId}
+                          onChange={(e) => setForm((f) => ({ ...f, wilayaId: e.target.value, communeId: '' }))}
+                          required
+                          style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer' })}
+                          {...fieldHandlers('wilayaId')}
+                        >
+                          <option value="">{t.selectWilaya}</option>
+                          {wilayas.map((w) => (
+                            <option key={w.id} value={w.id}>{w.ar_name || w.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} style={chevronInFieldStyle} />
+                      </div>
+                    </FieldWrapper>
+                    <FieldWrapper label={t.commune} labelColor={muted}>
+                      <div style={{ position: 'relative' }}>
+                        <MapPin size={15} style={iconInFieldStyle} />
+                        <select
+                          value={form.communeId}
+                          onChange={(e) => setForm((f) => ({ ...f, communeId: e.target.value }))}
+                          disabled={!form.wilayaId}
+                          style={fieldStyle('communeId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer', opacity: form.wilayaId ? 1 : 0.6 })}
+                          {...fieldHandlers('communeId')}
+                        >
+                          <option value="">{t.selectCommune}</option>
+                          {communes.map((c) => (
+                            <option key={c.id} value={c.id}>{c.ar_name || c.name}</option>
+                          ))}
+                        </select>
+                        <ChevronDown size={14} style={chevronInFieldStyle} />
+                      </div>
+                    </FieldWrapper>
+                  </div>
+
+                  {/* Delivery type */}
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      {[
+                        { type: 'home', Icon: Home, label: t.home },
+                        { type: 'office', Icon: Building2, label: t.office },
+                      ].map((opt) => {
+                        const isSelected = form.typeShip === opt.type;
+                        return (
+                          <button
+                            key={opt.type}
+                            type="button"
+                            onClick={() => setForm((f) => ({ ...f, typeShip: opt.type }))}
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: 6,
+                              padding: '12px 8px',
+                              borderRadius: 14,
+                              border: `2px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
+                              backgroundColor: isSelected ? accentColor : 'transparent',
+                              color: isSelected ? '#ffffff' : muted,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            <opt.Icon size={20} style={{ opacity: isSelected ? 1 : 0.5 }} />
+                            <span style={{ textAlign: 'center' }}>
+                              <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700 }}>{opt.label}</span>
+                              {selectedWilaya && (
+                                <span style={{ display: 'block', fontSize: 10.5, marginTop: 2, opacity: isSelected ? 0.85 : 0.55 }}>
+                                  {formatPrice(opt.type === 'home' ? selectedWilaya.livraisonHome : selectedWilaya.livraisonOfice)}
+                                </span>
+                              )}
                             </span>
-                          )}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {!selectedWilaya && (
-                  <p style={{ fontSize: 11, opacity: 0.5, marginTop: 6, textAlign: 'center' }}>{t.selectWilayaForPrice}</p>
-                )}
-              </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!selectedWilaya && (
+                      <p style={{ fontSize: 11, opacity: 0.5, marginTop: 6, textAlign: 'center' }}>{t.selectWilayaForPrice}</p>
+                    )}
+                  </div>
+                </>
+              )}
 
-              {/* Quantity */}
-              <FieldWrapper label={t.quantity} labelColor={muted}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, quantity: Math.max(1, f.quantity - 1) }))}
-                    disabled={form.quantity <= 1}
-                    style={quantityButtonStyle(accentColor, form.quantity <= 1)}
-                  >
-                    <Minus size={14} strokeWidth={2.5} />
-                  </button>
-                  <span style={{ minWidth: 24, textAlign: 'center', fontSize: 17, fontWeight: 800 }}>
-                    {form.quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, quantity: f.quantity + 1 }))}
-                    style={quantityButtonStyle(accentColor, false)}
-                  >
-                    <Plus size={14} strokeWidth={2.5} />
-                  </button>
-                  <span style={{ fontSize: 12, opacity: 0.5, fontWeight: 500 }}>{t.piece}</span>
-                </div>
-              </FieldWrapper>
+              {/* Quantity — a digital product is a single license/copy, not a
+                  stockable count, so there's nothing to increment */}
+              {!product?.isDigital && (
+                <FieldWrapper label={t.quantity} labelColor={muted}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, quantity: Math.max(1, f.quantity - 1) }))}
+                      disabled={form.quantity <= 1}
+                      style={quantityButtonStyle(accentColor, form.quantity <= 1)}
+                    >
+                      <Minus size={14} strokeWidth={2.5} />
+                    </button>
+                    <span style={{ minWidth: 24, textAlign: 'center', fontSize: 17, fontWeight: 800 }}>
+                      {form.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, quantity: f.quantity + 1 }))}
+                      style={quantityButtonStyle(accentColor, false)}
+                    >
+                      <Plus size={14} strokeWidth={2.5} />
+                    </button>
+                    <span style={{ fontSize: 12, opacity: 0.5, fontWeight: 500 }}>{t.piece}</span>
+                  </div>
+                </FieldWrapper>
+              )}
 
               {/* Order summary */}
               {product && (
@@ -548,21 +647,25 @@ export default function ProductFormBlock({
                     );
                   })}
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Truck size={14} /> {t.delivery}</span>
-                    <span style={{ fontWeight: 600, opacity: 1 }}>
-                      {form.typeShip === 'home' ? t.homeShort : t.officeShort}
-                      {form.wilayaId && <span style={{ opacity: 0.6 }}> ({formatPrice(priceShip)})</span>}
-                    </span>
-                  </div>
+                  {!product.isDigital && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Truck size={14} /> {t.delivery}</span>
+                      <span style={{ fontWeight: 600, opacity: 1 }}>
+                        {form.typeShip === 'home' ? t.homeShort : t.officeShort}
+                        {form.wilayaId && <span style={{ opacity: 0.6 }}> ({formatPrice(priceShip)})</span>}
+                      </span>
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
                     <span>{t.unitPrice}</span>
                     <span style={{ fontWeight: 700, opacity: 1 }}>{formatPrice(getUnitPrice())}</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                    <span>{t.quantity}</span>
-                    <span style={{ fontWeight: 700, opacity: 1 }}>× {form.quantity}</span>
-                  </div>
+                  {!product.isDigital && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
+                      <span>{t.quantity}</span>
+                      <span style={{ fontWeight: 700, opacity: 1 }}>× {form.quantity}</span>
+                    </div>
+                  )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1.5px dashed ${baseInputStyle.borderColor}` }}>
                     <span style={{ fontWeight: 700, fontSize: 14 }}>{t.total}</span>

@@ -9,7 +9,7 @@ import {
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
   Send, CheckSquare, Square, MinusSquare, ShieldAlert,
-  Phone, Copy, Check, Eye,
+  Phone, Copy, Check, Eye, Mail, MessageCircle,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -51,6 +51,14 @@ const GRID =
 
 const truncate = (text = '', max = 20) =>
   text.length > max ? text.slice(0, max) + '…' : text;
+
+// "تم التوصيل" لا معنى له لطلب رقمي — لا يوجد توصيل فعلي، فقط بيع. القيمة
+// المخزّنة في الـ backend تبقى 'delivered' دائماً، هذا تبديل للتسمية المعروضة فقط.
+const statusLabel = (t, status, isDigital) =>
+  status === 'delivered' && isDigital ? t('status.delivered_digital') : t(`status.${status}`);
+
+// لا شحن فعلي لطلب رقمي — "قيد التوصيل" و"مُرجع" لا ينطبقان عليه إطلاقاً.
+const DIGITAL_HIDDEN_STATUSES = ['shipping', 'returned'];
 
 const getStoreId = () => localStorage.getItem('storeId');
 
@@ -433,6 +441,9 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
   }, [open, onToggle]);
 
   const style = STATUS_STYLES[cart.status] || STATUS_STYLES.pending;
+  const visibleStatusKeys = cart.isDigital
+    ? statusKeys.filter(k => !DIGITAL_HIDDEN_STATUSES.includes(k))
+    : statusKeys;
 
   return (
     <div className="relative" ref={ref} onClick={e => e.stopPropagation()}>
@@ -441,13 +452,13 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
         disabled={busy}
         className={`w-full md:w-auto min-w-[112px] flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide border transition-all hover:brightness-95 disabled:opacity-60 ${style}`}
       >
-        <span className="truncate">{t(`status.${cart.status}`) || cart.status}</span>
+        <span className="truncate">{statusLabel(t, cart.status, cart.isDigital) || cart.status}</span>
         {busy ? <Loader2 size={11} className="animate-spin shrink-0" /> : <ChevronDown size={11} className="shrink-0 opacity-60" />}
       </button>
 
       {open && (
         <div className={`absolute z-50 top-full mt-1 w-44 p-1 bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-700 shadow-xl ${isRtl ? 'left-0' : 'right-0'}`}>
-          {statusKeys.map(k => (
+          {visibleStatusKeys.map(k => (
             <button
               key={k}
               onClick={() => onPick(cart, k)}
@@ -458,7 +469,7 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
               }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[k]}`} />
-              <span className="flex-1 text-start truncate">{t(`status.${k}`)}</span>
+              <span className="flex-1 text-start truncate">{statusLabel(t, k, cart.isDigital)}</span>
               {k === cart.status && <Check size={12} className="shrink-0 text-gray-400" />}
             </button>
           ))}
@@ -558,6 +569,7 @@ export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
+  const [typeFilter, setTypeFilter] = useState(''); // '' | 'digital' | 'physical'
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCart, setSelectedCart] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -594,7 +606,7 @@ export default function Orders() {
     return () => clearTimeout(id);
   }, [searchTerm]);
 
-  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()); }, [query, statusFilter]);
+  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()); }, [query, statusFilter, typeFilter]);
 
   const fetchOrders = useCallback(async () => {
     if (!storeId) {
@@ -605,13 +617,14 @@ export default function Orders() {
     }
     setLoading(true); setError(null);
     try {
+      const isDigital = typeFilter === 'digital' ? true : typeFilter === 'physical' ? false : undefined;
       const [{ data }, resCount] = await Promise.all([
         axios.get(`${baseURL}/orders/${storeId}`, {
-          params: { status: statusFilter, query, page: currentPage },
+          params: { status: statusFilter, query, page: currentPage, isDigital },
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get(`${baseURL}/orders/count/${storeId}`, {
-          params: { status: statusFilter, query },
+          params: { status: statusFilter, query, isDigital },
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -619,11 +632,12 @@ export default function Orders() {
       setTotal(Number(resCount.data) || 0);
     } catch (e) { console.error(e); setError(t('list.error')); }
     finally { setLoading(false); }
-  }, [token, query, statusFilter, currentPage, storeId, t]);
+  }, [token, query, statusFilter, typeFilter, currentPage, storeId, t]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId);
+  // منتج رقمي لا يُشحن — لا يدخل قائمة "الطلبات القابلة للشحن" إطلاقاً
+  const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital);
   const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(c => selectedIds.has(c.id));
   const someSelected = selectedIds.size > 0;
 
@@ -669,7 +683,7 @@ export default function Orders() {
       await axios.patch(`${baseURL}/orders/${cart.id}`, dtos, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      pushToast(`${cart.customerName || ''} → ${t(`status.${status}`)}`);
+      pushToast(`${cart.customerName || ''} → ${statusLabel(t, status, cart.isDigital)}`);
       /* الطلب خرج من الفلتر الحالي → نحيّدو من القائمة بلا reload */
       if (statusFilter && statusFilter !== status) {
         setTimeout(() => {
@@ -696,13 +710,16 @@ export default function Orders() {
     const ws = XLSX.utils.json_to_sheet(orders.map(order => ({
       [t('export.customer_name')]: order.customerName || '',
       [t('export.phone')]: order.customerPhone || '',
+      [t('export.customer_email')]: order.customerEmail || '',
+      [t('export.customer_whatsapp')]: order.customerWhatsapp || '',
+      [t('export.type')]: order.isDigital ? t('export.digital') : t('export.physical'),
       [t('export.product')]: (order.items || []).map(i => `${i.quantity}x ${i.product?.name || ''}`).join(' | '),
       [t('export.wilaya')]: order.customerWilaya?.ar_name || '',
       [t('export.commune')]: order.customerCommune?.ar_name || '',
       [t('export.ship_type')]: order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
       [t('export.ship_price')]: parseFloat(order.priceShip || 0),
       [t('export.total')]: parseFloat(order.totalPrice || 0),
-      [t('export.status')]: t(`status.${order.status}`) || order.status,
+      [t('export.status')]: statusLabel(t, order.status, order.isDigital) || order.status,
     })));
     ws['!cols'] = Array(9).fill({ wch: 18 });
     const wb = XLSX.utils.book_new();
@@ -821,6 +838,26 @@ export default function Orders() {
               );
             })}
           </div>
+
+          {/* صف 3: فصل الطلبات الرقمية عن العادية */}
+          <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl w-fit">
+            {[
+              { key: '', label: t('list.type_all', 'الكل') },
+              { key: 'physical', label: t('list.type_physical', 'عادي') },
+              { key: 'digital', label: t('list.type_digital', 'رقمي') },
+            ].map(tab => (
+              <button
+                key={tab.key || 'all-types'}
+                onClick={() => setTypeFilter(tab.key)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${typeFilter === tab.key
+                  ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300'
+                  }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -860,8 +897,8 @@ export default function Orders() {
             <div className="py-16 text-center">
               <Package size={36} className="mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
               <p className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('list.no_orders')}</p>
-              {(query || statusFilter) && (
-                <button onClick={() => { setSearchTerm(''); setQuery(''); setStatusFilter(''); }}
+              {(query || statusFilter || typeFilter) && (
+                <button onClick={() => { setSearchTerm(''); setQuery(''); setStatusFilter(''); setTypeFilter(''); }}
                   className="mt-3 px-4 py-1.5 rounded-lg text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700">
                   {t('list.clear_filters', 'مسح الفلاتر')}
                 </button>
@@ -871,7 +908,7 @@ export default function Orders() {
             const isSelected = selectedIds.has(cart.id);
             const isSuspicious = !cart.customerId;
             const items = cart.items || [];
-            const selectable = cart.status === 'confirmed' && !cart.shippingTrackingId;
+            const selectable = cart.status === 'confirmed' && !cart.shippingTrackingId && !cart.isDigital;
 
             return (
               <div
@@ -952,12 +989,28 @@ export default function Orders() {
 
                 {/* الوجهة */}
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <span className="text-[13px] font-semibold text-gray-800 dark:text-zinc-200 truncate">{cart.customerWilaya?.ar_name || '—'}</span>
-                  <span className="text-[11px] text-gray-400 dark:text-zinc-500 truncate">
-                    {cart.customerCommune?.ar_name || '—'}
-                    <span className="mx-1 text-gray-300 dark:text-zinc-700">·</span>
-                    {cart.typeShip === 'office' ? t('list.ship_office') : t('list.ship_home')}
-                  </span>
+                  {cart.isDigital ? (
+                    <>
+                      <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-gray-800 dark:text-zinc-200 truncate">
+                        {cart.customerWhatsapp
+                          ? <MessageCircle size={11} className="opacity-60 shrink-0" />
+                          : <Mail size={11} className="opacity-60 shrink-0" />}
+                        <span className="truncate" dir="ltr">{cart.customerWhatsapp || cart.customerEmail || '—'}</span>
+                      </span>
+                      <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-400 text-[9px] font-bold border border-violet-200 dark:border-violet-500/30 w-fit">
+                        {t('list.digital_badge', 'رقمي')}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-[13px] font-semibold text-gray-800 dark:text-zinc-200 truncate">{cart.customerWilaya?.ar_name || '—'}</span>
+                      <span className="text-[11px] text-gray-400 dark:text-zinc-500 truncate">
+                        {cart.customerCommune?.ar_name || '—'}
+                        <span className="mx-1 text-gray-300 dark:text-zinc-700">·</span>
+                        {cart.typeShip === 'office' ? t('list.ship_office') : t('list.ship_home')}
+                      </span>
+                    </>
+                  )}
                 </div>
 
                 {/* المبلغ */}
@@ -998,7 +1051,9 @@ export default function Orders() {
                   >
                     <Edit2 size={14} />
                   </button>
-                  <ShipButton order={cart} onResult={setShipResult} onShipped={() => fetchOrders()} t={t} />
+                  {!cart.isDigital && (
+                    <ShipButton order={cart} onResult={setShipResult} onShipped={() => fetchOrders()} t={t} />
+                  )}
                   <button
                     onClick={() => setDeleteTarget(cart)}
                     title={t('list.delete')}

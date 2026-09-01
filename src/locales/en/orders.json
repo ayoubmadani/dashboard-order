@@ -14,6 +14,7 @@
     "cancelled": "Cancelled",
     "returned": "Returned",
     "delivered": "Delivered",
+    "delivered_digital": "Sold",
     "postponed": "Postponed"
   },
   "list": {
@@ -41,12 +42,15 @@
     "prev_page": "Previous",
     "next_page": "Next",
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "digital_badge": "Digital"
   },
   "edit": {
     "customer_section_title": "Customer & Delivery Details",
     "customer_name": "Customer Name",
     "customer_phone": "Phone Number",
+    "customer_email": "Email",
+    "customer_whatsapp": "WhatsApp Number",
     "wilaya": "Wilaya",
     "select_wilaya": "Select Wilaya",
     "commune": "Commune",
@@ -94,6 +98,11 @@
   "export": {
     "customer_name": "Customer Name",
     "phone": "Phone Number",
+    "customer_email": "Email",
+    "customer_whatsapp": "WhatsApp Number",
+    "type": "Order Type",
+    "digital": "Digital",
+    "physical": "Physical",
     "product": "Product",
     "wilaya": "Wilaya",
     "commune": "Commune",

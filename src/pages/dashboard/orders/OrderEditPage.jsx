@@ -18,6 +18,9 @@ export const StatusEnum = {
   RETURNED: 'returned', DELIVERED: 'delivered', POSTPONED: 'postponed',
 };
 
+// لا شحن فعلي لطلب رقمي — "قيد التوصيل" و"مُرجع" لا ينطبقان عليه إطلاقاً.
+const DIGITAL_HIDDEN_STATUSES = ['shipping', 'returned'];
+
 const STATUS_META = {
   pending: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
   appl1: { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
@@ -428,6 +431,8 @@ export default function OrderEditPage() {
       const dtos = itemsToSave.map((item) => ({
         customerName: editedCart.customerName,
         customerPhone: editedCart.customerPhone,
+        customerEmail: editedCart.customerEmail,
+        customerWhatsapp: editedCart.customerWhatsapp,
         customerWilayaId: editedCart.customerWilayaId,
         customerCommuneId: editedCart.customerCommuneId,
         status: editedCart.status,
@@ -500,9 +505,15 @@ export default function OrderEditPage() {
 
   if (!editedCart) return null;
 
-  const statusOptions = Object.entries(StatusEnum).map(([, value]) => ({
-    value, label: t(`status.${value}`),
-  }));
+  const statusOptions = Object.entries(StatusEnum)
+    .filter(([, value]) => !editedCart.isDigital || !DIGITAL_HIDDEN_STATUSES.includes(value))
+    .map(([, value]) => ({
+      value,
+      // "تم التوصيل" لا معنى له لمنتج رقمي — لا يوجد توصيل فعلي، فقط بيع.
+      // القيمة المخزّنة في الـ backend تبقى 'delivered' كما هي، هذا تبديل
+      // للتسمية المعروضة فقط.
+      label: value === 'delivered' && editedCart.isDigital ? t('status.delivered_digital') : t(`status.${value}`),
+    }));
 
   const totals = calculateTotals();
   const freeShippingMin = editedCart.store?.supportFreeShipping ? editedCart.store?.freeShippingMinAmount : null;
@@ -538,40 +549,54 @@ export default function OrderEditPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.wilaya')}</label>
-                      <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none dark:[color-scheme:dark]">
-                        <option value="" className={OPTION_CLS}>{t('edit.select_wilaya')}</option>
-                        {wilayasData.map(w => <option key={w.id} value={w.id} className={OPTION_CLS}>{w.id} - {w.ar_name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.commune')}</label>
-                      <select value={editedCart.customerCommuneId || ''} onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))} disabled={!communes.length} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none disabled:opacity-50 dark:[color-scheme:dark]">
-                        <option value="" className={OPTION_CLS}>{t('edit.select_commune')}</option>
-                        {communes.map(c => <option key={c.id} value={c.id} className={OPTION_CLS}>{c.ar_name}</option>)}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.ship_type')}</label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[{ key: 'home', label: t('edit.ship_home'), icon: '🏠' }, { key: 'office', label: t('edit.ship_office'), icon: '🏢' }].map(o => (
-                          <button key={o.key} onClick={() => handleChangeTypeShip(o.key)} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${editedCart.typeShip === o.key ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
-                            <span>{o.icon}</span>{o.label}
-                          </button>
-                        ))}
+                  {editedCart.isDigital ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.customer_email')}</label>
+                        <input type="email" dir="ltr" value={editedCart.customerEmail || ''} onChange={e => handleGeneralChange('customerEmail', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.customer_whatsapp')}</label>
+                        <input type="tel" dir="ltr" value={editedCart.customerWhatsapp || ''} onChange={e => handleGeneralChange('customerWhatsapp', e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none" />
                       </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.status_label')}</label>
-                      <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none dark:[color-scheme:dark]" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
-                        {statusOptions.map(o => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label}</option>)}
-                      </select>
-                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.wilaya')}</label>
+                          <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none dark:[color-scheme:dark]">
+                            <option value="" className={OPTION_CLS}>{t('edit.select_wilaya')}</option>
+                            {wilayasData.map(w => <option key={w.id} value={w.id} className={OPTION_CLS}>{w.id} - {w.ar_name}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.commune')}</label>
+                          <select value={editedCart.customerCommuneId || ''} onChange={e => handleGeneralChange('customerCommuneId', parseInt(e.target.value))} disabled={!communes.length} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none disabled:opacity-50 dark:[color-scheme:dark]">
+                            <option value="" className={OPTION_CLS}>{t('edit.select_commune')}</option>
+                            {communes.map(c => <option key={c.id} value={c.id} className={OPTION_CLS}>{c.ar_name}</option>)}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.ship_type')}</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[{ key: 'home', label: t('edit.ship_home'), icon: '🏠' }, { key: 'office', label: t('edit.ship_office'), icon: '🏢' }].map(o => (
+                            <button key={o.key} onClick={() => handleChangeTypeShip(o.key)} className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 font-semibold text-sm transition-all ${editedCart.typeShip === o.key ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600 hover:border-gray-300'}`}>
+                              <span>{o.icon}</span>{o.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.status_label')}</label>
+                    <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none dark:[color-scheme:dark]" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
+                      {statusOptions.map(o => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label}</option>)}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -730,33 +755,35 @@ export default function OrderEditPage() {
                     );
                   })}
 
-                  <button
-                    onClick={() => setIsProductModalOpen(true)}
-                    className="group relative w-full h-40 bg-white dark:bg-zinc-900/40 border-2 border-dashed border-gray-300 dark:border-zinc-700 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/10 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-4 active:scale-[0.98] overflow-hidden"
-                  >
-                    {/* حاوية الأيقونة المركزية */}
-                    <div className="relative">
-                      {/* تم تغيير bg-white إلى bg-amber-50 لزيادة التباين مع الأيقونة */}
-                      <div className="w-16 h-16 bg-amber-50 dark:bg-amber-400/10 border-2 border-dashed border-amber-400 rounded-full flex items-center justify-center transition-all duration-500 group-hover:rotate-90 group-hover:scale-110 group-hover:border-solid group-hover:bg-amber-400">
-                        <Plus size={32} className="text-amber-500 transition-colors duration-300 group-hover:text-white" />
+                  {!editedCart.isDigital && (
+                    <button
+                      onClick={() => setIsProductModalOpen(true)}
+                      className="group relative w-full h-40 bg-white dark:bg-zinc-900/40 border-2 border-dashed border-gray-300 dark:border-zinc-700 hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/10 rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-4 active:scale-[0.98] overflow-hidden"
+                    >
+                      {/* حاوية الأيقونة المركزية */}
+                      <div className="relative">
+                        {/* تم تغيير bg-white إلى bg-amber-50 لزيادة التباين مع الأيقونة */}
+                        <div className="w-16 h-16 bg-amber-50 dark:bg-amber-400/10 border-2 border-dashed border-amber-400 rounded-full flex items-center justify-center transition-all duration-500 group-hover:rotate-90 group-hover:scale-110 group-hover:border-solid group-hover:bg-amber-400">
+                          <Plus size={32} className="text-amber-500 transition-colors duration-300 group-hover:text-white" />
+                        </div>
+
+                        {/* تأثير النبض الضوئي خلف الأيقونة */}
+                        <div className="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-0 group-hover:opacity-20" />
                       </div>
 
-                      {/* تأثير النبض الضوئي خلف الأيقونة */}
-                      <div className="absolute inset-0 bg-amber-400 rounded-full animate-ping opacity-0 group-hover:opacity-20" />
-                    </div>
+                      <div className="text-center z-10">
+                        <span className="block text-sm font-black text-gray-900 dark:text-zinc-100 uppercase tracking-wide">
+                          {t('edit.add_product_title')}
+                        </span>
+                        <span className="text-[11px] text-gray-400 dark:text-zinc-500 font-medium mt-1 block">
+                          {t('edit.add_product_subtitle')}
+                        </span>
+                      </div>
 
-                    <div className="text-center z-10">
-                      <span className="block text-sm font-black text-gray-900 dark:text-zinc-100 uppercase tracking-wide">
-                        {t('edit.add_product_title')}
-                      </span>
-                      <span className="text-[11px] text-gray-400 dark:text-zinc-500 font-medium mt-1 block">
-                        {t('edit.add_product_subtitle')}
-                      </span>
-                    </div>
-
-                    {/* خلفية جمالية عند التحويم (Gradient Shine) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </button>
+                      {/* خلفية جمالية عند التحويم (Gradient Shine) */}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

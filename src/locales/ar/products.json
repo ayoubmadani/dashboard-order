@@ -221,6 +221,8 @@
     "status_inactive": "✕ غير نشط",
     "shipping_free_label": "توصيل مجاني",
     "shipping_free_desc": "تقديم توصيل مجاني لهذا المنتج بغض النظر عن إعدادات المتجر الافتراضية.",
+    "is_digital_label": "منتج رقمي",
+    "is_digital_desc": "لا يحتاج شحن — عند الطلب يُطلب من العميل الاسم والهاتف والبريد الإلكتروني فقط.",
     "category_label": "التصنيف",
     "category_placeholder": "اختر تصنيفاً",
     "category_loading": "جاري التحميل...",

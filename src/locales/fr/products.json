@@ -218,6 +218,8 @@
     "status_inactive": "✕ Inactif",
     "shipping_free_label": "Livraison gratuite",
     "shipping_free_desc": "Offrir la livraison gratuite pour ce produit, indépendamment des réglages par défaut de la boutique.",
+    "is_digital_label": "Produit numérique",
+    "is_digital_desc": "Aucune livraison nécessaire — le formulaire de commande ne demande que le nom, le téléphone et l'e-mail.",
     "category_label": "Catégorie",
     "category_placeholder": "Sélectionnez une catégorie",
     "category_loading": "Chargement...",
