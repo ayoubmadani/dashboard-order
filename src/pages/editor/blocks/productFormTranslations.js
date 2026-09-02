@@ -6,8 +6,6 @@
 // language.
 const TRANSLATIONS = {
   ar: {
-    formTitle: 'أدخل بيانات التسليم',
-    formSubtitle: 'سنتواصل معك خلال 24 ساعة لتأكيد طلبك',
     noProductSelected: 'لم يتم اختيار منتج لهذه الصفحة',
     submitSuccess: 'تم استلام طلبك بنجاح، سنتواصل معك قريبًا!',
     fullName: 'الاسم الكامل',
@@ -35,6 +33,8 @@ const TRANSLATIONS = {
     pieces: 'قطع',
     product: 'المنتج',
     offer: 'العرض',
+    offersTitle: 'العروض',
+    optionsTitle: 'الخيارات',
     delivery: 'التوصيل',
     homeShort: 'المنزل',
     officeShort: 'المكتب',
@@ -49,8 +49,6 @@ const TRANSLATIONS = {
     currency: 'د.ج',
   },
   fr: {
-    formTitle: 'Entrez vos informations de livraison',
-    formSubtitle: 'Nous vous contacterons sous 24h pour confirmer votre commande',
     noProductSelected: "Aucun produit n'a été choisi pour cette page",
     submitSuccess: 'Votre commande a bien été reçue, nous vous contacterons bientôt !',
     fullName: 'Nom complet',
@@ -78,6 +76,8 @@ const TRANSLATIONS = {
     pieces: 'pièces',
     product: 'Produit',
     offer: 'Offre',
+    offersTitle: 'Offres',
+    optionsTitle: 'Options',
     delivery: 'Livraison',
     homeShort: 'Domicile',
     officeShort: 'Bureau',
@@ -92,8 +92,6 @@ const TRANSLATIONS = {
     currency: 'DA',
   },
   en: {
-    formTitle: 'Enter your delivery information',
-    formSubtitle: "We'll contact you within 24 hours to confirm your order",
     noProductSelected: 'No product has been selected for this page',
     submitSuccess: "Your order has been received, we'll contact you soon!",
     fullName: 'Full name',
@@ -121,6 +119,8 @@ const TRANSLATIONS = {
     pieces: 'pieces',
     product: 'Product',
     offer: 'Offer',
+    offersTitle: 'Offers',
+    optionsTitle: 'Options',
     delivery: 'Delivery',
     homeShort: 'Home',
     officeShort: 'Office',

@@ -29,7 +29,7 @@ function FieldWrapper({ label, labelColor, error, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {label && (
-        <label style={{ fontSize: 11, fontWeight: 700, color: labelColor, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        <label style={{ fontSize: 17, fontWeight: 700, color: labelColor, textTransform: 'uppercase', letterSpacing: 0.4 }}>
           {label}
         </label>
       )}
@@ -48,7 +48,6 @@ export default function ProductFormBlock({
   productId,
   showProductName,
   productName,
-  title,
   buttonText,
   containerBackgroundColor,
   backgroundColor,
@@ -56,11 +55,16 @@ export default function ProductFormBlock({
   buttonBackgroundColor,
   buttonTextColor,
   buttonBorderColor,
+  buttonBackgroundColorDisabled,
+  buttonTextColorDisabled,
+  buttonBorderColorDisabled,
   inputBackgroundColor,
   inputBorderColor,
   inputTextColor,
   paddingX,
+  paddingY,
   borderRadius,
+  sectionGap,
   language,
 }) {
   const t = getProductFormStrings(language);
@@ -100,6 +104,15 @@ export default function ProductFormBlock({
     borderColor: inputBorderColor || inputStyle.borderColor,
     color: inputTextColor || inputStyle.color,
   };
+  // "Couleurs du bouton actif/désactivé" apply to every selectable-choice
+  // button in the form (delivery type, offers, attribute/variant options,
+  // digital contact-method toggle) — active = the currently-picked choice,
+  // désactivé = every other choice in that same group, not the submit button.
+  const activeBtnText = buttonTextColor || '#ffffff';
+  const activeBtnBorder = buttonBorderColor || accentColor;
+  const inactiveBtnBg = buttonBackgroundColorDisabled || 'transparent';
+  const inactiveBtnText = buttonTextColorDisabled || muted;
+  const inactiveBtnBorder = buttonBorderColorDisabled || baseInputStyle.borderColor;
   const fieldStyle = (name, extra) => ({
     ...baseInputStyle,
     ...extra,
@@ -107,6 +120,13 @@ export default function ProductFormBlock({
       ? { borderColor: accentColor, backgroundColor: '#ffffff', boxShadow: `0 0 0 3px ${accentShadow}` }
       : {}),
   });
+  // Same merchant-configurable radius as the outer card, applied to every
+  // inner section box too (header, product info, offers, options, fields,
+  // summary) so "Rayon des angles" controls all of them uniformly.
+  const sectionRadius = borderRadius ?? 10;
+  // Merchant-configurable gap between top-level section boxes (header,
+  // product info / offers / options, order-form fields, summary).
+  const gapPx = sectionGap ?? 14;
   const fieldHandlers = (name) => ({
     onFocus: () => setFocusedField(name),
     onBlur: () => setFocusedField((f) => (f === name ? null : f)),
@@ -173,6 +193,10 @@ export default function ProductFormBlock({
         : selectedWilaya.livraisonHome
       : 0;
   const priceLoss = product?.isDigital ? 0 : (selectedWilaya?.livraisonReturn || 0);
+  // Store-level "Qty Support" toggle — hide the quantity picker entirely
+  // (not just lock it to 1) when the merchant's store doesn't offer it,
+  // same as the theme files' own ProductForm already does.
+  const supportQty = product?.supportQty !== false;
   const totalPrice = getUnitPrice() * form.quantity + (priceShip || 0);
 
   const outOfStock =
@@ -201,34 +225,42 @@ export default function ProductFormBlock({
 
     setSubmitting(true);
     setError(null);
+    // Minimum visible duration for the "submitting" (disabled-button-colors)
+    // state — a local API call can resolve in well under 100ms, too fast to
+    // actually see the button's disabled styling, so this floors it at 500ms.
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 500));
     try {
       const customerId = localStorage.getItem('customerId') || undefined;
-      const res = await axios.post(`${baseURL}/orders`, {
-        productId: product.id,
-        variantDetailId: matchedVariantDetail?.id,
-        offerId: selectedOffer || undefined,
-        domain: product.domain,
-        platform: 'mdstore',
-        quantity: form.quantity,
-        totalPrice,
-        customerId,
-        customerName: form.customerName,
-        customerPhone: normalizedPhone,
-        ...(product.isDigital
-          ? (contactMethod === 'email'
-              ? { customerEmail: form.customerEmail.trim() }
-              : { customerWhatsapp: form.customerWhatsapp.trim() })
-          : {
-              typeShip: form.typeShip,
-              priceShip,
-              priceLoss,
-              customerWilayaId: form.wilayaId ? Number(form.wilayaId) : undefined,
-              customerCommuneId: form.communeId ? Number(form.communeId) : undefined,
-            }),
-      });
+      const [res] = await Promise.all([
+        axios.post(`${baseURL}/orders`, {
+          productId: product.id,
+          variantDetailId: matchedVariantDetail?.id,
+          offerId: selectedOffer || undefined,
+          domain: product.domain,
+          platform: 'mdstore',
+          quantity: form.quantity,
+          totalPrice,
+          customerId,
+          customerName: form.customerName,
+          customerPhone: normalizedPhone,
+          ...(product.isDigital
+            ? (contactMethod === 'email'
+                ? { customerEmail: form.customerEmail.trim() }
+                : { customerWhatsapp: form.customerWhatsapp.trim() })
+            : {
+                typeShip: form.typeShip,
+                priceShip,
+                priceLoss,
+                customerWilayaId: form.wilayaId ? Number(form.wilayaId) : undefined,
+                customerCommuneId: form.communeId ? Number(form.communeId) : undefined,
+              }),
+        }),
+        minDelay,
+      ]);
       if (res.data?.customerId) localStorage.setItem('customerId', res.data.customerId);
       setSubmitted(true);
     } catch {
+      await minDelay;
       setError(t.submitError);
     } finally {
       setSubmitting(false);
@@ -244,7 +276,7 @@ export default function ProductFormBlock({
     <div
       id="md-product-form"
       style={{
-        paddingBlock: 20,
+        paddingBlock: paddingY ?? 0,
         paddingInline: `${paddingX ?? 0}%`,
         width: '100%',
         height: '100%',
@@ -252,17 +284,8 @@ export default function ProductFormBlock({
         backgroundColor: containerBackgroundColor || 'transparent',
       }}
     >
-      <div style={{ backgroundColor: backgroundColor || '#ffffff', color: muted, overflow: 'hidden', borderRadius: borderRadius ?? 0, boxShadow: '0 20px 25px -5px rgba(0,0,0,0.08)', border: `1px solid ${baseInputStyle.borderColor}` }}>
-        {/* Header */}
-        <div style={{ padding: '18px 22px', borderBottom: `1px solid ${baseInputStyle.borderColor}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <ShoppingCart size={18} style={{ opacity: 0.8 }} />
-            <p style={{ margin: 0, fontWeight: 700, fontSize: 15 }}>{title || t.formTitle}</p>
-          </div>
-          <p style={{ margin: '4px 0 0', fontSize: 12, opacity: 0.6 }}>{t.formSubtitle}</p>
-        </div>
-
-        <div style={{ padding: 20 }}>
+      <div style={{ backgroundColor: containerBackgroundColor || '#ffffff', color: muted, overflow: 'hidden', borderRadius: borderRadius ?? 0 }}>
+        <div style={{ paddingTop: gapPx }}>
           {!productId ? (
             <p style={{ textAlign: 'center', fontSize: 14, opacity: 0.6 }}>{t.noProductSelected}</p>
           ) : submitted ? (
@@ -270,129 +293,139 @@ export default function ProductFormBlock({
               {t.submitSuccess}
             </p>
           ) : (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {product && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: gapPx }}>
+              {product && showProductName !== false && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
                   {product.productImage && (
                     <img src={product.productImage} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
                   )}
                   <div>
-                    {showProductName !== false && (
-                      <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{productName || product.name}</p>
-                    )}
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{productName || product.name}</p>
                     <p style={{ margin: 0, fontSize: 13, opacity: 0.7 }}>{formatPrice(getUnitPrice())}</p>
                   </div>
                 </div>
               )}
 
-              {product?.offers?.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {product.offers.map((offer) => (
-                    <label
-                      key={offer.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 8,
-                        padding: '8px 10px',
-                        borderRadius: 8,
-                        border: `1px solid ${selectedOffer === offer.id ? accentColor : baseInputStyle.borderColor}`,
-                        cursor: 'pointer',
-                        fontSize: 13,
-                      }}
-                    >
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <input
-                          type="radio"
-                          name="offer"
-                          checked={selectedOffer === offer.id}
-                          onChange={() => setSelectedOffer(selectedOffer === offer.id ? null : offer.id)}
-                          style={{ accentColor }}
-                        />
-                        {offer.name} <span style={{ opacity: 0.6 }}>({offer.quantity} {t.pieces})</span>
-                      </span>
-                      <span style={{ fontWeight: 700 }}>{formatPrice(offer.price)}</span>
-                    </label>
-                  ))}
-                </div>
-              )}
-
-              {product?.attributes?.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {product.attributes.map((attr) => (
-                    <div key={attr.id}>
-                      <p style={{ fontSize: 12, fontWeight: 600, margin: '0 0 4px' }}>{attr.name}</p>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                        {attr.variants?.map((v) => {
-                          const isSelected = selectedVariants[attr.name] === v.value;
-
-                          if (attr.displayMode === 'color') {
-                            return (
-                              <button
-                                key={v.id}
-                                type="button"
-                                onClick={() => toggleVariant(attr.name, v.value)}
-                                title={v.name}
-                                style={{
-                                  width: 26,
-                                  height: 26,
-                                  borderRadius: '50%',
-                                  background: v.value,
-                                  border: `2px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
-                                  cursor: 'pointer',
-                                }}
-                              />
-                            );
-                          }
-
-                          if (attr.displayMode === 'image') {
-                            return (
-                              <button
-                                key={v.id}
-                                type="button"
-                                onClick={() => toggleVariant(attr.name, v.value)}
-                                title={v.name}
-                                style={{
-                                  width: 34,
-                                  height: 34,
-                                  borderRadius: 8,
-                                  padding: 0,
-                                  backgroundImage: `url(${v.value})`,
-                                  backgroundSize: 'cover',
-                                  backgroundPosition: 'center',
-                                  border: `2px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
-                                  cursor: 'pointer',
-                                }}
-                              />
-                            );
-                          }
-
-                          return (
-                            <button
-                              key={v.id}
-                              type="button"
-                              onClick={() => toggleVariant(attr.name, v.value)}
-                              style={{
-                                padding: '5px 12px',
-                                borderRadius: 6,
-                                fontSize: 12,
-                                backgroundColor: isSelected ? accentColor : baseInputStyle.backgroundColor,
-                                color: isSelected ? '#ffffff' : baseInputStyle.color,
-                                border: `1px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              {v.name}
-                            </button>
-                          );
-                        })}
-                      </div>
+              {(product?.offers?.length > 0 || product?.attributes?.length > 0) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: gapPx }}>
+                  {product?.offers?.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
+                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.offersTitle}</p>
+                      {product.offers.map((offer) => (
+                        <label
+                          key={offer.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: 8,
+                            padding: '14px 10px',
+                            borderRadius: 8,
+                            border: `1px solid ${selectedOffer === offer.id ? activeBtnBorder : inactiveBtnBorder}`,
+                            cursor: 'pointer',
+                            fontSize: 20,
+                            fontWeight: 700,
+                          }}
+                        >
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <input
+                              type="radio"
+                              name="offer"
+                              checked={selectedOffer === offer.id}
+                              onChange={() => setSelectedOffer(selectedOffer === offer.id ? null : offer.id)}
+                              style={{ accentColor }}
+                            />
+                            <span style={{ display: 'flex', flexDirection: 'column' }}>
+                              {offer.name}
+                              <span style={{ fontSize: 16, fontWeight: 400, opacity: 0.6 }}>({offer.quantity} {t.pieces})</span>
+                            </span>
+                          </span>
+                          <span style={{ fontWeight: 700 }}>{formatPrice(offer.price)}</span>
+                        </label>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {product?.attributes?.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
+                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.optionsTitle}</p>
+                      {product.attributes.map((attr) => (
+                        <div key={attr.id}>
+                          <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px' }}>{attr.name}</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                            {attr.variants?.map((v) => {
+                              const isSelected = selectedVariants[attr.name] === v.value;
+
+                              if (attr.displayMode === 'color') {
+                                return (
+                                  <button
+                                    key={v.id}
+                                    type="button"
+                                    onClick={() => toggleVariant(attr.name, v.value)}
+                                    title={v.name}
+                                    style={{
+                                      width: 38,
+                                      height: 38,
+                                      borderRadius: '50%',
+                                      background: v.value,
+                                      border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                                      cursor: 'pointer',
+                                    }}
+                                  />
+                                );
+                              }
+
+                              if (attr.displayMode === 'image') {
+                                return (
+                                  <button
+                                    key={v.id}
+                                    type="button"
+                                    onClick={() => toggleVariant(attr.name, v.value)}
+                                    title={v.name}
+                                    style={{
+                                      width: 100,
+                                      height: 100,
+                                      borderRadius: 8,
+                                      padding: 0,
+                                      backgroundImage: `url(${v.value})`,
+                                      backgroundSize: 'cover',
+                                      backgroundPosition: 'center',
+                                      border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                                      cursor: 'pointer',
+                                    }}
+                                  />
+                                );
+                              }
+
+                              return (
+                                <button
+                                  key={v.id}
+                                  type="button"
+                                  onClick={() => toggleVariant(attr.name, v.value)}
+                                  style={{
+                                    padding: '10px 18px',
+                                    borderRadius: 6,
+                                    fontSize: 16,
+                                    backgroundColor: isSelected ? accentColor : inactiveBtnBg,
+                                    color: isSelected ? activeBtnText : inactiveBtnText,
+                                    border: `1px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  {v.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
+              {/* Order form fields */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
               {/* Name + Phone */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
                 <FieldWrapper label={t.fullName} labelColor={muted}>
@@ -437,8 +470,8 @@ export default function ProductFormBlock({
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                         padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                        backgroundColor: contactMethod === 'email' ? accentColor : 'transparent',
-                        color: contactMethod === 'email' ? '#ffffff' : muted,
+                        backgroundColor: contactMethod === 'email' ? accentColor : inactiveBtnBg,
+                        color: contactMethod === 'email' ? activeBtnText : inactiveBtnText,
                         opacity: contactMethod === 'email' ? 1 : 0.6,
                       }}
                     >
@@ -451,8 +484,8 @@ export default function ProductFormBlock({
                       style={{
                         flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                         padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                        backgroundColor: contactMethod === 'whatsapp' ? accentColor : 'transparent',
-                        color: contactMethod === 'whatsapp' ? '#ffffff' : muted,
+                        backgroundColor: contactMethod === 'whatsapp' ? accentColor : inactiveBtnBg,
+                        color: contactMethod === 'whatsapp' ? activeBtnText : inactiveBtnText,
                         opacity: contactMethod === 'whatsapp' ? 1 : 0.6,
                       }}
                     >
@@ -539,7 +572,7 @@ export default function ProductFormBlock({
 
                   {/* Delivery type */}
                   <div>
-                    <p style={{ fontSize: 11, fontWeight: 700, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
+                    <p style={{ fontSize: 17, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {[
                         { type: 'home', Icon: Home, label: t.home },
@@ -558,15 +591,15 @@ export default function ProductFormBlock({
                               gap: 6,
                               padding: '12px 8px',
                               borderRadius: 14,
-                              border: `2px solid ${isSelected ? accentColor : baseInputStyle.borderColor}`,
-                              backgroundColor: isSelected ? accentColor : 'transparent',
-                              color: isSelected ? '#ffffff' : muted,
+                              border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                              backgroundColor: isSelected ? accentColor : inactiveBtnBg,
+                              color: isSelected ? activeBtnText : inactiveBtnText,
                               cursor: 'pointer',
                             }}
                           >
                             <opt.Icon size={20} style={{ opacity: isSelected ? 1 : 0.5 }} />
                             <span style={{ textAlign: 'center' }}>
-                              <span style={{ display: 'block', fontSize: 12.5, fontWeight: 700 }}>{opt.label}</span>
+                              <span style={{ display: 'block', fontSize: 14.5, fontWeight: 700 }}>{opt.label}</span>
                               {selectedWilaya && (
                                 <span style={{ display: 'block', fontSize: 10.5, marginTop: 2, opacity: isSelected ? 0.85 : 0.55 }}>
                                   {formatPrice(opt.type === 'home' ? selectedWilaya.livraisonHome : selectedWilaya.livraisonOfice)}
@@ -585,8 +618,9 @@ export default function ProductFormBlock({
               )}
 
               {/* Quantity — a digital product is a single license/copy, not a
-                  stockable count, so there's nothing to increment */}
-              {!product?.isDigital && (
+                  stockable count, so there's nothing to increment; supportQty
+                  being off means the store doesn't offer quantity selection at all */}
+              {supportQty && !product?.isDigital && (
                 <FieldWrapper label={t.quantity} labelColor={muted}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <button
@@ -611,10 +645,11 @@ export default function ProductFormBlock({
                   </div>
                 </FieldWrapper>
               )}
+              </div>
 
               {/* Order summary */}
               {product && (
-                <div style={{ borderRadius: 16, backgroundColor: shade(baseInputStyle.backgroundColor), border: `1px solid ${baseInputStyle.borderColor}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
+                <div style={{ borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Package size={14} /> {t.product}</span>
                     <span style={{ fontWeight: 700, opacity: 1, maxWidth: '55%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</span>
@@ -660,7 +695,7 @@ export default function ProductFormBlock({
                     <span>{t.unitPrice}</span>
                     <span style={{ fontWeight: 700, opacity: 1 }}>{formatPrice(getUnitPrice())}</span>
                   </div>
-                  {!product.isDigital && (
+                  {supportQty && !product.isDigital && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
                       <span>{t.quantity}</span>
                       <span style={{ fontWeight: 700, opacity: 1 }}>× {form.quantity}</span>
@@ -673,46 +708,57 @@ export default function ProductFormBlock({
                       {formatPrice(totalPrice)}
                     </span>
                   </div>
+
+                  {outOfStock && (
+                    <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{t.outOfStock}</p>
+                  )}
+                  {error && <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{error}</p>}
+
+                  {(() => {
+                    const isBtnDisabled = submitting || outOfStock;
+                    // Only a merchant-set disabled color skips the opacity dim —
+                    // otherwise fall back to the old behavior (active color + 0.6
+                    // opacity) so pages saved before this field existed look the same.
+                    const btnBg = isBtnDisabled ? (buttonBackgroundColorDisabled || buttonBackgroundColor || 'var(--md-primary, #10b981)') : (buttonBackgroundColor || 'var(--md-primary, #10b981)');
+                    const btnText = isBtnDisabled ? (buttonTextColorDisabled || buttonTextColor || '#ffffff') : (buttonTextColor || '#ffffff');
+                    const btnBorder = isBtnDisabled ? (buttonBorderColorDisabled || buttonBorderColor) : buttonBorderColor;
+                    return (
+                  <button
+                    type="submit"
+                    disabled={isBtnDisabled}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      padding: '13px 24px',
+                      borderRadius: 14,
+                      border: btnBorder ? `2px solid ${btnBorder}` : 'none',
+                      backgroundColor: btnBg,
+                      color: btnText,
+                      fontWeight: 700,
+                      fontSize: 15,
+                      cursor: isBtnDisabled ? 'default' : 'pointer',
+                      opacity: isBtnDisabled && !buttonBackgroundColorDisabled ? 0.6 : 1,
+                      boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    {submitting ? (
+                      <>
+                        <span style={spinnerStyle(btnText)} />
+                        {t.submitting}
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart size={17} />
+                        {buttonText || t.submit}
+                      </>
+                    )}
+                  </button>
+                    );
+                  })()}
                 </div>
               )}
-
-              {outOfStock && (
-                <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{t.outOfStock}</p>
-              )}
-              {error && <p style={{ color: '#dc2626', fontSize: 12, textAlign: 'center', margin: 0 }}>{error}</p>}
-
-              <button
-                type="submit"
-                disabled={submitting || outOfStock}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  padding: '13px 24px',
-                  borderRadius: 14,
-                  border: buttonBorderColor ? `2px solid ${buttonBorderColor}` : 'none',
-                  backgroundColor: buttonBackgroundColor || 'var(--md-primary, #10b981)',
-                  color: buttonTextColor || '#ffffff',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: submitting || outOfStock ? 'default' : 'pointer',
-                  opacity: submitting || outOfStock ? 0.6 : 1,
-                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                }}
-              >
-                {submitting ? (
-                  <>
-                    <span style={spinnerStyle(buttonTextColor || '#ffffff')} />
-                    {t.submitting}
-                  </>
-                ) : (
-                  <>
-                    <ShoppingCart size={17} />
-                    {buttonText || t.submit}
-                  </>
-                )}
-              </button>
 
               <p style={{ margin: 0, fontSize: 11, textAlign: 'center', opacity: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                 <Shield size={12} />
@@ -736,7 +782,7 @@ const inputStyle = {
   borderWidth: 1.5,
   borderStyle: 'solid',
   borderColor: '#e4e4e7',
-  fontSize: 14,
+  fontSize: 16,
   width: '100%',
   boxSizing: 'border-box',
   backgroundColor: '#f9fafb',
@@ -791,14 +837,3 @@ const spinnerStyle = (color) => ({
   display: 'inline-block',
 });
 
-// Slightly darkens/lightens a hex background for the order-summary card so it
-// always reads as a distinct panel against the form's own background, even
-// when a merchant picks a custom inputBackgroundColor.
-function shade(hex) {
-  if (!hex || !/^#([0-9a-f]{6})$/i.test(hex)) return hex || '#f9fafb';
-  const num = parseInt(hex.slice(1), 16);
-  const r = Math.max(0, (num >> 16) - 6);
-  const g = Math.max(0, ((num >> 8) & 0xff) - 6);
-  const b = Math.max(0, (num & 0xff) - 6);
-  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-}

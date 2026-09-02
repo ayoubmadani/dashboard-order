@@ -92,7 +92,6 @@ export const componentsMap = {
       productId: '',
       showProductName: true,
       productName: '',
-      title: 'أكمل طلبك الآن',
       buttonText: 'اطلب الآن',
       containerBackgroundColor: '',
       backgroundColor: '#ffffff',
@@ -100,6 +99,9 @@ export const componentsMap = {
       buttonBackgroundColor: '#10b981',
       buttonTextColor: '#ffffff',
       buttonBorderColor: '',
+      buttonBackgroundColorDisabled: '',
+      buttonTextColorDisabled: '',
+      buttonBorderColorDisabled: '',
       inputBackgroundColor: '#f9fafb',
       inputBorderColor: '#e4e4e7',
       inputTextColor: '#18181b',
@@ -108,16 +110,19 @@ export const componentsMap = {
       // at any screen size instead of using up more and more of a narrow
       // phone screen the way a fixed px value would.
       paddingX: 3,
+      paddingY: 0,
       borderRadius: 0,
+      sectionGap: 14,
     },
     fields: [
-      { key: 'title', labelKey: 'editor.fields.title', type: 'text' },
       { key: 'showProductName', labelKey: 'editor.fields.showProductName', type: 'checkbox' },
       { key: 'productName', labelKey: 'editor.fields.productNameOverride', type: 'text' },
       { key: 'buttonText', labelKey: 'editor.fields.buttonText', type: 'text' },
       { key: 'containerBackgroundColor', labelKey: 'editor.fields.containerBackgroundColor', type: 'color' },
       { key: 'paddingX', labelKey: 'editor.fields.paddingX', type: 'number', min: 0, max: 50 },
+      { key: 'paddingY', labelKey: 'editor.fields.paddingY', type: 'number', min: 0, max: 60 },
       { key: 'borderRadius', labelKey: 'editor.fields.borderRadius', type: 'number', min: 0, max: 60 },
+      { key: 'sectionGap', labelKey: 'editor.fields.sectionGap', type: 'number', min: 0, max: 40 },
       {
         key: 'formColors',
         type: 'colorGroup',
@@ -140,11 +145,21 @@ export const componentsMap = {
       {
         key: 'buttonColors',
         type: 'colorGroup',
-        groupLabelKey: 'editor.fields.buttonColors',
+        groupLabelKey: 'editor.fields.buttonColorsActive',
         items: [
           { key: 'buttonBackgroundColor', labelKey: 'editor.fields.backgroundColor' },
           { key: 'buttonTextColor', labelKey: 'editor.fields.textColor' },
           { key: 'buttonBorderColor', labelKey: 'editor.fields.buttonBorderColor' },
+        ],
+      },
+      {
+        key: 'buttonColorsDisabled',
+        type: 'colorGroup',
+        groupLabelKey: 'editor.fields.buttonColorsDisabled',
+        items: [
+          { key: 'buttonBackgroundColorDisabled', labelKey: 'editor.fields.backgroundColor' },
+          { key: 'buttonTextColorDisabled', labelKey: 'editor.fields.textColor' },
+          { key: 'buttonBorderColorDisabled', labelKey: 'editor.fields.buttonBorderColor' },
         ],
       },
     ],
