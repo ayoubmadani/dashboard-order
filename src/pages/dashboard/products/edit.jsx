@@ -346,8 +346,17 @@ export default function EditProduct() {
     const hasText = /[a-zA-Z0-9\u0600-\u06FF]/.test(formData.name || '');
     if (!formData.name?.trim() || !hasText) e.name = t('edit.name_invalid');
     if (!formData.price || Number(formData.price) <= 0) e.price = t('edit.price_invalid');
+    // Two attributes sharing the same name (e.g. two "اللون" attributes, one
+    // color-swatch one image-swatch) can't both be selected on the storefront
+    // — the order form's selection state is keyed by attribute name, not id.
+    const nameCounts = {};
+    attributes.forEach(a => {
+      const key = a.name?.trim().toLowerCase();
+      if (key) nameCounts[key] = (nameCounts[key] || 0) + 1;
+    });
     attributes.forEach(a => {
       if (!a.name?.trim()) e[`attr_${a.id}`] = t('attributes.name_required');
+      else if (nameCounts[a.name.trim().toLowerCase()] > 1) e[`attr_${a.id}`] = t('attributes.name_duplicate');
       if (!a.variants.length) e[`attr_empty_${a.id}`] = t('attributes.one_variant_required');
       a.variants.forEach(v => { if (!v.name?.trim() && !v.value?.trim()) e[`variant_${v.id}`] = t('attributes.variant_value_required'); });
     });
@@ -442,11 +451,6 @@ export default function EditProduct() {
             <p className="text-xs text-gray-400 font-mono"># {id}</p>
           </div>
         </div>
-        <button onClick={handleSubmit} disabled={loading}
-          className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-sm">
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('edit.saving') : t('edit.save')}
-        </button>
       </div>
 
       {/* ── SECTION 1: Basic Info ── */}
@@ -659,6 +663,11 @@ export default function EditProduct() {
                 <Trash2 size={14} />
               </button>
             </div>
+            {errors[`attr_${attr.id}`] && (
+              <p className="flex items-center gap-1 text-xs text-rose-500 font-medium -mt-1">
+                <AlertCircle size={12} />{errors[`attr_${attr.id}`]}
+              </p>
+            )}
 
             {attr.type === ATTRIBUTE_TYPES.COLOR && (
               <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg w-fit">
@@ -954,12 +963,26 @@ export default function EditProduct() {
         </p>
       </Section>
 
-      {/* Bottom Save */}
-      <div className={`flex pt-2 ${isRtl ? 'justify-start' : 'justify-end'}`}>
-        <button onClick={handleSubmit} disabled={loading}
-          className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-50 shadow-md">
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {loading ? t('edit.saving') : t('edit.save')}
+      {/* ── Action Buttons ── */}
+      <div className={`flex ${isRtl ? 'justify-start' : 'justify-end'} gap-4 pt-2`}>
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard/products')}
+          className="px-6 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl font-bold text-gray-700 dark:text-zinc-300 hover:scale-105 transition-all"
+        >
+          {t('common.cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="flex-1 px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <><Loader2 size={20} className="animate-spin" />{t('edit.saving')}</>
+          ) : (
+            <><Save size={20} />{t('edit.save')}</>
+          )}
         </button>
       </div>
     </div>

@@ -1,4 +1,8 @@
 {
+  "common": {
+    "cancel": "إلغاء"
+  },
+
   "no_store": {
     "title": "لم يتم تحديد المتجر",
     "subtitle": "أنشئ متجراً أولاً لإدارة المنتجات",
@@ -258,6 +262,7 @@
     "size_placeholder": "مثال: XL",
     "value_placeholder": "القيمة",
     "name_required": "اسم الخاصية مطلوب",
+    "name_duplicate": "لا يمكن استخدام هذا الاسم لأكثر من خاصية واحدة",
     "one_variant_required": "أضف قيمة واحدة على الأقل",
     "variant_value_required": "قيمة المتغير مطلوبة"
   },

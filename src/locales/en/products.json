@@ -1,4 +1,8 @@
 {
+  "common": {
+    "cancel": "Cancel"
+  },
+
   "no_store": {
     "title": "No store selected",
     "subtitle": "Create a store first to manage products",
@@ -257,6 +261,7 @@
     "size_placeholder": "e.g., XL",
     "value_placeholder": "Value",
     "name_required": "Attribute name is required",
+    "name_duplicate": "This name can't be used for more than one attribute",
     "one_variant_required": "Add at least one value",
     "variant_value_required": "Variant value is required"
   },

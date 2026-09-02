@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DndContext, PointerSensor, useSensor, useSensors, pointerWithin, closestCenter } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -18,6 +18,7 @@ import { componentsMap } from './blocks/componentsMap';
 
 export default function PageEditor() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === 'ar';
   const [selectedId, setSelectedId] = useState(null);
@@ -291,6 +292,12 @@ export default function PageEditor() {
       return false;
     }
   };
+
+  useEffect(() => {
+    if (!error) return;
+    const timer = setTimeout(() => navigate('/dashboard/landing-pages', { replace: true }), 1500);
+    return () => clearTimeout(timer);
+  }, [error, navigate]);
 
   if (loading) return <Loading />;
 

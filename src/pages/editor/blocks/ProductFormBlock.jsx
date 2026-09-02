@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import {
   Minus, Plus, ShoppingCart, MapPin, Phone, User, Home,
   ChevronDown, Truck, Shield, Package, Building2, AlertCircle, Tag, Mail, MessageCircle,
+  Check as CheckIcon,
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
@@ -23,6 +24,20 @@ function variantMatches(detail, selected) {
   return Object.entries(selected).every(([attrName, value]) =>
     detail.name?.some((entry) => entry.attrName === attrName && entry.value === value)
   );
+}
+
+// Picks black or white for a checkmark drawn on top of an arbitrary color
+// swatch, so it stays visible on both light (e.g. white, yellow) and dark
+// (e.g. black, navy) attribute colors instead of assuming one fixed color.
+function contrastText(hex) {
+  if (!hex || !/^#([0-9a-f]{6}|[0-9a-f]{3})$/i.test(hex)) return '#ffffff';
+  const full = hex.length === 4
+    ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
+    : hex;
+  const num = parseInt(full.slice(1), 16);
+  const r = (num >> 16) & 0xff, g = (num >> 8) & 0xff, b = num & 0xff;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? '#000000' : '#ffffff';
 }
 
 function FieldWrapper({ label, labelColor, error, children }) {
@@ -357,6 +372,11 @@ export default function ProductFormBlock({
                               const isSelected = selectedVariants[attr.name] === v.value;
 
                               if (attr.displayMode === 'color') {
+                                // A colored ring around a colored swatch can
+                                // blend into the swatch's own fill and become
+                                // invisible — a white gap between them plus a
+                                // checkmark makes the selected one unmistakable
+                                // no matter what color it is.
                                 return (
                                   <button
                                     key={v.id}
@@ -364,18 +384,33 @@ export default function ProductFormBlock({
                                     onClick={() => toggleVariant(attr.name, v.value)}
                                     title={v.name}
                                     style={{
+                                      position: 'relative',
                                       width: 38,
                                       height: 38,
                                       borderRadius: '50%',
                                       background: v.value,
-                                      border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                                      border: '2px solid #ffffff',
+                                      boxShadow: isSelected
+                                        ? `0 0 0 2.5px ${activeBtnBorder}`
+                                        : `0 0 0 1px ${inactiveBtnBorder}`,
                                       cursor: 'pointer',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
                                     }}
-                                  />
+                                  >
+                                    {isSelected && (
+                                      <CheckIcon size={16} color={contrastText(v.value)} />
+                                    )}
+                                  </button>
                                 );
                               }
 
                               if (attr.displayMode === 'image') {
+                                // Same reasoning as the color swatch — the
+                                // image's own colors could match the ring, so
+                                // a corner checkmark badge stays visible
+                                // regardless of what's in the picture.
                                 return (
                                   <button
                                     key={v.id}
@@ -383,6 +418,7 @@ export default function ProductFormBlock({
                                     onClick={() => toggleVariant(attr.name, v.value)}
                                     title={v.name}
                                     style={{
+                                      position: 'relative',
                                       width: 100,
                                       height: 100,
                                       borderRadius: 8,
@@ -390,10 +426,25 @@ export default function ProductFormBlock({
                                       backgroundImage: `url(${v.value})`,
                                       backgroundSize: 'cover',
                                       backgroundPosition: 'center',
-                                      border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
+                                      border: '2px solid #ffffff',
+                                      boxShadow: isSelected
+                                        ? `0 0 0 2.5px ${activeBtnBorder}`
+                                        : `0 0 0 1px ${inactiveBtnBorder}`,
                                       cursor: 'pointer',
                                     }}
-                                  />
+                                  >
+                                    {isSelected && (
+                                      <span style={{
+                                        position: 'absolute', top: -8, right: -8,
+                                        width: 22, height: 22, borderRadius: '50%',
+                                        backgroundColor: activeBtnBorder,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        border: '2px solid #ffffff',
+                                      }}>
+                                        <CheckIcon size={13} color={contrastText(activeBtnBorder)} />
+                                      </span>
+                                    )}
+                                  </button>
                                 );
                               }
 
