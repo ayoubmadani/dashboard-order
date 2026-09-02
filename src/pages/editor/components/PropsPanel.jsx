@@ -33,6 +33,7 @@ const BUTTON_ELEMENT_FIELDS = [
   { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (el) => (el.linkType || 'external') !== 'form' },
   { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
   { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
+  { key: 'fontSize', labelKey: 'editor.fields.fontSize', type: 'number' },
   { key: 'width', labelKey: 'editor.canvasSection.width', type: 'number', min: 5, max: 100 },
   { key: 'height', labelKey: 'editor.canvasSection.height', type: 'number' },
 ];
