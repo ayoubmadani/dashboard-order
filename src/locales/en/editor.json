@@ -163,6 +163,7 @@
     "button": { "label": "Button" },
     "image": { "label": "Image" },
     "productForm": { "label": "Order form" },
+    "productImages": { "label": "Product image slider" },
     "spacer": { "label": "Spacer" },
     "floatingButton": { "label": "Floating button" }
   },
@@ -209,6 +210,17 @@
     "paddingY": "Vertical padding (px)",
     "borderRadius": "Corner radius (px)",
     "sectionGap": "Spacing between sections (px)",
+    "showDots": "Show dots",
+    "showArrows": "Show arrows",
+    "showThumbnails": "Show thumbnails",
+    "padding": "Padding (px)",
+    "borderColor": "Border color",
+    "borderWidth": "Border thickness (px)",
+    "layout": "Layout",
+    "layoutOptions": {
+      "slider": "Slider",
+      "vertical": "Vertical list"
+    },
     "loadingProducts": "Loading...",
     "buttonBackgroundColor": "Button background color",
     "buttonTextColor": "Button text color",

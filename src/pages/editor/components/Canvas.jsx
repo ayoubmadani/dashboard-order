@@ -125,13 +125,23 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
   const isPinned = block.type === 'spacer' && (block.props.position === 'top' || block.props.position === 'bottom');
   const pinnedLabelKey = block.props?.position === 'top' ? 'editor.fields.positionOptions.top' : 'editor.fields.positionOptions.bottom';
 
-  // productForm no longer has its own product picker (see componentsMap) —
-  // it always uses the product chosen for the whole page at creation time.
-  // Falls back to a legacy block-level productId for pages built before
-  // that page-level field existed.
+  // productForm/productImages have no product picker of their own (see
+  // componentsMap) — they always use the product chosen for the whole page
+  // at creation time. Falls back to a legacy block-level productId for pages
+  // built before that page-level field existed.
   const componentProps =
     block.type === 'productForm'
       ? { ...def.defaultProps, ...block.props, productId: pageProductId || block.props.productId, language }
+      : block.type === 'productImages'
+      ? {
+          ...def.defaultProps,
+          ...block.props,
+          productId: pageProductId || block.props.productId,
+          // Only this block writes back to its own props outside PropsPanel
+          // — its up/down reorder buttons live right on each image, not in
+          // the side panel, so they need direct write access.
+          updateProps: (patch) => onUpdateProps(block.id, patch),
+        }
       : isPinned
       ? { ...def.defaultProps, ...block.props, height: currentHeight, position: 'static' }
       : def.resizableHeight

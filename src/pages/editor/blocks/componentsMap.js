@@ -1,7 +1,8 @@
-import { Image as ImageIcon, SeparatorHorizontal, ClipboardList, Pin } from 'lucide-react';
+import { Image as ImageIcon, SeparatorHorizontal, ClipboardList, Pin, Images } from 'lucide-react';
 import ImageBlock from './ImageBlock';
 import SpacerBlock from './SpacerBlock';
 import ProductFormBlock from './ProductFormBlock';
+import ProductImagesBlock from './ProductImagesBlock';
 import FloatingButtonBlock from './FloatingButtonBlock';
 import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
 
@@ -162,6 +163,51 @@ export const componentsMap = {
           { key: 'buttonBorderColorDisabled', labelKey: 'editor.fields.buttonBorderColor' },
         ],
       },
+    ],
+  },
+  productImages: {
+    labelKey: 'editor.blocks.productImages.label',
+    icon: Images,
+    Component: ProductImagesBlock,
+    singleton: true, // one product-image slider per page is enough
+    defaultProps: {
+      productId: '',
+      layout: 'slider',
+      // `images` deliberately has no default here (stays undefined) — that's
+      // how ProductImagesBlock tells a brand-new block apart from one whose
+      // merchant already emptied its list on purpose, and seeds it from the
+      // linked product's own photos exactly once. From then on it's an
+      // independent, merchant-managed list (add/remove/reorder), stored
+      // directly on this block — never re-synced from the product again.
+      borderRadius: 12,
+      showDots: true,
+      showArrows: true,
+      showThumbnails: true,
+      backgroundColor: '',
+      padding: 0,
+      borderColor: '',
+      borderWidth: 0,
+      imageGap: 12,
+    },
+    fields: [
+      {
+        key: 'layout',
+        labelKey: 'editor.fields.layout',
+        type: 'select',
+        options: [
+          { value: 'slider', labelKey: 'editor.fields.layoutOptions.slider' },
+          { value: 'vertical', labelKey: 'editor.fields.layoutOptions.vertical' },
+        ],
+      },
+      { key: 'borderRadius', labelKey: 'editor.fields.borderRadius', type: 'number', min: 0, max: 60 },
+      { key: 'imageGap', labelKey: 'editor.fields.sectionGap', type: 'number', min: 0, max: 60, showIf: (v) => (v.layout || 'slider') === 'vertical' },
+      { key: 'showDots', labelKey: 'editor.fields.showDots', type: 'checkbox', showIf: (v) => (v.layout || 'slider') !== 'vertical' },
+      { key: 'showArrows', labelKey: 'editor.fields.showArrows', type: 'checkbox', showIf: (v) => (v.layout || 'slider') !== 'vertical' },
+      { key: 'showThumbnails', labelKey: 'editor.fields.showThumbnails', type: 'checkbox', showIf: (v) => (v.layout || 'slider') !== 'vertical' },
+      { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
+      { key: 'padding', labelKey: 'editor.fields.padding', type: 'number', min: 0, max: 60 },
+      { key: 'borderColor', labelKey: 'editor.fields.borderColor', type: 'color' },
+      { key: 'borderWidth', labelKey: 'editor.fields.borderWidth', type: 'number', min: 0, max: 20 },
     ],
   },
   floatingButton: {

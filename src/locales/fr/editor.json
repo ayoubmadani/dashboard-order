@@ -163,6 +163,7 @@
     "button": { "label": "Bouton" },
     "image": { "label": "Image" },
     "productForm": { "label": "Formulaire de commande" },
+    "productImages": { "label": "Diaporama d'images produit" },
     "spacer": { "label": "Espacement" },
     "floatingButton": { "label": "Bouton flottant" }
   },
@@ -209,6 +210,17 @@
     "paddingY": "Marge verticale (px)",
     "borderRadius": "Rayon des angles (px)",
     "sectionGap": "Espacement entre sections (px)",
+    "showDots": "Afficher les points",
+    "showArrows": "Afficher les flèches",
+    "showThumbnails": "Afficher les miniatures",
+    "padding": "Marge intérieure (px)",
+    "borderColor": "Couleur de la bordure",
+    "borderWidth": "Épaisseur de la bordure (px)",
+    "layout": "Disposition",
+    "layoutOptions": {
+      "slider": "Diaporama",
+      "vertical": "Liste verticale"
+    },
     "loadingProducts": "Chargement...",
     "buttonBackgroundColor": "Couleur de fond du bouton",
     "buttonTextColor": "Couleur du texte du bouton",

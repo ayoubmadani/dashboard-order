@@ -163,6 +163,7 @@
     "button": { "label": "زر" },
     "image": { "label": "صورة" },
     "productForm": { "label": "نموذج طلب" },
+    "productImages": { "label": "سلايدر صور المنتج" },
     "spacer": { "label": "مساحة فارغة" },
     "floatingButton": { "label": "زر عائم" }
   },
@@ -209,6 +210,17 @@
     "paddingY": "الحشو العمودي (px)",
     "borderRadius": "استدارة الحواف (px)",
     "sectionGap": "الفراغ بين الأقسام (px)",
+    "showDots": "إظهار النقاط",
+    "showArrows": "إظهار الأسهم",
+    "showThumbnails": "إظهار الصور المصغرة",
+    "padding": "الحشو الداخلي (px)",
+    "borderColor": "لون الإطار",
+    "borderWidth": "سماكة الإطار (px)",
+    "layout": "طريقة العرض",
+    "layoutOptions": {
+      "slider": "سلايدر",
+      "vertical": "قائمة عمودية"
+    },
     "loadingProducts": "جارٍ التحميل...",
     "buttonBackgroundColor": "لون خلفية الزر",
     "buttonTextColor": "لون كتابة الزر",
