@@ -391,15 +391,24 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     };
   }, [isOpen]);
 
-  // Reset transient state when the modal closes
+  // عند الغلق: نمسحو ذاكرة المجلد المختار ونرجعو لـ initialFolder (products افتراضياً)
+  // باش كي تتفتح المودال مرة أخرى تبدا دايماً من المجلد الأصلي
   useEffect(() => {
     if (!isOpen) {
+      setCurrentFolder(getValidFolder(initialFolder));
+      setImages([]);
+      setPage(1);
+      setHasMore(true);
+      setFocusedIndex(-1);
+      setSelectedImage(null);
+      setPendingDelete(null);
+      setIsDragging(false);
       setSelectionMode(false);
       setSelectedIds(new Set());
       setUrlInput('');
       setUrlLoading(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialFolder]);
 
   // لصق (Ctrl+V / Cmd+V) في أي مكان داخل النافذة
   useEffect(() => {
