@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, Link2, Download, Clipboard } from 'lucide-react';
 import { baseURL } from '../constents/const.';
 import { getAccessToken } from '../services/access-token';
 import { getMyPlanFeatures } from '../services/plan';
@@ -40,48 +40,115 @@ const compressImage = async (file, options = {}) => {
   });
 };
 
+// ── URL → Canvas → File ──
+const isImageUrl = (value) => {
+  const v = (value || '').trim();
+  return /^https?:\/\/\S+$/i.test(v) || /^data:image\/[a-z+.-]+;base64,/i.test(v);
+};
+
+const loadImageFromUrl = (src) => new Promise((resolve, reject) => {
+  const img = new Image();
+  // لازم crossOrigin قبل src، وإلا الـ canvas يتلوث (tainted) وtoBlob يفشل
+  img.crossOrigin = 'anonymous';
+  img.referrerPolicy = 'no-referrer';
+  img.onload = () => resolve(img);
+  img.onerror = () => reject(new Error('load'));
+  img.src = src;
+});
+
+const getUrlCanvasOptions = (folder) => {
+  switch (folder) {
+    case 'favicon': return { maxSize: 256, type: 'image/png' };
+    case 'logo': return { maxSize: 512, type: 'image/png' };
+    case 'hero':
+    case 'landingPage': return { maxSize: 2560, type: 'image/jpeg', quality: 0.85 };
+    case 'productVariant': return { maxSize: 800, type: 'image/jpeg', quality: 0.85 };
+    default: return { maxSize: 1600, type: 'image/jpeg', quality: 0.88 };
+  }
+};
+
+const urlToFile = async (url, { maxSize = 1920, type = 'image/jpeg', quality = 0.9 } = {}) => {
+  const img = await loadImageFromUrl(url);
+  let w = img.naturalWidth;
+  let h = img.naturalHeight;
+  if (!w || !h) throw new Error('load');
+
+  const ratio = Math.min(1, maxSize / w, maxSize / h);
+  w = Math.round(w * ratio);
+  h = Math.round(h * ratio);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (type === 'image/jpeg') {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, w, h);
+  }
+  ctx.drawImage(img, 0, 0, w, h);
+
+  const blob = await new Promise((resolve, reject) => {
+    try {
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('cors'))), type, quality);
+    } catch {
+      // SecurityError: الموقع ما يسمحش بـ CORS
+      reject(new Error('cors'));
+    }
+  });
+
+  const ext = type.split('/')[1].replace('jpeg', 'jpg');
+  let base = 'image';
+  if (!url.startsWith('data:')) {
+    try {
+      const last = new URL(url).pathname.split('/').pop() || '';
+      base = decodeURIComponent(last).replace(/\.[a-z0-9]+$/i, '').replace(/[^\w\u0600-\u06FF-]+/g, '-').slice(0, 60) || 'image';
+    } catch { base = 'image'; }
+  }
+  return new File([blob], `${base}.${ext}`, { type, lastModified: Date.now() });
+};
+
 // ── Configuration ──
 const foldersConfig = {
   products: {
     icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-    color: '#3b82f6', aspectRatio: 'aspect-square', 
+    color: '#3b82f6', aspectRatio: 'aspect-square',
     gridCols: 'grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
     mobileGridCols: 'grid-cols-2 xs:grid-cols-3',
   },
   productVariant: {
     icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-    color: '#6366f1', aspectRatio: 'aspect-square', 
+    color: '#6366f1', aspectRatio: 'aspect-square',
     gridCols: 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7',
     mobileGridCols: 'grid-cols-3 xs:grid-cols-4',
     compression: { maxWidth: 600, maxHeight: 600, quality: 0.75 },
   },
   category: {
     icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z',
-    color: '#8b5cf6', aspectRatio: 'aspect-square', 
+    color: '#8b5cf6', aspectRatio: 'aspect-square',
     gridCols: 'grid-cols-2 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
     mobileGridCols: 'grid-cols-2 xs:grid-cols-3',
   },
   hero: {
     icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2z',
-    color: '#f97316', aspectRatio: 'aspect-video', 
+    color: '#f97316', aspectRatio: 'aspect-video',
     gridCols: 'grid-cols-1',
     mobileGridCols: 'grid-cols-1',
   },
   logo: {
     icon: 'M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z',
-    color: '#10b981', aspectRatio: 'aspect-square', 
+    color: '#10b981', aspectRatio: 'aspect-square',
     gridCols: 'grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10',
     mobileGridCols: 'grid-cols-3 xs:grid-cols-4',
   },
   favicon: {
     icon: 'M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z',
-    color: '#f59e0b', aspectRatio: 'aspect-square', 
+    color: '#f59e0b', aspectRatio: 'aspect-square',
     gridCols: 'grid-cols-4 xs:grid-cols-6 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12',
     mobileGridCols: 'grid-cols-4 xs:grid-cols-6',
   },
   landingPage: {
     icon: 'M9.75 17L9 20l-2.25 3h10.5l-2.25-3-.75-3m4.5-16.5h-10.5A2.25 2.25 0 004.5 5.25v10.5A2.25 2.25 0 006.75 18h10.5a2.25 2.25 0 002.25-2.25V5.25A2.25 2.25 0 0017.25 3z',
-    color: '#ec4899', aspectRatio: 'aspect-video', 
+    color: '#ec4899', aspectRatio: 'aspect-video',
     gridCols: 'grid-cols-1 sm:grid-cols-2',
     mobileGridCols: 'grid-cols-1',
     compression: { maxWidth: 2560, maxHeight: 1440, quality: 0.82 },
@@ -93,6 +160,9 @@ const folderIds = Object.keys(foldersConfig);
 // Product images are the only folder that supports selecting/uploading
 // several files in one go — every other folder is a single-image slot.
 const MAX_PRODUCT_BATCH = 5;
+
+// أنواع محددة بدل image/* — تفتح معرض الصور (photo picker) بدون capture
+const ACCEPT_TYPES = 'image/jpeg,image/png,image/gif,image/webp';
 
 // ── Custom Hook: Mobile Detection ──
 const useMobileDetect = () => {
@@ -106,33 +176,33 @@ const useMobileDetect = () => {
       setIsTouch('ontouchstart' in window || navigator.maxTouchPoints > 0);
       setViewportHeight(window.visualViewport?.height || window.innerHeight);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     window.visualViewport?.addEventListener('resize', checkMobile);
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
       window.visualViewport?.removeEventListener('resize', checkMobile);
     };
   }, []);
-  
+
   return { isMobile, isTouch, viewportHeight };
 };
 
 // ── Custom Hook: Reduced Motion ──
 const useReducedMotion = () => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  
+
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
-    
+
     const handler = (e) => setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener('change', handler);
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
-  
+
   return prefersReducedMotion;
 };
 
@@ -148,6 +218,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const modalRef = useRef(null);
   const gridRef = useRef(null);
   const touchStartY = useRef(0);
+  const pasteHandlerRef = useRef(null);
 
   const [currentFolder, setCurrentFolder] = useState(() => getValidFolder(initialFolder));
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -169,27 +240,30 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const [selectedImage, setSelectedImage] = useState(null); // Lightbox state
   const [focusedIndex, setFocusedIndex] = useState(-1); // Keyboard nav
   const [totalImagesLimit, setTotalImagesLimit] = useState(null); // null = غير معروف بعد
-  const [toast, setToast] = useState(null); // { message, type: 'error' | 'info' } — بديل alert()
+  const [toast, setToast] = useState(null); // { message, type: 'error' | 'info' }
+
+  // رفع من رابط
+  const [urlInput, setUrlInput] = useState('');
+  const [urlLoading, setUrlLoading] = useState(false);
 
   const showToast = (message, type = 'error') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
   };
 
-  // Bulk select/delete — only offered in the 'products' folder. Selection
-  // itself is uncapped (it also drives bulk-delete, unrelated to any single
-  // product's image quota); maxSelectable only gates how many end up
-  // attached to THIS product (the "Add" button, and post-upload auto-attach).
+  // Bulk select/delete — only offered in the 'products' folder.
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
-  // نافذة تأكيد الحذف المخصصة (نفس نمط صفحة الفئات) — { type: 'single', imageId } أو { type: 'bulk' }
+  // نافذة تأكيد الحذف — { type: 'single', imageId } أو { type: 'bulk' }
   const [pendingDelete, setPendingDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const currentConfig = foldersConfig[currentFolder] || foldersConfig.products;
+  const atTotalLimit = totalImagesLimit !== null && countFolder >= totalImagesLimit;
+  const isBusy = isUploading || urlLoading;
 
   // Dynamic grid based on mobile/desktop
-  const activeGridCols = useMemo(() => 
+  const activeGridCols = useMemo(() =>
     isMobile ? currentConfig.mobileGridCols : currentConfig.gridCols,
   [isMobile, currentConfig]);
 
@@ -206,9 +280,9 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     const counts = {};
     await Promise.all(folderIds.map(async (id) => {
       try {
-        const res = await axios.get(`${baseURL}/images`, { 
-          params: { page: 1, limit: 1, folder: id }, 
-          headers: { Authorization: `Bearer ${token}` } 
+        const res = await axios.get(`${baseURL}/images`, {
+          params: { page: 1, limit: 1, folder: id },
+          headers: { Authorization: `Bearer ${token}` }
         });
         counts[id] = res.data.total || 0;
       } catch { counts[id] = 0; }
@@ -221,9 +295,9 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setLoading(true);
     try {
       const limit = folder === 'hero' ? 6 : folder === 'favicon' ? 50 : isMobile ? 12 : 20;
-      const res = await axios.get(`${baseURL}/images`, { 
-        params: { page: pageNum, limit, folder }, 
-        headers: { Authorization: `Bearer ${token}` } 
+      const res = await axios.get(`${baseURL}/images`, {
+        params: { page: pageNum, limit, folder },
+        headers: { Authorization: `Bearer ${token}` }
       });
       const data = res.data;
       setImages(prev => pageNum === 1 ? data.images : [...prev, ...data.images]);
@@ -237,8 +311,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const fetchSize = useCallback(async () => {
     const token = getAccessToken();
     try {
-      const res = await axios.get(`${baseURL}/images/get-size`, { 
-        headers: { Authorization: `Bearer ${token}` } 
+      const res = await axios.get(`${baseURL}/images/get-size`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
       setSize(res.data.totalSize);
       setCountFolder(res.data.count);
@@ -248,16 +322,15 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   // ── Effects ──
   useEffect(() => {
     if (isOpen) {
-      const t = setTimeout(() => fetchImages(1, currentFolder), 100);
+      const timer = setTimeout(() => fetchImages(1, currentFolder), 100);
       fetchFolderCounts();
-      return () => clearTimeout(t);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, currentFolder]);
 
   useEffect(() => { if (isOpen) fetchSize(); }, [isOpen]);
 
-  // الحد الكلي لعدد الصور في المكتبة — حقل مستقل في الخطة (نفس الحقل الذي
-  // يفرضه السيرفر في ImageService.assertTotalImagesLimitNotReached)
+  // الحد الكلي لعدد الصور في المكتبة
   useEffect(() => {
     if (!isOpen) return;
     getMyPlanFeatures().then(features => {
@@ -267,22 +340,28 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   useEffect(() => {
     const valid = getValidFolder(initialFolder);
-    if (valid !== currentFolder) { 
-      setCurrentFolder(valid); 
-      setImages([]); 
-      setPage(1); 
+    if (valid !== currentFolder) {
+      setCurrentFolder(valid);
+      setImages([]);
+      setPage(1);
     }
   }, [initialFolder]);
 
   // Keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (selectedImage) setSelectedImage(null);
+        if (pendingDelete) setPendingDelete(null);
+        else if (selectedImage) setSelectedImage(null);
         else close();
+        return;
       }
+      // ما نحركوش الفوكس وقت الكتابة في input الرابط
+      const tag = e.target?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
       if (e.key === 'ArrowRight' && focusedIndex < images.length - 1) {
         setFocusedIndex(prev => prev + 1);
         document.getElementById(`img-${focusedIndex + 1}`)?.focus();
@@ -292,10 +371,10 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         document.getElementById(`img-${focusedIndex - 1}`)?.focus();
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, selectedImage, images.length, focusedIndex]);
+  }, [isOpen, selectedImage, pendingDelete, images.length, focusedIndex]);
 
   // Lock body scroll when modal open
   useEffect(() => {
@@ -312,17 +391,27 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     };
   }, [isOpen]);
 
-  // Don't carry a stale selection into the next time the modal is opened
+  // Reset transient state when the modal closes
   useEffect(() => {
     if (!isOpen) {
       setSelectionMode(false);
       setSelectedIds(new Set());
+      setUrlInput('');
+      setUrlLoading(false);
     }
+  }, [isOpen]);
+
+  // لصق (Ctrl+V / Cmd+V) في أي مكان داخل النافذة
+  useEffect(() => {
+    if (!isOpen) return;
+    const onPaste = (e) => pasteHandlerRef.current?.(e);
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
   }, [isOpen]);
 
   // ── Handlers ──
   const handleFolderChange = (f) => {
-    if (f === currentFolder || isUploading) return;
+    if (f === currentFolder || isBusy) return;
     setCurrentFolder(f);
     setImages([]);
     setPage(1);
@@ -330,12 +419,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setSelectedIds(new Set());
   };
 
-  // Uploads a single file and returns the created image record, or null if
-  // it was rejected/failed (the caller has already been alerted in that case).
-  // fileIndex/totalFiles (plain args, not state — state set just before this
-  // call wouldn't be visible yet inside this closure) let the progress bar
-  // span the whole batch as one continuous fill instead of resetting to 0%
-  // for every file: file i's upload only moves it through its own 1/N slice.
   const uploadOneFile = async (file, fileIndex = 0, totalFiles = 1) => {
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowed.includes(file.type)) {
@@ -398,12 +481,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   const handleFilesUpload = async (fileList) => {
     const files = Array.from(fileList || []).filter(Boolean);
     if (files.length === 0) return;
-    if (totalImagesLimit !== null && countFolder >= totalImagesLimit) return;
+    if (atTotalLimit) return;
 
-    // سقف الرفع نفسه ثابت (لا علاقة له بحصة المنتج المتبقية) — الصور تُرفع
-    // للمكتبة طالما لم تتخطَّ الحصة الكلية للخطة (يفرضها السيرفر لكل ملف على
-    // حدة). الحد الأدق "كم صورة تُلحق تلقائياً بهذا المنتج" يُطبَّق لاحقاً
-    // بعد نجاح الرفع، على أول maxSelectable فقط — الباقي يبقى في المكتبة.
     const maxBatch = currentFolder === 'products' ? MAX_PRODUCT_BATCH : 1;
     let queue = files;
     if (files.length > maxBatch) {
@@ -411,9 +490,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
       queue = files.slice(0, maxBatch);
     }
 
-    // نقصّ القائمة إلى الحصة الكلية المتبقية فعلياً هنا، بدل ترك كل ملف
-    // زائد يُرفض من السيرفر على حدة — كان يعرض نفس رسالة "وصلت للحد الأقصى"
-    // عدة مرات متتالية (alert لكل ملف مرفوض داخل الحلقة التسلسلية أدناه)
     if (totalImagesLimit !== null) {
       const remaining = Math.max(0, totalImagesLimit - countFolder);
       if (queue.length > remaining) {
@@ -439,16 +515,14 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setUploadProgress(0);
     setCompressionProgress(0);
 
-    if (uploaded.length === 0) return;
+    if (uploaded.length === 0) return false;
 
-    // Prepend newest-first, matching the previous single-upload behavior.
     setImages(prev => [...uploaded.slice().reverse(), ...prev]);
     setFolderCounts(prev => ({ ...prev, [currentFolder]: (prev[currentFolder] || 0) + uploaded.length }));
+    setCountFolder(prev => prev + uploaded.length);
+    setSize(prev => prev + uploaded.reduce((s, img) => s + (img.size || 0), 0));
 
     if (onSelectImage) {
-      // كل الصور المرفوعة تبقى في المكتبة، لكن فقط أول maxSelectable منها
-      // (حصة هذا المنتج المتبقية) تُلحق تلقائياً به — الباقي مرفوع ومتاح
-      // لاستخدامه لاحقاً (لهذا المنتج بعد حذف صور، أو لمنتج آخر)
       const toAttach = currentFolder === 'products' ? uploaded.slice(0, maxSelectable) : uploaded;
       toAttach.forEach(img => onSelectImage(img));
       if (toAttach.length < uploaded.length) {
@@ -456,9 +530,94 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
       }
       close();
     }
+    return true;
   };
 
-  // فتح نافذة تأكيد الحذف (نفس نمط صفحة الفئات) بدل window.confirm() الأصلي
+  // ── رابط → canvas → رفع ──
+  const handleUrlUpload = async (raw = urlInput) => {
+    const url = (raw || '').trim();
+    if (!url || isBusy || atTotalLimit) return;
+    if (!isImageUrl(url)) {
+      showToast(t('url.invalid', 'رابط غير صالح — لازم يبدا بـ http:// أو https://'));
+      return;
+    }
+
+    setUrlLoading(true);
+    let file;
+    try {
+      file = await urlToFile(url, getUrlCanvasOptions(currentFolder));
+    } catch (err) {
+      showToast(
+        err.message === 'cors'
+          ? t('url.cors_error', 'الموقع يمنع استعمال الصورة. حمّلها لجهازك وارفعها كملف.')
+          : t('url.load_failed', 'تعذّر تحميل الصورة من الرابط، أو الموقع يمنع ذلك.')
+      );
+      setUrlLoading(false);
+      return;
+    }
+    setUrlLoading(false);
+
+    const ok = await handleFilesUpload([file]);
+    if (ok) setUrlInput('');
+  };
+
+  // ── لصق من الحافظة (event) ──
+  const handlePaste = (e) => {
+    if (isBusy || atTotalLimit || pendingDelete || selectedImage) return;
+
+    const items = Array.from(e.clipboardData?.items || []);
+    const files = items
+      .filter(it => it.kind === 'file' && it.type.startsWith('image/'))
+      .map(it => it.getAsFile())
+      .filter(Boolean);
+
+    if (files.length > 0) {
+      e.preventDefault();
+      handleFilesUpload(files);
+      return;
+    }
+
+    const text = e.clipboardData?.getData('text')?.trim();
+    if (text && isImageUrl(text)) {
+      e.preventDefault();
+      setUrlInput(text);
+      handleUrlUpload(text);
+    }
+  };
+  pasteHandlerRef.current = handlePaste;
+
+  // ── زر اللصق (للموبايل، ما فيهش Ctrl+V) ──
+  const handleClipboardButton = async () => {
+    if (isBusy || atTotalLimit) return;
+    try {
+      if (navigator.clipboard?.read) {
+        const items = await navigator.clipboard.read();
+        const files = [];
+        for (const item of items) {
+          const imgType = item.types.find(ty => ty.startsWith('image/'));
+          if (imgType) {
+            const blob = await item.getType(imgType);
+            const ext = imgType.split('/')[1].replace('jpeg', 'jpg');
+            files.push(new File([blob], `pasted-${Date.now()}.${ext}`, { type: imgType }));
+          }
+        }
+        if (files.length > 0) {
+          handleFilesUpload(files);
+          return;
+        }
+      }
+      const text = (await navigator.clipboard?.readText?.())?.trim();
+      if (text && isImageUrl(text)) {
+        setUrlInput(text);
+        handleUrlUpload(text);
+        return;
+      }
+      showToast(t('url.clipboard_empty', 'الحافظة ما فيهاش صورة ولا رابط صورة'), 'info');
+    } catch {
+      showToast(t('url.clipboard_denied', 'ما قدرناش نقراو الحافظة — الصق يدوياً في خانة الرابط'), 'info');
+    }
+  };
+
   const handleDeleteImage = (imageId, e) => {
     e?.stopPropagation();
     setPendingDelete({ type: 'single', imageId });
@@ -476,9 +635,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         ...prev,
         [currentFolder]: Math.max(0, (prev[currentFolder] || 0) - 1)
       }));
-      // countFolder/size هما العدد والحجم الكليان لكل صور الحساب (كل
-      // المجلدات مجتمعة) — يُستخدمان في atTotalLimit، فيجب تحديثهما هنا
-      // أيضاً وإلا يبقى زر الرفع معطلاً بعد الحذف حتى تُعاد فتح النافذة
       setCountFolder(prev => Math.max(0, prev - 1));
       if (deleted?.size) setSize(prev => Math.max(0, prev - deleted.size));
     } catch {
@@ -486,9 +642,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     }
   };
 
-  const handleSelectImage = (image, index) => {
+  const handleSelectImage = (image) => {
     if (isMobile && isTouch) {
-      // On mobile, first tap shows preview, second selects
       setSelectedImage(image);
     } else {
       if (onSelectImage) onSelectImage(image);
@@ -501,9 +656,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setSelectedIds(new Set());
   };
 
-  // لا حد هنا: نفس التحديد يُستخدم لكل من "إضافة للمنتج" و"حذف من المكتبة"،
-  // والحذف لا علاقة له بحصة صور المنتج (maxSelectable) — الحد الفعلي عند
-  // الإضافة يُفرض لاحقاً في Create/edit.jsx (handleImageSelect) صورة بصورة
   const toggleImageSelected = (id) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -514,11 +666,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   };
 
   const handleImageClick = (img, index) => {
-    if (selectionMode) {
-      toggleImageSelected(img.id);
-    } else {
-      handleSelectImage(img, index);
-    }
+    if (selectionMode) toggleImageSelected(img.id);
+    else handleSelectImage(img, index);
   };
 
   const handleAddSelected = () => {
@@ -570,8 +719,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
     setPendingDelete(null);
   };
 
-  const loadMore = () => { 
-    if (!loading && hasMore) fetchImages(page + 1, currentFolder); 
+  const loadMore = () => {
+    if (!loading && hasMore) fetchImages(page + 1, currentFolder);
   };
 
   // Touch handlers for swipe-to-close
@@ -581,10 +730,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   const handleTouchMove = (e) => {
     if (!modalRef.current) return;
-    const touchY = e.touches[0].clientY;
-    const diff = touchY - touchStartY.current;
-    
-    // Pull down to close gesture (only when at top of scroll)
+    const diff = e.touches[0].clientY - touchStartY.current;
     if (diff > 80 && gridRef.current?.scrollTop === 0) {
       modalRef.current.style.transform = `translateY(${diff * 0.3}px)`;
       modalRef.current.style.opacity = `${1 - (diff / 400)}`;
@@ -593,13 +739,10 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   const handleTouchEnd = (e) => {
     if (!modalRef.current) return;
-    const touchY = e.changedTouches[0].clientY;
-    const diff = touchY - touchStartY.current;
-    
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
     if (diff > 120 && gridRef.current?.scrollTop === 0) {
       close();
     } else {
-      // Reset with animation
       modalRef.current.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
       modalRef.current.style.transform = '';
       modalRef.current.style.opacity = '';
@@ -612,7 +755,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   if (!isOpen) return null;
 
   const progress = isCompressing ? compressionProgress : uploadProgress;
-  const atTotalLimit = totalImagesLimit !== null && countFolder >= totalImagesLimit;
 
   // ── Sub-components ──
   const FolderTab = ({ id, mobile = false }) => {
@@ -625,7 +767,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         <button
           key={id}
           onClick={() => handleFolderChange(id)}
-          disabled={isUploading}
+          disabled={isBusy}
           className={`flex-shrink-0 flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-150 active:scale-95 touch-manipulation ${
             active ? 'bg-white dark:bg-zinc-800 shadow-sm' : 'text-gray-400 dark:text-zinc-500'
           }`}
@@ -650,7 +792,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
       <button
         key={id}
         onClick={() => handleFolderChange(id)}
-        disabled={isUploading}
+        disabled={isBusy}
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
           active
             ? 'bg-white dark:bg-zinc-800 shadow-sm text-gray-900 dark:text-white'
@@ -676,13 +818,13 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   // ── Lightbox Component ──
   const Lightbox = () => {
     if (!selectedImage) return null;
-    
+
     return (
-      <div 
+      <div
         className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200"
         onClick={() => setSelectedImage(null)}
       >
-        <button 
+        <button
           className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 active:scale-95 transition-all"
           onClick={() => setSelectedImage(null)}
         >
@@ -690,20 +832,20 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        
-        <img 
-          src={selectedImage.url} 
+
+        <img
+          src={selectedImage.url}
           alt={selectedImage.originalName}
           className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         />
-        
+
         <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
           <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2 text-white text-sm">
             <p className="font-medium truncate max-w-[200px]">{selectedImage.originalName}</p>
             <p className="text-xs text-gray-300">{formatBytes(selectedImage.size)}</p>
           </div>
-          
+
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -723,7 +865,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
   return (
     <>
-      {/* Toast — بديل alert() الأصلي */}
+      {/* Toast */}
       {toast && (
         <div className={`fixed top-5 ${isRTL ? 'left-5' : 'right-5'} z-[70] flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-sm font-semibold text-white max-w-sm animate-in fade-in slide-in-from-top-2 duration-200 ${
           toast.type === 'info' ? 'bg-amber-500' : 'bg-rose-500'
@@ -732,7 +874,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         </div>
       )}
 
-      {/* Delete confirmation — نفس نمط نافذة تأكيد الحذف في صفحة الفئات، بدل window.confirm() */}
+      {/* Delete confirmation */}
       {pendingDelete && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[80] p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-gray-100 dark:border-zinc-800" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -772,7 +914,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
         onTouchEnd={handleTouchEnd}
       >
         {/* Modal Card */}
-        <div 
+        <div
           ref={modalRef}
           className={`
             w-full bg-white dark:bg-zinc-900 shadow-2xl flex flex-col overflow-hidden
@@ -845,7 +987,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-zinc-800 active:scale-95 transition-all touch-manipulation"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeJoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
@@ -860,19 +1002,19 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
 
             {/* Upload Zone */}
             <div className="px-4 sm:px-6 pt-3 sm:pt-4 flex-shrink-0">
+              {/* بدون capture → يفتح معرض الصور في الموبايل ماشي الكاميرا */}
               <input
                 type="file"
                 ref={fileInputRef}
                 hidden
-                onChange={(e) => handleFilesUpload(e.target.files)}
-                accept="image/*"
+                onChange={(e) => { handleFilesUpload(e.target.files); e.target.value = ''; }}
+                accept={ACCEPT_TYPES}
                 multiple={currentFolder === 'products'}
-                disabled={isUploading || atTotalLimit}
-                capture={isMobile ? "environment" : undefined} // Allow camera on mobile
+                disabled={isBusy || atTotalLimit}
               />
               <div
-                onClick={() => !isUploading && !atTotalLimit && fileInputRef.current?.click()}
-                onDrop={(e) => { e.preventDefault(); setIsDragging(false); if (!atTotalLimit) handleFilesUpload(e.dataTransfer.files); }}
+                onClick={() => !isBusy && !atTotalLimit && fileInputRef.current?.click()}
+                onDrop={(e) => { e.preventDefault(); setIsDragging(false); if (!atTotalLimit && !isBusy) handleFilesUpload(e.dataTransfer.files); }}
                 onDragOver={(e) => { e.preventDefault(); if (!atTotalLimit) setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 className={`rounded-xl border-2 border-dashed transition-all duration-200 touch-manipulation ${
@@ -912,25 +1054,25 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                       <span className="text-xs font-mono font-semibold" style={{ color: currentConfig.color }}>{progress}%</span>
                     </div>
                     <div className="h-1.5 bg-gray-200 dark:bg-zinc-700 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-300" 
-                        style={{ width: `${progress}%`, backgroundColor: currentConfig.color }} 
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ width: `${progress}%`, backgroundColor: currentConfig.color }}
                       />
                     </div>
                     {originalSize > 0 && compressedSize > 0 && originalSize !== compressedSize && (
                       <p className="text-[11px] text-green-600 dark:text-green-400 mt-1.5">
-                        ✓ {t('upload.saved_size', { 
-                          percent: Math.round(((originalSize - compressedSize) / originalSize) * 100), 
-                          oldSize: formatBytes(originalSize), 
-                          newSize: formatBytes(compressedSize) 
+                        ✓ {t('upload.saved_size', {
+                          percent: Math.round(((originalSize - compressedSize) / originalSize) * 100),
+                          oldSize: formatBytes(originalSize),
+                          newSize: formatBytes(compressedSize)
                         })}
                       </p>
                     )}
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4">
-                    <div 
-                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0" 
+                    <div
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: currentConfig.color + '15' }}
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: currentConfig.color }}>
@@ -944,21 +1086,64 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                       <p className="text-[11px] sm:text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                         JPG, PNG, GIF, WebP · Max 50MB
                         {currentFolder === 'products' && (
-                          <span className="ml-1"> · {t('upload.batch_hint', { max: MAX_PRODUCT_BATCH })}</span>
+                          <span className="ms-1"> · {t('upload.batch_hint', { max: MAX_PRODUCT_BATCH })}</span>
                         )}
-                        {isMobile && <span className="ml-1 text-blue-500">· {t('upload.tap_camera')}</span>}
+                        {!isMobile && (
+                          <span className="ms-1"> · {t('upload.paste_hint', 'Ctrl+V للصق')}</span>
+                        )}
                       </p>
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* URL input — رابط → canvas → رفع */}
+              {!atTotalLimit && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="relative flex-1 min-w-0">
+                    <Link2 size={16} className="absolute top-1/2 -translate-y-1/2 start-3 text-gray-400 dark:text-zinc-500 pointer-events-none" />
+                    <input
+                      type="url"
+                      inputMode="url"
+                      dir="ltr"
+                      autoComplete="off"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleUrlUpload(); } }}
+                      placeholder={t('url.placeholder', 'الصق رابط الصورة هنا...')}
+                      disabled={isBusy}
+                      className="w-full h-10 ps-9 pe-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm text-gray-800 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 disabled:opacity-60"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleUrlUpload()}
+                    disabled={!urlInput.trim() || isBusy}
+                    className="h-10 px-3 rounded-xl flex items-center gap-1.5 text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all touch-manipulation flex-shrink-0"
+                    style={{ backgroundColor: currentConfig.color }}
+                    title={t('url.upload', 'رفع من الرابط')}
+                  >
+                    {urlLoading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                    <span className="hidden sm:inline">{t('url.upload', 'رفع من الرابط')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClipboardButton}
+                    disabled={isBusy}
+                    className="h-10 w-10 rounded-xl flex items-center justify-center bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 hover:bg-gray-200 dark:hover:bg-zinc-700 disabled:opacity-50 active:scale-95 transition-all touch-manipulation flex-shrink-0"
+                    title={t('url.paste', 'لصق من الحافظة')}
+                  >
+                    <Clipboard size={16} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Selection Toolbar */}
             {selectionMode && (() => {
               const exceedsLimit = currentFolder === 'products' && selectedIds.size > maxSelectable;
               return (
-              <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 flex-shrink-0 border-b border-gray-100 dark:border-zinc-800 bg-blue-50/60 dark:bg-blue-500/5">
+              <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-2.5 mt-3 flex-shrink-0 border-y border-gray-100 dark:border-zinc-800 bg-blue-50/60 dark:bg-blue-500/5">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-semibold text-blue-700 dark:text-blue-400">
                     {t('ui.selected_count', { count: selectedIds.size })}
@@ -1007,8 +1192,8 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
               {/* Empty State */}
               {!loading && images.length === 0 && (
                 <div className="flex flex-col items-center justify-center h-full py-12 text-center px-4">
-                  <div 
-                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-3" 
+                  <div
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center mb-3"
                     style={{ backgroundColor: currentConfig.color + '15' }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: currentConfig.color }}>
@@ -1050,24 +1235,10 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                         src={img.url}
                         className={`w-full h-full object-cover ${prefersReducedMotion ? '' : 'transition-transform duration-300 group-hover:scale-105'}`}
                         alt={img.originalName}
-                        loading={index < 8 ? "eager" : "lazy"} // Priority load first 8
+                        loading={index < 8 ? 'eager' : 'lazy'}
                         decoding="async"
                       />
-                      
-                      {/* Desktop-only hover tint + size label — purely
-                          cosmetic, doesn't gate the delete button below.
-                          Delete used to live inside this hover/touch-reactive
-                          overlay and was hard to press: the card itself had
-                          `active:scale-95` (now removed, above), which
-                          shrinks the whole card — delete button included,
-                          since it's a descendant — for the duration of the
-                          press. 5% of a small square thumbnail is a couple
-                          pixels; 5% of a full-width aspect-video hero/
-                          landingPage card is tens of pixels, enough to carry
-                          the button out from under the finger/cursor before
-                          release, so the tap landed on the image behind it
-                          instead. Delete is now its own always-visible
-                          button, on a card that no longer moves on press. */}
+
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 pointer-events-none" />
                       <span className="absolute bottom-2 start-2 sm:bottom-2.5 sm:start-2.5 text-white text-[10px] font-medium truncate max-w-[60%] drop-shadow opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                         {(img.size / 1024).toFixed(0)} KB
@@ -1082,9 +1253,6 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
                         </svg>
                       </button>
 
-                      {/* Bulk-selection checkbox — takes over the corner
-                          used by the (now-hidden) decorative mobile
-                          indicator below while selection mode is active. */}
                       {selectionMode ? (
                         <div className={`absolute top-1.5 start-1.5 w-6 h-6 rounded-full flex items-center justify-center shadow-sm pointer-events-none transition-colors ${
                           isSelected ? 'bg-blue-600' : 'bg-white/90 dark:bg-zinc-800/90'
@@ -1135,13 +1303,13 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
             </div>
           </div>
         </div>
-        
+
         {/* Pull-to-hint (Mobile) */}
         {isMobile && (
           <div className="absolute top-2 left-1/2 -translate-x-1/2 w-12 h-1 bg-white/30 rounded-full pointer-events-none" />
         )}
       </div>
-      
+
       {/* Lightbox */}
       <Lightbox />
     </>
