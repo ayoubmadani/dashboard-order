@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, Check,
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check,
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
@@ -25,142 +25,68 @@ const isItemActive = (pathname, href) =>
     pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`));
 
 /* ───────── Sidebar content (desktop + mobile) ───────── */
-const SidebarContent = ({
-    t, i18n, navGroups, pathname, selectedProject, storesCount, user,
-    isDark, setIsDark, languages, onLanguageChange, onStores, onLogout, onNavigate, onClose,
-}) => {
-    const [langOpen, setLangOpen] = useState(false);
-    const langRef = useRef(null);
-
-    useEffect(() => {
-        const close = (e) => { if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false); };
-        document.addEventListener('mouseup', close);
-        return () => document.removeEventListener('mouseup', close);
-    }, []);
-
-    return (
-        <div className="flex flex-col h-full">
-            {/* Logo */}
-            <div className="flex items-center justify-between h-16 px-5">
-                <Link to="/dashboard" onClick={onNavigate} className="flex items-center gap-2.5">
-                    <img src="/logo.png" alt="MdStore" className="w-8 h-8 rounded-lg" />
-                    <span className="text-base font-bold text-gray-900 dark:text-white">MdStore</span>
-                </Link>
-                {onClose && (
-                    <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
-                        <X className="w-5 h-5" />
-                    </button>
-                )}
-            </div>
-
-            {/* Store */}
-            <div className="px-3 pb-3">
-                <button
-                    onClick={onStores}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-xl border border-gray-200 dark:border-white/[0.06] hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-colors text-start"
-                >
-                    <div className={`w-9 h-9 shrink-0 rounded-lg bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white`}>
-                        {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{selectedProject?.name || '—'}</p>
-                        <p className="text-[11px] text-gray-400">{storesCount} {t('nav.stores_count', 'متاجر')}</p>
-                    </div>
-                    <ChevronsUpDown className="w-4 h-4 text-gray-400 shrink-0" />
+const SidebarContent = ({ t, navGroups, pathname, selectedProject, storesCount, onStores, onNavigate, onClose }) => (
+    <div className="flex flex-col h-full">
+        {/* Store */}
+        <div className="flex items-center gap-2 p-3 h-16">
+            <button
+                onClick={onStores}
+                className="flex-1 min-w-0 flex items-center gap-3 p-2 rounded-xl border border-gray-200 dark:border-white/[0.06] hover:border-emerald-300 dark:hover:border-emerald-500/30 transition-colors text-start"
+            >
+                <div className={`w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br ${selectedProject ? getStoreGradient(selectedProject.name) : 'from-gray-400 to-gray-500'} flex items-center justify-center text-sm font-bold text-white`}>
+                    {selectedProject?.name ? selectedProject.name.charAt(0).toUpperCase() : 'S'}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate leading-tight">{selectedProject?.name || '—'}</p>
+                    <p className="text-[11px] text-gray-400 leading-tight">{storesCount} {t('nav.stores_count', 'متاجر')}</p>
+                </div>
+                <ChevronsUpDown className="w-4 h-4 text-gray-400 shrink-0" />
+            </button>
+            {onClose && (
+                <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg">
+                    <X className="w-5 h-5" />
                 </button>
-            </div>
-
-            {/* Nav */}
-            <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-5">
-                {navGroups.map((group, idx) => (
-                    <div key={group.title || idx}>
-                        {group.title && (
-                            <p className="px-3 mb-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
-                                {group.title}
-                            </p>
-                        )}
-                        <div className="space-y-0.5">
-                            {group.items.map(item => {
-                                const active = isItemActive(pathname, item.href);
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        to={item.href}
-                                        onClick={onNavigate}
-                                        className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${active
-                                            ? 'bg-emerald-600 text-white font-semibold shadow-sm shadow-emerald-600/30'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'}`}
-                                    >
-                                        <item.icon className="w-[18px] h-[18px] shrink-0" />
-                                        <span className="truncate">{item.name}</span>
-                                    </Link>
-                                );
-                            })}
-                        </div>
-                    </div>
-                ))}
-            </nav>
-
-            {/* User */}
-            <div className="p-3 border-t border-gray-100 dark:border-white/[0.06]">
-                <div className="flex items-center gap-3 px-2 py-2">
-                    <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
-                        {user.initial}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-                        <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
-                    </div>
-                </div>
-
-                <div className="mt-2 grid grid-cols-3 gap-1.5">
-                    <button
-                        onClick={() => setIsDark(!isDark)}
-                        title={isDark ? 'Light' : 'Dark'}
-                        className="flex items-center justify-center py-2 rounded-lg bg-gray-50 dark:bg-white/[0.04] text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-                    >
-                        {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                    </button>
-
-                    <div className="relative" ref={langRef}>
-                        <button
-                            onClick={() => setLangOpen(o => !o)}
-                            title={t('language.label', 'Language')}
-                            className="w-full flex items-center justify-center gap-1 py-2 rounded-lg bg-gray-50 dark:bg-white/[0.04] text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-                        >
-                            <Languages className="w-4 h-4" />
-                            <span className="text-[11px] font-semibold uppercase">{i18n.language}</span>
-                        </button>
-                        {langOpen && (
-                            <div className="absolute bottom-full mb-2 start-0 w-36 p-1 bg-white dark:bg-[#1a1a1c] rounded-xl shadow-xl border border-gray-100 dark:border-white/10 z-50">
-                                {languages.map(lang => (
-                                    <button
-                                        key={lang.code}
-                                        onClick={() => { onLanguageChange(lang.code); setLangOpen(false); }}
-                                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm ${i18n.language === lang.code
-                                            ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold'
-                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
-                                    >
-                                        {lang.label}
-                                        {i18n.language === lang.code && <Check className="w-4 h-4" />}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <button
-                        onClick={onLogout}
-                        title={t('user_menu.logout', 'تسجيل الخروج')}
-                        className="flex items-center justify-center py-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
-                    >
-                        <LogOut className="w-4 h-4" />
-                    </button>
-                </div>
-            </div>
+            )}
         </div>
-    );
-};
+
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-5">
+            {navGroups.map((group, idx) => (
+                <div key={group.title || idx}>
+                    {group.title && (
+                        <p className="px-3 mb-1.5 text-[11px] font-semibold text-gray-400 dark:text-gray-500">
+                            {group.title}
+                        </p>
+                    )}
+                    <div className="space-y-0.5">
+                        {group.items.map(item => {
+                            const active = isItemActive(pathname, item.href);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    to={item.href}
+                                    onClick={onNavigate}
+                                    className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${active
+                                        ? 'bg-emerald-600 text-white font-semibold shadow-sm shadow-emerald-600/30'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'}`}
+                                >
+                                    <item.icon className="w-[18px] h-[18px] shrink-0" />
+                                    <span className="truncate">{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </div>
+            ))}
+        </nav>
+
+        {/* Brand footer */}
+        <div className="flex items-center gap-2 px-5 h-12 border-t border-gray-100 dark:border-white/[0.06]">
+            <img src="/logo.png" alt="MdStore" className="w-5 h-5 rounded-md opacity-80" />
+            <span className="text-xs font-semibold text-gray-400 dark:text-gray-500">MdStore</span>
+        </div>
+    </div>
+);
 
 /* ───────── Layout ───────── */
 export default function LayoutDashboard() {
@@ -169,11 +95,15 @@ export default function LayoutDashboard() {
     const navigate = useNavigate();
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [langMenuOpen, setLangMenuOpen] = useState(false);
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
     const [myStores, setMyStores] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null);
     const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
 
+    const userMenuRef = useRef(null);
+    const langMenuRef = useRef(null);
     const isRtl = i18n.language === 'ar';
     const dateLocales = { ar: 'ar-SA', en: 'en-US', fr: 'fr-FR' };
 
@@ -182,6 +112,11 @@ export default function LayoutDashboard() {
         { code: 'en', label: t('language.en', 'English') },
         { code: 'fr', label: t('language.fr', 'Français') },
     ];
+
+    const handleLanguageChange = (code) => {
+        i18n.changeLanguage(code);
+        setLangMenuOpen(false);
+    };
 
     // --- Effects (نفس المنطق) ---
     useEffect(() => {
@@ -235,6 +170,15 @@ export default function LayoutDashboard() {
         };
         verifyAndFetchUser();
     }, [navigate]);
+
+    useEffect(() => {
+        const handleMouseUp = (event) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target)) setUserMenuOpen(false);
+            if (langMenuRef.current && !langMenuRef.current.contains(event.target)) setLangMenuOpen(false);
+        };
+        document.addEventListener('mouseup', handleMouseUp);
+        return () => document.removeEventListener('mouseup', handleMouseUp);
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -323,14 +267,14 @@ export default function LayoutDashboard() {
     }, [myStores]);
 
     const sidebarProps = {
-        t, i18n, navGroups, user, isDark, setIsDark, languages,
+        t, navGroups, selectedProject,
         pathname: location.pathname,
-        selectedProject,
         storesCount: myStores.length,
-        onLanguageChange: (code) => i18n.changeLanguage(code),
         onStores: () => navigate('/dashboard/settings/stores'),
-        onLogout: handleLogout,
     };
+
+    const iconBtn = 'p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors';
+    const menuBox = 'absolute top-full end-0 mt-2 bg-white dark:bg-[#1a1a1c] rounded-xl shadow-xl shadow-black/10 dark:shadow-black/50 border border-gray-100 dark:border-white/10 z-50';
 
     return (
         <div className="min-h-screen bg-gray-50/80 dark:bg-[#030303] text-sm" dir={isRtl ? 'rtl' : 'ltr'}>
@@ -342,22 +286,97 @@ export default function LayoutDashboard() {
 
             {/* Main */}
             <div className="lg:ps-64 min-h-screen flex flex-col">
-                <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-8 bg-gray-50/80 dark:bg-[#030303]/80 backdrop-blur-xl">
-                    <button
-                        className="lg:hidden p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 rounded-lg"
-                        onClick={() => setSidebarOpen(true)}
-                    >
+
+                {/* Header */}
+                <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-8 bg-white/80 dark:bg-[#0c0c0c]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.06]">
+                    <button className={`lg:hidden ${iconBtn}`} onClick={() => setSidebarOpen(true)}>
                         <Menu className="w-5 h-5" />
                     </button>
+
                     <div className="min-w-0">
-                        <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate">{pageTitle}</h1>
+                        <h1 className="text-base font-bold text-gray-900 dark:text-white truncate">{pageTitle}</h1>
                         <p className="hidden sm:block text-[11px] text-gray-500 dark:text-gray-400">
                             {new Date().toLocaleDateString(dateLocales[i18n.language] || 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         </p>
                     </div>
+
+                    <div className="flex-1" />
+
+                    {/* Theme */}
+                    <button onClick={() => setIsDark(!isDark)} className={iconBtn}>
+                        {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                    </button>
+
+                    {/* Language */}
+                    <div className="relative" ref={langMenuRef}>
+                        <button onClick={() => setLangMenuOpen(o => !o)} className={`${iconBtn} flex items-center gap-1.5`}>
+                            <Languages className="w-5 h-5" />
+                            <span className="hidden sm:inline text-xs font-semibold uppercase">{i18n.language}</span>
+                        </button>
+                        {langMenuOpen && (
+                            <div className={`${menuBox} w-36 p-1`}>
+                                {languages.map(lang => (
+                                    <button
+                                        key={lang.code}
+                                        onClick={() => handleLanguageChange(lang.code)}
+                                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm ${i18n.language === lang.code
+                                            ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold'
+                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                                    >
+                                        {lang.label}
+                                        {i18n.language === lang.code && <Check className="w-4 h-4" />}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="w-px h-8 bg-gray-200 dark:bg-white/10 hidden sm:block" />
+
+                    {/* User */}
+                    <div className="relative" ref={userMenuRef}>
+                        <button
+                            onClick={() => setUserMenuOpen(o => !o)}
+                            className="flex items-center gap-2.5 p-1 pe-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                        >
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-xs font-bold text-white">
+                                {user.initial}
+                            </div>
+                            <div className="hidden md:block text-start max-w-[160px]">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight truncate">{user.name}</p>
+                                <p className="text-[11px] text-gray-500 leading-tight">{t('user_menu.role', 'Admin')}</p>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {userMenuOpen && (
+                            <div className={`${menuBox} w-60 overflow-hidden`}>
+                                <div className="px-4 py-3 border-b border-gray-100 dark:border-white/5">
+                                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
+                                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                </div>
+                                <div className="p-1">
+                                    <button
+                                        onClick={() => { navigate('/dashboard/settings'); setUserMenuOpen(false); }}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        {t('user_menu.settings', 'الإعدادات')}
+                                    </button>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        {t('user_menu.logout', 'تسجيل الخروج')}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </header>
 
-                <main className="flex-1 px-4 pb-8 lg:px-8">
+                <main className="flex-1 p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto">
                         <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user }} />
                     </div>
