@@ -228,7 +228,7 @@
     "is_digital_label": "Digital Product",
     "is_digital_desc": "No shipping needed — the order form only asks for name, phone, and email.",
     "whatsapp_enabled_label": "WhatsApp button",
-    "whatsapp_enabled_desc": "Show an “Order via WhatsApp” button on the product page — the number is prefilled from the store WhatsApp and can be changed.",
+    "whatsapp_enabled_desc": "Show an “Ask on WhatsApp” button on the product page for questions — the number is prefilled from the store WhatsApp and can be changed.",
     "category_label": "Category",
     "category_placeholder": "Select a category",
     "category_loading": "Loading...",
