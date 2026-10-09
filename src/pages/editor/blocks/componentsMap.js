@@ -226,6 +226,7 @@ export const componentsMap = {
       height: 56,
       backgroundColor: '#10b981',
       textColor: '#ffffff',
+      fontSize: 14,
     },
     fields: [
       {
@@ -257,6 +258,8 @@ export const componentsMap = {
         ],
       },
       { key: 'text', labelKey: 'editor.fields.text', type: 'text', showIf: (v) => v.contentType === 'text' },
+      // حجم خط النص (كان ثابتاً 14) — يظهر فقط حين يعرض الزر نصاً
+      { key: 'fontSize', labelKey: 'editor.fields.fontSize', type: 'number', min: 10, max: 40, showIf: (v) => v.contentType === 'text' },
       {
         key: 'icon',
         labelKey: 'editor.fields.floatingIcon',

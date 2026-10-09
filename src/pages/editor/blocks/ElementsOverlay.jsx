@@ -322,7 +322,8 @@ export default function ElementsOverlay({
           // stretching the element tall and thin on narrower screens. cqw is
           // a container-width-relative unit, so using it here (not just for
           // fontSize) keeps height shrinking in lockstep with width.
-          height: boxHeight ? `clamp(20px, ${(boxHeight / referenceWidth) * 100}cqw, ${boxHeight}px)` : undefined,
+          // زر: لا يصغر عن 44px (أصغر مساحة ضغط مريحة على الهاتف)؛ باقي العناصر: 20px كما كانت
+          height: boxHeight ? `clamp(${el.type === 'button' ? Math.min(44, boxHeight) : 20}px, ${(boxHeight / referenceWidth) * 100}cqw, ${boxHeight}px)` : undefined,
         };
 
         const resizeHandle = isActive && !isEditing && (
@@ -416,7 +417,7 @@ export default function ElementsOverlay({
                 backgroundColor: el.backgroundColor || 'var(--md-primary, #10b981)',
                 color: el.textColor || '#ffffff',
                 fontWeight: 600,
-                fontSize: `clamp(10px, ${(basePx / referenceWidth) * 100}cqw, ${basePx}px)`,
+                fontSize: `clamp(${Math.min(14, basePx)}px, ${(basePx / referenceWidth) * 100}cqw, ${basePx}px)`, // زر: 14px على الأقل ليبقى مقروءاً
                 textDecoration: 'none',
                 whiteSpace: width ? 'normal' : 'nowrap',
               }}
