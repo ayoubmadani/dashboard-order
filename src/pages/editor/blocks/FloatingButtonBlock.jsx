@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { BUTTON_ANIMATION_CSS, buttonAnimationClass } from './buttonAnimations';
 import { Pin } from 'lucide-react';
 import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
 
@@ -12,7 +13,7 @@ import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
 // consistent with how SpacerBlock.jsx's own pinned mode is previewed: show
 // it as a normal, fully visible in-flow preview of what the button looks
 // like, with a small badge noting where it'll actually stick once published.
-export default function FloatingButtonBlock({ position, contentType, text, icon, width, height, backgroundColor, textColor, fontSize }) {
+export default function FloatingButtonBlock({ position, contentType, text, icon, width, height, backgroundColor, textColor, fontSize, animation }) {
   const { t } = useTranslation();
   const isText = (contentType || 'icon') === 'text';
   const Icon = FLOATING_BUTTON_ICONS[icon] || FLOATING_BUTTON_ICONS.MessageCircle;
@@ -21,8 +22,11 @@ export default function FloatingButtonBlock({ position, contentType, text, icon,
 
   return (
     <div style={{ padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+      {buttonAnimationClass(animation) && <style>{BUTTON_ANIMATION_CSS}</style>}
       <div
+        className={buttonAnimationClass(animation)}
         style={{
+          '--md-btn-color': backgroundColor || '#10b981',
           width: isText ? undefined : w,
           height: h,
           minWidth: isText ? w : undefined,

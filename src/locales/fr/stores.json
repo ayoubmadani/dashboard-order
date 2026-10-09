@@ -121,6 +121,7 @@
     "wilaya_label": "Wilaya",
     "niche_label": "Catégorie",
     "phone_label": "Numéro de téléphone",
+    "whatsapp_label": "Numéro WhatsApp",
     "email_label": "E-mail",
     "address_label": "Adresse complète",
     "address_placeholder": "Numéro de rue, quartier, commune...",
@@ -162,6 +163,7 @@
       "domain_invalid": "Le domaine ne doit contenir que des lettres minuscules, chiffres et tirets",
       "domain_short": "Domaine trop court (min 3 caractères)",
       "phone_invalid": "Numéro de téléphone invalide (ex: 0557123456)",
+      "whatsapp_invalid": "Numéro WhatsApp invalide (ex : 0557123456 ou +213557123456)",
       "email_invalid": "Adresse e-mail invalide",
       "address_invalid": "Adresse invalide",
       "DOMAIN_ALREADY_EXISTS": "Ce domaine est déjà pris, veuillez en choisir un autre"

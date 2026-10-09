@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, Store, Upload, Save, Loader2,
   Image as ImageIcon, Palette, MapPin, Mail,
-  Phone, Type, CheckCircle, AlertCircle,
+  Phone, MessageCircle, Type, CheckCircle, AlertCircle,
   Shirt, Smartphone, Home, Sparkles, Trash2
 } from 'lucide-react';
 import ModelImages from '../../../components/ModelImages';
@@ -36,6 +36,7 @@ const UpdateStore = () => {
     name: '',
     domain: '',
     phone: '',
+    whatsapp: '',
     email: '',
     wilaya: 'Algiers',
     logo: null,
@@ -103,6 +104,7 @@ const UpdateStore = () => {
           name: store.name || '',
           domain: store.subdomain || '',
           phone: store.contact?.phone || '',
+          whatsapp: store.contact?.whatsapp || '',
           email: store.contact?.email || '',
           wilaya: store.contact?.wilaya || 'Algiers',
           logo: store.design?.logoUrl || null,
@@ -177,13 +179,15 @@ const UpdateStore = () => {
 
     const phone = formData.phone?.trim();
     if (phone && !/^(0)(5|6|7)[0-9]{8}$/.test(phone)) newErrors.phone = t('form.validation.phone_invalid');
+    const whatsapp = formData.whatsapp?.trim();
+    if (whatsapp && !/^\+?[0-9]{9,15}$/.test(whatsapp.replace(/[\s-]/g, ''))) newErrors.whatsapp = t('form.validation.whatsapp_invalid');
 
     const email = formData.email?.trim();
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t('form.validation.email_invalid');
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [formData.name, formData.phone, formData.email, t]);
+  }, [formData.name, formData.phone, formData.whatsapp, formData.email, t]);
 
   const handleInputChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -231,6 +235,7 @@ const UpdateStore = () => {
         contact: {
           email: formData.email?.trim() || null,
           phone: formData.phone?.trim() || null,
+          whatsapp: formData.whatsapp?.trim().replace(/[\s-]/g, '') || null,
           wilaya: formData.wilaya,
           address: formData.address,
         },
@@ -422,44 +427,6 @@ const UpdateStore = () => {
             </div>
           </div>
 
-          {/* Language - اللغة المفضلة للمتجر - تمتد على عرض الصفحة الكامل */}
-          <div className="mt-6">
-            <label className={labelClass}>
-              <Languages size={14} className="inline me-1" />
-              {t('form.language_label')}
-            </label>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { value: 'ar', label: 'العربية', code: 'AR' },
-                { value: 'fr', label: 'Français', code: 'FR' },
-                { value: 'en', label: 'English', code: 'EN' },
-              ].map((lang) => {
-                const active = formData.language === lang.value;
-                return (
-                  <button
-                    key={lang.value}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, language: lang.value }))}
-                    className={`flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl border-2 transition-all ${active
-                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                      : 'border-gray-200 dark:border-zinc-700 hover:border-gray-300 dark:hover:border-zinc-600'
-                      }`}
-                  >
-                    <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${active ? 'border-indigo-500' : 'border-gray-300 dark:border-zinc-600'
-                      }`}>
-                      {active && <span className="w-2 h-2 rounded-full bg-indigo-500" />}
-                    </span>
-                    <span className={`text-sm font-semibold ${active ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-zinc-300'
-                      }`}>
-                      {lang.label}
-                    </span>
-                    <span className="text-[10px] text-gray-400 dark:text-zinc-500 font-mono">{lang.code}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* Shopping Cart Toggle - Dark Mode Friendly */}
             <div className="md:col-span-2 mt-4">
@@ -618,6 +585,37 @@ const UpdateStore = () => {
                 dir="ltr"
               />
               {errors.email && <p className="text-rose-500 text-xs mt-1">{errors.email}</p>}
+            </div>
+
+            {/* WhatsApp + اللغة جنباً إلى جنب */}
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className={labelClass}>
+                  <MessageCircle size={14} className="inline me-1" />
+                  {t('form.whatsapp_label')}
+                </label>
+                <input
+                  type="tel"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleInputChange}
+                  placeholder="0557123456"
+                  className={inputClass(errors.whatsapp)}
+                  dir="ltr"
+                />
+                {errors.whatsapp && <p className="text-rose-500 text-xs mt-1">{errors.whatsapp}</p>}
+              </div>
+              <div>
+                <label className={labelClass}>
+                  <Languages size={14} className="inline me-1" />
+                  {t('form.language_label')}
+                </label>
+                <select name="language" value={formData.language} onChange={handleInputChange} className={inputClass(false)}>
+                  <option value="ar">العربية (AR)</option>
+                  <option value="fr">Français (FR)</option>
+                  <option value="en">English (EN)</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>

@@ -121,6 +121,7 @@
     "wilaya_label": "State/Wilaya",
     "niche_label": "Category",
     "phone_label": "Phone Number",
+    "whatsapp_label": "WhatsApp number",
     "email_label": "Email",
     "address_label": "Full Address",
     "address_placeholder": "Street number, neighborhood, municipality...",
@@ -162,6 +163,7 @@
       "domain_invalid": "Domain must contain only lowercase letters, numbers, and hyphens",
       "domain_short": "Domain is too short (min 3 characters)",
       "phone_invalid": "Invalid phone number (e.g., 0557123456)",
+      "whatsapp_invalid": "Invalid WhatsApp number (e.g., 0557123456 or +213557123456)",
       "email_invalid": "Invalid email address",
       "address_invalid": "Invalid address",
       "DOMAIN_ALREADY_EXISTS": "This domain is already taken, please choose another name"

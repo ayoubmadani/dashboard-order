@@ -168,14 +168,19 @@
     "floatingButton": { "label": "زر عائم" }
   },
   "fields": {
+    "animation": "الحركة",
+    "animationOptions": {"none": "بدون حركة", "pulse": "نبض", "bounce": "قفز", "shake": "اهتزاز", "glow": "توهج", "heartbeat": "نبضة قلب"},
     "content": "المحتوى",
     "buttonText": "نص الزر",
     "linkType": "عند الضغط",
     "linkTypeOptions": {
       "external": "الذهاب إلى رابط",
-      "form": "الانتقال إلى نموذج الطلب"
+      "form": "الانتقال إلى نموذج الطلب",
+      "whatsapp": "واتساب"
     },
     "buttonLink": "رابط الزر",
+    "whatsappNumber": "رقم واتساب",
+    "whatsappMessage": "رسالة جاهزة (اختياري)",
     "backgroundColor": "لون الخلفية",
     "textColor": "لون النص",
     "color": "اللون",

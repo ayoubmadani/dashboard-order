@@ -168,14 +168,19 @@
     "floatingButton": { "label": "Bouton flottant" }
   },
   "fields": {
+    "animation": "Animation",
+    "animationOptions": {"none": "Aucune", "pulse": "Pulsation", "bounce": "Rebond", "shake": "Secousse", "glow": "Lueur", "heartbeat": "Battement de cœur"},
     "content": "Contenu",
     "buttonText": "Texte du bouton",
     "linkType": "Au clic",
     "linkTypeOptions": {
       "external": "Aller à un lien",
-      "form": "Aller au formulaire de commande"
+      "form": "Aller au formulaire de commande",
+      "whatsapp": "WhatsApp"
     },
     "buttonLink": "Lien du bouton",
+    "whatsappNumber": "Numéro WhatsApp",
+    "whatsappMessage": "Message prérempli (facultatif)",
     "backgroundColor": "Couleur de fond",
     "textColor": "Couleur du texte",
     "color": "Couleur",

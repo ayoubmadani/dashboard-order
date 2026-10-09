@@ -6,7 +6,7 @@ import {
   Tag, Bold, Italic, List, CheckCircle, AlertCircle,
   Loader2, Sparkles, Package, Rocket, Ruler,
   Type as TypeIcon, Save, ArrowRight, Grid3x3,
-  FolderTree, ChevronDown, X, Truck, Download
+  FolderTree, ChevronDown, X, Truck, Download, MessageCircle,
 } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -110,6 +110,8 @@ export default function CreateProduct() {
     storeId: '', sku: '', stock: '', status: 'active', categoryId: '',
     shippingFree: false,
     isDigital: false,
+    whatsappEnabled: false,
+    whatsappNumber: '',
   });
 
   // ✅ categories = flat list مع level لكل تصنيف
@@ -284,6 +286,19 @@ export default function CreateProduct() {
     return !Object.keys(e).length;
   };
 
+  // تفعيل زر واتساب: إذا كان رقم المنتج فارغاً نملؤه برقم واتساب المتجر
+  const toggleWhatsapp = async () => {
+    const enabling = !formData.whatsappEnabled;
+    setFormData(p => ({ ...p, whatsappEnabled: enabling }));
+    if (!enabling || formData.whatsappNumber?.trim()) return;
+    try {
+      const sid = localStorage.getItem('storeId');
+      const res = await axios.get(`${baseURL}/stores/${sid}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      const storeWa = res.data?.data?.contact?.whatsapp;
+      if (storeWa) setFormData(p => (p.whatsappNumber?.trim() ? p : { ...p, whatsappNumber: storeWa }));
+    } catch { /* يبقى الحقل فارغاً ليكتبه التاجر */ }
+  };
+
   const handleSubmit = async () => {
     if (!validate()) { showNotification('error', t('create.fix_errors')); return; }
     if (!storeId) { showNotification('error', t('list.toast.store_not_found')); return; }
@@ -295,6 +310,8 @@ export default function CreateProduct() {
         storeId, categoryId: formData.categoryId || undefined,
         shippingFree: formData.shippingFree,
         isDigital: formData.isDigital,
+        whatsappEnabled: formData.whatsappEnabled,
+        whatsappNumber: formData.whatsappNumber?.trim() || '',
         attributes, variantDetails, offers, images
       };
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
@@ -424,6 +441,28 @@ export default function CreateProduct() {
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.isDigital ? (isRtl ? '-translate-x-6' : 'translate-x-6') : (isRtl ? '-translate-x-1' : 'translate-x-1')}`} />
             </button>
           </div>
+        </Field>
+
+        <Field label={t('form.whatsapp_enabled_label')}>
+          <div className="flex items-center justify-between px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950">
+            <span className="flex items-center gap-2 text-sm text-gray-600 dark:text-zinc-300">
+              <MessageCircle size={14} className="text-emerald-500" />
+              {t('form.whatsapp_enabled_desc')}
+            </span>
+            <button type="button"
+              onClick={toggleWhatsapp}
+              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-300 ${formData.whatsappEnabled ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-700'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-300 ${formData.whatsappEnabled ? (isRtl ? '-translate-x-6' : 'translate-x-6') : (isRtl ? '-translate-x-1' : 'translate-x-1')}`} />
+            </button>
+          </div>
+          {formData.whatsappEnabled && (
+            <input
+              type="tel" dir="ltr" placeholder="0557123456"
+              value={formData.whatsappNumber}
+              onChange={(e) => setFormData(p => ({ ...p, whatsappNumber: e.target.value }))}
+              className="mt-2 w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            />
+          )}
         </Field>
 
         {/* ── Category dropdown ── */}

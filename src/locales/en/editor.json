@@ -168,14 +168,19 @@
     "floatingButton": { "label": "Floating button" }
   },
   "fields": {
+    "animation": "Animation",
+    "animationOptions": {"none": "None", "pulse": "Pulse", "bounce": "Bounce", "shake": "Shake", "glow": "Glow", "heartbeat": "Heartbeat"},
     "content": "Content",
     "buttonText": "Button text",
     "linkType": "On click",
     "linkTypeOptions": {
       "external": "Go to a link",
-      "form": "Jump to the order form"
+      "form": "Jump to the order form",
+      "whatsapp": "WhatsApp"
     },
     "buttonLink": "Button link",
+    "whatsappNumber": "WhatsApp number",
+    "whatsappMessage": "Prefilled message (optional)",
     "backgroundColor": "Background color",
     "textColor": "Text color",
     "color": "Color",

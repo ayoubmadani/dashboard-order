@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BUTTON_ANIMATIONS } from '../blocks/buttonAnimations';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Trash2, Layers, X, Type, MousePointerClick, ChevronLeft, ChevronRight, Bold, Italic, Underline, Image as ImageIcon, ArrowUp, ArrowDown, Images } from 'lucide-react';
@@ -26,14 +27,19 @@ const BUTTON_ELEMENT_FIELDS = [
     options: [
       { value: 'external', labelKey: 'editor.fields.linkTypeOptions.external' },
       { value: 'form', labelKey: 'editor.fields.linkTypeOptions.form' },
+      { value: 'whatsapp', labelKey: 'editor.fields.linkTypeOptions.whatsapp' },
     ],
   },
   // Only relevant for an external link — jumping to the order form doesn't
   // need a URL, it scrolls to the productForm block already on the page.
-  { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (el) => (el.linkType || 'external') !== 'form' },
+  { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (el) => (el.linkType || 'external') === 'external' },
+  // زر واتساب: رقم + رسالة جاهزة اختيارية (تُفتح محادثة wa.me في الموقع)
+  { key: 'whatsappNumber', labelKey: 'editor.fields.whatsappNumber', type: 'text', showIf: (el) => el.linkType === 'whatsapp' },
+  { key: 'whatsappMessage', labelKey: 'editor.fields.whatsappMessage', type: 'text', showIf: (el) => el.linkType === 'whatsapp' },
   { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
   { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
   { key: 'fontSize', labelKey: 'editor.fields.fontSize', type: 'number' },
+  { key: 'animation', labelKey: 'editor.fields.animation', type: 'select', options: BUTTON_ANIMATIONS.map((value) => ({ value, labelKey: `editor.fields.animationOptions.${value}` })) },
   { key: 'width', labelKey: 'editor.canvasSection.width', type: 'number', min: 5, max: 100 },
   { key: 'height', labelKey: 'editor.canvasSection.height', type: 'number' },
 ];
@@ -53,6 +59,25 @@ const ELEMENT_ICONS = { button: MousePointerClick, image: ImageIcon, text: Type 
 // has no way to represent alpha/transparency in its own swatch at all.
 const CHECKERED_BG =
   'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)';
+
+// رقم واتساب المتجر (إعدادات المتجر) — يملأ حقل رقم زر واتساب تلقائياً
+let storeWhatsappPromise = null;
+function fetchStoreWhatsapp() {
+  const storeId = localStorage.getItem('storeId');
+  if (!storeId) return Promise.resolve('');
+  storeWhatsappPromise ??= axios
+    .get(`${baseURL}/stores/${storeId}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
+    .then((res) => res.data?.data?.contact?.whatsapp || '')
+    .catch(() => { storeWhatsappPromise = null; return ''; });
+  return storeWhatsappPromise;
+}
+
+// عند اختيار «واتساب» والرقم فارغ: نضع رقم واتساب المتجر في نفس التحديث
+async function withStoreWhatsapp(patch, current) {
+  if (patch.linkType !== 'whatsapp' || current?.whatsappNumber) return patch;
+  const number = await fetchStoreWhatsapp();
+  return number ? { ...patch, whatsappNumber: number } : patch;
+}
 
 function ProductField({ value, onChange }) {
   const { t } = useTranslation();
@@ -569,7 +594,13 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
                   key={field.key}
                   field={field}
                   value={selectedElement[field.key]}
-                  onChange={(newValue) => updateElement(selectedElement.id, { [field.key]: newValue })}
+                  onChange={(newValue) => {
+                    const patch = { [field.key]: newValue };
+                    updateElement(selectedElement.id, patch);
+                    withStoreWhatsapp(patch, selectedElement).then((full) => {
+                      if (full !== patch) updateElement(selectedElement.id, { whatsappNumber: full.whatsappNumber });
+                    });
+                  }}
                 />
               )
             )}
@@ -611,6 +642,9 @@ export default function PropsPanel({ block, blocks = [], onUpdateProps, onDelete
                     const patch = { [field.key]: newValue };
                     field.clearsFields?.forEach((key) => { patch[key] = null; });
                     onUpdateProps(block.id, patch);
+                    withStoreWhatsapp(patch, values).then((full) => {
+                      if (full !== patch) onUpdateProps(block.id, { whatsappNumber: full.whatsappNumber });
+                    });
                   }}
                 />
               )

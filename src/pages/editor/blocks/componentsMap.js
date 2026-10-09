@@ -5,6 +5,7 @@ import ProductFormBlock from './ProductFormBlock';
 import ProductImagesBlock from './ProductImagesBlock';
 import FloatingButtonBlock from './FloatingButtonBlock';
 import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
+import { BUTTON_ANIMATIONS } from './buttonAnimations';
 
 const FLOATING_BUTTON_POSITIONS = ['top-right', 'top-left', 'top-center', 'bottom-right', 'bottom-left', 'bottom-center'];
 
@@ -227,6 +228,7 @@ export const componentsMap = {
       backgroundColor: '#10b981',
       textColor: '#ffffff',
       fontSize: 14,
+      animation: 'none',
     },
     fields: [
       {
@@ -236,12 +238,15 @@ export const componentsMap = {
         options: [
           { value: 'external', labelKey: 'editor.fields.linkTypeOptions.external' },
           { value: 'form', labelKey: 'editor.fields.linkTypeOptions.form' },
+          { value: 'whatsapp', labelKey: 'editor.fields.linkTypeOptions.whatsapp' },
         ],
       },
       // Only relevant for an external link — jumping to the order form
       // doesn't need a URL, it scrolls to the productForm block already on
       // the page (same behavior as a floating element's own button type).
-      { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (v) => (v.linkType || 'external') !== 'form' },
+      { key: 'link', labelKey: 'editor.fields.buttonLink', type: 'url', showIf: (v) => (v.linkType || 'external') === 'external' },
+      { key: 'whatsappNumber', labelKey: 'editor.fields.whatsappNumber', type: 'text', showIf: (v) => v.linkType === 'whatsapp' },
+      { key: 'whatsappMessage', labelKey: 'editor.fields.whatsappMessage', type: 'text', showIf: (v) => v.linkType === 'whatsapp' },
       {
         key: 'position',
         labelKey: 'editor.fields.position',
@@ -271,6 +276,7 @@ export const componentsMap = {
       { key: 'height', labelKey: 'editor.fields.floatingHeight', type: 'number', min: 32, max: 300 },
       { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
       { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
+      { key: 'animation', labelKey: 'editor.fields.animation', type: 'select', options: BUTTON_ANIMATIONS.map((value) => ({ value, labelKey: `editor.fields.animationOptions.${value}` })) },
     ],
   },
 };

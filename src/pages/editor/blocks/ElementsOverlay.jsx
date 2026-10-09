@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { BUTTON_ANIMATION_CSS, buttonAnimationClass } from './buttonAnimations';
 import { Image as ImageIcon } from 'lucide-react';
 import { startEdgeAutoScroll } from './autoScroll';
 
@@ -407,8 +408,11 @@ export default function ElementsOverlay({
                   document.getElementById('md-product-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
               }}
+              className={buttonAnimationClass(el.animation)}
               style={{
                 ...commonStyle,
+                '--md-btn-color': el.backgroundColor || 'var(--md-primary, #10b981)',
+                '--md-btn-base': commonStyle.transform,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -422,6 +426,7 @@ export default function ElementsOverlay({
                 whiteSpace: width ? 'normal' : 'nowrap',
               }}
             >
+              {buttonAnimationClass(el.animation) && <style>{BUTTON_ANIMATION_CSS}</style>}
               {el.text}
               {resizeHandle}
             </a>
