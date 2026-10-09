@@ -121,7 +121,6 @@ export default function CreateProduct() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
 
   const [attributes, setAttributes] = useState([]);
-  const [variantDetails, setVariantDetails] = useState([]);
   const [offers, setOffers] = useState([]);
   const [images, setImages] = useState([]);
   const [dragImageIndex, setDragImageIndex] = useState(null);
@@ -183,16 +182,15 @@ export default function CreateProduct() {
         ? { ...base, variants: DEFAULT_SIZES.map((s, i) => ({ id: `var-${Date.now()}-${i}`, name: s, value: s })) }
         : { ...base, variants: [] };
     setAttributes(prev => [...prev, attr]);
-    setVariantDetails([]);
+   
   };
 
-  const removeAttribute = (id) => { setAttributes(prev => prev.filter(a => a.id !== id)); setVariantDetails([]); };
-  const updateAttributeName = (id, name) => { setAttributes(prev => prev.map(a => a.id === id ? { ...a, name } : a)); setVariantDetails([]); };
-  const updateDisplayMode = (id, mode) => { setAttributes(prev => prev.map(a => a.id === id && a.type === ATTRIBUTE_TYPES.COLOR ? { ...a, displayMode: mode, variants: [] } : a)); setVariantDetails([]); };
+  const removeAttribute = (id) => { setAttributes(prev => prev.filter(a => a.id !== id)); };
+  const updateAttributeName = (id, name) => { setAttributes(prev => prev.map(a => a.id === id ? { ...a, name } : a)); };
+  const updateDisplayMode = (id, mode) => { setAttributes(prev => prev.map(a => a.id === id && a.type === ATTRIBUTE_TYPES.COLOR ? { ...a, displayMode: mode, variants: [] } : a)); };
 
   const addVariant = (attrId) => {
     setAttributes(prev => prev.map(a => a.id !== attrId ? a : { ...a, variants: [...a.variants, { id: `var-${Date.now()}`, name: '', value: '' }] }));
-    setVariantDetails([]);
   };
 
   const updateVariantValue = (attrId, variantId, value, id = null) => {
@@ -206,35 +204,11 @@ export default function CreateProduct() {
         })
       };
     }));
-    setVariantDetails([]);
   };
 
   const removeVariant = (attrId, variantId) => {
     setAttributes(prev => prev.map(a => a.id !== attrId ? a : { ...a, variants: a.variants.filter(v => v.id !== variantId) }));
-    setVariantDetails([]);
   };
-
-  /* ── Variant combinations ── */
-  const generateVariantCombinations = () => {
-    if (!attributes.length) { showNotification('error', t('variants.add_attrs_first')); return; }
-    if (attributes.some(a => !a.variants.length)) { showNotification('error', t('variants.attrs_no_variants')); return; }
-    const combinations = [];
-    const gen = (combo, idx) => {
-      if (idx === attributes.length) { combinations.push([...combo]); return; }
-      const attr = attributes[idx];
-      const displayMode = attr.type === ATTRIBUTE_TYPES.COLOR ? attr.displayMode : 'text';
-      attr.variants.forEach(v => gen([...combo, { attrId: attr.id, attrName: attr.name, displayMode, value: v.value }], idx + 1));
-    };
-    gen([], 0);
-    setVariantDetails(combinations.map((attrs, i) => ({
-      id: `vd-${Date.now()}-${i}`, attributes: attrs, price: formData.price || '', stock: '',
-    })));
-    showNotification('success', t('variants.generated', { count: combinations.length }));
-  };
-
-  const removeVariantDetail = (id) => setVariantDetails(prev => prev.filter(d => d.id !== id));
-  const updateVDPrice = (id, price) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, price } : d));
-  const updateVDStock = (id, stock) => setVariantDetails(prev => prev.map(d => d.id === id ? { ...d, stock } : d));
 
   /* ── Offers ── */
   const addOffer = () => setOffers(prev => [...prev, { id: `off-${Date.now()}`, name: '', subTitle: '', quantity: '', price: '', shippingFree: false }]);
@@ -312,7 +286,7 @@ export default function CreateProduct() {
         isDigital: formData.isDigital,
         whatsappEnabled: formData.whatsappEnabled,
         whatsappNumber: formData.whatsappNumber?.trim() || '',
-        attributes, variantDetails, offers, images
+        attributes, variantDetails: [], offers, images
       };
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
       showNotification('success', t('create.success'));
@@ -666,104 +640,6 @@ export default function CreateProduct() {
         </div>
       </Section>
 
-      {/* ── SECTION 3: Variant Combinations ── */}
-      {attributes.length > 0 && (
-        <Section icon={Grid3x3} title={t('variants.section_title')} color="teal">
-          <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-500/5 border border-purple-100 dark:border-purple-500/20 rounded-xl">
-            <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-purple-500" />
-              <span className="text-sm font-semibold text-purple-800 dark:text-purple-300">{t('variants.auto_generate')}</span>
-              <span className="text-xs text-purple-500/70 hidden sm:inline">{t('variants.auto_generate_desc')}</span>
-            </div>
-            <button type="button" onClick={generateVariantCombinations}
-              className="flex items-center gap-1.5 px-4 py-2 bg-purple-500 text-white text-xs font-bold rounded-lg hover:bg-purple-600 transition-all">
-              <Rocket size={13} />{t('variants.generate_now')}
-            </button>
-          </div>
-          {variantDetails.length > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {['price', 'stock'].map(field => (
-                <div key={field} className="flex gap-2">
-                  <input type="number" id={`bulk_${field}`}
-                    placeholder={field === 'price' ? '0.00' : t('form.stock_placeholder')}
-                    className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-950 outline-none focus:border-indigo-400" />
-                  <button type="button"
-                    onClick={() => {
-                      const val = document.getElementById(`bulk_${field}`).value;
-                      if (val) setVariantDetails(prev => prev.map(d => ({ ...d, [field]: val })));
-                    }}
-                    className="px-3 py-2 bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-bold rounded-lg hover:opacity-80 transition-all">
-                    {t('variants.apply')}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {!variantDetails.length ? (
-            <p className="text-center text-sm text-gray-400 py-4">{t('variants.none_yet')}</p>
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400 font-medium">{t('variants.total', { count: variantDetails.length })}</span>
-                <button type="button" onClick={() => setVariantDetails([])} className="text-xs text-rose-500 hover:text-rose-600 font-semibold">{t('variants.clear_all')}</button>
-              </div>
-              {variantDetails.map((detail, idx) => (
-                <div key={detail.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="px-2.5 py-1 bg-teal-100 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-bold rounded-full">#{idx + 1}</span>
-                    <button type="button" onClick={() => removeVariantDetail(detail.id)}
-                      className="p-1.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                    {detail.attributes.map(attrVal => (
-                      <div key={attrVal.attrId}>
-                        <label className="text-xs text-gray-400 font-medium block mb-1">{attrVal.attrName}</label>
-                        {attrVal.displayMode === 'image' ? (
-                          <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-zinc-700 bg-cover bg-center border border-gray-200 dark:border-zinc-700"
-                            style={{ backgroundImage: `url(${attrVal.value})` }} />
-                        ) : (
-                          <div className="relative">
-                            <input readOnly value={attrVal.value || ''}
-                              className="w-full px-3 py-1.5 text-sm rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 outline-none" />
-                            {attrVal.displayMode === 'color' && attrVal.value?.startsWith('#') && (
-                              <div className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded ${isRtl ? 'left-2' : 'right-2'}`}
-                                style={{ backgroundColor: attrVal.value }} />
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100 dark:border-zinc-800">
-                    <div>
-                      <label className="text-xs text-gray-400 font-medium block mb-1">
-                        <Tag size={11} className="inline mr-1" />{t('variants.price_label')} *
-                      </label>
-                      <div className="relative">
-                        <input type="number" dir="ltr" value={detail.price} onChange={e => updateVDPrice(detail.id, e.target.value)}
-                          className={`w-full px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none focus:border-teal-400 border-gray-200 dark:border-zinc-700 ${isRtl ? 'pl-12' : 'pr-12'}`} />
-                        <span className={`absolute top-1/2 -translate-y-1/2 text-xs text-gray-400 ${isRtl ? 'left-3' : 'right-3'}`}>
-                          {isRtl ? 'د.ج' : 'DZD'}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-400 font-medium block mb-1">
-                        <Package size={11} className="inline mr-1" />{t('form.stock')}
-                      </label>
-                      <input type="number" dir="ltr" value={detail.stock} onChange={e => updateVDStock(detail.id, e.target.value)}
-                        placeholder={t('form.stock_placeholder')}
-                        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-teal-400" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Section>
-      )}
 
       {/* ── SECTION 4: Offers ── */}
       <Section icon={Tag} title={t('offers.section_title')} color="rose">
@@ -791,12 +667,6 @@ export default function CreateProduct() {
                     className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-rose-400" />
                 </div>
               ))}
-            </div>
-            <div className="mt-3">
-              <label className="text-xs text-gray-400 font-medium block mb-1">{t('offers.offer_subtitle')}</label>
-              <input type="text" value={offer.subTitle || ''} onChange={e => updateOffer(offer.id, 'subTitle', e.target.value)}
-                placeholder={t('offers.offer_subtitle_placeholder')}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 outline-none focus:border-rose-400" />
             </div>
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800">
               <span className="flex items-center gap-1.5 text-xs text-gray-400 font-medium">
