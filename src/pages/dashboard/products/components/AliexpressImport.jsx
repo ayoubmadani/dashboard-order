@@ -72,7 +72,7 @@ export default function AliexpressImport({ onImported, notify }) {
             <p className="text-xs text-gray-500 dark:text-zinc-400">{t('subtitle')}</p>
           </div>
         </div>
-        {status.connected && (
+        {status.connected && !status.shared && (
           <button type="button" onClick={disconnect} className="flex items-center gap-1 text-xs text-gray-400 hover:text-rose-500">
             <Unplug size={13} />{t('disconnect')}
           </button>
@@ -95,7 +95,7 @@ export default function AliexpressImport({ onImported, notify }) {
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}{t('import_btn')}
             </button>
           </div>
-          {status.account && (
+          {status.account && !status.shared && (
             <p className="flex items-center gap-1 text-[11px] text-emerald-600"><CheckCircle2 size={12} />{t('connected_as', { account: status.account })}</p>
           )}
         </>
