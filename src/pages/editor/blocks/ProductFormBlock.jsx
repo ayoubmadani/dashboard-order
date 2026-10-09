@@ -200,19 +200,20 @@ export default function ProductFormBlock({
   };
 
   const selectedWilaya = wilayas.find((w) => String(w.id) === String(form.wilayaId));
+  // أسعار التوصيل تصل من الـ API كنصوص (decimal) — Number() وإلا صار "8900" + "0" = "89000"
   const priceShip = product?.isDigital
     ? 0
     : selectedWilaya
-      ? form.typeShip === 'office'
+      ? Number(form.typeShip === 'office'
         ? selectedWilaya.livraisonOfice
-        : selectedWilaya.livraisonHome
+        : selectedWilaya.livraisonHome) || 0
       : 0;
-  const priceLoss = product?.isDigital ? 0 : (selectedWilaya?.livraisonReturn || 0);
+  const priceLoss = product?.isDigital ? 0 : (Number(selectedWilaya?.livraisonReturn) || 0);
   // Store-level "Qty Support" toggle — hide the quantity picker entirely
   // (not just lock it to 1) when the merchant's store doesn't offer it,
   // same as the theme files' own ProductForm already does.
   const supportQty = product?.supportQty !== false;
-  const totalPrice = getUnitPrice() * form.quantity + (priceShip || 0);
+  const totalPrice = Number(getUnitPrice()) * form.quantity + priceShip;
 
   const outOfStock =
     matchedVariantDetail && !matchedVariantDetail.autoGenerate && matchedVariantDetail.stock <= 0;
@@ -281,6 +282,7 @@ export default function ProductFormBlock({
       setSubmitting(false);
     }
   };
+
 
   const selectedAttrEntries = Object.entries(selectedVariants);
 
