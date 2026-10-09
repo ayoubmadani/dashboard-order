@@ -9,12 +9,14 @@ import {
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
   Send, CheckSquare, Square, MinusSquare, ShieldAlert,
-  Phone, Copy, Check, Eye, Mail, MessageCircle,
+  Phone, Copy, Check, Eye, Mail, MessageCircle, Clock, Plus, PhoneCall, Undo2,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import OrderModal from './orderModel';
 import NoStoreState from '../../../components/NoStoreState';
+import { timeAgo, formatOrderDate } from '../../../utils/orderTime';
+import { toast, Toaster } from 'sonner';
 
 export const StatusEnum = {
   PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
@@ -430,6 +432,13 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
 /* ════════════════════════════════════════════════════
    Inline Status Menu — تغيير الحالة من القائمة مباشرة
 ════════════════════════════════════════════════════ */
+/* طلبية عند شركة تأكيد: قبل التأكيد (أو ملغاة) مقفلة → استرجاع؛ بعد التأكيد → حالات الشحن فقط */
+const AFTER_CONFIRMATION = ['confirmed', 'shipping', 'delivered', 'returned'];
+// التسليم والإرجاع يأتيان من شركة التوصيل — التاجر يضع فقط "قيد الشحن"
+const SHIPPING_PHASE = ['shipping'];
+const confirmationLock = (cart) =>
+  !cart.confirmationCompanyId ? null : AFTER_CONFIRMATION.includes(cart.status) ? 'shippingOnly' : 'locked';
+
 function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }) {
   const ref = useRef(null);
 
@@ -441,15 +450,18 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
   }, [open, onToggle]);
 
   const style = STATUS_STYLES[cart.status] || STATUS_STYLES.pending;
-  const visibleStatusKeys = cart.isDigital
+  const lock = confirmationLock(cart);
+  const visibleStatusKeys = (cart.isDigital
     ? statusKeys.filter(k => !DIGITAL_HIDDEN_STATUSES.includes(k))
-    : statusKeys;
+    : statusKeys
+  ).filter(k => lock !== 'shippingOnly' || k === cart.status || SHIPPING_PHASE.includes(k));
 
   return (
     <div className="relative" ref={ref} onClick={e => e.stopPropagation()}>
       <button
         onClick={() => onToggle(open ? null : cart.id)}
-        disabled={busy}
+        disabled={busy || lock === 'locked'}
+        title={lock === 'locked' ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : undefined}
         className={`w-full md:w-auto min-w-[112px] flex items-center justify-between gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide border transition-all hover:brightness-95 disabled:opacity-60 ${style}`}
       >
         <span className="truncate">{statusLabel(t, cart.status, cart.isDigital) || cart.status}</span>
@@ -482,6 +494,83 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
 /* ════════════════════════════════════════════════════
    Ship Button (per row) — أيقونة فقط، النص في tooltip
 ════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   إرسال طلبات محددة لشركة تأكيد من قائمة التاجر
+════════════════════════════════════════════════════ */
+function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'confirmation' });
+  const [companies, setCompanies] = useState(null);
+  const [companyId, setCompanyId] = useState('');
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/stores/${storeId}/confirmation/saved`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => { setCompanies(data); if (data.length === 1) setCompanyId(data[0].id); })
+      .catch(() => setCompanies([]));
+  }, [storeId, token]);
+
+  const send = async () => {
+    setSending(true);
+    try {
+      const { data } = await axios.post(`${baseURL}/stores/${storeId}/confirmation/send`,
+        { companyId, orderIds }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(t('send_done', { count: data.sent }));
+      const digital = data.skipped?.filter(x => x.reason === 'digital').length ?? 0;
+      const other = (data.skipped?.length ?? 0) - digital;
+      if (digital) toast.warning(t('send_skipped_digital', { count: digital }));
+      if (other) toast.warning(t('send_skipped', { count: other }));
+      onDone();
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg.join('\n') : (msg || t('load_error')));
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
+        <h3 className="flex items-center gap-2 font-black text-gray-900 dark:text-white">
+          <PhoneCall size={18} className="text-indigo-600" />{t('send_title', { count: orderIds.length })}
+        </h3>
+        {companies === null ? (
+          <div className="flex justify-center py-8"><Loader2 className="animate-spin text-indigo-500" /></div>
+        ) : companies.length === 0 ? (
+          <div className="text-center py-4 space-y-3">
+            <p className="text-sm text-gray-500">{t('send_no_saved')}</p>
+            <a href="/dashboard/confirmation" className="inline-block px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold">{t('go_search')}</a>
+          </div>
+        ) : (
+          <>
+            <p className="text-xs font-bold text-gray-500">{t('send_pick')}</p>
+            <div className="space-y-2 max-h-72 overflow-auto">
+              {companies.map(c => (
+                <label key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border-2 cursor-pointer ${
+                  companyId === c.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
+                  <span className="flex items-center gap-2 min-w-0">
+                    <input type="radio" name="company" checked={companyId === c.id} onChange={() => setCompanyId(c.id)} />
+                    <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{c.name}</span>
+                  </span>
+                  <span className="text-xs font-black text-emerald-600 shrink-0">{t('commission', { amount: c.commissionPerDelivered })}</span>
+                </label>
+              ))}
+            </div>
+            <p className="text-[11px] text-amber-700 dark:text-amber-400">{t('wallet_note')}</p>
+            <div className="flex gap-2">
+              <button onClick={send} disabled={!companyId || sending}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50">
+                {sending && <Loader2 size={14} className="animate-spin" />}{t('send_confirm')}
+              </button>
+              <button onClick={onClose} className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm font-bold text-gray-600 dark:text-zinc-300">✕</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ShipButton({ order, onResult, onShipped, t }) {
   const { i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
@@ -563,6 +652,16 @@ export default function Orders() {
   const isRtl = i18n.dir() === 'rtl';
   const navigate = useNavigate();
 
+  // إعادة رسم كل دقيقة حتى يبقى "منذ X دقيقة" دقيقاً
+  const { t: tc } = useTranslation('translation', { keyPrefix: 'confirmation' });
+  const [sendIds, setSendIds] = useState(null);
+  const [recalling, setRecalling] = useState(false);
+  const [, setNowTick] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setNowTick((n) => n + 1), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -638,7 +737,12 @@ export default function Orders() {
 
   // منتج رقمي لا يُشحن — لا يدخل قائمة "الطلبات القابلة للشحن" إطلاقاً
   const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital);
-  const allConfirmedSelected = confirmedOrders.length > 0 && confirmedOrders.every(c => selectedIds.has(c.id));
+  // كل ما يمكن تحديده: جاهز للشحن، ينتظر التأكيد (إرسال/استرجاع)، أو ألغته شركة التأكيد (استرجاع)
+  const isSelectable = (c) => (c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
+    || ['pending', 'appl1', 'appl2', 'appl3', 'postponed'].includes(c.status)
+    || (c.status === 'cancelled' && !!c.confirmationCompanyId);
+  const selectableOrders = orders.filter(isSelectable);
+  const allConfirmedSelected = selectableOrders.length > 0 && selectableOrders.every(c => selectedIds.has(c.id));
   const someSelected = selectedIds.size > 0;
 
   useEffect(() => {
@@ -653,9 +757,34 @@ export default function Orders() {
   const toggleSelectAll = () =>
     allConfirmedSelected
       ? setSelectedIds(new Set())
-      : setSelectedIds(new Set(confirmedOrders.map(o => o.id)));
+      : setSelectedIds(new Set(selectableOrders.map(o => o.id)));
 
   const clearSelection = () => setSelectedIds(new Set());
+
+  // طلبات تنتظر التأكيد: يمكن إرسالها لشركة تأكيد، أو سحبها منها
+  const QUEUE_STATUSES = ['pending', 'appl1', 'appl2', 'appl3', 'postponed'];
+  const selectedOrders = orders.filter(o => selectedIds.has(o.id));
+  const shipSelected = selectedOrders.filter(o => o.status === 'confirmed' && !o.shippingTrackingId && !o.isDigital);
+  // الطلبيات الرقمية لا تُرسل لشركات التأكيد (لا توصيل لها)
+  const sendSelected = selectedOrders.filter(o => QUEUE_STATUSES.includes(o.status) && !o.confirmationCompanyId && !o.isDigital);
+  // استرجاع: قبل أن تؤكدها الشركة، أو إذا ألغتها — بعد التأكيد لا استرجاع
+  const recallSelected = selectedOrders.filter(o => [...QUEUE_STATUSES, 'cancelled'].includes(o.status) && o.confirmationCompanyId);
+
+  const recallFromConfirmation = async () => {
+    setRecalling(true);
+    try {
+      const { data } = await axios.post(`${baseURL}/stores/${storeId}/confirmation/recall`,
+        { orderIds: recallSelected.map(o => o.id) }, { headers: { Authorization: `Bearer ${token}` } });
+      if (data.recalled) toast.success(tc('recall_done', { count: data.recalled }));
+      else toast.warning(tc('recall_none'));
+      clearSelection();
+      fetchOrders();
+    } catch (err) {
+      toast.error(err.response?.data?.message || tc('load_error'));
+    } finally {
+      setRecalling(false);
+    }
+  };
 
   const startBulkShip = () => {
     if (!selectedIds.size) return;
@@ -695,7 +824,7 @@ export default function Orders() {
     } catch (e) {
       console.error(e);
       setOrders(p => p.map(o => o.id === cart.id ? { ...o, status: prev } : o));
-      pushToast(t('modal.save_failed', 'فشل حفظ التغييرات'), 'error');
+      pushToast(e.response?.data?.message || t('modal.save_failed', 'فشل حفظ التغييرات'), 'error');
     } finally { setStatusBusyId(null); }
   };
 
@@ -807,6 +936,10 @@ export default function Orders() {
               )}
             </div>
 
+            <button onClick={() => navigate('/dashboard/orders/new')} title={t('list.new_order')}
+              className="h-10 shrink-0 flex items-center justify-center gap-1.5 px-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all">
+              <Plus size={16} /><span className="hidden sm:inline">{t('list.new_order')}</span>
+            </button>
             <button onClick={exportToExcel} disabled={!orders.length} title={t('list.export_excel')}
               className="w-10 h-10 shrink-0 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-40">
               <Download size={16} />
@@ -869,8 +1002,8 @@ export default function Orders() {
           <div className={`hidden md:grid ${GRID} px-4 py-2.5 border-b border-gray-200 dark:border-zinc-800 bg-gray-50/70 dark:bg-zinc-800/40 rounded-t-2xl`}>
             <button
               onClick={toggleSelectAll}
-              disabled={!confirmedOrders.length}
-              title={t('bulk_ship.button_select_all', { count: confirmedOrders.length })}
+              disabled={!selectableOrders.length}
+              title={t('list.select_all', { count: selectableOrders.length, defaultValue: 'تحديد الكل ({{count}})' })}
               className="flex items-center justify-center disabled:opacity-30"
             >
               {allConfirmedSelected
@@ -908,7 +1041,7 @@ export default function Orders() {
             const isSelected = selectedIds.has(cart.id);
             const isSuspicious = !cart.customerId;
             const items = cart.items || [];
-            const selectable = cart.status === 'confirmed' && !cart.shippingTrackingId && !cart.isDigital;
+            const selectable = isSelectable(cart);
 
             return (
               <div
@@ -985,6 +1118,14 @@ export default function Orders() {
                       <ShoppingBag size={9} /> +{items.length - 1} {t('list.more_items', 'منتج')}
                     </span>
                   )}
+                  {cart.createdAt && (
+                    <span
+                      title={formatOrderDate(cart.createdAt, i18n.language)}
+                      className="inline-flex items-center gap-1 text-[11px] text-gray-400 dark:text-zinc-500 w-fit"
+                    >
+                      <Clock size={10} className="opacity-70" />{timeAgo(cart.createdAt, i18n.language)}
+                    </span>
+                  )}
                 </div>
 
                 {/* الوجهة */}
@@ -1024,16 +1165,24 @@ export default function Orders() {
                 </div>
 
                 {/* الحالة */}
-                <StatusCell
-                  cart={cart}
-                  open={openStatusId === cart.id}
-                  busy={statusBusyId === cart.id}
-                  onToggle={setOpenStatusId}
-                  onPick={quickStatus}
-                  statusKeys={statusKeys}
-                  isRtl={isRtl}
-                  t={t}
-                />
+                <div className="flex flex-col gap-1 min-w-0">
+                  <StatusCell
+                    cart={cart}
+                    open={openStatusId === cart.id}
+                    busy={statusBusyId === cart.id}
+                    onToggle={setOpenStatusId}
+                    onPick={quickStatus}
+                    statusKeys={statusKeys}
+                    isRtl={isRtl}
+                    t={t}
+                  />
+                  {cart.confirmationCompany && (
+                    <span title={cart.confirmationCompany.name}
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-[128px]">
+                      <PhoneCall size={10} className="shrink-0" />{tc('at_company', { name: cart.confirmationCompany.name })}
+                    </span>
+                  )}
+                </div>
 
                 {/* إجراءات — أيقونات مضغوطة */}
                 <div className="flex items-center gap-1.5 md:justify-end" onClick={e => e.stopPropagation()}>
@@ -1046,8 +1195,9 @@ export default function Orders() {
                   </button>
                   <button
                     onClick={() => navigate(`/dashboard/orders/${cart.id}`)}
-                    title={t('list.edit')}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
+                    disabled={!!confirmationLock(cart)}
+                    title={confirmationLock(cart) ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : t('list.edit')}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all disabled:opacity-30 disabled:pointer-events-none"
                   >
                     <Edit2 size={14} />
                   </button>
@@ -1056,8 +1206,9 @@ export default function Orders() {
                   )}
                   <button
                     onClick={() => setDeleteTarget(cart)}
-                    title={t('list.delete')}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 border border-rose-100 dark:border-rose-500/20 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                    disabled={!!cart.confirmationCompanyId}
+                    title={cart.confirmationCompanyId ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : t('list.delete')}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-400 border border-rose-100 dark:border-rose-500/20 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all disabled:opacity-30 disabled:pointer-events-none"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -1113,21 +1264,44 @@ export default function Orders() {
               {t('bulk_ship.selected_count', 'محدد')}
             </span>
             <button onClick={toggleSelectAll} className="text-xs font-bold text-gray-300 dark:text-gray-600 hover:text-white dark:hover:text-gray-900 px-2 py-1.5 transition-colors shrink-0">
-              {allConfirmedSelected ? t('bulk_ship.clear_selection') : t('bulk_ship.button_select_all', { count: confirmedOrders.length })}
+              {allConfirmedSelected ? t('bulk_ship.clear_selection') : t('list.select_all', { count: selectableOrders.length, defaultValue: 'تحديد الكل ({{count}})' })}
             </button>
             <button onClick={clearSelection} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 dark:hover:bg-black/10 transition-colors shrink-0">
               <X size={15} />
             </button>
-            <button onClick={startBulkShip}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 shrink-0">
-              <Send size={14} /> {t('bulk_ship.button_ship_selected', { count: selectedIds.size })}
-            </button>
+            {sendSelected.length > 0 && (
+              <button onClick={() => setSendIds(sendSelected.map(o => o.id))}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 shrink-0">
+                <PhoneCall size={14} /> {tc('send_button', { count: sendSelected.length })}
+              </button>
+            )}
+            {recallSelected.length > 0 && (
+              <button onClick={recallFromConfirmation} disabled={recalling}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
+                {recalling ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />} {tc('recall_button', { count: recallSelected.length })}
+              </button>
+            )}
+            {shipSelected.length > 0 && (
+              <button onClick={startBulkShip}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 shrink-0">
+                <Send size={14} /> {t('bulk_ship.button_ship_selected', { count: shipSelected.length })}
+              </button>
+            )}
           </div>
           <style>{`@keyframes barUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
         </div>
       )}
 
       <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} />
+
+      {sendIds && (
+        <SendConfirmationModal
+          orderIds={sendIds} storeId={storeId} token={token}
+          onClose={() => setSendIds(null)}
+          onDone={() => { setSendIds(null); clearSelection(); fetchOrders(); }}
+        />
+      )}
+      <Toaster position="top-center" richColors />
 
       <style>{`.scrollbar-none::-webkit-scrollbar{display:none}.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}`}</style>
     </div>

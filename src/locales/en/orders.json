@@ -18,6 +18,9 @@
     "postponed": "Postponed"
   },
   "list": {
+    "select_all": "Select all ({{count}})",
+    "locked_hint": "At the confirmation company — recall it to edit",
+    "new_order": "New order",
     "title": "Orders",
     "subtitle": "Manage and track all orders",
     "loading": "Loading orders...",
@@ -46,6 +49,15 @@
     "digital_badge": "Digital"
   },
   "edit": {
+    "locked_title": "This order is at the confirmation company {{name}}",
+    "locked_confirmed": "Confirmed by the company — you can only set it to \"Shipping\". Delivered/returned come automatically from the delivery company.",
+    "locked_queue": "To edit it, recall it first from the orders list (select it → Recall).",
+    "new_order_title": "New order",
+    "create": "Create order",
+    "creating": "Creating...",
+    "create_failed": "Failed to create the order",
+    "create_missing": "Please fill in:",
+    "order_date": "Order date",
     "customer_section_title": "Customer & Delivery Details",
     "customer_name": "Customer Name",
     "customer_phone": "Phone Number",

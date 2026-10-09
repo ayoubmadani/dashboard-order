@@ -25,6 +25,7 @@ import arPerformance from './locales/ar/performance.json';
 import arPlaceholders from './locales/ar/placeholders.json';
 import arPreview from './locales/ar/preview.json';
 import arProducts from './locales/ar/products.json';
+import arConfirmation from './locales/ar/confirmation.json';
 import arSettings from './locales/ar/settings.json';
 import arShipping from './locales/ar/shipping.json';
 import arSidebar from './locales/ar/sidebar.json';
@@ -65,6 +66,7 @@ import enPerformance from './locales/en/performance.json';
 import enPlaceholders from './locales/en/placeholders.json';
 import enPreview from './locales/en/preview.json';
 import enProducts from './locales/en/products.json';
+import enConfirmation from './locales/en/confirmation.json';
 import enSettings from './locales/en/settings.json';
 import enShipping from './locales/en/shipping.json';
 import enSidebar from './locales/en/sidebar.json';
@@ -111,6 +113,7 @@ import frPerformance from './locales/fr/performance.json';
 import frPlaceholders from './locales/fr/placeholders.json';
 import frPreview from './locales/fr/preview.json';
 import frProducts from './locales/fr/products.json';
+import frConfirmation from './locales/fr/confirmation.json';
 import frSettings from './locales/fr/settings.json';
 import frShipping from './locales/fr/shipping.json';
 import frSidebar from './locales/fr/sidebar.json';
@@ -159,6 +162,7 @@ const resources = {
       placeholders: arPlaceholders,
       preview: arPreview,
       products: arProducts,
+      confirmation: arConfirmation,
       settings: arSettings,
       shipping: arShipping,
       sidebar: arSidebar,
@@ -200,6 +204,7 @@ const resources = {
       placeholders: enPlaceholders,
       preview: enPreview,
       products: enProducts,
+      confirmation: enConfirmation,
       settings: enSettings,
       shipping: enShipping,
       sidebar: enSidebar,
@@ -241,6 +246,7 @@ const resources = {
       placeholders: frPlaceholders,
       preview: frPreview,
       products: frProducts,
+      confirmation: frConfirmation,
       settings: frSettings,
       shipping: frShipping,
       sidebar: frSidebar,

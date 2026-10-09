@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
-  ShoppingBag, Trash2, CheckCircle2
+  ShoppingBag, Trash2, CheckCircle2, Calendar, Check
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import { timeAgo, formatOrderDate } from '../../../utils/orderTime';
 import { Plus } from 'lucide-react';
 import { X } from 'lucide-react';
 import { Search } from 'lucide-react';
@@ -93,7 +94,14 @@ function getOrderFreeShipping(cart) {
   return false;
 }
 
-export default function OrderEditPage() {
+// نقطة البداية لطلب جديد من الداشبورد (/dashboard/orders/new)
+const EMPTY_ORDER = {
+  customerName: '', customerPhone: '', customerEmail: '', customerWhatsapp: '',
+  customerWilayaId: null, customerCommuneId: null,
+  priceShip: 0, typeShip: 'home', status: 'pending', isDigital: false, items: [],
+};
+
+export default function OrderEditPage({ isNew = false }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
   const { id } = useParams();
@@ -154,6 +162,8 @@ export default function OrderEditPage() {
     // إضافة المنتج الجديد إلى مصفوفة العناصر الحالية
     setEditedCart(prev => ({
       ...prev,
+      // طلب جديد: نوعه (رقمي/عادي) يحدده أول منتج يُضاف
+      isDigital: isNew && !prev.items?.length ? !!product.isDigital : prev.isDigital,
       items: [...(prev.items || []), newItem]
     }));
 
@@ -179,7 +189,9 @@ export default function OrderEditPage() {
           id: p.id,
           name: p.name,
           price: p.price,
-          image: p.imagesProduct[0]?.imageUrl
+          image: p.imagesProduct[0]?.imageUrl,
+          isDigital: p.isDigital,
+          shippingFree: p.shippingFree,
         }));
         setProducts(listProduct);
       } catch (error) {
@@ -199,6 +211,12 @@ export default function OrderEditPage() {
 
 
   const fetchOrderData = useCallback(async () => {
+    if (isNew) {
+      setEditedCart(EMPTY_ORDER);
+      setOriginalCart(EMPTY_ORDER);
+      setLoading(false);
+      return;
+    }
     if (!cartId) return;
     setLoading(true);
     setError(null);
@@ -246,7 +264,7 @@ export default function OrderEditPage() {
     } finally {
       setLoading(false);
     }
-  }, [cartId, token, t]);
+  }, [cartId, token, t, isNew]);
 
   useEffect(() => {
     fetchOrderData();
@@ -385,6 +403,13 @@ export default function OrderEditPage() {
   };
 
   const handleDeleteItem = (itemId) => {
+    if (isNew) {
+      setEditedCart(prev => {
+        const items = prev.items.filter(item => item.id !== itemId);
+        return { ...prev, items, isDigital: items.length ? prev.isDigital : false };
+      });
+      return;
+    }
     if (editedCart.items.length <= 1) {
       alert(t('edit.cannot_delete_last_item'));
       return;
@@ -466,6 +491,62 @@ export default function OrderEditPage() {
     }
   };
 
+  // إنشاء طلب جديد من الداشبورد — نفس endpoint طلبات المتجر، الحالة دائماً "قيد الانتظار"
+  const handleCreate = async () => {
+    const c = editedCart;
+    const missing = [];
+    if (!c.customerName?.trim()) missing.push(t('edit.customer_name'));
+    if (!c.customerPhone?.trim()) missing.push(t('edit.customer_phone'));
+    if (c.isDigital) {
+      if (!c.customerEmail?.trim() && !c.customerWhatsapp?.trim()) missing.push(`${t('edit.customer_email')} / ${t('edit.customer_whatsapp')}`);
+    } else {
+      if (!c.customerWilayaId) missing.push(t('edit.wilaya'));
+      if (!c.customerCommuneId) missing.push(t('edit.commune'));
+    }
+    if (!c.items.length) missing.push(t('edit.products_section_title'));
+    if (missing.length) {
+      alert(`${t('edit.create_missing')}\n- ${missing.join('\n- ')}`);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const priceShip = getOrderFreeShipping(c) ? 0 : parseFloat(c.priceShip || 0);
+      const dtos = c.items.map((item) => ({
+        storeId,
+        customerName: c.customerName.trim(),
+        customerPhone: c.customerPhone.trim(),
+        customerEmail: c.customerEmail?.trim() || undefined,
+        customerWhatsapp: c.customerWhatsapp?.trim() || undefined,
+        customerWilayaId: c.customerWilayaId || undefined,
+        customerCommuneId: c.customerCommuneId || undefined,
+        typeShip: c.typeShip,
+        priceShip,
+        priceLoss: 0,
+        platform: 'dashboard',
+
+        productId: item.productId,
+        quantity: item.quantity || 1,
+        variantDetailId: item.variantDetailId || undefined,
+        offerId: item.offerId || undefined,
+        finalPrice: parseFloat(item.finalPrice || 0),
+        totalPrice: parseFloat(item.finalPrice || 0) * (item.quantity || 1),
+      }));
+
+      const { data } = await axios.post(`${baseURL}/orders`, dtos, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const newId = (data?.data || data)?.id;
+      navigate(newId ? `/dashboard/orders/${newId}` : '/dashboard/orders', { replace: true });
+    } catch (e) {
+      console.error('Create Error:', e);
+      const msg = e.response?.data?.message;
+      alert(`${t('edit.create_failed')}${msg ? `\n${Array.isArray(msg) ? msg.join('\n') : msg}` : ''}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleBack = () => {
     if (hasChanges) {
       if (window.confirm(t('edit.unsaved_changes'))) {
@@ -527,6 +608,27 @@ export default function OrderEditPage() {
     <div className='md:pb-20 '>
       <div className="min-h-screen bg-gray-50/50 dark:bg-zinc-950 pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+          {isNew && (
+            <div className="flex items-center gap-3 mb-6">
+              <button onClick={handleBack} className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800">
+                <ArrowLeft size={16} className={isRtl ? 'rotate-180' : ''} />
+              </button>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">{t('edit.new_order_title')}</h1>
+            </div>
+          )}
+          {!isNew && editedCart.confirmationCompanyId && (
+            <div className="mb-6 flex items-start gap-3 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-sm text-indigo-900 dark:text-indigo-200">
+              <AlertCircle size={18} className="shrink-0 mt-0.5 text-indigo-600" />
+              <div>
+                <p className="font-bold">{t('edit.locked_title', { name: editedCart.confirmationCompany?.name ?? '', defaultValue: 'هذه الطلبية عند شركة التأكيد {{name}}' })}</p>
+                <p className="text-xs mt-1">
+                  {['confirmed', 'shipping', 'delivered', 'returned'].includes(editedCart.status)
+                    ? t('edit.locked_confirmed', 'أكدتها الشركة — يمكن فقط تغيير حالة الشحن من قائمة الطلبات.')
+                    : t('edit.locked_queue', 'لتعديلها استرجعها أولاً من قائمة الطلبات (حدّدها ← استرجاع).')}
+                </p>
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* بيانات الزبون */}
@@ -592,12 +694,12 @@ export default function OrderEditPage() {
                     </>
                   )}
 
-                  <div>
+                  {!isNew && <div>
                     <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.status_label')}</label>
                     <select value={editedCart.status} onChange={e => handleGeneralChange('status', e.target.value)} className="w-full px-4 py-3 rounded-xl border-2 font-semibold text-sm outline-none dark:[color-scheme:dark]" style={{ borderColor: `${statusMeta.color}40`, color: statusMeta.color, backgroundColor: statusMeta.bg }}>
                       {statusOptions.map(o => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label}</option>)}
                     </select>
-                  </div>
+                  </div>}
                 </div>
               </div>
 
@@ -821,22 +923,38 @@ export default function OrderEditPage() {
                   </div>
                 </div>
 
-                <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-4">
+                {!isNew && <div className="bg-indigo-50 rounded-2xl border border-indigo-100 p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center"><Package size={14} className="text-indigo-600" /></div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-sm font-semibold text-indigo-900">{t('edit.order_number')}</p>
-                      <p className="text-xs text-indigo-600/70 font-mono">{editedCart.id}</p>
+                      <p className="text-xs text-indigo-600/70 font-mono break-all">{editedCart.id}</p>
                     </div>
                   </div>
-                </div>
+                  {editedCart.createdAt && (
+                    <div className="flex items-start gap-3 mt-3 pt-3 border-t border-indigo-100">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0"><Calendar size={14} className="text-indigo-600" /></div>
+                      <div>
+                        <p className="text-sm font-semibold text-indigo-900">{t('edit.order_date')}</p>
+                        <p className="text-xs text-indigo-600/80">{formatOrderDate(editedCart.createdAt, i18n.language)}</p>
+                        <p className="text-[11px] text-indigo-500/70">{timeAgo(editedCart.createdAt, i18n.language)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>}
 
                 <div className="flex flex-col items-center gap-3 mt-10">
 
-                  <button onClick={handleSave} disabled={saving || !hasChanges} className="flex w-full justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-all shadow-lg">
-                    {saving ? <><Loader2 size={16} className="animate-spin" /> {t('edit.saving')}</> : <><Save size={16} /> {t('edit.save')}</>}
-                  </button>
-                  {hasChanges && (
+                  {isNew ? (
+                    <button onClick={handleCreate} disabled={saving || !editedCart.items.length} className="flex w-full justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-all shadow-lg">
+                      {saving ? <><Loader2 size={16} className="animate-spin" /> {t('edit.creating')}</> : <><Plus size={16} /> {t('edit.create')}</>}
+                    </button>
+                  ) : (
+                    <button onClick={handleSave} disabled={saving || !hasChanges || !!editedCart.confirmationCompanyId} className="flex w-full justify-center items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-all shadow-lg">
+                      {saving ? <><Loader2 size={16} className="animate-spin" /> {t('edit.saving')}</> : <><Save size={16} /> {t('edit.save')}</>}
+                    </button>
+                  )}
+                  {hasChanges && !isNew && (
                     <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold border border-amber-200">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                       {t('edit.unsaved_badge')}

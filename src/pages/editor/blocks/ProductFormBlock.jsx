@@ -44,7 +44,7 @@ function FieldWrapper({ label, labelColor, error, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {label && (
-        <label style={{ fontSize: 17, fontWeight: 700, color: labelColor, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        <label style={{ fontSize: 12, fontWeight: 700, color: labelColor, textTransform: 'uppercase', letterSpacing: 0.4 }}>
           {label}
         </label>
       )}
@@ -325,48 +325,62 @@ export default function ProductFormBlock({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: gapPx }}>
                   {product?.offers?.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
-                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.offersTitle}</p>
-                      {product.offers.map((offer) => (
-                        <label
-                          key={offer.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            gap: 8,
-                            padding: '14px 10px',
-                            borderRadius: 8,
-                            border: `1px solid ${selectedOffer === offer.id ? activeBtnBorder : inactiveBtnBorder}`,
-                            cursor: 'pointer',
-                            fontSize: 20,
-                            fontWeight: 700,
-                          }}
-                        >
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <input
-                              type="radio"
-                              name="offer"
-                              checked={selectedOffer === offer.id}
-                              onChange={() => setSelectedOffer(selectedOffer === offer.id ? null : offer.id)}
-                              style={{ accentColor }}
-                            />
-                            <span style={{ display: 'flex', flexDirection: 'column' }}>
-                              {offer.name}
-                              <span style={{ fontSize: 16, fontWeight: 400, opacity: 0.6 }}>({offer.quantity} {t.pieces})</span>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.offersTitle}</p>
+                      {product.offers.map((offer) => {
+                        const isSel = selectedOffer === offer.id;
+                        return (
+                          <label
+                            key={offer.id}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 10,
+                              padding: '12px 14px',
+                              borderRadius: 10,
+                              // المختار: خلفية بلون الزر (شفافة) + إطار 2px — أوضح من الإطار وحده
+                              border: `2px solid ${isSel ? accentColor : inactiveBtnBorder}`,
+                              backgroundColor: isSel ? `color-mix(in srgb, ${accentColor} 14%, transparent)` : 'transparent',
+                              cursor: 'pointer',
+                              transition: 'background-color .15s, border-color .15s',
+                            }}
+                          >
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              {/* زر الاختيار الأصلي مخفي بصرياً فقط (لوحة المفاتيح وقارئ الشاشة) */}
+                              <input
+                                type="radio"
+                                name="offer"
+                                checked={isSel}
+                                onChange={() => setSelectedOffer(isSel ? null : offer.id)}
+                                style={{ position: 'absolute', opacity: 0, width: 1, height: 1, pointerEvents: 'none' }}
+                              />
+                              <span style={{
+                                width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                border: `2px solid ${isSel ? accentColor : 'currentColor'}`, opacity: isSel ? 1 : 0.45,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              }}>
+                                {isSel && <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: accentColor }} />}
+                              </span>
+                              <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <span style={{ fontSize: 14, fontWeight: 700 }}>{offer.name}</span>
+                                {offer.quantity > 1 && (
+                                  <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.6 }}>{offer.quantity} {t.pieces}</span>
+                                )}
+                              </span>
                             </span>
-                          </span>
-                          <span style={{ fontWeight: 700 }}>{formatPrice(offer.price)}</span>
-                        </label>
-                      ))}
+                            <span style={{ fontSize: 15, fontWeight: 800, whiteSpace: 'nowrap' }}>{formatPrice(offer.price)}</span>
+                          </label>
+                        );
+                      })}
                     </div>
                   )}
 
                   {product?.attributes?.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
-                      <p style={{ margin: 0, fontSize: 20, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.optionsTitle}</p>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.optionsTitle}</p>
                       {product.attributes.map((attr) => (
                         <div key={attr.id}>
-                          <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px' }}>{attr.name}</p>
+                          <p style={{ fontSize: 12, fontWeight: 600, margin: '0 0 4px' }}>{attr.name}</p>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {attr.variants?.map((v) => {
                               const isSelected = selectedVariants[attr.name] === v.value;
@@ -454,9 +468,9 @@ export default function ProductFormBlock({
                                   type="button"
                                   onClick={() => toggleVariant(attr.name, v.value)}
                                   style={{
-                                    padding: '10px 18px',
+                                    padding: '8px 14px',
                                     borderRadius: 6,
-                                    fontSize: 16,
+                                    fontSize: 12,
                                     backgroundColor: isSelected ? accentColor : inactiveBtnBg,
                                     color: isSelected ? activeBtnText : inactiveBtnText,
                                     border: `1px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
@@ -477,14 +491,15 @@ export default function ProductFormBlock({
 
               {/* Order form fields */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
-              {/* Name + Phone */}
+              {/* Name + Phone — بدون أسماء حقول: الـ placeholder يحمل اسم الحقل (نفس المتجر: hideLabels) */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
-                <FieldWrapper label={t.fullName} labelColor={muted}>
+                <FieldWrapper>
                   <div style={{ position: 'relative' }}>
                     <User size={15} style={iconInFieldStyle} />
                     <input
                       type="text"
-                      placeholder={t.fullNamePlaceholder}
+                      placeholder={t.fullName}
+                      aria-label={t.fullName}
                       value={form.customerName}
                       onChange={(e) => setForm((f) => ({ ...f, customerName: e.target.value }))}
                       required
@@ -493,17 +508,19 @@ export default function ProductFormBlock({
                     />
                   </div>
                 </FieldWrapper>
-                <FieldWrapper label={t.phone} labelColor={muted}>
+                <FieldWrapper>
                   <div style={{ position: 'relative' }}>
                     <Phone size={15} style={iconInFieldStyle} />
                     <input
                       type="tel"
-                      dir="ltr"
-                      placeholder="0550 123 456"
+                      // الأرقام من اليسار لليمين فقط حين يكتب الزبون — الـ placeholder (اسم الحقل) يتبع اتجاه الصفحة وخطها
+                      dir={form.customerPhone ? 'ltr' : undefined}
+                      placeholder={t.phone}
+                      aria-label={t.phone}
                       value={form.customerPhone}
                       onChange={(e) => setForm((f) => ({ ...f, customerPhone: e.target.value }))}
                       required
-                      style={fieldStyle('customerPhone', { paddingInlineStart: 34, fontFamily: 'monospace' })}
+                      style={fieldStyle('customerPhone', { paddingInlineStart: 34, ...emptyLtrFieldStyle(form.customerPhone) })}
                       {...fieldHandlers('customerPhone')}
                     />
                   </div>
@@ -546,33 +563,35 @@ export default function ProductFormBlock({
                   </div>
 
                   {contactMethod === 'email' ? (
-                    <FieldWrapper label={t.email} labelColor={muted}>
+                    <FieldWrapper>
                       <div style={{ position: 'relative' }}>
                         <Mail size={15} style={iconInFieldStyle} />
                         <input
                           type="email"
-                          dir="ltr"
-                          placeholder={t.emailPlaceholder}
+                          dir={form.customerEmail ? 'ltr' : undefined}
+                          placeholder={t.email}
+                          aria-label={t.email}
                           value={form.customerEmail}
                           onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
                           required
-                          style={fieldStyle('customerEmail', { paddingInlineStart: 34 })}
+                          style={fieldStyle('customerEmail', { paddingInlineStart: 34, ...emptyLtrFieldStyle(form.customerEmail, false) })}
                           {...fieldHandlers('customerEmail')}
                         />
                       </div>
                     </FieldWrapper>
                   ) : (
-                    <FieldWrapper label={t.whatsapp} labelColor={muted}>
+                    <FieldWrapper>
                       <div style={{ position: 'relative' }}>
                         <MessageCircle size={15} style={iconInFieldStyle} />
                         <input
                           type="tel"
-                          dir="ltr"
-                          placeholder={t.whatsappPlaceholder}
+                          dir={form.customerWhatsapp ? 'ltr' : undefined}
+                          placeholder={t.whatsapp}
+                          aria-label={t.whatsapp}
                           value={form.customerWhatsapp}
                           onChange={(e) => setForm((f) => ({ ...f, customerWhatsapp: e.target.value }))}
                           required
-                          style={fieldStyle('customerWhatsapp', { paddingInlineStart: 34, fontFamily: 'monospace' })}
+                          style={fieldStyle('customerWhatsapp', { paddingInlineStart: 34, ...emptyLtrFieldStyle(form.customerWhatsapp) })}
                           {...fieldHandlers('customerWhatsapp')}
                         />
                       </div>
@@ -583,11 +602,12 @@ export default function ProductFormBlock({
                 <>
                   {/* Wilaya + Commune */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <FieldWrapper label={t.wilaya} labelColor={muted}>
+                    <FieldWrapper>
                       <div style={{ position: 'relative' }}>
                         <MapPin size={15} style={iconInFieldStyle} />
                         <select
                           value={form.wilayaId}
+                          aria-label={t.wilaya}
                           onChange={(e) => setForm((f) => ({ ...f, wilayaId: e.target.value, communeId: '' }))}
                           required
                           style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer' })}
@@ -601,11 +621,12 @@ export default function ProductFormBlock({
                         <ChevronDown size={14} style={chevronInFieldStyle} />
                       </div>
                     </FieldWrapper>
-                    <FieldWrapper label={t.commune} labelColor={muted}>
+                    <FieldWrapper>
                       <div style={{ position: 'relative' }}>
                         <MapPin size={15} style={iconInFieldStyle} />
                         <select
                           value={form.communeId}
+                          aria-label={t.commune}
                           onChange={(e) => setForm((f) => ({ ...f, communeId: e.target.value }))}
                           disabled={!form.wilayaId}
                           style={fieldStyle('communeId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer', opacity: form.wilayaId ? 1 : 0.6 })}
@@ -623,7 +644,6 @@ export default function ProductFormBlock({
 
                   {/* Delivery type */}
                   <div>
-                    <p style={{ fontSize: 17, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: 0.4, margin: '0 0 8px' }}>{t.deliveryType}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {[
                         { type: 'home', Icon: Home, label: t.home },
@@ -650,7 +670,7 @@ export default function ProductFormBlock({
                           >
                             <opt.Icon size={20} style={{ opacity: isSelected ? 1 : 0.5 }} />
                             <span style={{ textAlign: 'center' }}>
-                              <span style={{ display: 'block', fontSize: 14.5, fontWeight: 700 }}>{opt.label}</span>
+                              <span style={{ display: 'block', fontSize: 13, fontWeight: 700 }}>{opt.label}</span>
                               {selectedWilaya && (
                                 <span style={{ display: 'block', fontSize: 10.5, marginTop: 2, opacity: isSelected ? 0.85 : 0.55 }}>
                                   {formatPrice(opt.type === 'home' ? selectedWilaya.livraisonHome : selectedWilaya.livraisonOfice)}
@@ -682,7 +702,7 @@ export default function ProductFormBlock({
                     >
                       <Minus size={14} strokeWidth={2.5} />
                     </button>
-                    <span style={{ minWidth: 24, textAlign: 'center', fontSize: 17, fontWeight: 800 }}>
+                    <span style={{ minWidth: 24, textAlign: 'center', fontSize: 15, fontWeight: 800 }}>
                       {form.quantity}
                     </span>
                     <button
@@ -841,6 +861,15 @@ const inputStyle = {
   outline: 'none',
   transition: 'border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease',
 };
+
+// خانات الهاتف/واتساب/البريد: فارغة → اتجاه الصفحة وخطها (الـ placeholder هو اسم الحقل)،
+// فيها قيمة → من اليسار لليمين (+ خط الأرقام للهاتف). المتصفح يفرض ltr على
+// input[type=tel|email] افتراضياً، فلا يكفي حذف dir — يجب direction: inherit صراحةً.
+function emptyLtrFieldStyle(value, mono = true) {
+  return value
+    ? { direction: 'ltr', textAlign: 'left', fontFamily: mono ? 'monospace' : undefined }
+    : { direction: 'inherit', textAlign: 'start' };
+}
 
 const iconInFieldStyle = {
   position: 'absolute',

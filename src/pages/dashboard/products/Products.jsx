@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Search, Filter,
-  Edit2, Trash2, Package,
+  Edit2, Trash2, Package, BarChart3,
   X, CheckCircle2,
   Download, Upload, RefreshCw,
   ArrowLeft, ArrowRight,
@@ -557,6 +557,13 @@ const Products = () => {
                       {/* Actions */}
                       <td className="px-4 py-4">
                         <div className="flex items-center justify-center gap-1">
+                          <Link
+                            to={`/dashboard/products/${product.id}`}
+                            title={t('list.view_stats')}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all"
+                          >
+                            <BarChart3 size={15} />
+                          </Link>
                           <Link
                             to={`/dashboard/products/edit/${product.id}`}
                             className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 transition-all"

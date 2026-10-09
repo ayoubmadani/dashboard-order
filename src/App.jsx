@@ -24,12 +24,14 @@ import AuthCallback from './pages/auth/success/AuthCallback';
 import CreateCategory from './pages/dashboard/categories/CreateCategory';
 import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
+import ShowProduct from './pages/dashboard/products/Show';
 import Theme from './pages/dashboard/theme/Theme';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Pixels from './pages/dashboard/pixels/pixels';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
+import Confirmation from './pages/dashboard/confirmation/Confirmation';
 import Messages from './pages/dashboard/messages/messages';
 import PagesList from './pages/editor/PagesList';
 import PageEditor from './pages/editor/PageEditor';
@@ -98,6 +100,7 @@ const App = () => {
               <Route index element={<Products />} />
               <Route path="create" element={<CreateProduct />} />
               <Route path="edit/:id" element={<EditProduct />} />
+              <Route path=":id" element={<ShowProduct />} />
             </Route>
 
             <Route path='Wallet' element={<Wallet />} />
@@ -108,8 +111,11 @@ const App = () => {
             </Route>
 
 
+            <Route path="confirmation" element={<Confirmation />} />
+
             <Route path="orders">
               <Route index  element={<Orders />} />
+              <Route path='new' element={<OrderEditPage isNew />} />
               <Route path=':id'  element={<OrderEditPage />} />
             </Route>
 

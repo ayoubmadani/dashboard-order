@@ -18,6 +18,9 @@
     "postponed": "Reporté"
   },
   "list": {
+    "select_all": "Tout sélectionner ({{count}})",
+    "locked_hint": "Chez la société de confirmation — rappelez-la pour la modifier",
+    "new_order": "Nouvelle commande",
     "title": "Commandes",
     "subtitle": "Gérer et suivre toutes les commandes",
     "loading": "Chargement des commandes...",
@@ -46,6 +49,15 @@
     "digital_badge": "Numérique"
   },
   "edit": {
+    "locked_title": "Cette commande est chez la société de confirmation {{name}}",
+    "locked_confirmed": "Confirmée par la société — vous pouvez seulement la passer « En livraison ». Livrée/retournée viennent automatiquement du transporteur.",
+    "locked_queue": "Pour la modifier, rappelez-la d'abord depuis la liste (sélection → Rappeler).",
+    "new_order_title": "Nouvelle commande",
+    "create": "Créer la commande",
+    "creating": "Création...",
+    "create_failed": "Échec de la création de la commande",
+    "create_missing": "Veuillez remplir :",
+    "order_date": "Date de la commande",
     "customer_section_title": "Informations client et livraison",
     "customer_name": "Nom du client",
     "customer_phone": "Numéro de téléphone",

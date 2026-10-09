@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-    Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck,
+    Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
     LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check,
 } from 'lucide-react';
@@ -213,6 +213,7 @@ export default function LayoutDashboard() {
             title: t('nav.group_sales', 'المبيعات'),
             items: [
                 { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart },
+                { name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall },
                 { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck },
                 { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet },
             ],
