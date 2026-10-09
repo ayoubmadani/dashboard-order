@@ -428,5 +428,18 @@
       "disabled": "تم التعطيل",
       "toggle_failed": "فشل تغيير الحالة"
     }
+  },
+  "aliexpress": {
+    "title": "جلب من AliExpress",
+    "subtitle": "الصق رابط منتجك في AliExpress لملء الاسم والوصف والصور والخصائص تلقائياً",
+    "connect_btn": "ربط حساب AliExpress",
+    "disconnect": "إلغاء الربط",
+    "import_btn": "جلب",
+    "connected_as": "مربوط بحساب: {{account}}",
+    "connected_ok": "تم ربط حساب AliExpress بنجاح",
+    "connect_error": "تعذر ربط حساب AliExpress",
+    "imported": "تم جلب معلومات المنتج — راجعها وأضف السعر ثم احفظ",
+    "imported_price": "تم جلب المنتج — سعره في AliExpress {{price}} {{currency}}. أضف سعر البيع ثم احفظ",
+    "import_error": "تعذر جلب المنتج"
   }
 }

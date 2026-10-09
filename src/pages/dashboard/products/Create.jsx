@@ -16,6 +16,7 @@ import { baseURL, MAX_PRODUCT_IMAGES } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { getMyPlanFeatures } from '../../../services/plan';
 import NoStoreState from '../../../components/NoStoreState';
+import AliexpressImport from './components/AliexpressImport';
 
 const ATTRIBUTE_TYPES = { COLOR: 'color', SIZE: 'size', TEXT: 'text' };
 const DEFAULT_SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -123,6 +124,7 @@ export default function CreateProduct() {
   const [attributes, setAttributes] = useState([]);
   const [offers, setOffers] = useState([]);
   const [images, setImages] = useState([]);
+  const [descKey, setDescKey] = useState(0); // لإعادة تهيئة محرر الوصف بعد الجلب من AliExpress
   const [dragImageIndex, setDragImageIndex] = useState(null);
   const [isOpenModelImage, setIsOpenModelImage] = useState(false);
   const [selectingImageFor, setSelectingImageFor] = useState(null);
@@ -174,6 +176,28 @@ export default function CreateProduct() {
   }, [categoryDropdownOpen]);
 
   /* ── Attributes ── */
+  // تعبئة المنتج من AliExpress: الاسم، الوصف، الصور، الخصائص (السعر يبقى للتاجر — سعر AliExpress بالدولار)
+  const applyAliexpress = (p) => {
+    setFormData(prev => ({ ...prev, name: p.name || prev.name, desc: p.desc || prev.desc }));
+    setDescKey(k => k + 1);
+    if (p.images?.length) setImages(p.images.slice(0, maxImages));
+    if (p.attributes?.length) {
+      const now = Date.now();
+      setAttributes(p.attributes.map((a, ai) => {
+        const withImages = a.type === 'color' && a.values.every(v => v.image);
+        return {
+          id: `att-${now}-${ai}`,
+          name: a.name,
+          type: a.type === 'color' ? ATTRIBUTE_TYPES.COLOR : ATTRIBUTE_TYPES.TEXT,
+          ...(a.type === 'color' ? { displayMode: withImages ? 'image' : 'color' } : {}),
+          variants: a.values.map((v, vi) => withImages
+            ? { id: `var-${now}-${ai}-${vi}`, name: v.image, value: v.image }
+            : { id: `var-${now}-${ai}-${vi}`, name: v.value, value: v.value }),
+        };
+      }).map(a => (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'color') ? { ...a, type: ATTRIBUTE_TYPES.TEXT, displayMode: undefined } : a));
+    }
+  };
+
   const addAttribute = (type, name = '') => {
     const base = { id: `att-${Date.now()}`, type, name: name || (type === ATTRIBUTE_TYPES.COLOR ? t('attributes.colors_label') : type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_label') : '') };
     const attr = type === ATTRIBUTE_TYPES.COLOR
@@ -339,6 +363,8 @@ export default function CreateProduct() {
         </div>
       </div>
 
+      <AliexpressImport onImported={applyAliexpress} notify={showNotification} />
+
       {/* ── SECTION 1: Basic Info ── */}
       <Section icon={Info} title={t('form.basic_info')} color="indigo">
 
@@ -360,7 +386,7 @@ export default function CreateProduct() {
 
         <Field label={t('form.description')}>
           <div dir={isRtl ? 'rtl' : 'ltr'}>
-            <TextEditor value={formData.desc} onChange={v => setFormData(p => ({ ...p, desc: v }))} />
+            <TextEditor key={descKey} value={formData.desc} onChange={v => setFormData(p => ({ ...p, desc: v }))} />
           </div>
         </Field>
 

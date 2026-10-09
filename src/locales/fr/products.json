@@ -419,5 +419,18 @@
       "disabled": "Désactivé",
       "toggle_failed": "Échec du changement de statut"
     }
+  },
+  "aliexpress": {
+    "title": "Importer depuis AliExpress",
+    "subtitle": "Collez le lien de votre produit AliExpress pour remplir le nom, la description, les images et les attributs",
+    "connect_btn": "Connecter le compte AliExpress",
+    "disconnect": "Déconnecter",
+    "import_btn": "Importer",
+    "connected_as": "Connecté : {{account}}",
+    "connected_ok": "Compte AliExpress connecté",
+    "connect_error": "Impossible de connecter le compte AliExpress",
+    "imported": "Produit importé — vérifiez-le, ajoutez le prix puis enregistrez",
+    "imported_price": "Produit importé — prix AliExpress {{price}} {{currency}}. Ajoutez votre prix de vente puis enregistrez",
+    "import_error": "Impossible d'importer le produit"
   }
 }

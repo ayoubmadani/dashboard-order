@@ -427,5 +427,18 @@
       "disabled": "Disabled",
       "toggle_failed": "Failed to change status"
     }
+  },
+  "aliexpress": {
+    "title": "Import from AliExpress",
+    "subtitle": "Paste your AliExpress product link to fill the name, description, images and attributes",
+    "connect_btn": "Connect AliExpress account",
+    "disconnect": "Disconnect",
+    "import_btn": "Import",
+    "connected_as": "Connected as: {{account}}",
+    "connected_ok": "AliExpress account connected",
+    "connect_error": "Could not connect AliExpress account",
+    "imported": "Product imported — review it, add the price and save",
+    "imported_price": "Product imported — AliExpress price {{price}} {{currency}}. Add your selling price and save",
+    "import_error": "Could not import the product"
   }
 }
