@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Settings as SettingsIcon, User, Store, Bell, Truck, CreditCard } from 'lucide-react';
+import { Settings as SettingsIcon, User, Store, Bell, Truck, CreditCard, KeyRound } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -11,9 +11,9 @@ import StoresTab from './components/StoresTab';
 import NotificationsTab from './components/NotificationsTab';
 import ShippingTab from './components/ShippingTab';
 import SubscriptionTab from './components/SubscriptionTab';
+import ApiKeysTab from './components/ApiKeysTab';
 
-// مفاتيح API مخفية مؤقتاً (ApiKeysTab.jsx باقٍ لإعادتها لاحقاً)
-const TAB_IDS = ['profile', 'stores', 'notifications', 'shipping', 'subscription'];
+const TAB_IDS = ['profile', 'stores', 'notifications', 'shipping', 'subscription', 'api-keys'];
 
 const Settings = () => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'settings' });
@@ -53,6 +53,7 @@ const Settings = () => {
     { id: 'notifications', label: t('tab_notifications'), icon: <Bell size={18} /> },
     { id: 'shipping', label: t('tab_shipping'), icon: <Truck size={18} /> },
     { id: 'subscription', label: t('tab_subscription'), icon: <CreditCard size={18} /> },
+    { id: 'api-keys', label: t('tab_api_keys'), icon: <KeyRound size={18} /> },
   ];
 
   return (
@@ -73,6 +74,7 @@ const Settings = () => {
           {activeTab === 'notifications' && <NotificationsTab userData={userData} setUserData={setUserData} />}
           {activeTab === 'shipping' && <ShippingTab />}
           {activeTab === 'subscription' && <SubscriptionTab />}
+          {activeTab === 'api-keys' && <ApiKeysTab />}
         </div>
       </div>
     </div>
