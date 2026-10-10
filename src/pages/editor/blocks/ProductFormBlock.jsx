@@ -59,6 +59,17 @@ function FieldWrapper({ label, labelColor, error, children }) {
   );
 }
 
+// الاختيار الافتراضي: أول تركيبة متاحة (من variantDetails المفعّلة)، وإلا أول قيمة لكل خاصية
+function firstSelection(product) {
+  const attrs = product?.attributes || [];
+  const vd = (product?.variantDetails || []).find((d) => Array.isArray(d?.name) && d.name.length);
+  if (vd) {
+    const names = new Set(attrs.map((a) => a.name));
+    return Object.fromEntries(vd.name.filter((e) => !names.size || names.has(e.attrName)).map((e) => [e.attrName, e.value]));
+  }
+  return Object.fromEntries(attrs.filter((a) => a.variants?.length).map((a) => [a.name, a.variants[0].value]));
+}
+
 export default function ProductFormBlock({
   productId,
   showProductName,
@@ -153,7 +164,12 @@ export default function ProductFormBlock({
       .get(`${baseURL}/builder-pages/product-info/${productId}`, {
         headers: { Authorization: `Bearer ${getAccessToken()}` },
       })
-      .then((res) => setProduct(res.data))
+      .then((res) => {
+        setProduct(res.data);
+        // قيمة أولى افتراضية للخيارات والعروض
+        setSelectedVariants(firstSelection(res.data));
+        setSelectedOffer(res.data?.offers?.[0]?.id ?? null);
+      })
       .catch(() => setProduct(null));
   }, [productId]);
 
