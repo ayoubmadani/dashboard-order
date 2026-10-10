@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AlertTriangle, Check, Copy, KeyRound, Loader2 } from 'lucide-react';
+import { Check, Copy, Eye, EyeOff, KeyRound, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
+
+// رابط خادم MCP (Claude / ChatGPT) — المفتاح في آخر الرابط
+const MCP_URL = 'https://mcp.mdstore.top/mcp';
+
+// اسم العميل كما يرسله (claude-ai 1.0…) → اسم مقروء
+const clientLabel = (client) => {
+  const c = (client || '').toLowerCase();
+  if (c.includes('claude')) return 'Claude';
+  if (c.includes('openai') || c.includes('chatgpt')) return 'ChatGPT';
+  if (c.includes('gemini')) return 'Gemini';
+  return client;
+};
 
 const STATUS_STYLES = {
   active: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600',
@@ -24,7 +36,8 @@ export default function ApiKeysTab() {
   const [error, setError] = useState('');
   // المفتاح الكامل — يُعرض مرة واحدة بعد الإنشاء، ولا يُحفظ في أي مكان
   const [newKey, setNewKey] = useState(null);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(null); // 'key' | 'mcp' | null
+  const [showKey, setShowKey] = useState(false); // الرابط مخفي (كلمة سر) افتراضياً
   const [revokingId, setRevokingId] = useState(null);
 
   const formatDate = (value) => (value ? new Date(value).toLocaleDateString(i18n.language) : null);
@@ -32,7 +45,8 @@ export default function ApiKeysTab() {
   const fetchKeys = async () => {
     try {
       const { data } = await axios.get(`${baseURL}/api-keys`, { headers });
-      setKeys(data);
+      // المفاتيح الملغاة لا تُعرض (تبقى ملغاة في قاعدة البيانات ولا تعمل)
+      setKeys((data || []).filter((k) => k.status !== 'revoked'));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -50,7 +64,8 @@ export default function ApiKeysTab() {
         { headers },
       );
       setNewKey(data.key);
-      setCopied(false);
+      setCopied(null);
+      setShowKey(false);
       setName('');
       fetchKeys();
     } catch (err) {
@@ -59,9 +74,9 @@ export default function ApiKeysTab() {
     } finally { setCreating(false); }
   };
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(newKey);
-    setCopied(true);
+  const handleCopy = async (which, text) => {
+    await navigator.clipboard.writeText(text);
+    setCopied(which);
   };
 
   const handleRevoke = async (id) => {
@@ -82,25 +97,34 @@ export default function ApiKeysTab() {
       </div>
 
       {newKey && (
-        <div className="space-y-3 p-5 bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-200 dark:border-amber-800/50">
-          <p className="font-black text-sm text-amber-800 dark:text-amber-300">{t('apikeys_new_title')}</p>
-          <p className="flex items-start gap-2 text-xs font-bold text-amber-700 dark:text-amber-400">
-            <AlertTriangle size={15} className="shrink-0" />{t('apikeys_new_warning')}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <code dir="ltr" className="flex-1 px-4 py-3 bg-white dark:bg-zinc-900 border border-amber-200 dark:border-zinc-700 rounded-2xl font-mono text-xs break-all dark:text-white">
-              {newKey}
-            </code>
+        <div className="space-y-1.5">
+          <p className="text-sm font-bold dark:text-zinc-300">{t('apikeys_mcp_label')}</p>
+          <div className="flex gap-2">
+            <div className="relative flex-1 min-w-0">
+              <input
+                dir="ltr"
+                readOnly
+                type={showKey ? 'text' : 'password'}
+                value={`${MCP_URL}/${newKey}`}
+                onFocus={(e) => e.target.select()}
+                className="w-full pl-3 pr-10 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-[11px] leading-5 outline-none focus:border-indigo-400 dark:text-zinc-200"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey((v) => !v)}
+                aria-label={showKey ? 'Hide' : 'Show'}
+                className="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-700 dark:hover:text-zinc-200"
+              >
+                {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
             <button
-              onClick={handleCopy}
-              className="px-6 py-3 text-sm font-black rounded-2xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center gap-2 active:scale-95 transition-all"
+              onClick={() => handleCopy('mcp', `${MCP_URL}/${newKey}`)}
+              className="px-4 py-2.5 text-xs font-black rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 flex items-center justify-center gap-1.5 shrink-0 active:scale-95 transition-all"
             >
-              {copied ? <><Check size={15} />{t('apikeys_copied')}</> : <><Copy size={15} />{t('apikeys_copy')}</>}
+              {copied === 'mcp' ? <><Check size={13} />{t('apikeys_copied')}</> : <><Copy size={13} />{t('apikeys_copy')}</>}
             </button>
           </div>
-          <button onClick={() => setNewKey(null)} className="text-xs font-bold text-amber-700 dark:text-amber-400 underline">
-            {t('apikeys_done')}
-          </button>
         </div>
       )}
 
@@ -157,10 +181,16 @@ export default function ApiKeysTab() {
                   <span className={`px-2.5 py-0.5 text-[10px] font-bold rounded-full ${STATUS_STYLES[key.status]}`}>
                     {t(`apikeys_status_${key.status}`)}
                   </span>
+                  {key.connectedClient && (
+                    <span className="px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300">
+                      {t('apikeys_connected_with', { client: clientLabel(key.connectedClient) })}
+                    </span>
+                  )}
                 </div>
                 <p className="text-[11px] text-gray-500 dark:text-zinc-400">
                   {t('apikeys_last_used')}: {formatDate(key.lastUsedAt) || t('apikeys_never_used')}
                   {' · '}{t('apikeys_expires')}: {formatDate(key.expiresAt)}
+                  {key.connectedAt && <>{' · '}{t('apikeys_connected_at')}: {formatDate(key.connectedAt)}</>}
                 </p>
               </div>
             </div>
