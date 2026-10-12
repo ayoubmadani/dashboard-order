@@ -8,6 +8,7 @@ import {
   Trash2
 } from 'lucide-react';
 import ModelImages from '../../../components/ModelImages';
+import StoreThemePicker from './StoreThemePicker';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
@@ -60,6 +61,7 @@ const CreateStore = () => {
     supportQty: true,
     supportFreeShipping: false,
     freeShippingMinAmount: '',
+    themeId: null,
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -227,6 +229,13 @@ const CreateStore = () => {
       });
 
       if (response.data.success) {
+        // الثيم المختار يُطبَّق بعد إنشاء المتجر — فشله لا يلغي المتجر (يبقى الافتراضي)
+        const storeId = response.data.data?.id ?? response.data.id;
+        if (formData.themeId && storeId) {
+          await axios.post(`${baseURL}/theme/apply`, { storeId, themeId: formData.themeId }, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).catch(() => showNotification('error', t('theme_picker.apply_failed')));
+        }
         showNotification('success', t('create.success'));
         setTimeout(() => navigate('/dashboard/settings/stores'), 500);
       }
@@ -556,6 +565,14 @@ const CreateStore = () => {
             </div>
           </div>
         </div>
+
+        {/* ── Theme ── */}
+        <StoreThemePicker
+          value={formData.themeId}
+          onChange={(themeId) => setFormData((prev) => ({ ...prev, themeId }))}
+          sectionClass={sectionClass}
+          sectionTitle={sectionTitle}
+        />
 
         {/* ── Design & Colors ── */}
         <div className={sectionClass}>

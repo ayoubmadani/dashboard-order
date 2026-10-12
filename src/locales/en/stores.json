@@ -253,5 +253,15 @@
       "confirm": "Yes, delete store",
       "cancel": "Cancel"
     }
+  },
+  "theme_picker": {
+    "title": "Store theme",
+    "subtitle": "Pick your store's look from the themes available to you; you can change it later from the Themes page",
+    "default_name": "Default theme",
+    "default_desc": "Simple, fits any business",
+    "owned": "Purchased",
+    "in_plan": "In your plan",
+    "none": "No themes available in your plan yet — the default theme will be used",
+    "apply_failed": "Store created, but the theme couldn't be applied — pick it from the Themes page"
   }
 }

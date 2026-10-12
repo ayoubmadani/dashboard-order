@@ -253,5 +253,15 @@
       "confirm": "Oui, supprimer la boutique",
       "cancel": "Annuler"
     }
+  },
+  "theme_picker": {
+    "title": "Thème de la boutique",
+    "subtitle": "Choisissez l'apparence de votre boutique parmi vos thèmes disponibles ; modifiable plus tard depuis la page Thèmes",
+    "default_name": "Thème par défaut",
+    "default_desc": "Simple, adapté à toutes les activités",
+    "owned": "Acheté",
+    "in_plan": "Inclus dans votre offre",
+    "none": "Aucun thème disponible dans votre offre — le thème par défaut sera utilisé",
+    "apply_failed": "Boutique créée, mais le thème n'a pas pu être appliqué — choisissez-le depuis la page Thèmes"
   }
 }
