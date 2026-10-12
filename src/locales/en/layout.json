@@ -17,6 +17,7 @@
     "domain": "domain",
     "messages" : "messages",
     "editor" : "Page Editor",
+    "custom_theme": "Custom theme",
     "group_store": "Store Management",
     "group_sales": "Sales",
     "group_analytics": "Analytics & Support",

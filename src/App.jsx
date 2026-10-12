@@ -26,6 +26,7 @@ import OtpForgotPassword from './pages/auth/OtpForgotPassworde';
 import EditProduct from './pages/dashboard/products/edit';
 import ShowProduct from './pages/dashboard/products/Show';
 import Theme from './pages/dashboard/theme/Theme';
+import CustomTheme from './pages/dashboard/theme/CustomTheme';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Pixels from './pages/dashboard/pixels/pixels';
 import Domain from './pages/dashboard/domain/domain';
@@ -87,6 +88,7 @@ const App = () => {
 
             <Route path='theme'>
               <Route index element={<Theme />} />
+              <Route path='custom' element={<CustomTheme />} />
             </Route>
           
 

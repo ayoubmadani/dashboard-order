@@ -58,5 +58,48 @@
     "modal_title": "Acheter le thème",
     "cancel": "Annuler",
     "confirm": "Acheter"
+  },
+  "custom": {
+    "title": "Thème personnalisé",
+    "subtitle": "Décrivez le style souhaité, Claude conçoit un thème unique pour votre boutique",
+    "no_store": "Choisissez d'abord une boutique",
+    "load_error": "Chargement impossible",
+    "action_error": "Une erreur est survenue, réessayez",
+    "disabled": "Ce service n'est pas disponible pour le moment",
+    "currency": "DA",
+    "price": "Prix",
+    "revisions_included": "Révisions incluses",
+    "ready_in": "Prêt en",
+    "ready_in_value": "~{{hours}} h",
+    "brief_label": "Décrivez le thème souhaité",
+    "brief_placeholder": "Ex : un thème luxueux noir et or pour une parfumerie, typographie élégante, grandes photos produits...",
+    "brief_hint": "Indiquez couleurs, ambiance et ce qui distingue votre activité. Claude s'appuie aussi sur le nom, les produits et les catégories de votre boutique.",
+    "order_btn": "Commander - {{price}}",
+    "wallet_note": "Le montant est débité de votre portefeuille et remboursé intégralement en cas d'échec ou de refus.",
+    "live_title": "Votre thème personnalisé est en ligne",
+    "in_progress_title": "Votre thème est en conception",
+    "queued_hint": "Claude conçoit votre thème... la page se met à jour automatiquement",
+    "review_hint": "Prêt ! Mis en ligne {{time}} après vérification",
+    "live_hint": "En ligne sur votre boutique",
+    "refunded_hint": "Non publié, montant remboursé",
+    "revision_title": "Demande de modification",
+    "revisions_left": "{{left}} sur {{total}} révisions restantes",
+    "revision_placeholder": "Ex : agrandir le hero, boutons en vert...",
+    "revision_btn": "Envoyer la demande",
+    "wait_active": "Attendez la fin de la demande en cours",
+    "no_revisions": "Plus de révisions incluses - achetez-en pour une nouvelle demande.",
+    "buy_label": "Révisions supplémentaires ({{price}} l'unité)",
+    "buy_btn": "Acheter - {{total}}",
+    "status": {
+      "queued": "En conception",
+      "review": "Prêt",
+      "live": "En ligne",
+      "failed": "Échec",
+      "rejected": "Refusé"
+    },
+    "kind": {
+      "create": "Création",
+      "revision": "Modification"
+    }
   }
 }

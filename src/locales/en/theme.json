@@ -58,5 +58,48 @@
     "modal_title": "Buy theme",
     "cancel": "Cancel",
     "confirm": "Buy"
+  },
+  "custom": {
+    "title": "Custom store theme",
+    "subtitle": "Describe the look you want and Claude designs a unique theme for your store",
+    "no_store": "Select a store first",
+    "load_error": "Could not load",
+    "action_error": "Something went wrong, try again",
+    "disabled": "This service isn't available right now",
+    "currency": "DZD",
+    "price": "Price",
+    "revisions_included": "Included revisions",
+    "ready_in": "Ready in",
+    "ready_in_value": "~{{hours}} h",
+    "brief_label": "Describe the theme you want",
+    "brief_placeholder": "e.g. a luxurious black and gold theme for a perfume shop, elegant typography, large product photos...",
+    "brief_hint": "Mention colors, mood and what makes your business stand out. Claude also uses your store name, products and categories.",
+    "order_btn": "Order - {{price}}",
+    "wallet_note": "Charged from your wallet and fully refunded if generation fails or is rejected.",
+    "live_title": "Your custom theme is live",
+    "in_progress_title": "Your theme is being designed",
+    "queued_hint": "Claude is designing your theme... this page refreshes automatically",
+    "review_hint": "Ready! Goes live {{time}} after review",
+    "live_hint": "Live on your store",
+    "refunded_hint": "Not published, amount refunded",
+    "revision_title": "Request a change",
+    "revisions_left": "{{left}} of {{total}} revisions left",
+    "revision_placeholder": "e.g. make the hero bigger, green buttons...",
+    "revision_btn": "Send change request",
+    "wait_active": "Wait for the current request to finish",
+    "no_revisions": "No included revisions left - buy more to request a change.",
+    "buy_label": "Extra revisions ({{price}} each)",
+    "buy_btn": "Buy - {{total}}",
+    "status": {
+      "queued": "Designing",
+      "review": "Ready",
+      "live": "Live",
+      "failed": "Failed",
+      "rejected": "Rejected"
+    },
+    "kind": {
+      "create": "Create",
+      "revision": "Change"
+    }
   }
 }

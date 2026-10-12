@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check,
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
@@ -21,8 +21,13 @@ const getStoreGradient = (name) => {
     return gradients[name ? name.charCodeAt(0) % gradients.length : 0];
 };
 
-const isItemActive = (pathname, href) =>
+const matchesPath = (pathname, href) =>
     pathname === href || (href !== '/dashboard' && pathname.startsWith(`${href}/`));
+
+// العنصر الأدق فقط: /dashboard/theme/custom يضيء «ثيم خاص» وحده لا «القوالب» أيضاً
+const isItemActive = (pathname, href, allHrefs = []) =>
+    matchesPath(pathname, href) &&
+    !allHrefs.some((other) => other !== href && other.length > href.length && matchesPath(pathname, other));
 
 /* ───────── Sidebar content (desktop + mobile) ───────── */
 const SidebarContent = ({ t, navGroups, pathname, selectedProject, storesCount, onStores, onNavigate, onClose }) => (
@@ -60,7 +65,7 @@ const SidebarContent = ({ t, navGroups, pathname, selectedProject, storesCount, 
                     )}
                     <div className="space-y-0.5">
                         {group.items.map(item => {
-                            const active = isItemActive(pathname, item.href);
+                            const active = isItemActive(pathname, item.href, navGroups.flatMap(g => g.items.map(i => i.href)));
                             return (
                                 <Link
                                     key={item.href}
@@ -203,6 +208,7 @@ export default function LayoutDashboard() {
                 { name: t('nav.stores', 'المتجر'), href: '/dashboard/store', icon: Store },
                 { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe },
                 { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette },
+                { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles },
                 { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2 },
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers },
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box },
@@ -232,7 +238,7 @@ export default function LayoutDashboard() {
     ];
 
     const pageTitle =
-        navGroups.flatMap(g => g.items).find(i => isItemActive(location.pathname, i.href))?.name || 'MdStore';
+        navGroups.flatMap(g => g.items).find(i => isItemActive(location.pathname, i.href, navGroups.flatMap(g => g.items.map(x => x.href))))?.name || 'MdStore';
 
     // --- Stores ---
     const fetchStores = useCallback(async () => {
