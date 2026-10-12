@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
+import { addonsPayload } from '../../../utils/productAddons';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Info, Palette, ImageIcon, Plus, Trash2,
@@ -106,6 +108,7 @@ export default function EditProduct() {
   });
   const [attributes, setAttributes] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [addons, setAddons] = useState([]);
   const [images, setImages] = useState([]);
   const [dragImageIndex, setDragImageIndex] = useState(null);
   const [isOpenModelImage, setIsOpenModelImage] = useState(false);
@@ -216,6 +219,7 @@ export default function EditProduct() {
 
 
         if (Array.isArray(product.offers)) {
+          setAddons((product.addons || []).map((a) => ({ ...a, price: String(a.price ?? '') })));
           setOffers(product.offers.map((o, idx) => ({
             id: o.id || `off-${Date.now()}-${idx}`, name: o.name || '', subTitle: o.subTitle || '',
             quantity: o.quantity?.toString() || '', price: o.price?.toString() || '',
@@ -358,6 +362,7 @@ export default function EditProduct() {
         isDigital: formData.isDigital,
         whatsappEnabled: formData.whatsappEnabled,
         whatsappNumber: formData.whatsappNumber?.trim() || '',
+        addons: addonsPayload(addons),
         priceOriginal: formData.originalPrice ? Number(formData.originalPrice) : null,
         categoryId: formData.categoryId || null,
         attributes,
@@ -547,6 +552,10 @@ export default function EditProduct() {
               className="mt-2 w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
             />
           )}
+        </Field>
+
+        <Field label={t('addons.label')}>
+          <ProductAddonsEditor value={addons} onChange={setAddons} isRtl={isRtl} />
         </Field>
 
         {/* Category dropdown */}

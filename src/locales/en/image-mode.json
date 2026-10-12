@@ -19,6 +19,7 @@
     "delete_selected": "Delete ({{count}})"
   },
   "upload": {
+    "paste_hint": "Ctrl+V to paste",
     "compressing": "Compressing image...",
     "uploading": "Uploading...",
     "total_limit_reached": "You've reached your limit ({{count}}/{{max}} images)",
@@ -78,5 +79,15 @@
     "compression_failed": "Compression failed:",
     "upload_failed": "Upload error:",
     "delete_failed": "Delete error:"
+  },
+  "url": {
+    "placeholder": "Paste the image link here...",
+    "upload": "Upload from link",
+    "paste": "Paste from clipboard",
+    "invalid": "Invalid link — it must start with http:// or https://",
+    "cors_error": "This site blocks using the image. Download it to your device, then upload it as a file.",
+    "load_failed": "Couldn't load the image from this link, or the site blocks it.",
+    "clipboard_empty": "The clipboard has no image or image link",
+    "clipboard_denied": "Couldn't read the clipboard — paste the link manually into the link field"
   }
 }

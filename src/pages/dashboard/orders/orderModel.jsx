@@ -112,6 +112,9 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
   const shortId = (cartData.cartId || cartData.id || '').slice(0, 8).toUpperCase();
   const items = cartData.items || [];
   const hasChanges = status !== cartData.status;
+  // عند شركة التأكيد ولم تُؤكَّد بعد: الخادم يرفض أي تعديل حتى يسترجعها التاجر
+  const atConfirmation = !!cartData.confirmationCompanyId
+    && ['pending', 'appl1', 'appl2', 'appl3', 'postponed'].includes(cartData.status);
 
   const goFull = () => { onClose(); navigate(`/dashboard/orders/${cartData.id}`); };
 
@@ -197,7 +200,14 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
               </div>
               {items.map(item => (
                 <div key={item.id} className="om-item-line">
-                  <span className="om-item-line-name">{item.quantity}× {item.product?.name || item.productName || t('modal.product_unknown')}</span>
+                  <span className="om-item-line-name">
+                    {item.quantity}× {item.product?.name || item.productName || t('modal.product_unknown')}
+                    {item.addons?.length > 0 && (
+                      <span style={{ display: 'block', fontSize: '0.75em', opacity: 0.7 }}>
+                        + {item.addons.map(a => `${a.name}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                      </span>
+                    )}
+                  </span>
                   <span className="om-item-line-meta">{parseFloat(item.finalPrice || 0).toLocaleString()} DA</span>
                 </div>
               ))}
@@ -210,13 +220,19 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
             {/* Status */}
             <div className="om-card">
               <div className="om-card-title"><CheckCircle2 size={11} />{t('modal.status_label')}</div>
+              {atConfirmation && (
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#4f46e5', marginBottom: 8 }}>
+                  {t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها')}
+                </p>
+              )}
               <div className="om-status-grid">
                 {statusOptions.map(o => {
                   const m = STATUS_META[o.value] || STATUS_META.pending;
                   const active = status === o.value;
                   return (
                     <button key={o.value} type="button" className="om-status-btn"
-                      style={active ? { borderColor: m.color, background: m.bg, color: m.labelColor } : {}}
+                      disabled={atConfirmation}
+                      style={{ ...(active ? { borderColor: m.color, background: m.bg, color: m.labelColor } : {}), ...(atConfirmation ? { opacity: 0.5, cursor: 'not-allowed' } : {}) }}
                       onClick={() => setStatus(o.value)}>
                       <span className="om-status-name">
                         <span className="dot" style={{ background: m.color }} />
@@ -237,7 +253,8 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
             </button>
             <div className="om-footer-actions">
               <button className="om-btn-cancel" onClick={onClose}>{t('modal.close')}</button>
-              <button className="om-btn-save" onClick={handleSave} disabled={loading || !hasChanges}>
+              <button className="om-btn-save" onClick={handleSave} disabled={loading || !hasChanges || atConfirmation}
+                title={atConfirmation ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : undefined}>
                 {loading ? <><Loader2 size={13} className="animate-spin" />{t('modal.saving')}</> : <><Save size={13} />{t('modal.save')}</>}
               </button>
             </div>

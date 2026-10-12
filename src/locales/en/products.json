@@ -440,5 +440,14 @@
     "imported": "Product imported — review it, add the price and save",
     "imported_price": "Product imported — AliExpress price {{price}} {{currency}}. Add your selling price and save",
     "import_error": "Could not import the product"
+  },
+  "addons": {
+    "label": "Add-ons (optional)",
+    "desc": "Extras the customer can add; their price is added to the product price (e.g. extra chicken +300 DZD)",
+    "name_placeholder": "Add-on name, e.g. hot sauce",
+    "add": "New add-on",
+    "remove": "Remove",
+    "enable": "Enable",
+    "disable": "Hide"
   }
 }

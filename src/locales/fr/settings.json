@@ -79,6 +79,7 @@
   "feat_stores": "Boutiques",
   "feat_products": "Produits",
   "feat_pages": "Pages de destination",
+  "feat_domains": "domaines par boutique",
   "feat_commission": "Commission",
   "save_pct": "Économisez {{pct}}%",
   

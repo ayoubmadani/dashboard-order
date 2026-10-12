@@ -19,6 +19,7 @@
     "delete_selected": "Supprimer ({{count}})"
   },
   "upload": {
+    "paste_hint": "Ctrl+V pour coller",
     "compressing": "Compression de l'image...",
     "uploading": "Téléchargement...",
     "total_limit_reached": "Vous avez atteint votre limite ({{count}}/{{max}} images)",
@@ -78,5 +79,15 @@
     "compression_failed": "Échec de la compression :",
     "upload_failed": "Erreur de téléchargement :",
     "delete_failed": "Erreur de suppression :"
+  },
+  "url": {
+    "placeholder": "Collez le lien de l'image ici...",
+    "upload": "Importer depuis le lien",
+    "paste": "Coller depuis le presse-papiers",
+    "invalid": "Lien invalide — il doit commencer par http:// ou https://",
+    "cors_error": "Le site bloque l'utilisation de cette image. Téléchargez-la puis importez-la comme fichier.",
+    "load_failed": "Impossible de charger l'image depuis ce lien, ou le site le bloque.",
+    "clipboard_empty": "Le presse-papiers ne contient ni image ni lien d'image",
+    "clipboard_denied": "Impossible de lire le presse-papiers — collez le lien manuellement dans le champ"
   }
 }

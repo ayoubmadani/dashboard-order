@@ -3,6 +3,10 @@
   "subtitle": "Liez votre propre domaine à votre boutique via un seul enregistrement CNAME",
 
   "add_label": "Ajouter un domaine",
+
+  "limit_usage": "{{used}} / {{limit}} domaines",
+
+  "limit_reached": "Limite de domaines de votre offre atteinte ({{limit}} par boutique). Supprimez un domaine ou passez à une offre supérieure.",
   "add_placeholder": "exemple.com",
   "add_btn": "Ajouter",
   "adding": "Ajout en cours…",

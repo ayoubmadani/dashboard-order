@@ -3,6 +3,10 @@
   "subtitle": "اربط نطاقك الخاص بمتجرك عبر سجل CNAME واحد",
 
   "add_label": "إضافة نطاق",
+
+  "limit_usage": "{{used}} / {{limit}} دومين",
+
+  "limit_reached": "وصلت للحد الأقصى للدومينات في خطتك ({{limit}} لكل متجر). احذف دوميناً أو رقِّ خطتك.",
   "add_placeholder": "example.com",
   "add_btn": "إضافة",
   "adding": "جارٍ الإضافة…",

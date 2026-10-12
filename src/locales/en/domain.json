@@ -3,6 +3,10 @@
   "subtitle": "Link your own domain to your store via a single CNAME record",
 
   "add_label": "Add Domain",
+
+  "limit_usage": "{{used}} / {{limit}} domains",
+
+  "limit_reached": "You reached your plan's domain limit ({{limit}} per store). Remove a domain or upgrade your plan.",
   "add_placeholder": "example.com",
   "add_btn": "Add",
   "adding": "Adding…",

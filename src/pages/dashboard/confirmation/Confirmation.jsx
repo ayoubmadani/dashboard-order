@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import {
-  PhoneCall, Search, Bookmark, BookmarkCheck, Trash2, MapPin, Phone, Loader2, Info, Wallet,
+  PhoneCall, Search, Bookmark, BookmarkCheck, Trash2, MapPin, Phone, Loader2, Info, Zap,
 } from 'lucide-react';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
@@ -23,9 +22,16 @@ function CompanyCard({ company, t, children, stats }) {
             <span className="flex items-center gap-1" dir="ltr"><Phone size={12} />{company.phone}</span>
           </div>
         </div>
-        <span className="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-black">
-          {t('commission', { amount: company.commissionPerDelivered })}
-        </span>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-black">
+            {t('commission', { amount: company.commissionPerDelivered })}
+          </span>
+          {(company.blocked || company.paused) && (
+            <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs font-black">
+              {company.blocked ? t('company_blocked') : t('company_paused')}
+            </span>
+          )}
+        </div>
       </div>
       {company.description && <p className="text-sm text-gray-600 dark:text-zinc-300 line-clamp-3 whitespace-pre-line">{company.description}</p>}
       {stats}
@@ -46,6 +52,11 @@ export default function Confirmation() {
   const [wilayaId, setWilayaId] = useState('');
   const [wilayas, setWilayas] = useState([]);
   const [busyId, setBusyId] = useState(null);
+  const [auto, setAuto] = useState({ enabled: false, companyId: null });
+  // حسابات التوصيل: كل شركة محفوظة مرتبطة بحساب تُرفع به طلباتها المؤكدة
+  const [accounts, setAccounts] = useState(null);
+  const [picker, setPicker] = useState(null); // { company, accountId }
+  const [autoBusy, setAutoBusy] = useState(false);
 
   const loadSaved = useCallback(async () => {
     try {
@@ -73,7 +84,38 @@ export default function Confirmation() {
     }
   }, [search, wilayaId, storeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => { if (storeId) loadSaved(); }, [storeId, loadSaved]);
+  const loadAuto = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`${baseURL}/stores/${storeId}/confirmation/auto`, { headers });
+      setAuto(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [storeId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // الإرسال التلقائي: كل طلب جديد يذهب لشركة من القائمة
+  const updateAuto = async (next) => {
+    setAutoBusy(true);
+    try {
+      const { data } = await axios.put(`${baseURL}/stores/${storeId}/confirmation/auto`, next, { headers });
+      setAuto(data);
+      toast.success(t('auto_saved'));
+    } catch (err) {
+      toast.error(err.response?.data?.message || t('load_error'));
+    } finally {
+      setAutoBusy(false);
+    }
+  };
+
+  useEffect(() => { if (storeId) { loadSaved(); loadAuto(); } }, [storeId, loadSaved, loadAuto]);
+  useEffect(() => {
+    if (!storeId) return;
+    axios.get(`${baseURL}/stores/${storeId}/shipping/accounts`, { headers })
+      .then(({ data }) => setAccounts(Array.isArray(data) ? data : []))
+      .catch(() => setAccounts([]));
+  }, [storeId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const accountLabel = (a) => a.accountName || a.providerName;
   useEffect(() => {
     axios.get(`${baseURL}/shipping/wilayas`).then(({ data }) => setWilayas(Array.isArray(data) ? data : [])).catch(() => {});
   }, []);
@@ -83,14 +125,30 @@ export default function Confirmation() {
     return () => clearTimeout(timer);
   }, [tab, loadResults, storeId]);
 
-  const save = async (company) => {
+  // الحفظ يتطلب اختيار حساب التوصيل أولاً
+  const save = (company) => {
+    if (!accounts?.length) {
+      toast.error(t('ship_account_none'), {
+        action: { label: t('ship_account_go'), onClick: () => { window.location.href = '/dashboard/settings'; } },
+      });
+      return;
+    }
+    const preferred = accounts.find((a) => a.isDefault) ?? accounts[0];
+    setPicker({ company, accountId: company.shippingAccountId ?? preferred.id });
+  };
+
+  // حفظ الشركة بالحساب المختار — أو تغيير حساب شركة محفوظة
+  const saveWithAccount = async (company, shippingAccountId) => {
     setBusyId(company.id);
     try {
-      await axios.post(`${baseURL}/stores/${storeId}/confirmation/saved/${company.id}`, {}, { headers });
+      await axios.post(`${baseURL}/stores/${storeId}/confirmation/saved/${company.id}`, { shippingAccountId }, { headers });
       setResults((r) => r?.map((c) => (c.id === company.id ? { ...c, saved: true } : c)));
+      setPicker(null);
+      toast.success(t('ship_account_saved'));
       loadSaved();
     } catch (err) {
-      toast.error(err.response?.data?.message || t('load_error'));
+      const msg = err.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg[0] : msg || t('load_error'));
     } finally {
       setBusyId(null);
     }
@@ -102,6 +160,7 @@ export default function Confirmation() {
     try {
       await axios.delete(`${baseURL}/stores/${storeId}/confirmation/saved/${company.id}`, { headers });
       setSaved((s) => s.filter((c) => c.id !== company.id));
+      if (auto.companyId === company.id) loadAuto();
       setResults((r) => r?.map((c) => (c.id === company.id ? { ...c, saved: false } : c)));
     } catch (err) {
       toast.error(err.response?.data?.message || t('load_error'));
@@ -163,10 +222,6 @@ export default function Confirmation() {
         <ol className="list-decimal ps-5 space-y-1 text-gray-700 dark:text-zinc-300">
           {['how_1', 'how_2', 'how_3', 'how_4'].map((k) => <li key={k}>{t(k)}</li>)}
         </ol>
-        <p className="flex items-center gap-2 mt-3 text-xs font-bold text-amber-700 dark:text-amber-400">
-          <Wallet size={13} />{t('wallet_note')}
-          <Link to="/dashboard/wallet" className="underline">{t('wallet_link')}</Link>
-        </p>
       </div>
 
       {tab === 'saved' && (
@@ -180,15 +235,62 @@ export default function Confirmation() {
             </button>
           </div>
         ) : (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${auto.enabled ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-500' : 'bg-gray-100 dark:bg-zinc-800 text-gray-400'}`}>
+                  <Zap size={18} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-black text-gray-900 dark:text-white">{t('auto_title')}</p>
+                  <p className="text-xs text-gray-500 dark:text-zinc-400">{t('auto_desc')}</p>
+                </div>
+              </div>
+              <select
+                value={auto.companyId ?? ''}
+                disabled={autoBusy}
+                onChange={(e) => updateAuto({ enabled: !!e.target.value && auto.enabled, companyId: e.target.value || undefined })}
+                aria-label={t('auto_company')}
+                className="md:w-56 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm outline-none dark:text-white dark:[color-scheme:dark] disabled:opacity-50"
+              >
+                <option value="">{t('auto_choose')}</option>
+                {saved.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <button
+                role="switch"
+                aria-checked={auto.enabled}
+                aria-label={auto.enabled ? t('auto_on') : t('auto_off')}
+                title={auto.enabled ? t('auto_on') : t('auto_off')}
+                disabled={autoBusy || !auto.companyId}
+                onClick={() => updateAuto({ enabled: !auto.enabled, companyId: auto.companyId || undefined })}
+                className={`relative w-12 h-7 rounded-full transition-colors shrink-0 disabled:opacity-40 ${auto.enabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'}`}
+              >
+                <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${auto.enabled ? 'start-6' : 'start-1'}`} />
+              </button>
+            </div>
+
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {saved.map((c) => (
               <CompanyCard key={c.id} company={c} t={t} stats={statsOf(c.orders)}>
+                <select
+                  value={c.shippingAccountId ?? ''}
+                  disabled={busyId === c.id || !accounts?.length}
+                  onChange={(e) => e.target.value && saveWithAccount(c, e.target.value)}
+                  aria-label={t('ship_account')}
+                  title={t('ship_account')}
+                  className={`flex-1 min-w-0 px-2 py-2 rounded-xl border text-xs font-bold outline-none bg-white dark:bg-zinc-900 dark:text-white dark:[color-scheme:dark] ${
+                    c.shippingAccountId ? 'border-gray-200 dark:border-zinc-700' : 'border-amber-400 text-amber-700'}`}
+                >
+                  {!c.shippingAccountId && <option value="">{t('ship_account_choose')}</option>}
+                  {(accounts ?? []).map((a) => <option key={a.id} value={a.id}>🚚 {accountLabel(a)}</option>)}
+                </select>
                 <button onClick={() => remove(c)} disabled={busyId === c.id}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-500/10 hover:bg-rose-100 disabled:opacity-50">
                   {busyId === c.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}{t('remove')}
                 </button>
               </CompanyCard>
             ))}
+          </div>
           </div>
         )
       )}
@@ -230,6 +332,35 @@ export default function Confirmation() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {picker && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4" onClick={() => setPicker(null)}>
+          <div className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-2xl p-5 space-y-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div>
+              <p className="font-black text-gray-900 dark:text-white">{picker.company.name}</p>
+              <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">{t('ship_account_hint')}</p>
+            </div>
+            <div className="space-y-2">
+              {accounts.map((a) => (
+                <label key={a.id} className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer ${
+                  picker.accountId === a.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
+                  <input type="radio" name="ship-account" checked={picker.accountId === a.id}
+                    onChange={() => setPicker((p) => ({ ...p, accountId: a.id }))} />
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">🚚 {accountLabel(a)}</span>
+                </label>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => saveWithAccount(picker.company, picker.accountId)} disabled={busyId === picker.company.id}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50">
+                {busyId === picker.company.id && <Loader2 size={14} className="animate-spin" />}{t('save')}
+              </button>
+              <button onClick={() => setPicker(null)}
+                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-sm font-bold text-gray-600 dark:text-zinc-300">✕</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

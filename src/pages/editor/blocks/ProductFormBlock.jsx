@@ -176,10 +176,10 @@ export default function ProductFormBlock({
   useEffect(() => {
     if (!product?.userId) return;
     axios
-      .get(`${baseURL}/shipping/public/get-shipping/${product.userId}`)
+      .get(`${baseURL}/shipping/public/get-shipping/${product.userId}`, { params: { storeId: product.storeId } })
       .then((res) => setWilayas(Array.isArray(res.data) ? res.data : []))
       .catch(() => setWilayas([]));
-  }, [product?.userId]);
+  }, [product?.userId, product?.storeId]);
 
   useEffect(() => {
     if (!form.wilayaId) {

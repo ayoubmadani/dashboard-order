@@ -77,11 +77,11 @@ const CreateStore = () => {
       try {
         // تنفيذ الطلبين في وقت واحد لسرعة الأداء
         const [nichesRes, wilayasRes] = await Promise.all([
-          axios.get(`${baseURL}/admin/niches`),
+          axios.get(`${baseURL}/niches`),
           axios.get(`${baseURL}/shipping/wilayas`)
         ]);
 
-        setNiches(nichesRes.data);
+        setNiches(nichesRes.data?.data ?? []);
         setWilayas(wilayasRes.data);
 
         console.log("Data loaded successfully");

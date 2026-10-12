@@ -735,6 +735,11 @@ export default function OrderEditPage({ isNew = false }) {
                             <div className="flex justify-between items-center">
                               <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
                                 {item.product?.name || item.productName || t('edit.product_unknown')}
+                                {item.addons?.length > 0 && (
+                                  <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
+                                    + {item.addons.map(a => `${a.name}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                                  </span>
+                                )}
                               </h3>
                               <button
                                 onClick={() => handleDeleteItem(item.id)}

@@ -545,18 +545,25 @@ function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
           <>
             <p className="text-xs font-bold text-gray-500">{t('send_pick')}</p>
             <div className="space-y-2 max-h-72 overflow-auto">
-              {companies.map(c => (
-                <label key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border-2 cursor-pointer ${
+              {companies.map(c => {
+                // متوقفة مؤقتاً أو أوقفت طلبات هذا التاجر: لا يمكن الإرسال لها
+                const unavailable = c.paused || c.blocked;
+                return (
+                <label key={c.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border-2 ${unavailable ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${
                   companyId === c.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
                   <span className="flex items-center gap-2 min-w-0">
-                    <input type="radio" name="company" checked={companyId === c.id} onChange={() => setCompanyId(c.id)} />
+                    <input type="radio" name="company" disabled={unavailable} checked={companyId === c.id} onChange={() => setCompanyId(c.id)} />
                     <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{c.name}</span>
                   </span>
-                  <span className="text-xs font-black text-emerald-600 shrink-0">{t('commission', { amount: c.commissionPerDelivered })}</span>
+                  {unavailable ? (
+                    <span className="text-xs font-black text-amber-600 shrink-0">{c.blocked ? t('company_blocked') : t('company_paused')}</span>
+                  ) : (
+                    <span className="text-xs font-black text-emerald-600 shrink-0">{t('commission', { amount: c.commissionPerDelivered })}</span>
+                  )}
                 </label>
-              ))}
+                );
+              })}
             </div>
-            <p className="text-[11px] text-amber-700 dark:text-amber-400">{t('wallet_note')}</p>
             <div className="flex gap-2">
               <button onClick={send} disabled={!companyId || sending}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50">
@@ -1042,12 +1049,15 @@ export default function Orders() {
             const isSuspicious = !cart.customerId;
             const items = cart.items || [];
             const selectable = isSelectable(cart);
+            // عند شركة التأكيد ولم تُؤكَّد بعد: باهتة — ليست بيد التاجر الآن
+            const atConfirmation = confirmationLock(cart) === 'locked';
 
             return (
               <div
                 key={cart.id}
                 onDoubleClick={() => openModal(cart)}
-                className={`${GRID} px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-colors flex flex-col gap-3 md:gap-3 ${
+                className={`${GRID} px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
+                  atConfirmation && !isSelected ? 'opacity-50 hover:opacity-80' : ''} ${
                   isSelected
                     ? 'bg-cyan-50/50 dark:bg-cyan-500/5'
                     : isSuspicious
@@ -1110,7 +1120,7 @@ export default function Orders() {
 
                 {/* المنتجات */}
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || ''}`).join(' • ')}>
+                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || ''}${it.addons?.length ? ` + ${it.addons.map(a => a.name).join('، ')}` : ''}`).join(' • ')}>
                     {items[0] ? `${items[0].quantity}× ${truncate(items[0].product?.name || '', 26)}` : '—'}
                   </span>
                   {items.length > 1 && (

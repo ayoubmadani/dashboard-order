@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Save, ArrowLeft, Search,
   Home, Building2, RefreshCcw,
@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
+import ShippingProfilesBar from './ShippingProfilesBar';
 
 function useAuthHeaders() {
   const token = getAccessToken();
@@ -893,6 +894,15 @@ export default function Shipping() {
   const [deleteTarget,     setDeleteTarget]     = useState(null);
   const [isDeleting,       setIsDeleting]       = useState(false);
   const [isBulkToggling,   setIsBulkToggling]   = useState(false);
+  const [profiles,         setProfiles]         = useState([]);
+  const [profileId,        setProfileId]        = useState(null);
+
+  // كل طلبات الأسعار تخص «حساب الشحن» المختار (بدونه = الحساب الافتراضي)
+  const rateCfg = useMemo(
+    () => ({ ...headers, params: profileId ? { profileId } : undefined }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [profileId, headers.headers.Authorization],
+  );
 
   const showToast = (type, msg) => {
     setToast({ type, msg });
@@ -907,9 +917,22 @@ export default function Shipping() {
     } catch { setProviderSettings(null); }
   };
 
+  const loadProfiles = async (selectId) => {
+    try {
+      const { data } = await axios.get(`${baseURL}/shipping/profiles`, headers);
+      setProfiles(data);
+      setProfileId((prev) => {
+        const wanted = selectId !== undefined ? selectId : prev;
+        if (wanted && data.some((p) => p.id === wanted)) return wanted;
+        // افتراضياً: الحساب الذي يستعمله المتجر الحالي
+        return (data.find((p) => p.stores.some((st) => st.id === storeId)) || data[0])?.id ?? null;
+      });
+    } catch { setProfiles([]); }
+  };
+
   const getShipping = async () => {
     try {
-      const { data } = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
+      const { data } = await axios.get(`${baseURL}/shipping/get-shipping`, rateCfg);
       setWilayas(data);
     } catch (error) {
       console.error('خطأ في جلب بيانات الشحن:', error);
@@ -918,25 +941,32 @@ export default function Shipping() {
   };
 
   useEffect(() => {
-    getShipping();
+    loadProfiles();
     loadProviderSettings();
   }, []);
+
+  useEffect(() => {
+    if (!profileId) return;
+    setSelectedIds(new Set());
+    getShipping();
+  }, [profileId]);
 
   const handleCreateAll = async () => {
     setIsInitializing(true);
     try {
-      const getResponse = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
+      const getResponse = await axios.get(`${baseURL}/shipping/get-shipping`, rateCfg);
       let finalData = getResponse.data;
       if (!finalData || finalData.length === 0) {
-        await axios.get(`${baseURL}/shipping/create-shipping`, headers);
-        const refreshResponse = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
+        await axios.get(`${baseURL}/shipping/create-shipping`, rateCfg);
+        const refreshResponse = await axios.get(`${baseURL}/shipping/get-shipping`, rateCfg);
         finalData = refreshResponse.data;
       }
       setWilayas(finalData);
+      loadProfiles();
       showToast('success', t('toast.init_success'));
     } catch (error) {
       if (error.response?.status === 400 || error.response?.status === 409) {
-        const fallback = await axios.get(`${baseURL}/shipping/get-shipping`, headers);
+        const fallback = await axios.get(`${baseURL}/shipping/get-shipping`, rateCfg);
         setWilayas(fallback.data);
         showToast('success', t('toast.init_loaded'));
       } else {
@@ -947,6 +977,7 @@ export default function Shipping() {
 
   const handleMissingAdded = (newWilayas, addedCount) => {
     setWilayas(newWilayas);
+    loadProfiles();
     showToast('success', t('toast.add_missing_success', { count: addedCount }));
   };
 
@@ -956,7 +987,7 @@ export default function Shipping() {
       await axios.post(
         `${baseURL}/shipping/update-shipping`,
         [{ wilayaId: wilaya.id, priceHome: wilaya.livraisonHome, priceOffice: wilaya.livraisonOfice, priceReturn: wilaya.livraisonReturn, isActive: wilaya.isActive }],
-        headers,
+        rateCfg,
       );
       showToast('success', t('toast.save_success', { name: wilaya.name }));
     } catch { showToast('error', t('toast.save_error', { name: wilaya.name })); }
@@ -967,8 +998,9 @@ export default function Shipping() {
     setIsSavingAll(true);
     try {
       const payload = wilayas.map(w => ({ wilayaId: w.id, priceHome: w.livraisonHome, priceOffice: w.livraisonOfice, priceReturn: w.livraisonReturn, isActive: w.isActive }));
-      await axios.post(`${baseURL}/shipping/update-shipping`, payload, headers);
+      await axios.post(`${baseURL}/shipping/update-shipping`, payload, rateCfg);
       showToast('success', t('toast.save_all_success'));
+      loadProfiles();
     } catch { showToast('error', t('toast.save_all_error')); }
     finally { setIsSavingAll(false); }
   };
@@ -1002,8 +1034,9 @@ export default function Shipping() {
     if (!wilaya) return;
     setToggleLoading(id);
     try {
-      await axios.post(`${baseURL}/shipping/update-shipping`, [{ wilayaId: id, isActive: !wilaya.isActive }], headers);
+      await axios.post(`${baseURL}/shipping/update-shipping`, [{ wilayaId: id, isActive: !wilaya.isActive }], rateCfg);
       await getShipping();
+      loadProfiles();
     } catch { showToast('error', t('toast.toggle_error')); }
     finally { setToggleLoading(null); }
   };
@@ -1038,7 +1071,7 @@ export default function Shipping() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      await axios.post(`${baseURL}/shipping/delete-shipping`, { wilayaIds: deleteTarget.ids }, headers);
+      await axios.post(`${baseURL}/shipping/delete-shipping`, { wilayaIds: deleteTarget.ids }, rateCfg);
       setWilayas(prev => prev.filter(w => !deleteTarget.ids.includes(w.id)));
       setSelectedIds(prev => {
         const next = new Set(prev);
@@ -1046,6 +1079,7 @@ export default function Shipping() {
         return next;
       });
       showToast('success', t('toast.delete_success', { count: deleteTarget.ids.length }));
+      loadProfiles();
       setDeleteTarget(null);
     } catch { showToast('error', t('toast.delete_error')); }
     finally { setIsDeleting(false); }
@@ -1058,9 +1092,10 @@ export default function Shipping() {
       await axios.post(
         `${baseURL}/shipping/update-shipping`,
         ids.map(id => ({ wilayaId: id, isActive })),
-        headers,
+        rateCfg,
       );
       setWilayas(prev => prev.map(w => (ids.includes(w.id) ? { ...w, isActive } : w)));
+      loadProfiles();
       showToast('success', t(isActive ? 'toast.activate_selected_success' : 'toast.deactivate_selected_success', { count: ids.length }));
     } catch { showToast('error', t(isActive ? 'toast.activate_selected_error' : 'toast.deactivate_selected_error')); }
     finally { setIsBulkToggling(false); }
@@ -1116,7 +1151,7 @@ export default function Shipping() {
       {/* ── Add missing wilayas modal ── */}
       {showMissingModal && (
         <AddMissingWilayasModal
-          headers={headers}
+          headers={rateCfg}
           isRtl={isRtl}
           existingIds={new Set(wilayas.map(w => w.id))}
           onClose={() => setShowMissingModal(false)}
@@ -1208,6 +1243,18 @@ export default function Shipping() {
           </button>
         </div>
       )}
+
+      {/* ── Shipping profiles ── */}
+      <ShippingProfilesBar
+        profiles={profiles}
+        selectedId={profileId}
+        onSelect={setProfileId}
+        onChanged={loadProfiles}
+        storeId={storeId}
+        headers={headers}
+        isRtl={isRtl}
+        showToast={showToast}
+      />
 
       {/* ── Search & Filter bar ── */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">

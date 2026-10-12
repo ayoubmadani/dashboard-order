@@ -1,4 +1,4 @@
-import { Store, Package, FileText, TrendingUp } from 'lucide-react';
+import { Store, Package, FileText, TrendingUp, Globe } from 'lucide-react';
 
 export const isFree = (plan) =>
   Number(plan?.monthlyPrice ?? 0) === 0 && Number(plan?.yearlyPrice ?? 0) === 0;
@@ -20,6 +20,7 @@ export const buildFeatureSummary = (features, t) => {
   if (features.storeNumber) rows.push({ icon: Store, text: `${features.storeNumber} ${t('feat_stores')}` });
   if (features.productNumber) rows.push({ icon: Package, text: `${features.productNumber} ${t('feat_products')}` });
   if (features.landingPageNumber) rows.push({ icon: FileText, text: `${features.landingPageNumber} ${t('feat_pages')}` });
+  if (features.domainNumber) rows.push({ icon: Globe, text: `${features.domainNumber} ${t('feat_domains')}` });
   if (Number(features.commission) > 0)
     rows.push({ icon: TrendingUp, text: `${Number(features.commission).toFixed(1)}% ${t('feat_commission')}` });
   return rows;

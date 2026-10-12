@@ -73,10 +73,10 @@ const UpdateStore = () => {
     async function getData() {
       try {
         const [nichesRes, wilayasRes] = await Promise.all([
-          axios.get(`${baseURL}/admin/niches`),
+          axios.get(`${baseURL}/niches`),
           axios.get(`${baseURL}/shipping/wilayas`),
         ]);
-        setNiche(nichesRes.data);
+        setNiche(nichesRes.data?.data ?? []);
         setWilayas(wilayasRes.data);
       } catch (error) {
         console.error('Error loading data:', error);

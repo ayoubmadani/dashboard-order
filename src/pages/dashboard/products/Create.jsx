@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
+import { addonsPayload } from '../../../utils/productAddons';
 import { useNavigate } from 'react-router-dom';
 import {
   Info, Palette, ImageIcon, Check, Plus, Trash2,
@@ -123,6 +125,7 @@ export default function CreateProduct() {
 
   const [attributes, setAttributes] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [addons, setAddons] = useState([]);
   const [images, setImages] = useState([]);
   const [descKey, setDescKey] = useState(0); // لإعادة تهيئة محرر الوصف بعد الجلب من AliExpress
   const [dragImageIndex, setDragImageIndex] = useState(null);
@@ -310,6 +313,7 @@ export default function CreateProduct() {
         isDigital: formData.isDigital,
         whatsappEnabled: formData.whatsappEnabled,
         whatsappNumber: formData.whatsappNumber?.trim() || '',
+        addons: addonsPayload(addons),
         attributes, variantDetails: [], offers, images
       };
       await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
@@ -463,6 +467,10 @@ export default function CreateProduct() {
               className="mt-2 w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
             />
           )}
+        </Field>
+
+        <Field label={t('addons.label')}>
+          <ProductAddonsEditor value={addons} onChange={setAddons} isRtl={isRtl} />
         </Field>
 
         {/* ── Category dropdown ── */}

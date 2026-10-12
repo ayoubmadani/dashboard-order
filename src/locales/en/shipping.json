@@ -119,5 +119,28 @@
     "none_title": "No missing states",
     "none_hint": "All states are already in your list",
     "submit_error": "Failed to add the selected states"
+  },
+  "profiles": {
+    "title": "Shipping accounts",
+    "subtitle": "Each account has its own prices and wilayas — pick the one each store uses",
+    "new": "New account",
+    "new_title": "New shipping account",
+    "rename": "Rename",
+    "rename_title": "Rename account",
+    "delete": "Delete account",
+    "delete_confirm": "Delete \"{{name}}\"? Stores using it will fall back to the default account.",
+    "name_placeholder": "e.g. Algiers prices",
+    "copy_hint": "The new account starts as a copy of \"{{name}}\" prices; edit them afterwards.",
+    "save": "Save",
+    "wilayas_count": "{{count}} wilayas",
+    "used_by": "Used by: {{stores}}",
+    "used_by_none": "No store uses it yet",
+    "current_store_uses": "Current store uses this account",
+    "use_for_store": "Use for current store",
+    "assigned": "Store now uses \"{{name}}\"",
+    "created": "Account created",
+    "renamed": "Name updated",
+    "deleted": "Account deleted",
+    "error": "Something went wrong, try again"
   }
 }

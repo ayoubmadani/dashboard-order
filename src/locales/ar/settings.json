@@ -79,6 +79,7 @@
   "feat_stores": "متاجر",
   "feat_products": "منتجات",
   "feat_pages": "صفحات هبوط",
+  "feat_domains": "دومين لكل متجر",
   "feat_commission": "عمولة",
   "save_pct": "وفر {{pct}}%",
   

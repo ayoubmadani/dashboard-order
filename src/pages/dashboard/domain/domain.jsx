@@ -230,6 +230,7 @@ export default function Domain() {
   const [adding, setAdding] = useState(false);
   const [inputError, setInputError] = useState(null);
   const [scopeFilter, setScopeFilter] = useState('all');
+  const [domainLimit, setDomainLimit] = useState(null);
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -239,7 +240,13 @@ export default function Domain() {
       .then(r => setDomains(Array.isArray(r.data) ? r.data : r.data.data ?? []))
       .catch(console.error)
       .finally(() => setLoading(false));
+    // حدّ الخطة: كل دومينات المتجر (للمتجر ولصفحات الهبوط) تُحسب معاً
+    axios.get(`${baseURL}/domain/limit/${storeId}`, headers)
+      .then(r => setDomainLimit(r.data?.limit ?? null))
+      .catch(() => setDomainLimit(null));
   }, [storeId]);
+
+  const limitReached = domainLimit != null && domains.length >= domainLimit;
 
   /* ── Add ── */
   const handleAdd = async () => {
@@ -309,9 +316,16 @@ export default function Domain() {
 
       {/* ── Add input ── */}
       <div className="space-y-2">
-        <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
-          {t('add_label')}
-        </label>
+        <div className="flex items-center justify-between gap-2">
+          <label className="block text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">
+            {t('add_label')}
+          </label>
+          {domainLimit != null && (
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${limitReached ? 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400' : 'bg-gray-100 text-gray-500 dark:bg-zinc-800 dark:text-zinc-400'}`}>
+              {t('limit_usage', { used: domains.length, limit: domainLimit })}
+            </span>
+          )}
+        </div>
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Globe className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none ${isRtl ? 'right-3' : 'left-3'}`} />
@@ -328,7 +342,7 @@ export default function Domain() {
           </div>
           <button
             onClick={handleAdd}
-            disabled={adding || !inputDomain.trim()}
+            disabled={adding || !inputDomain.trim() || limitReached}
             className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:translate-y-0 shadow-lg text-sm"
           >
             {adding ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
@@ -336,6 +350,7 @@ export default function Domain() {
           </button>
         </div>
         {inputError && <p className="text-xs text-red-500 font-medium">{inputError}</p>}
+        {limitReached && !inputError && <p className="text-xs text-rose-500 font-medium">{t('limit_reached', { limit: domainLimit })}</p>}
       </div>
 
       {/* ── Domain list ── */}

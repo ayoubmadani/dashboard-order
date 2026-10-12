@@ -432,5 +432,14 @@
     "imported": "Produit importé — vérifiez-le, ajoutez le prix puis enregistrez",
     "imported_price": "Produit importé — prix AliExpress {{price}} {{currency}}. Ajoutez votre prix de vente puis enregistrez",
     "import_error": "Impossible d'importer le produit"
+  },
+  "addons": {
+    "label": "Suppléments (optionnel)",
+    "desc": "Suppléments que le client peut ajouter, leur prix s'ajoute au prix (ex : poulet en plus +300 DA)",
+    "name_placeholder": "Nom du supplément, ex : sauce piquante",
+    "add": "Nouveau supplément",
+    "remove": "Supprimer",
+    "enable": "Activer",
+    "disable": "Masquer"
   }
 }
