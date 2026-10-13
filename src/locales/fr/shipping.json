@@ -142,5 +142,16 @@
     "renamed": "Nom modifié",
     "deleted": "Compte supprimé",
     "error": "Une erreur est survenue, réessayez"
+  },
+  "types": {
+    "enable_home": "Activer la livraison à domicile",
+    "disable_home": "Désactiver la livraison à domicile",
+    "enable_office": "Activer la livraison au bureau",
+    "disable_office": "Désactiver la livraison au bureau",
+    "need_one": "Au moins un type de livraison doit rester actif — pour désactiver la wilaya, utilisez le statut",
+    "home_only": "Domicile seul",
+    "office_only": "Bureau seul",
+    "both": "Les deux",
+    "bulk_success": "Type de livraison mis à jour pour {{count}} wilayas"
   }
 }

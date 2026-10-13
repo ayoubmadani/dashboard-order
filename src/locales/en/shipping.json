@@ -142,5 +142,16 @@
     "renamed": "Name updated",
     "deleted": "Account deleted",
     "error": "Something went wrong, try again"
+  },
+  "types": {
+    "enable_home": "Enable home delivery",
+    "disable_home": "Disable home delivery",
+    "enable_office": "Enable office delivery",
+    "disable_office": "Disable office delivery",
+    "need_one": "At least one delivery type must stay on — to turn the wilaya off, use its status",
+    "home_only": "Home only",
+    "office_only": "Office only",
+    "both": "Both",
+    "bulk_success": "Delivery type updated for {{count}} wilayas"
   }
 }

@@ -40,6 +40,12 @@ function contrastText(hex) {
   return luminance > 0.6 ? '#000000' : '#ffffff';
 }
 
+// التاجر يحدد لكل ولاية: توصيل للمنزل، للمكتب، أو الاثنين (القيمة الغائبة = مسموح)
+function deliveryAllowed(wilaya, type) {
+  if (!wilaya) return true;
+  return type === 'office' ? wilaya.officeEnabled !== false : wilaya.homeEnabled !== false;
+}
+
 function FieldWrapper({ label, labelColor, error, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -180,6 +186,23 @@ export default function ProductFormBlock({
       .then((res) => setWilayas(Array.isArray(res.data) ? res.data : []))
       .catch(() => setWilayas([]));
   }, [product?.userId, product?.storeId]);
+
+  // ولاية واحدة فقط → تُختار تلقائياً ولا يمكن تغييرها
+  useEffect(() => {
+    if (wilayas.length === 1) {
+      setForm((f) => (String(f.wilayaId) === String(wilayas[0].id) ? f : { ...f, wilayaId: String(wilayas[0].id), communeId: '' }));
+    }
+  }, [wilayas]);
+
+  // نوع التوصيل المسموح لكل ولاية — إن لم يعد النوع المختار متاحاً نبدّل للآخر
+  useEffect(() => {
+    const w = wilayas.find((x) => String(x.id) === String(form.wilayaId));
+    if (!w) return;
+    if (!deliveryAllowed(w, form.typeShip)) {
+      const other = form.typeShip === 'home' ? 'office' : 'home';
+      if (deliveryAllowed(w, other)) setForm((f) => ({ ...f, typeShip: other }));
+    }
+  }, [wilayas, form.wilayaId, form.typeShip]);
 
   useEffect(() => {
     if (!form.wilayaId) {
@@ -628,7 +651,8 @@ export default function ProductFormBlock({
                           aria-label={t.wilaya}
                           onChange={(e) => setForm((f) => ({ ...f, wilayaId: e.target.value, communeId: '' }))}
                           required
-                          style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: 'pointer' })}
+                          disabled={wilayas.length === 1}
+                          style={fieldStyle('wilayaId', { paddingInlineStart: 34, paddingInlineEnd: 28, appearance: 'none', cursor: wilayas.length === 1 ? 'default' : 'pointer' })}
                           {...fieldHandlers('wilayaId')}
                         >
                           <option value="">{t.selectWilaya}</option>
@@ -666,14 +690,16 @@ export default function ProductFormBlock({
                       {[
                         { type: 'home', Icon: Home, label: t.home },
                         { type: 'office', Icon: Building2, label: t.office },
-                      ].map((opt) => {
+                      ].filter((opt) => selectedWilaya && deliveryAllowed(selectedWilaya, opt.type)).map((opt, _i, shown) => {
                         const isSelected = form.typeShip === opt.type;
                         return (
                           <button
                             key={opt.type}
                             type="button"
+                            data-delivery-option
                             onClick={() => setForm((f) => ({ ...f, typeShip: opt.type }))}
                             style={{
+                              gridColumn: shown.length === 1 ? '1 / -1' : undefined,
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',

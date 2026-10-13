@@ -21,11 +21,23 @@ function useAuthHeaders() {
 }
 
 // ─────────────────────────────────────────────
+//  Sub-component: نوع توصيل مفعّل/معطّل في هذه الولاية (منزل أو مكتب)
+// ─────────────────────────────────────────────
+function TypeSwitch({ enabled, onToggle, loading, title, color }) {
+  return (
+    <button type="button" onClick={onToggle} disabled={loading} title={title}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${enabled ? color : 'bg-gray-300 dark:bg-zinc-700'}`}>
+      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${enabled ? 'translate-x-[18px] rtl:-translate-x-[18px]' : 'translate-x-1 rtl:-translate-x-1'}`} />
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────
 //  Sub-component: price input cell
 // ─────────────────────────────────────────────
 function PriceCell({ value, onChange, focusRing, disabled }) {
   return (
-    <div className="relative flex items-center" dir="ltr">
+    <div className="relative flex items-center flex-1 min-w-[6.5rem]" dir="ltr">
       <input
         type="number"
         min="0"
@@ -101,7 +113,7 @@ function EmptyState({ onInitialize, isLoading }) {
 // ─────────────────────────────────────────────
 //  Sub-component: wilaya row
 // ─────────────────────────────────────────────
-function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, onDelete, toggleLoading, saveLoading, isSelected, onToggleSelect }) {
+function WilayaRow({ wilaya, onPriceChange, onToggle, onTypeToggle, onSave, onDelete, toggleLoading, saveLoading, isSelected, onToggleSelect }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const isSaving   = saveLoading  === wilaya.id;
   const isToggling = toggleLoading === wilaya.id;
@@ -130,11 +142,17 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onSave, onDelete, toggleLo
           <span className="text-sm font-semibold text-gray-700 dark:text-zinc-200">{wilaya.name}</span>
         </div>
       </td>
-      <td className="px-4 py-3 w-36">
-        <PriceCell value={wilaya.livraisonHome} onChange={(v) => onPriceChange(wilaya.id, 'livraisonHome', v)} focusRing="focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" disabled={!isEditing} />
+      <td className="px-4 py-3 w-52 min-w-[13rem]">
+        <div className={`flex items-center gap-2 ${wilaya.homeEnabled === false ? 'opacity-40' : ''}`}>
+          <TypeSwitch enabled={wilaya.homeEnabled !== false} onToggle={() => onTypeToggle(wilaya, 'homeEnabled')} loading={isToggling} color="bg-indigo-500" title={t(wilaya.homeEnabled === false ? 'types.enable_home' : 'types.disable_home')} />
+          <PriceCell value={wilaya.livraisonHome} onChange={(v) => onPriceChange(wilaya.id, 'livraisonHome', v)} focusRing="focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" disabled={!isEditing || wilaya.homeEnabled === false} />
+        </div>
       </td>
-      <td className="px-4 py-3 w-36">
-        <PriceCell value={wilaya.livraisonOfice} onChange={(v) => onPriceChange(wilaya.id, 'livraisonOfice', v)} focusRing="focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" disabled={!isEditing} />
+      <td className="px-4 py-3 w-52 min-w-[13rem]">
+        <div className={`flex items-center gap-2 ${wilaya.officeEnabled === false ? 'opacity-40' : ''}`}>
+          <TypeSwitch enabled={wilaya.officeEnabled !== false} onToggle={() => onTypeToggle(wilaya, 'officeEnabled')} loading={isToggling} color="bg-emerald-500" title={t(wilaya.officeEnabled === false ? 'types.enable_office' : 'types.disable_office')} />
+          <PriceCell value={wilaya.livraisonOfice} onChange={(v) => onPriceChange(wilaya.id, 'livraisonOfice', v)} focusRing="focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10" disabled={!isEditing || wilaya.officeEnabled === false} />
+        </div>
       </td>
       <td className="px-4 py-3 w-36">
         <PriceCell value={wilaya.livraisonReturn} onChange={(v) => onPriceChange(wilaya.id, 'livraisonReturn', v)} focusRing="focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10" disabled={!isEditing} />
@@ -986,7 +1004,7 @@ export default function Shipping() {
     try {
       await axios.post(
         `${baseURL}/shipping/update-shipping`,
-        [{ wilayaId: wilaya.id, priceHome: wilaya.livraisonHome, priceOffice: wilaya.livraisonOfice, priceReturn: wilaya.livraisonReturn, isActive: wilaya.isActive }],
+        [{ wilayaId: wilaya.id, priceHome: wilaya.livraisonHome, priceOffice: wilaya.livraisonOfice, priceReturn: wilaya.livraisonReturn, isActive: wilaya.isActive, homeEnabled: wilaya.homeEnabled !== false, officeEnabled: wilaya.officeEnabled !== false }],
         rateCfg,
       );
       showToast('success', t('toast.save_success', { name: wilaya.name }));
@@ -997,7 +1015,7 @@ export default function Shipping() {
   const handleSaveAll = async () => {
     setIsSavingAll(true);
     try {
-      const payload = wilayas.map(w => ({ wilayaId: w.id, priceHome: w.livraisonHome, priceOffice: w.livraisonOfice, priceReturn: w.livraisonReturn, isActive: w.isActive }));
+      const payload = wilayas.map(w => ({ wilayaId: w.id, priceHome: w.livraisonHome, priceOffice: w.livraisonOfice, priceReturn: w.livraisonReturn, isActive: w.isActive, homeEnabled: w.homeEnabled !== false, officeEnabled: w.officeEnabled !== false }));
       await axios.post(`${baseURL}/shipping/update-shipping`, payload, rateCfg);
       showToast('success', t('toast.save_all_success'));
       loadProfiles();
@@ -1039,6 +1057,30 @@ export default function Shipping() {
       loadProfiles();
     } catch { showToast('error', t('toast.toggle_error')); }
     finally { setToggleLoading(null); }
+  };
+
+  // منزل/مكتب لولاية: يُحفظ مباشرة. لا يمكن تعطيل النوعين معاً (لذلك عطّل الولاية نفسها)
+  const toggleType = async (wilaya, field) => {
+    const next = !(wilaya[field] !== false);
+    const other = field === 'homeEnabled' ? 'officeEnabled' : 'homeEnabled';
+    if (!next && wilaya[other] === false) { showToast('error', t('types.need_one')); return; }
+    setToggleLoading(wilaya.id);
+    try {
+      await axios.post(`${baseURL}/shipping/update-shipping`, [{ wilayaId: wilaya.id, [field]: next }], rateCfg);
+      setWilayas(prev => prev.map(w => (w.id === wilaya.id ? { ...w, [field]: next } : w)));
+    } catch { showToast('error', t('toast.toggle_error')); }
+    finally { setToggleLoading(null); }
+  };
+
+  const setSelectedTypes = async (homeEnabled, officeEnabled) => {
+    const ids = Array.from(selectedIds);
+    setIsBulkToggling(true);
+    try {
+      await axios.post(`${baseURL}/shipping/update-shipping`, ids.map(id => ({ wilayaId: id, homeEnabled, officeEnabled })), rateCfg);
+      setWilayas(prev => prev.map(w => (ids.includes(w.id) ? { ...w, homeEnabled, officeEnabled } : w)));
+      showToast('success', t('types.bulk_success', { count: ids.length }));
+    } catch { showToast('error', t('toast.toggle_error')); }
+    finally { setIsBulkToggling(false); }
   };
 
   const filteredWilayas = wilayas.filter(
@@ -1343,6 +1385,18 @@ export default function Shipping() {
               {isBulkToggling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <EyeOff className="w-3.5 h-3.5" />}
               {t('deactivate_selected')}
             </button>
+            <div className="flex items-center rounded-xl overflow-hidden border border-indigo-200 dark:border-indigo-800/40">
+              {[
+                { label: t('types.home_only'), h: true, o: false },
+                { label: t('types.office_only'), h: false, o: true },
+                { label: t('types.both'), h: true, o: true },
+              ].map((b) => (
+                <button key={b.label} onClick={() => setSelectedTypes(b.h, b.o)} disabled={isBulkToggling}
+                  className="px-3 py-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-zinc-900 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border-s border-indigo-100 dark:border-indigo-800/40 first:border-s-0 disabled:opacity-60">
+                  {b.label}
+                </button>
+              ))}
+            </div>
             <button
               onClick={requestDeleteSelected}
               className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-all active:scale-95"
@@ -1395,6 +1449,7 @@ export default function Shipping() {
                   wilaya={wilaya}
                   onPriceChange={handlePriceChange}
                   onToggle={toggleStatus}
+                  onTypeToggle={toggleType}
                   onSave={handleSaveRow}
                   onDelete={requestDeleteRow}
                   toggleLoading={toggleLoading}

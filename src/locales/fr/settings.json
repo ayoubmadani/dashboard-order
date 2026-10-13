@@ -5,7 +5,6 @@
   "tab_notifications": "Notifications",
   "tab_subscription": "Abonnement",
   "tab_shipping": "Livraison",
-
   "stores_new": "Nouvelle boutique",
   "stores_empty_title": "Aucune boutique pour le moment",
   "stores_empty_subtitle": "Créez votre première boutique pour commencer",
@@ -16,11 +15,9 @@
   "stores_views": "Vues",
   "stores_orders": "Commandes",
   "stores_products": "Produits",
-
   "personal_info": "Informations personnelles",
   "username": "Nom d'utilisateur",
   "email": "Adresse e-mail",
-
   "security_title": "Sécurité et connexion",
   "security_change_password": "Changer le mot de passe",
   "security_set_password": "Définissez un mot de passe pour aussi vous connecter par e-mail",
@@ -32,7 +29,6 @@
   "security_password_too_short": "Le mot de passe doit contenir au moins 8 caractères",
   "security_password_updated": "Mot de passe mis à jour avec succès",
   "security_password_error": "Une erreur s'est produite, veuillez réessayer",
-
   "notif_title": "Notifications push (Ntfy)",
   "notif_topic_label": "ID du sujet",
   "notif_topic_placeholder": "Entrez votre ID de sujet ici...",
@@ -41,7 +37,6 @@
   "notif_send_pref": "Préférences d'envoi",
   "notif_new_order": "Notifier à la réception d'une nouvelle commande",
   "save": "Enregistrer les modifications",
-  
   "sub_no_plan_hint": "Aucun abonnement actif, le plan gratuit sera activé automatiquement",
   "sub_no_available_plans": "Aucun plan disponible pour le moment",
   "sub_activate": "Activer",
@@ -64,27 +59,22 @@
   "sub_auto_renew_on": "Votre abonnement sera renouvelé automatiquement",
   "sub_auto_renew_off": "Votre abonnement ne sera pas renouvelé automatiquement",
   "free": "Gratuit",
-
   "coupon_placeholder": "Entrez le code promo",
   "coupon_apply": "Appliquer",
   "coupon_applied": "Code promo appliqué ({{value}})",
   "coupon_invalid": "Code promo invalide",
-
   "upgrade_confirm_title": "Confirmer la mise à niveau",
   "upgrade_confirm_desc": "{{price}} {{currency}} seront déduits de votre portefeuille pour passer au forfait {{plan}}.",
   "upgrade_confirm_proration_note": "Un crédit pour les jours restants de votre forfait actuel peut être automatiquement déduit de ce montant.",
   "upgrade_confirm_cancel": "Annuler",
   "upgrade_confirm_confirm": "Confirmer et payer",
-  
   "feat_stores": "Boutiques",
   "feat_products": "Produits",
   "feat_pages": "Pages de destination",
   "feat_domains": "domaines par boutique",
   "feat_commission": "Commission",
   "save_pct": "Économisez {{pct}}%",
-  
   "search_placeholder": "Rechercher...",
-  
   "shipping_accounts_title": "Comptes de livraison",
   "shipping_accounts_subtitle": "Ajoutez plusieurs comptes de livraison et définissez le défaut",
   "shipping_add_account": "Ajouter un compte",
@@ -92,7 +82,6 @@
   "shipping_no_store_message": "Veuillez d'abord sélectionner une boutique",
   "shipping_empty_title": "Aucun compte de livraison",
   "shipping_empty_subtitle": "Ajoutez un compte de livraison pour l'activer dans votre boutique",
-  
   "shipping_add_title": "Ajouter un nouveau compte de livraison",
   "shipping_add_subtitle": "Sélectionnez un fournisseur et entrez les identifiants",
   "shipping_select_provider": "Sélectionnez un fournisseur dans la liste",
@@ -108,7 +97,6 @@
   "shipping_unverified": "Non vérifié",
   "shipping_set_default": "Définir par défaut",
   "shipping_delete_confirm": "Supprimer ce compte ?",
-
   "tab_api_keys": "Clés API",
   "tab_google_sheets": "Google Sheets",
   "sheets_title": "Connecter les commandes à Google Sheets",
@@ -173,5 +161,21 @@
   "apikeys_status_expired": "Expirée",
   "apikeys_status_revoked": "Révoquée",
   "apikeys_revoke": "Révoquer",
-  "apikeys_revoke_confirm": "Révoquer cette clé ? Toute connexion qui l’utilise cessera immédiatement de fonctionner."
+  "apikeys_revoke_confirm": "Révoquer cette clé ? Toute connexion qui l’utilise cessera immédiatement de fonctionner.",
+  "trial_title": "Essai gratuit de {{days}} jours",
+  "trial_subtitle": "Choisissez le plan adapté à votre boutique. Rien n'est débité maintenant.",
+  "trial_badge": "Essai gratuit",
+  "trial_free_days": "{{days}} jours gratuits",
+  "trial_then": "puis {{price}} {{currency}} / {{period}}",
+  "trial_start": "Commencer l'essai",
+  "trial_skip": "Continuer avec le plan gratuit",
+  "trial_auto_renew": "Renouvellement automatique depuis le portefeuille après l'essai",
+  "trial_auto_renew_hint": "Si le solde est insuffisant ou le renouvellement désactivé, votre compte repasse au plan gratuit sans aucun débit.",
+  "trial_started": "Votre essai gratuit a commencé",
+  "trial_error": "Impossible de démarrer l'essai",
+  "trial_popular": "Le plus choisi",
+  "trial_ends": "L'essai se termine le {{date}}",
+  "trial_renewal_price": "Prix de renouvellement après l'essai",
+  "trial_buy_now": "S'abonner maintenant",
+  "billed_yearly": "Facturé {{price}} {{currency}} par an"
 }

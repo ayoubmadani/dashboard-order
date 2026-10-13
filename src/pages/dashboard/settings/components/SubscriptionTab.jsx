@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Loader2, CheckCircle2, CalendarDays, Zap, ChevronRight,
+  Loader2, CheckCircle2, CalendarDays, Zap, ChevronRight, Gift,
 } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
 import CouponInput from '../../../../components/CouponInput';
 import SectionTitle from './SectionTitle';
-import { isFree, getPlanPrice, getDiscountedPrice, buildFeatureSummary } from './utils';
+import { isFree, getPlanPrice, getDiscountedPrice, buildFeatureSummary, perMonth } from './utils';
 
 export default function SubscriptionTab() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'settings' });
@@ -106,9 +106,10 @@ export default function SubscriptionTab() {
   const formatDate = (d) => new Date(d).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' });
   const daysLeft = (endDate) => Math.max(0, Math.ceil((new Date(endDate) - new Date()) / 86400000));
   const currentMonthlyPrice = subscription ? getPlanPrice(subscription.plan, 'month') : 0;
-  const upgradeablePlans = plans.filter(
-    p => !isFree(p) && p.id !== subscription?.plan?.id && getPlanPrice(p, 'month') > currentMonthlyPrice,
-  );
+  // أثناء التجربة المجانية يمكن شراء أي خطة مدفوعة (ومنها خطة التجربة نفسها)
+  const upgradeablePlans = subscription?.isTrial
+    ? plans.filter(p => !isFree(p))
+    : plans.filter(p => !isFree(p) && p.id !== subscription?.plan?.id && getPlanPrice(p, 'month') > currentMonthlyPrice);
 
   return (
     <>
@@ -164,12 +165,15 @@ export default function SubscriptionTab() {
                                 ? <span className="font-bold text-emerald-500">{t('free')}</span>
                                 : hasDiscount
                                   ? <>
-                                      <span className="line-through me-1.5">{price.toLocaleString()}</span>
-                                      <span className="font-bold text-emerald-500">{discountedPrice.toLocaleString()} {plan.currency}</span> / {subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}
+                                      <span className="line-through me-1.5">{perMonth(price, subInterval).toLocaleString()}</span>
+                                      <span className="font-bold text-emerald-500">{perMonth(discountedPrice, subInterval).toLocaleString()} {plan.currency}</span> / {t('sub_monthly_short')}
                                     </>
-                                  : <><span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span> / {subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}</>
+                                  : <><span className="font-bold text-gray-700 dark:text-zinc-300">{perMonth(price, subInterval).toLocaleString()} {plan.currency}</span> / {t('sub_monthly_short')}</>
                               }
                             </p>
+                            {!isFree(plan) && subInterval === 'year' && (
+                              <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{t('billed_yearly', { price: discountedPrice.toLocaleString(), currency: plan.currency })}</p>
+                            )}
                             {!isFree(plan) && subInterval === 'year' && savings > 0 && (
                               <p className="text-[10px] text-emerald-500 font-bold mt-0.5">{t('save_pct', { pct: savings })}</p>
                             )}
@@ -204,26 +208,37 @@ export default function SubscriptionTab() {
                   </p>
                 </div>
               </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-black rounded-full">
-                <CheckCircle2 size={12} /> {t('sub_active')}
-              </span>
+              {subscription.isTrial ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-black rounded-full">
+                  <Gift size={12} /> {t('trial_badge')}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-black rounded-full">
+                  <CheckCircle2 size={12} /> {t('sub_active')}
+                </span>
+              )}
             </div>
 
             <div className="p-5 bg-gray-50 dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800">
-              <p className="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">{t('sub_price')}</p>
+              <p className="text-[11px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">{subscription.isTrial ? t('trial_renewal_price') : t('sub_price')}</p>
               <div className="flex items-center justify-between gap-3">
                 <p className="text-2xl font-black text-gray-900 dark:text-white">
                   {isFree(subscription.plan)
                     ? <span className="text-emerald-500">{t('free')}</span>
-                    : <>{getPlanPrice(subscription.plan, subscription.interval).toLocaleString()}<span className="text-sm font-medium text-gray-400 dark:text-zinc-500 ms-1">{subscription.plan.currency} / {subscription.interval === 'year' ? t('sub_annual_short') : t('sub_monthly_short')}</span></>
+                    : <>{perMonth(getPlanPrice(subscription.plan, subscription.interval), subscription.interval).toLocaleString()}<span className="text-sm font-medium text-gray-400 dark:text-zinc-500 ms-1">{subscription.plan.currency} / {t('sub_monthly_short')}</span></>
                   }
                 </p>
                 {upgradeablePlans.length > 0 && (
                   <button onClick={() => { handleClearCoupon(); setShowSubModal(true); }} className="flex items-center gap-1.5 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-black rounded-xl transition-all active:scale-95 shrink-0">
-                    <Zap size={13} /> {t('sub_upgrade')}
+                    <Zap size={13} /> {subscription.isTrial ? t('trial_buy_now') : t('sub_upgrade')}
                   </button>
                 )}
               </div>
+              {!isFree(subscription.plan) && subscription.interval === 'year' && (
+                <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
+                  {t('billed_yearly', { price: getPlanPrice(subscription.plan, 'year').toLocaleString(), currency: subscription.plan.currency })}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -338,13 +353,16 @@ export default function SubscriptionTab() {
                       <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                         {hasDiscount
                           ? <>
-                              <span className="line-through me-1.5">{price.toLocaleString()}</span>
-                              <span className="font-bold text-emerald-500">{discountedPrice.toLocaleString()} {plan.currency}</span>
+                              <span className="line-through me-1.5">{perMonth(price, subInterval).toLocaleString()}</span>
+                              <span className="font-bold text-emerald-500">{perMonth(discountedPrice, subInterval).toLocaleString()} {plan.currency}</span>
                             </>
-                          : <span className="font-bold text-gray-700 dark:text-zinc-300">{price.toLocaleString()} {plan.currency}</span>
+                          : <span className="font-bold text-gray-700 dark:text-zinc-300">{perMonth(price, subInterval).toLocaleString()} {plan.currency}</span>
                         }
-                        {' / '}{subInterval === 'month' ? t('sub_monthly') : t('sub_annual')}
+                        {' / '}{t('sub_monthly_short')}
                       </p>
+                      {subInterval === 'year' && (
+                        <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-0.5">{t('billed_yearly', { price: discountedPrice.toLocaleString(), currency: plan.currency })}</p>
+                      )}
                       {subInterval === 'year' && savings > 0 && <p className="text-[10px] text-emerald-500 font-bold mt-0.5">{t('save_pct', { pct: savings })}</p>}
                       {featureRows.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">

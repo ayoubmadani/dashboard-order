@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
+import TrialOffer from '../components/TrialOffer';
 
 const getStoreGradient = (name) => {
     const gradients = [
@@ -228,6 +229,7 @@ export default function LayoutDashboard() {
             title: t('nav.group_analytics', 'التحليلات والدعم'),
             items: [
                 { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3 },
+                { name: t('nav.seo', 'SEO'), href: '/dashboard/seo', icon: Search },
                 { name: t('nav.messages', 'الرسائل'), href: '/dashboard/messages', icon: MessageSquareText },
             ],
         },
@@ -386,6 +388,7 @@ export default function LayoutDashboard() {
                 <main className="flex-1 p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto">
                         <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user }} />
+                        <TrialOffer />
                     </div>
                 </main>
             </div>

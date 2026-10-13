@@ -6,6 +6,9 @@ export const isFree = (plan) =>
 export const getPlanPrice = (plan, interval) =>
   interval === 'year' ? Number(plan?.yearlyPrice ?? 0) : Number(plan?.monthlyPrice ?? 0);
 
+// السنوي يُعرض بما يعادله شهرياً (12000/سنة ← 1000/شهر)، والمبلغ المدفوع فعلاً يظهر في سطر «تُدفع … سنوياً»
+export const perMonth = (amount, interval) => (interval === 'year' ? Math.round(Number(amount) / 12) : Number(amount));
+
 export const getDiscountedPrice = (price, couponInfo) => {
   if (!couponInfo || price <= 0) return price;
   const discount = couponInfo.discountType === 'percentage'

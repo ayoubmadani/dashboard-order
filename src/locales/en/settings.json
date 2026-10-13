@@ -5,7 +5,6 @@
   "tab_notifications": "Notifications",
   "tab_subscription": "Subscription",
   "tab_shipping": "Delivery",
-
   "stores_new": "New Store",
   "stores_empty_title": "No stores yet",
   "stores_empty_subtitle": "Create your first store to get started",
@@ -16,11 +15,9 @@
   "stores_views": "Views",
   "stores_orders": "Orders",
   "stores_products": "Products",
-
   "personal_info": "Personal Information",
   "username": "Username",
   "email": "Email Address",
-
   "security_title": "Security & Login",
   "security_change_password": "Change your password",
   "security_set_password": "Set a password to also sign in with your email",
@@ -32,7 +29,6 @@
   "security_password_too_short": "Password must be at least 8 characters",
   "security_password_updated": "Password updated successfully",
   "security_password_error": "Something went wrong, please try again",
-
   "notif_title": "Push Notifications (Ntfy)",
   "notif_topic_label": "Topic ID",
   "notif_topic_placeholder": "Enter your topic ID here...",
@@ -41,7 +37,6 @@
   "notif_send_pref": "Sending Preferences",
   "notif_new_order": "Notify on new order receipt",
   "save": "Save Changes",
-  
   "sub_no_plan_hint": "No active subscription, free plan will be activated automatically",
   "sub_no_available_plans": "No plans available at the moment",
   "sub_activate": "Activate",
@@ -64,27 +59,22 @@
   "sub_auto_renew_on": "Your subscription will be renewed automatically",
   "sub_auto_renew_off": "Your subscription will not be renewed automatically",
   "free": "Free",
-
   "coupon_placeholder": "Enter coupon code",
   "coupon_apply": "Apply",
   "coupon_applied": "Coupon applied ({{value}})",
   "coupon_invalid": "Invalid coupon code",
-
   "upgrade_confirm_title": "Confirm upgrade",
   "upgrade_confirm_desc": "{{price}} {{currency}} will be deducted from your wallet to upgrade to the {{plan}} plan.",
   "upgrade_confirm_proration_note": "A credit for the remaining days on your current plan may be automatically deducted from this amount.",
   "upgrade_confirm_cancel": "Cancel",
   "upgrade_confirm_confirm": "Confirm & pay",
-  
   "feat_stores": "Stores",
   "feat_products": "Products",
   "feat_pages": "Landing Pages",
   "feat_domains": "domains per store",
   "feat_commission": "Commission",
   "save_pct": "Save {{pct}}%",
-  
   "search_placeholder": "Search...",
-  
   "shipping_accounts_title": "Delivery Accounts",
   "shipping_accounts_subtitle": "Add multiple delivery accounts and set the default",
   "shipping_add_account": "Add Account",
@@ -92,7 +82,6 @@
   "shipping_no_store_message": "Please select a store first",
   "shipping_empty_title": "No delivery accounts",
   "shipping_empty_subtitle": "Add a delivery account to enable it in your store",
-  
   "shipping_add_title": "Add New Delivery Account",
   "shipping_add_subtitle": "Select a provider and enter credentials",
   "shipping_select_provider": "Select a provider from the list",
@@ -108,7 +97,6 @@
   "shipping_unverified": "Unverified",
   "shipping_set_default": "Set as Default",
   "shipping_delete_confirm": "Delete this account?",
-
   "tab_api_keys": "API keys",
   "tab_google_sheets": "Google Sheets",
   "sheets_title": "Connect orders to Google Sheets",
@@ -173,5 +161,21 @@
   "apikeys_status_expired": "Expired",
   "apikeys_status_revoked": "Revoked",
   "apikeys_revoke": "Revoke",
-  "apikeys_revoke_confirm": "Revoke this key? Any connection using it will stop working immediately."
+  "apikeys_revoke_confirm": "Revoke this key? Any connection using it will stop working immediately.",
+  "trial_title": "Try free for {{days}} days",
+  "trial_subtitle": "Pick the plan that fits your store. Nothing is charged now.",
+  "trial_badge": "Free trial",
+  "trial_free_days": "{{days}} days free",
+  "trial_then": "then {{price}} {{currency}} / {{period}}",
+  "trial_start": "Start trial",
+  "trial_skip": "Continue with the free plan",
+  "trial_auto_renew": "Auto-renew from wallet when the trial ends",
+  "trial_auto_renew_hint": "If your wallet balance is too low or renewal is off, your account returns to the free plan with no charge.",
+  "trial_started": "Your free trial has started",
+  "trial_error": "Could not start the trial",
+  "trial_popular": "Most chosen",
+  "trial_ends": "Trial ends on {{date}}",
+  "trial_renewal_price": "Renewal price after the trial",
+  "trial_buy_now": "Subscribe now",
+  "billed_yearly": "Billed {{price}} {{currency}} yearly"
 }

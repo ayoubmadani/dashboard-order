@@ -5,7 +5,6 @@
   "tab_notifications": "الإشعارات",
   "tab_subscription": "الاشتراك",
   "tab_shipping": "التوصيل",
-
   "stores_new": "متجر جديد",
   "stores_empty_title": "لا توجد متاجر بعد",
   "stores_empty_subtitle": "أنشئ متجرك الأول للبدء",
@@ -16,11 +15,9 @@
   "stores_views": "مشاهدة",
   "stores_orders": "طلب",
   "stores_products": "منتج",
-
   "personal_info": "المعلومات الشخصية",
   "username": "اسم المستخدم",
   "email": "عنوان البريد الإلكتروني",
-
   "security_title": "الأمان وتسجيل الدخول",
   "security_change_password": "تغيير كلمة المرور",
   "security_set_password": "أضف كلمة مرور لتتمكن أيضاً من الدخول بالبريد الإلكتروني",
@@ -32,7 +29,6 @@
   "security_password_too_short": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
   "security_password_updated": "تم تحديث كلمة المرور بنجاح",
   "security_password_error": "حدث خطأ ما، حاول مرة أخرى",
-
   "notif_title": "الإشعارات الفورية (Ntfy)",
   "notif_topic_label": "معرف الموضوع",
   "notif_topic_placeholder": "أدخل معرف الموضوع هنا...",
@@ -41,7 +37,6 @@
   "notif_send_pref": "تفضيلات الإرسال",
   "notif_new_order": "إشعار عند استلام طلب جديد",
   "save": "حفظ التغييرات",
-  
   "sub_no_plan_hint": "لا يوجد اشتراك نشط، سيتم تفعيل الخطة المجانية تلقائياً",
   "sub_no_available_plans": "لا توجد خطط متاحة حالياً",
   "sub_activate": "تفعيل",
@@ -64,27 +59,22 @@
   "sub_auto_renew_on": "سيتم تجديد اشتراكك تلقائياً",
   "sub_auto_renew_off": "لن يتم تجديد اشتراكك تلقائياً",
   "free": "مجاني",
-
   "coupon_placeholder": "أدخل كود الخصم",
   "coupon_apply": "تطبيق",
   "coupon_applied": "تم تطبيق كود الخصم ({{value}})",
   "coupon_invalid": "كود الخصم غير صالح",
-
   "upgrade_confirm_title": "تأكيد الترقية",
   "upgrade_confirm_desc": "سيتم خصم {{price}} {{currency}} من محفظتك مقابل الترقية إلى خطة {{plan}}.",
   "upgrade_confirm_proration_note": "قد يُخصم من هذا المبلغ رصيد الأيام المتبقية من خطتك الحالية تلقائياً.",
   "upgrade_confirm_cancel": "إلغاء",
   "upgrade_confirm_confirm": "تأكيد والدفع",
-  
   "feat_stores": "متاجر",
   "feat_products": "منتجات",
   "feat_pages": "صفحات هبوط",
   "feat_domains": "دومين لكل متجر",
   "feat_commission": "عمولة",
   "save_pct": "وفر {{pct}}%",
-  
   "search_placeholder": "بحث...",
-  
   "shipping_accounts_title": "حسابات التوصيل",
   "shipping_accounts_subtitle": "أضف عدة حسابات توصيل وحدد الافتراضي",
   "shipping_add_account": "إضافة حساب",
@@ -92,7 +82,6 @@
   "shipping_no_store_message": "يجب اختيار متجر أولاً",
   "shipping_empty_title": "لا توجد حسابات توصيل",
   "shipping_empty_subtitle": "أضف حساب توصيل لتفعيله في متجرك",
-  
   "shipping_add_title": "إضافة حساب توصيل جديد",
   "shipping_add_subtitle": "اختر مزوداً وأدخل بيانات الاعتماد",
   "shipping_select_provider": "اختر مزوداً من القائمة",
@@ -108,7 +97,6 @@
   "shipping_unverified": "غير مُتحقق",
   "shipping_set_default": "تعيين افتراضي",
   "shipping_delete_confirm": "حذف هذا الحساب؟",
-
   "tab_api_keys": "مفاتيح API",
   "tab_google_sheets": "Google Sheets",
   "sheets_title": "ربط الطلبات مع Google Sheets",
@@ -173,5 +161,21 @@
   "apikeys_status_expired": "منتهي",
   "apikeys_status_revoked": "ملغى",
   "apikeys_revoke": "إلغاء",
-  "apikeys_revoke_confirm": "إلغاء هذا المفتاح؟ أي ربط يستعمله سيتوقف فوراً."
+  "apikeys_revoke_confirm": "إلغاء هذا المفتاح؟ أي ربط يستعمله سيتوقف فوراً.",
+  "trial_title": "جرّب مجاناً لمدة {{days}} أيام",
+  "trial_subtitle": "اختر الخطة التي تناسب متجرك. لا يُخصم شيء الآن.",
+  "trial_badge": "تجربة مجانية",
+  "trial_free_days": "{{days}} أيام مجاناً",
+  "trial_then": "ثم {{price}} {{currency}} / {{period}}",
+  "trial_start": "ابدأ التجربة",
+  "trial_skip": "المتابعة بالخطة المجانية",
+  "trial_auto_renew": "التجديد التلقائي من المحفظة بعد انتهاء التجربة",
+  "trial_auto_renew_hint": "إن لم يكفِ رصيد المحفظة أو أوقفت التجديد، يرجع حسابك للخطة المجانية بلا أي خصم.",
+  "trial_started": "بدأت تجربتك المجانية",
+  "trial_error": "تعذّر بدء التجربة",
+  "trial_popular": "الأكثر اختياراً",
+  "trial_ends": "تنتهي التجربة في {{date}}",
+  "trial_renewal_price": "سعر التجديد بعد التجربة",
+  "trial_buy_now": "اشترك الآن",
+  "billed_yearly": "تُدفع {{price}} {{currency}} سنوياً"
 }
