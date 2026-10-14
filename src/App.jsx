@@ -13,6 +13,7 @@ import Orders from './pages/dashboard/orders/Orders';
 import Settings from './pages/dashboard/settings/Settings';
 import Analytics from './pages/dashboard/analytics/Analytics';
 import Seo from './pages/dashboard/seo/Seo';
+import SplitTests from './pages/editor/SplitTests';
 import CreateStore from './pages/dashboard/stores/Create'; // <-- استيراد صفحة الإنشاء الجديدة
 import Shipping from './pages/dashboard/shipping/Shipping';
 import Update from './pages/dashboard/stores/edit';
@@ -111,6 +112,7 @@ const App = () => {
 
             <Route path="landing-pages">
               <Route index element={<PagesList />} />
+              <Route path='ab-tests' element={<SplitTests />} />
             </Route>
 
 

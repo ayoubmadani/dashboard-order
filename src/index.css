@@ -11,6 +11,9 @@
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
   --radius-5xl: 2.5rem;
+
+  /* خط اللوحة: IBM Plex Sans Arabic للعربية واللاتينية معاً */
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 /* 🌙 تفعيل الوضع الليلي اليدوي (بواسطة الكلاس) في الإصدار v4 */
@@ -74,4 +77,11 @@ html {
 
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #34d399; /* Emerald-400 */
+}
+
+/* حقول الإدخال: زوايا أقل تقوساً في كل اللوحة (الحقول الدائرية rounded-full تبقى كما هي) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not(.rounded-full),
+select:not(.rounded-full),
+textarea:not(.rounded-full) {
+  border-radius: 0.5rem !important;
 }

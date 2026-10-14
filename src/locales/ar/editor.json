@@ -91,7 +91,13 @@
       "ar": "العربية",
       "fr": "الفرنسية",
       "en": "الإنجليزية"
-    }
+    },
+    "product": "منتج الصفحة",
+    "noProduct": "لا يوجد منتج — اختر منتجاً",
+    "changeProduct": "تغيير",
+    "productMissing": "منتج هذه الصفحة محذوف، فلا يمكن للزبائن الطلب منها. اختر منتجاً آخر.",
+    "productError": "تعذّر تغيير المنتج",
+    "pickProduct": "اختر منتجاً"
   },
   "pixels": {
     "title": "بكسلات الصفحة",
@@ -159,17 +165,38 @@
     "duplicateBlock": "نسخ العنصر"
   },
   "blocks": {
-    "text": { "label": "نص" },
-    "button": { "label": "زر" },
-    "image": { "label": "صورة" },
-    "productForm": { "label": "نموذج طلب" },
-    "productImages": { "label": "سلايدر صور المنتج" },
-    "spacer": { "label": "مساحة فارغة" },
-    "floatingButton": { "label": "زر عائم" }
+    "text": {
+      "label": "نص"
+    },
+    "button": {
+      "label": "زر"
+    },
+    "image": {
+      "label": "صورة"
+    },
+    "productForm": {
+      "label": "نموذج طلب"
+    },
+    "productImages": {
+      "label": "سلايدر صور المنتج"
+    },
+    "spacer": {
+      "label": "مساحة فارغة"
+    },
+    "floatingButton": {
+      "label": "زر عائم"
+    }
   },
   "fields": {
     "animation": "الحركة",
-    "animationOptions": {"none": "بدون حركة", "pulse": "نبض", "bounce": "قفز", "shake": "اهتزاز", "glow": "توهج", "heartbeat": "نبضة قلب"},
+    "animationOptions": {
+      "none": "بدون حركة",
+      "pulse": "نبض",
+      "bounce": "قفز",
+      "shake": "اهتزاز",
+      "glow": "توهج",
+      "heartbeat": "نبضة قلب"
+    },
     "content": "المحتوى",
     "buttonText": "نص الزر",
     "linkType": "عند الضغط",

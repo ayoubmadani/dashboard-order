@@ -36,6 +36,7 @@ import arUpload from './locales/ar/upload.json';
 import arValidation from './locales/ar/validation.json';
 import arTheme from './locales/ar/theme.json';
 import arSeo from './locales/ar/seo.json';
+import arAbtest from './locales/ar/abtest.json';
 import arWallet from './locales/ar/wallet.json';
 import arLayout from './locales/ar/layout.json';
 import arPixel from './locales/ar/pixel.json';
@@ -78,6 +79,7 @@ import enUpload from './locales/en/upload.json';
 import enValidation from './locales/en/validation.json';
 import enTheme from './locales/en/theme.json';
 import enSeo from './locales/en/seo.json';
+import enAbtest from './locales/en/abtest.json';
 import enWallet from './locales/en/wallet.json';
 import enLayout from './locales/en/layout.json';
 import enPixel from './locales/en/pixel.json';
@@ -126,6 +128,7 @@ import frUpload from './locales/fr/upload.json';
 import frValidation from './locales/fr/validation.json';
 import frTheme from './locales/fr/theme.json';
 import frSeo from './locales/fr/seo.json';
+import frAbtest from './locales/fr/abtest.json';
 import frWallet from './locales/fr/wallet.json';
 import frLayout from './locales/fr/layout.json';
 import frPixel from './locales/fr/pixel.json';
@@ -176,6 +179,7 @@ const resources = {
       validation: arValidation,
       theme: arTheme,
       seo: arSeo,
+      abtest: arAbtest,
       wallet: arWallet,
       layout: arLayout,
       Pixels: arPixel,
@@ -219,6 +223,7 @@ const resources = {
       validation: enValidation,
       theme: enTheme,
       seo: enSeo,
+      abtest: enAbtest,
       wallet: enWallet,
       layout: enLayout,
       Pixels: enPixel,
@@ -262,6 +267,7 @@ const resources = {
       validation: frValidation,
       theme: frTheme,
       seo: frSeo,
+      abtest: frAbtest,
       wallet: frWallet,
       layout: frLayout,
       Pixels: frPixel,

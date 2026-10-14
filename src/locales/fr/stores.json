@@ -110,7 +110,13 @@
     "failed": "Une erreur est survenue lors de la mise à jour",
     "load_failed": "Échec du chargement des données",
     "loading": "Chargement des données de la boutique...",
-    "form_errors": "Veuillez corriger les erreurs dans le formulaire"
+    "form_errors": "Veuillez corriger les erreurs dans le formulaire",
+    "activate": "Activer la boutique",
+    "deactivate": "Désactiver la boutique",
+    "confirm_deactivate": "Désactiver la boutique ? Les visiteurs verront « Boutique inactive ».",
+    "activated": "Boutique activée",
+    "deactivated": "Boutique désactivée",
+    "status_failed": "Impossible de changer le statut de la boutique"
   },
   "form": {
     "basic_info": "Informations de base",

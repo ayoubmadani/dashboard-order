@@ -91,7 +91,13 @@
       "ar": "Arabe",
       "fr": "Français",
       "en": "Anglais"
-    }
+    },
+    "product": "Produit de la page",
+    "noProduct": "Aucun produit — choisissez-en un",
+    "changeProduct": "Changer",
+    "productMissing": "Le produit de cette page a été supprimé : les clients ne peuvent pas commander. Choisissez un autre produit.",
+    "productError": "Impossible de changer le produit",
+    "pickProduct": "Choisir un produit"
   },
   "pixels": {
     "title": "Pixels de la page",
@@ -159,17 +165,38 @@
     "duplicateBlock": "Dupliquer le bloc"
   },
   "blocks": {
-    "text": { "label": "Texte" },
-    "button": { "label": "Bouton" },
-    "image": { "label": "Image" },
-    "productForm": { "label": "Formulaire de commande" },
-    "productImages": { "label": "Diaporama d'images produit" },
-    "spacer": { "label": "Espacement" },
-    "floatingButton": { "label": "Bouton flottant" }
+    "text": {
+      "label": "Texte"
+    },
+    "button": {
+      "label": "Bouton"
+    },
+    "image": {
+      "label": "Image"
+    },
+    "productForm": {
+      "label": "Formulaire de commande"
+    },
+    "productImages": {
+      "label": "Diaporama d'images produit"
+    },
+    "spacer": {
+      "label": "Espacement"
+    },
+    "floatingButton": {
+      "label": "Bouton flottant"
+    }
   },
   "fields": {
     "animation": "Animation",
-    "animationOptions": {"none": "Aucune", "pulse": "Pulsation", "bounce": "Rebond", "shake": "Secousse", "glow": "Lueur", "heartbeat": "Battement de cœur"},
+    "animationOptions": {
+      "none": "Aucune",
+      "pulse": "Pulsation",
+      "bounce": "Rebond",
+      "shake": "Secousse",
+      "glow": "Lueur",
+      "heartbeat": "Battement de cœur"
+    },
     "content": "Contenu",
     "buttonText": "Texte du bouton",
     "linkType": "Au clic",

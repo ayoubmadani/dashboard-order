@@ -57,6 +57,7 @@ export default function PageEditor() {
     name,
     storeId,
     productId,
+    setProductId,
     settings,
     setSettings,
     blocks,
@@ -340,6 +341,9 @@ export default function PageEditor() {
         onClose={() => setShowSettingsModal(false)}
         settings={settings}
         onChange={setSettings}
+        pageId={id}
+        productId={productId}
+        onProductChange={setProductId}
       />
       <PagePixelsModal
         open={showPixelsModal}

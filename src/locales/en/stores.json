@@ -110,7 +110,13 @@
     "failed": "An error occurred while updating the store",
     "load_failed": "Failed to load store data",
     "loading": "Loading store data...",
-    "form_errors": "Please correct the errors in the form"
+    "form_errors": "Please correct the errors in the form",
+    "activate": "Activate store",
+    "deactivate": "Deactivate store",
+    "confirm_deactivate": "Deactivate the store? Visitors will see “Store inactive”.",
+    "activated": "Store activated",
+    "deactivated": "Store deactivated",
+    "status_failed": "Could not change the store status"
   },
   "form": {
     "basic_info": "Basic Store Information",

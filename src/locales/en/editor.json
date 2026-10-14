@@ -91,7 +91,13 @@
       "ar": "Arabic",
       "fr": "French",
       "en": "English"
-    }
+    },
+    "product": "Page product",
+    "noProduct": "No product — pick one",
+    "changeProduct": "Change",
+    "productMissing": "This page's product was deleted, so customers can't order from it. Pick another product.",
+    "productError": "Could not change the product",
+    "pickProduct": "Pick a product"
   },
   "pixels": {
     "title": "Page pixels",
@@ -159,17 +165,38 @@
     "duplicateBlock": "Duplicate block"
   },
   "blocks": {
-    "text": { "label": "Text" },
-    "button": { "label": "Button" },
-    "image": { "label": "Image" },
-    "productForm": { "label": "Order form" },
-    "productImages": { "label": "Product image slider" },
-    "spacer": { "label": "Spacer" },
-    "floatingButton": { "label": "Floating button" }
+    "text": {
+      "label": "Text"
+    },
+    "button": {
+      "label": "Button"
+    },
+    "image": {
+      "label": "Image"
+    },
+    "productForm": {
+      "label": "Order form"
+    },
+    "productImages": {
+      "label": "Product image slider"
+    },
+    "spacer": {
+      "label": "Spacer"
+    },
+    "floatingButton": {
+      "label": "Floating button"
+    }
   },
   "fields": {
     "animation": "Animation",
-    "animationOptions": {"none": "None", "pulse": "Pulse", "bounce": "Bounce", "shake": "Shake", "glow": "Glow", "heartbeat": "Heartbeat"},
+    "animationOptions": {
+      "none": "None",
+      "pulse": "Pulse",
+      "bounce": "Bounce",
+      "shake": "Shake",
+      "glow": "Glow",
+      "heartbeat": "Heartbeat"
+    },
     "content": "Content",
     "buttonText": "Button text",
     "linkType": "On click",

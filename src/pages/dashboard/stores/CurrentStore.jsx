@@ -68,6 +68,7 @@ const CurrentStore = () => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiche] = useState([]);
   const [storeIsActive, setStoreIsActive] = useState(false);
+  const [togglingActive, setTogglingActive] = useState(false);
 
   useEffect(() => {
     async function getData() {
@@ -89,6 +90,24 @@ const CurrentStore = () => {
     setNotification({ show: true, type, message });
     setTimeout(() => setNotification({ show: false, type: '', message: '' }), 4000);
   }, []);
+
+  // تفعيل/إيقاف المتجر للزوار (صريح، والتفعيل يخضع لحد المتاجر النشطة في الخطة)
+  const toggleActive = async () => {
+    if (!storeId || togglingActive) return;
+    const next = !storeIsActive;
+    if (!next && !window.confirm(t('update.confirm_deactivate'))) return;
+    setTogglingActive(true);
+    try {
+      await axios.put(`${baseURL}/stores/${storeId}/status`, { isActive: next }, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      setStoreIsActive(next);
+      showNotification('success', next ? t('update.activated') : t('update.deactivated'));
+    } catch (err) {
+      const m = err?.response?.data?.message;
+      showNotification('error', (Array.isArray(m) ? m[0] : m) || t('update.status_failed'));
+    } finally {
+      setTogglingActive(false);
+    }
+  };
 
   const fetchStoreData = useCallback(async () => {
     if (!storeId) { setFetchingStore(false); return; }
@@ -363,6 +382,21 @@ const CurrentStore = () => {
               </a>
             )}
           </div>
+
+          <button
+            type="button"
+            onClick={toggleActive}
+            disabled={togglingActive || fetchingStore}
+            title={storeIsActive ? t('update.deactivate') : t('update.activate')}
+            className="ms-auto shrink-0 flex flex-col items-center gap-1.5 disabled:opacity-60"
+          >
+            <span className={`relative inline-flex h-8 w-14 items-center rounded-full border border-white/25 transition-colors duration-300 ${storeIsActive ? 'bg-emerald-400' : 'bg-white/20'}`}>
+              <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-md transition-all duration-300 flex items-center justify-center ${storeIsActive ? 'start-7' : 'start-1'}`}>
+                {togglingActive && <Loader2 size={13} className="animate-spin text-indigo-600" />}
+              </span>
+            </span>
+            <span className="text-[11px] font-bold text-white/85">{storeIsActive ? t('common.active') : t('common.inactive')}</span>
+          </button>
         </div>
       </div>
 

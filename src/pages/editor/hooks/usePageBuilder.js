@@ -143,6 +143,7 @@ export default function usePageBuilder(pageId) {
     name,
     storeId,
     productId,
+    setProductId,
     domain,
     settings,
     setSettings: updateSettings,
