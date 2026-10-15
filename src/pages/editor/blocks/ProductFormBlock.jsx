@@ -26,6 +26,19 @@ function variantMatches(detail, selected) {
   );
 }
 
+// متوفرة = مفعّلة ومخزونها > 0 أو «متوفرة دائماً» — نفس قاعدة الثيمات وتطبيق التأكيد
+function variantAvailable(v) {
+  return !!v && v.isActive !== false && (v.autoGenerate || Number(v.stock) > 0);
+}
+
+// هل يمكن اختيار هذه القيمة مع الخيارات المختارة حالياً؟ (الخيار المختار نفسه يبقى قابلاً للإلغاء)
+function optionAvailable(product, selected, attrName, value) {
+  const details = product?.variantDetails || [];
+  if (!details.length) return true;
+  const next = { ...selected, [attrName]: value };
+  return details.some((v) => variantAvailable(v) && variantMatches(v, next));
+}
+
 // Picks black or white for a checkmark drawn on top of an arbitrary color
 // swatch, so it stays visible on both light (e.g. white, yellow) and dark
 // (e.g. black, navy) attribute colors instead of assuming one fixed color.
@@ -255,7 +268,7 @@ export default function ProductFormBlock({
   const totalPrice = Number(getUnitPrice()) * form.quantity + priceShip;
 
   const outOfStock =
-    matchedVariantDetail && !matchedVariantDetail.autoGenerate && matchedVariantDetail.stock <= 0;
+    matchedVariantDetail && !variantAvailable(matchedVariantDetail);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -425,6 +438,9 @@ export default function ProductFormBlock({
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                             {attr.variants?.map((v) => {
                               const isSelected = selectedVariants[attr.name] === v.value;
+                              // غير متوفر مع الخيارات الأخرى المختارة = لا يمكن اختياره
+                              const available = isSelected || optionAvailable(product, selectedVariants, attr.name, v.value);
+                              const unavailableStyle = available ? {} : { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.6)' };
 
                               if (attr.displayMode === 'color') {
                                 // A colored ring around a colored swatch can
@@ -436,7 +452,9 @@ export default function ProductFormBlock({
                                   <button
                                     key={v.id}
                                     type="button"
-                                    onClick={() => toggleVariant(attr.name, v.value)}
+                                    onClick={() => available && toggleVariant(attr.name, v.value)}
+                                    disabled={!available}
+                                    aria-disabled={!available}
                                     title={v.name}
                                     style={{
                                       position: 'relative',
@@ -452,6 +470,7 @@ export default function ProductFormBlock({
                                       display: 'flex',
                                       alignItems: 'center',
                                       justifyContent: 'center',
+                                      ...unavailableStyle,
                                     }}
                                   >
                                     {isSelected && (
@@ -470,7 +489,9 @@ export default function ProductFormBlock({
                                   <button
                                     key={v.id}
                                     type="button"
-                                    onClick={() => toggleVariant(attr.name, v.value)}
+                                    onClick={() => available && toggleVariant(attr.name, v.value)}
+                                    disabled={!available}
+                                    aria-disabled={!available}
                                     title={v.name}
                                     style={{
                                       position: 'relative',
@@ -486,6 +507,7 @@ export default function ProductFormBlock({
                                         ? `0 0 0 2.5px ${activeBtnBorder}`
                                         : `0 0 0 1px ${inactiveBtnBorder}`,
                                       cursor: 'pointer',
+                                      ...unavailableStyle,
                                     }}
                                   >
                                     {isSelected && (
@@ -507,7 +529,9 @@ export default function ProductFormBlock({
                                 <button
                                   key={v.id}
                                   type="button"
-                                  onClick={() => toggleVariant(attr.name, v.value)}
+                                  onClick={() => available && toggleVariant(attr.name, v.value)}
+                                    disabled={!available}
+                                    aria-disabled={!available}
                                   style={{
                                     padding: '8px 14px',
                                     borderRadius: 6,
@@ -516,6 +540,8 @@ export default function ProductFormBlock({
                                     color: isSelected ? activeBtnText : inactiveBtnText,
                                     border: `1px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
                                     cursor: 'pointer',
+                                    ...unavailableStyle,
+                                    ...(available ? {} : { textDecoration: 'line-through' }),
                                   }}
                                 >
                                   {v.name}
