@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Download, Link2, Loader2, CheckCircle2, Unplug, History, X } from 'lucide-react';
+import { Download, Loader2, History, X, AlertTriangle } from 'lucide-react';
 import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
 
 // «جلب من AliExpress»: يلصق التاجر رابط منتجه فتُملأ خانات المنتج (الاسم، الوصف، الصور، الخصائص).
-// يتطلب ربط حساب AliExpress مرة واحدة (OAuth) — الرمز يُحفظ في الخادم فقط.
+// يستعمل حساب AliExpress الخاص بالمنصة — ربطه وإلغاؤه من لوحة الأدمن فقط.
 export default function AliexpressImport({ onImported, notify }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'products.aliexpress' });
   const [status, setStatus] = useState(null);
@@ -26,30 +26,8 @@ export default function AliexpressImport({ onImported, notify }) {
   useEffect(() => {
     loadStatus();
     loadSaved();
-    // العودة من صفحة موافقة AliExpress
-    const q = new URLSearchParams(window.location.search);
-    const result = q.get('aliexpress');
-    if (result) {
-      if (result === 'connected') notify('success', t('connected_ok'));
-      else notify('error', q.get('message') || t('connect_error'));
-      window.history.replaceState(null, '', window.location.pathname);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const connect = async () => {
-    try {
-      const { data } = await axios.get(`${baseURL}/aliexpress/connect`, { headers });
-      window.location.href = data.url;
-    } catch (e) {
-      notify('error', e.response?.data?.message || t('connect_error'));
-    }
-  };
-
-  const disconnect = async () => {
-    await axios.delete(`${baseURL}/aliexpress/connect`, { headers }).catch(() => {});
-    loadStatus();
-  };
 
   const runImport = async () => {
     if (!url.trim()) return;
@@ -104,11 +82,6 @@ export default function AliexpressImport({ onImported, notify }) {
             <p className="text-xs text-gray-500 dark:text-zinc-400">{t('subtitle')}</p>
           </div>
         </div>
-        {status.connected && !status.shared && (
-          <button type="button" onClick={disconnect} className="flex items-center gap-1 text-xs text-gray-400 hover:text-rose-500">
-            <Unplug size={13} />{t('disconnect')}
-          </button>
-        )}
       </div>
 
       {status.connected ? (
@@ -132,38 +105,34 @@ export default function AliexpressImport({ onImported, notify }) {
               {status.daily.limit === 0 ? t('daily_off') : t('daily_left', { left: Math.max(0, status.daily.limit - status.daily.used), limit: status.daily.limit })}
             </p>
           )}
-          {others.length > 0 && (
-            <div className="space-y-1.5 pt-1">
-              <p className="flex items-center gap-1 text-[11px] font-bold text-gray-500 dark:text-zinc-400"><History size={12} />{t('saved_title')}</p>
-              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {others.map((item) => (
-                  <div key={item.id} className="relative shrink-0 w-40 flex items-center gap-2 p-1.5 pe-6 rounded-xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-zinc-700">
-                    <button type="button" onClick={() => openSaved(item)} disabled={!!opening} title={t('saved_open')}
-                      className="flex items-center gap-2 min-w-0 text-start disabled:opacity-60">
-                      {item.image
-                        ? <img src={item.image} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
-                        : <span className="w-9 h-9 rounded-lg bg-orange-100 shrink-0" />}
-                      <span className="min-w-0">
-                        <span className="block text-[11px] font-semibold text-gray-800 dark:text-zinc-200 truncate">{item.name || item.aliexpressProductId}</span>
-                        <span className="block text-[10px] text-gray-400">{opening === item.id ? <Loader2 size={10} className="animate-spin inline" /> : new Date(item.createdAt).toLocaleDateString(i18n.language)}</span>
-                      </span>
-                    </button>
-                    <button type="button" onClick={() => dismissSaved(item)} title={t('saved_dismiss')}
-                      className="absolute top-1 end-1 text-gray-300 hover:text-rose-500"><X size={12} /></button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {status.account && !status.shared && (
-            <p className="flex items-center gap-1 text-[11px] text-emerald-600"><CheckCircle2 size={12} />{t('connected_as', { account: status.account })}</p>
-          )}
         </>
       ) : (
-        <button type="button" onClick={connect}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF4747] hover:bg-[#e63c3c] text-white text-sm font-bold">
-          <Link2 size={15} />{t('connect_btn')}
-        </button>
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+          <AlertTriangle size={14} />{t('unavailable')}
+        </p>
+      )}
+      {others.length > 0 && (
+        <div className="space-y-1.5 pt-1">
+          <p className="flex items-center gap-1 text-[11px] font-bold text-gray-500 dark:text-zinc-400"><History size={12} />{t('saved_title')}</p>
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {others.map((item) => (
+              <div key={item.id} className="relative shrink-0 w-40 flex items-center gap-2 p-1.5 pe-6 rounded-xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-zinc-700">
+                <button type="button" onClick={() => openSaved(item)} disabled={!!opening} title={t('saved_open')}
+                  className="flex items-center gap-2 min-w-0 text-start disabled:opacity-60">
+                  {item.image
+                    ? <img src={item.image} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                    : <span className="w-9 h-9 rounded-lg bg-orange-100 shrink-0" />}
+                  <span className="min-w-0">
+                    <span className="block text-[11px] font-semibold text-gray-800 dark:text-zinc-200 truncate">{item.name || item.aliexpressProductId}</span>
+                    <span className="block text-[10px] text-gray-400">{opening === item.id ? <Loader2 size={10} className="animate-spin inline" /> : new Date(item.createdAt).toLocaleDateString(i18n.language)}</span>
+                  </span>
+                </button>
+                <button type="button" onClick={() => dismissSaved(item)} title={t('saved_dismiss')}
+                  className="absolute top-1 end-1 text-gray-300 hover:text-rose-500"><X size={12} /></button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
     </div>
   );

@@ -421,6 +421,7 @@
     }
   },
   "aliexpress": {
+    "unavailable": "L'import AliExpress est momentanément indisponible — réessayez plus tard",
     "saved_title": "Produits importés non enregistrés — cliquez pour rouvrir (non décompté)",
     "saved_open": "Ouvrir",
     "saved_dismiss": "Retirer de la liste",

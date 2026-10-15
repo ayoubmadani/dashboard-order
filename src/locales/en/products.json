@@ -429,6 +429,7 @@
     }
   },
   "aliexpress": {
+    "unavailable": "AliExpress import is temporarily unavailable — try again later",
     "saved_title": "Imported products not saved yet — click to reopen (doesn't count)",
     "saved_open": "Open",
     "saved_dismiss": "Remove from list",
