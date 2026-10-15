@@ -214,7 +214,7 @@ export default function LayoutDashboard() {
             items: [
                 { name: t('nav.stores', 'المتجر'), href: '/dashboard/store', icon: Store, perm: 'store.update' },
                 { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe, perm: 'domain.crud' },
-                { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, perm: 'theme.change' },
+                { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, owner: true },
                 { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles, owner: true },
                 { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, owner: true },
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },

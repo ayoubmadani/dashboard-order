@@ -430,6 +430,12 @@
     }
   },
   "aliexpress": {
+    "saved_title": "منتجات مجلوبة لم تُحفظ بعد — اضغط لفتحها (لا تُحسب من الحد)",
+    "saved_open": "فتح",
+    "saved_dismiss": "حذف من القائمة",
+    "saved_opened": "تم فتح المنتج المجلوب — راجعه ثم احفظ",
+    "daily_left": "متبقٍّ اليوم: {{left}} من {{limit}}",
+    "daily_off": "خطتك لا تتضمن الجلب من AliExpress",
     "title": "جلب من AliExpress",
     "subtitle": "الصق رابط منتجك في AliExpress لملء الاسم والوصف والصور والخصائص تلقائياً",
     "connect_btn": "ربط حساب AliExpress",

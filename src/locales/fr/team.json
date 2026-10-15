@@ -17,7 +17,7 @@
   "perm_hint": {
     "order.manage": "inclut la consultation"
   },
-  "owner_only_note": "Suppression de la boutique, équipe, journal et abonnement restent à vous seul.",
+  "owner_only_note": "Suppression de la boutique, thème, équipe, journal et abonnement restent à vous seul.",
   "groups_empty": "Aucun groupe — créez d'abord un groupe, puis invitez des membres.",
   "new_group": "Nouveau groupe",
   "edit_group": "Modifier le groupe",

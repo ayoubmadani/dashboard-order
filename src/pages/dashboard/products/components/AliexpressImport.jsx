@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Download, Link2, Loader2, CheckCircle2, Unplug } from 'lucide-react';
+import { Download, Link2, Loader2, CheckCircle2, Unplug, History, X } from 'lucide-react';
 import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
 
@@ -12,13 +12,20 @@ export default function AliexpressImport({ onImported, notify }) {
   const [status, setStatus] = useState(null);
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState([]); // منتجات مجلوبة لم تُحفظ بعد
+  const [currentId, setCurrentId] = useState(null);
+  const [opening, setOpening] = useState(null);
   const headers = { Authorization: `Bearer ${getAccessToken()}` };
 
   const loadStatus = () =>
     axios.get(`${baseURL}/aliexpress/status`, { headers }).then((r) => setStatus(r.data)).catch(() => setStatus({ configured: false }));
 
+  const loadSaved = () =>
+    axios.get(`${baseURL}/aliexpress/imports`, { headers }).then((r) => setSaved(Array.isArray(r.data) ? r.data : [])).catch(() => setSaved([]));
+
   useEffect(() => {
     loadStatus();
+    loadSaved();
     // العودة من صفحة موافقة AliExpress
     const q = new URLSearchParams(window.location.search);
     const result = q.get('aliexpress');
@@ -50,8 +57,11 @@ export default function AliexpressImport({ onImported, notify }) {
     try {
       const { data } = await axios.post(`${baseURL}/aliexpress/import`, { url: url.trim(), language: i18n.language }, { headers });
       onImported(data);
+      setCurrentId(data.importId || null);
       notify('success', data.price ? t('imported_price', { price: data.price, currency: data.currency }) : t('imported'));
       setUrl('');
+      loadStatus();
+      loadSaved();
     } catch (e) {
       const msg = e.response?.data?.message;
       notify('error', Array.isArray(msg) ? msg[0] : msg || t('import_error'));
@@ -59,6 +69,28 @@ export default function AliexpressImport({ onImported, notify }) {
       setLoading(false);
     }
   };
+
+  // فتح منتج مجلوب سابقاً (لا يُحسب من الحد اليومي)
+  const openSaved = async (item) => {
+    setOpening(item.id);
+    try {
+      const { data } = await axios.get(`${baseURL}/aliexpress/imports/${item.id}`, { headers });
+      onImported(data);
+      setCurrentId(item.id);
+      notify('success', t('saved_opened'));
+    } catch (e) {
+      notify('error', e.response?.data?.message || t('import_error'));
+    } finally {
+      setOpening(null);
+    }
+  };
+
+  const dismissSaved = async (item) => {
+    setSaved((list) => list.filter((x) => x.id !== item.id));
+    await axios.delete(`${baseURL}/aliexpress/imports/${item.id}`, { headers }).catch(() => {});
+  };
+
+  const others = saved.filter((x) => x.id !== currentId);
 
   if (!status || status.configured === false) return null;
 
@@ -90,11 +122,39 @@ export default function AliexpressImport({ onImported, notify }) {
               placeholder="https://www.aliexpress.com/item/1005000000000000.html"
               className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm dark:text-white outline-none focus:border-orange-400"
             />
-            <button type="button" onClick={runImport} disabled={loading || !url.trim()}
+            <button type="button" onClick={runImport} disabled={loading || !url.trim() || (status.daily && status.daily.used >= status.daily.limit)}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF4747] hover:bg-[#e63c3c] text-white text-sm font-bold disabled:opacity-50">
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}{t('import_btn')}
             </button>
           </div>
+          {status.daily && (
+            <p className={`text-[11px] font-semibold ${status.daily.used >= status.daily.limit ? 'text-rose-600' : 'text-gray-500 dark:text-zinc-400'}`}>
+              {status.daily.limit === 0 ? t('daily_off') : t('daily_left', { left: Math.max(0, status.daily.limit - status.daily.used), limit: status.daily.limit })}
+            </p>
+          )}
+          {others.length > 0 && (
+            <div className="space-y-1.5 pt-1">
+              <p className="flex items-center gap-1 text-[11px] font-bold text-gray-500 dark:text-zinc-400"><History size={12} />{t('saved_title')}</p>
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {others.map((item) => (
+                  <div key={item.id} className="relative shrink-0 w-40 flex items-center gap-2 p-1.5 pe-6 rounded-xl bg-white dark:bg-zinc-900 border border-orange-100 dark:border-zinc-700">
+                    <button type="button" onClick={() => openSaved(item)} disabled={!!opening} title={t('saved_open')}
+                      className="flex items-center gap-2 min-w-0 text-start disabled:opacity-60">
+                      {item.image
+                        ? <img src={item.image} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                        : <span className="w-9 h-9 rounded-lg bg-orange-100 shrink-0" />}
+                      <span className="min-w-0">
+                        <span className="block text-[11px] font-semibold text-gray-800 dark:text-zinc-200 truncate">{item.name || item.aliexpressProductId}</span>
+                        <span className="block text-[10px] text-gray-400">{opening === item.id ? <Loader2 size={10} className="animate-spin inline" /> : new Date(item.createdAt).toLocaleDateString(i18n.language)}</span>
+                      </span>
+                    </button>
+                    <button type="button" onClick={() => dismissSaved(item)} title={t('saved_dismiss')}
+                      className="absolute top-1 end-1 text-gray-300 hover:text-rose-500"><X size={12} /></button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {status.account && !status.shared && (
             <p className="flex items-center gap-1 text-[11px] text-emerald-600"><CheckCircle2 size={12} />{t('connected_as', { account: status.account })}</p>
           )}

@@ -421,6 +421,12 @@
     }
   },
   "aliexpress": {
+    "saved_title": "Produits importés non enregistrés — cliquez pour rouvrir (non décompté)",
+    "saved_open": "Ouvrir",
+    "saved_dismiss": "Retirer de la liste",
+    "saved_opened": "Produit importé rouvert — vérifiez puis enregistrez",
+    "daily_left": "Restant aujourd'hui : {{left}} sur {{limit}}",
+    "daily_off": "Votre forfait n'inclut pas l'import AliExpress",
     "title": "Importer depuis AliExpress",
     "subtitle": "Collez le lien de votre produit AliExpress pour remplir le nom, la description, les images et les attributs",
     "connect_btn": "Connecter le compte AliExpress",

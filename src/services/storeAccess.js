@@ -1,5 +1,5 @@
 // صلاحيات المستخدم في المتجر الحالي — المالك يملك كل شيء، والعضو حسب مجموعته (من /stores/user/me)
-export const PERMISSIONS = ['store.update', 'theme.change', 'product.crud', 'category.crud', 'order.view', 'order.manage', 'domain.crud', 'seo.manage'];
+export const PERMISSIONS = ['store.update', 'product.crud', 'category.crud', 'order.view', 'order.manage', 'domain.crud', 'seo.manage'];
 
 export const isOwner = (store) => !store || store.role !== 'member';
 

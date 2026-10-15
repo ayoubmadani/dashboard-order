@@ -429,6 +429,12 @@
     }
   },
   "aliexpress": {
+    "saved_title": "Imported products not saved yet — click to reopen (doesn't count)",
+    "saved_open": "Open",
+    "saved_dismiss": "Remove from list",
+    "saved_opened": "Imported product reopened — review it, then save",
+    "daily_left": "Left today: {{left}} of {{limit}}",
+    "daily_off": "Your plan doesn't include AliExpress import",
     "title": "Import from AliExpress",
     "subtitle": "Paste your AliExpress product link to fill the name, description, images and attributes",
     "connect_btn": "Connect AliExpress account",

@@ -17,7 +17,7 @@
   "perm_hint": {
     "order.manage": "includes viewing"
   },
-  "owner_only_note": "Deleting the store, the team, the activity log and billing stay yours only.",
+  "owner_only_note": "Deleting the store, the theme, the team, the activity log and billing stay yours only.",
   "groups_empty": "No groups yet — create a group first, then invite members to it.",
   "new_group": "New group",
   "edit_group": "Edit group",

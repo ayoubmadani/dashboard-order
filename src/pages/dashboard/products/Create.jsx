@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
 import { addonsPayload } from '../../../utils/productAddons';
@@ -180,7 +180,10 @@ export default function CreateProduct() {
 
   /* ── Attributes ── */
   // تعبئة المنتج من AliExpress: الاسم، الوصف، الصور، الخصائص (السعر يبقى للتاجر — سعر AliExpress بالدولار)
+  // الجلب المحفوظ الحالي — يُعلَّم كمستعمل بعد حفظ المنتج فيختفي من «المجلوبة المحفوظة»
+  const aliImportId = useRef(null);
   const applyAliexpress = (p) => {
+    aliImportId.current = p.importId || null;
     setFormData(prev => ({ ...prev, name: p.name || prev.name, desc: p.desc || prev.desc }));
     setDescKey(k => k + 1);
     if (p.images?.length) setImages(p.images.slice(0, maxImages));
@@ -316,7 +319,11 @@ export default function CreateProduct() {
         addons: addonsPayload(addons),
         attributes, variantDetails: [], offers, images
       };
-      await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
+      const { data: created } = await axios.post(`${baseURL}/stores/${storeId}/products`, data, { headers: { Authorization: `Bearer ${token}` } });
+      if (aliImportId.current) {
+        const productId = created?.id ?? created?.data?.id ?? created?.product?.id;
+        axios.post(`${baseURL}/aliexpress/imports/${aliImportId.current}/used`, { productId }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      }
       showNotification('success', t('create.success'));
       setTimeout(() => navigate('/dashboard/products'), 500);
     } catch (err) {
