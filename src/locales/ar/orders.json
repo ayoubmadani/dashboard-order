@@ -105,7 +105,8 @@
     "no_products": "لا توجد منتجات",
     "free_shipping_badge": "توصيل مجاني",
     "free_shipping_reached": "هذا الطلب مؤهل لتوصيل مجاني",
-    "free_shipping_remaining": "أضف {{amount}} أخرى ليصبح التوصيل مجانياً"
+    "free_shipping_remaining": "أضف {{amount}} أخرى ليصبح التوصيل مجانياً",
+    "option_unavailable": "غير متوفر"
   },
   "export": {
     "customer_name": "اسم العميل",

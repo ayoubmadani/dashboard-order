@@ -16,14 +16,16 @@
     "menu_label": "Menu",
     "pixels": "pixels",
     "domain": "domaine",
-    "messages" : "messages",
-    "editor" : "Éditeur de pages",
+    "messages": "messages",
+    "editor": "Éditeur de pages",
     "custom_theme": "Thème personnalisé",
     "group_store": "Gestion de la boutique",
     "group_sales": "Ventes",
     "group_analytics": "Statistiques & Support",
     "group_system": "Système",
-    "stores_count": "boutiques"
+    "stores_count": "boutiques",
+    "team": "Équipe",
+    "invitations": "Invitations"
   },
   "store_selector": {
     "current_store": "Boutique actuelle",

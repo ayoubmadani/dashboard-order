@@ -60,6 +60,11 @@ function getVariantAttributeGroups(variants) {
   return groups;
 }
 
+// متوفرة = مخزون > 0 أو «متوفرة دائماً» (المعطّلة لا تصل أصلاً من /variants) — نفس قاعدة المتجر
+const variantAvailable = (v) => !!v && v.isActive !== false && (v.autoGenerate || Number(v.stock) > 0);
+
+// كل الخصائص محددة ← التركيبة معروفة بالضبط: إن لم تكن موجودة ومتوفرة فلا بديل لها.
+// البحث عن أقرب تركيبة متوفرة فقط لطلب بلا اختيار سابق.
 function findVariantForAttrSelection(variants, currentAttrs, key, newValue) {
   const target = {};
   (currentAttrs || []).forEach(a => { target[attrKey(a)] = a.value; });
@@ -67,8 +72,10 @@ function findVariantForAttrSelection(variants, currentAttrs, key, newValue) {
   const exact = (variants || []).find(
     v => Array.isArray(v.name) && v.name.length > 0 && v.name.every(a => target[attrKey(a)] === a.value)
   );
-  if (exact) return exact;
-  return (variants || []).find(v => Array.isArray(v.name) && v.name.some(a => attrKey(a) === key && a.value === newValue)) || null;
+  if (exact) return variantAvailable(exact) ? exact : null;
+  const complete = getVariantAttributeGroups(variants).every(g => target[g.key] !== undefined && target[g.key] !== '');
+  if (complete) return null;
+  return (variants || []).find(v => variantAvailable(v) && Array.isArray(v.name) && v.name.some(a => attrKey(a) === key && a.value === newValue)) || null;
 }
 
 // أولوية الفحص: offer.shippingFree > product.shippingFree > عتبة store (نفس منطق §19 في ثيمات المتجر)
@@ -818,13 +825,18 @@ export default function OrderEditPage({ isNew = false }) {
                                       <div className="flex flex-wrap justify-end gap-2.5">
                                         {group.options.map(o => {
                                           const isSel = selectedValue === o.value;
+                                          // غير متوفر مع الخيارات الأخرى = لا يمكن اختياره (المختار حالياً يبقى ظاهراً)
+                                          const available = isSel || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
                                           return (
                                             <button
                                               key={o.value}
                                               type="button"
-                                              onClick={() => handleVariantAttrChange(item, group.key, o.value)}
-                                              className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'}`}
+                                              disabled={!available}
+                                              title={available ? undefined : t('edit.option_unavailable')}
+                                              onClick={() => available && handleVariantAttrChange(item, group.key, o.value)}
+                                              className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'} ${available ? '' : 'opacity-35 cursor-not-allowed'}`}
                                             >
+                                              {!available && <span className="absolute inset-0 z-10 m-auto h-0.5 w-[140%] -ms-[20%] bg-rose-500 rotate-45" />}
                                               {group.displayMode === 'color'
                                                 ? <span className="w-full h-full block" style={{ background: o.value }} />
                                                 : <img src={o.value} className="w-full h-full object-cover" alt="" />
@@ -845,9 +857,14 @@ export default function OrderEditPage({ isNew = false }) {
                                         className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:[color-scheme:dark]"
                                       >
                                         {!selectedValue && <option value="" disabled className={OPTION_CLS}>{t('edit.choose_attr', { attr: attrLabel })}</option>}
-                                        {group.options.map(o => (
-                                          <option key={o.value} value={o.value} className={OPTION_CLS}>{o.value}</option>
-                                        ))}
+                                        {group.options.map(o => {
+                                          const available = selectedValue === o.value || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
+                                          return (
+                                            <option key={o.value} value={o.value} disabled={!available} className={OPTION_CLS}>
+                                              {o.value}{available ? '' : ` — ${t('edit.option_unavailable')}`}
+                                            </option>
+                                          );
+                                        })}
                                       </select>
                                     )}
                                   </div>

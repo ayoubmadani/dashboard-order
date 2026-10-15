@@ -16,14 +16,16 @@
     "menu_label": "Menu",
     "pixels": "pixels",
     "domain": "domain",
-    "messages" : "messages",
-    "editor" : "Page Editor",
+    "messages": "messages",
+    "editor": "Page Editor",
     "custom_theme": "Custom theme",
     "group_store": "Store Management",
     "group_sales": "Sales",
     "group_analytics": "Analytics & Support",
     "group_system": "System",
-    "stores_count": "stores"
+    "stores_count": "stores",
+    "team": "Team",
+    "invitations": "Invitations"
   },
   "store_selector": {
     "current_store": "Current Store",

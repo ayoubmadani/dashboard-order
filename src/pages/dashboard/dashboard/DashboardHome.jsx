@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
+import { can } from '../../../services/storeAccess';
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -207,7 +208,8 @@ export default function Dashboard() {
     setError(null);
     try {
       const results = await Promise.all(
-        stores.map(s =>
+        // متاجر مشتركة: فقط المتاحة التي تسمح مجموعتها بعرض الطلبات
+        stores.filter(s => s.selectable !== false && can(s, 'order.view')).map(s =>
           Promise.all([
             axios.get(`${baseURL}/orders/${s.id}`, headers).then(r => r.data || []).catch(() => []),
             axios.get(`${baseURL}/orders/get-count-status/${s.id}`, headers).then(r => r.data || []).catch(() => []),

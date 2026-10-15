@@ -105,7 +105,8 @@
     "no_products": "No products found",
     "free_shipping_badge": "Free Delivery",
     "free_shipping_reached": "This order qualifies for free delivery",
-    "free_shipping_remaining": "Add {{amount}} more to unlock free delivery"
+    "free_shipping_remaining": "Add {{amount}} more to unlock free delivery",
+    "option_unavailable": "unavailable"
   },
   "export": {
     "customer_name": "Customer Name",

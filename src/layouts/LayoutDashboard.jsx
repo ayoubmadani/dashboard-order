@@ -4,13 +4,15 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
 import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
 import TrialOffer from '../components/TrialOffer';
+import { can, isOwner, ACCESS_LOSS_CODES } from '../services/storeAccess';
+import { saveSelectedStore } from '../services/selectedStore';
 
 const getStoreGradient = (name) => {
     const gradients = [
@@ -77,7 +79,10 @@ const SidebarContent = ({ t, navGroups, pathname, selectedProject, storesCount, 
                                         : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-gray-200'}`}
                                 >
                                     <item.icon className="w-[18px] h-[18px] shrink-0" />
-                                    <span className="truncate">{item.name}</span>
+                                    <span className="truncate flex-1">{item.name}</span>
+                                    {item.badge > 0 && (
+                                        <span className={`min-w-[20px] h-5 px-1.5 rounded-full text-[11px] font-black flex items-center justify-center ${active ? 'bg-white text-emerald-700' : 'bg-rose-500 text-white'}`}>{item.badge}</span>
+                                    )}
                                 </Link>
                             );
                         })}
@@ -106,6 +111,7 @@ export default function LayoutDashboard() {
     const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
     const [myStores, setMyStores] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null);
+    const [invitationsCount, setInvitationsCount] = useState(0);
     const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
 
     const userMenuRef = useRef(null);
@@ -206,38 +212,45 @@ export default function LayoutDashboard() {
         {
             title: t('nav.group_store', 'إدارة المتجر'),
             items: [
-                { name: t('nav.stores', 'المتجر'), href: '/dashboard/store', icon: Store },
-                { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe },
-                { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette },
-                { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles },
-                { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2 },
-                { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers },
-                { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box },
-                { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate },
+                { name: t('nav.stores', 'المتجر'), href: '/dashboard/store', icon: Store, perm: 'store.update' },
+                { name: t('nav.domain', 'الدومين'), href: '/dashboard/domain', icon: Globe, perm: 'domain.crud' },
+                { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, perm: 'theme.change' },
+                { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles, owner: true },
+                { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, owner: true },
+                { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },
+                { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
+                { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate, owner: true },
+                { name: t('nav.team', 'الفريق'), href: '/dashboard/team', icon: Users, owner: true },
             ],
         },
         {
             title: t('nav.group_sales', 'المبيعات'),
             items: [
-                { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart },
-                { name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall },
-                { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck },
+                { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, perm: 'order.view' },
+                { name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall, owner: true },
+                { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, owner: true },
                 { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet },
             ],
         },
         {
             title: t('nav.group_analytics', 'التحليلات والدعم'),
             items: [
-                { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3 },
-                { name: t('nav.seo', 'SEO'), href: '/dashboard/seo', icon: Search },
-                { name: t('nav.messages', 'الرسائل'), href: '/dashboard/messages', icon: MessageSquareText },
+                { name: t('nav.analytics', 'التحليلات'), href: '/dashboard/analytics', icon: BarChart3, owner: true },
+                { name: t('nav.seo', 'SEO'), href: '/dashboard/seo', icon: Search, perm: 'seo.manage' },
+                { name: t('nav.messages', 'الرسائل'), href: '/dashboard/messages', icon: MessageSquareText, owner: true },
             ],
         },
         {
             title: t('nav.group_system', 'النظام'),
-            items: [{ name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings }],
+            items: [
+                { name: t('nav.invitations', 'الدعوات'), href: '/dashboard/invitations', icon: Mail, badge: invitationsCount },
+                { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings },
+            ],
         },
-    ];
+    ]
+        // عضو في متجر غيره: يرى فقط ما تسمح به مجموعته
+        .map((g) => ({ ...g, items: g.items.filter((i) => (i.owner ? isOwner(selectedProject) : i.perm ? can(selectedProject, i.perm) : true)) }))
+        .filter((g) => g.items.length > 0);
 
     const pageTitle =
         navGroups.flatMap(g => g.items).find(i => isItemActive(location.pathname, i.href, navGroups.flatMap(g => g.items.map(x => x.href))))?.name || 'MdStore';
@@ -251,9 +264,16 @@ export default function LayoutDashboard() {
             const dataStores = response.data.data;
             if (response.data.success) {
                 if (dataStores.length > 0) {
+                    // الأولوية: اختيار هذه الجلسة ← آخر متجر محفوظ في الخادم ← أول متجر متاح
                     const saved = localStorage.getItem('storeId');
-                    if (!saved || !dataStores.find(s => s.id == saved)) {
-                        localStorage.setItem('storeId', dataStores[0].id);
+                    const serverSaved = response.data.selectedStoreId;
+                    const usable = dataStores.filter(s => s.selectable !== false);
+                    const pick = [saved, serverSaved].find(id => id && usable.some(s => s.id == id)) || usable[0]?.id;
+                    if (pick) {
+                        if (pick != serverSaved) saveSelectedStore(pick);
+                        else localStorage.setItem('storeId', pick);
+                    } else {
+                        localStorage.removeItem('storeId');
                     }
                 } else {
                     localStorage.removeItem('storeId');
@@ -265,11 +285,33 @@ export default function LayoutDashboard() {
 
     useEffect(() => { fetchStores(); }, [fetchStores]);
 
+    // الدعوات المعلّقة (شارة في القائمة)
+    const refreshInvitations = useCallback(() => {
+        axios.get(`${baseURL}/me/invitations`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
+            .then(({ data }) => setInvitationsCount(Array.isArray(data) ? data.length : 0))
+            .catch(() => {});
+    }, []);
+    useEffect(() => { refreshInvitations(); }, [refreshInvitations, location.pathname]);
+
+    // فقدان الوصول لمتجر مشترك (خطة المالك، تعليق، مجموعة معطّلة، إزالة): العودة لقائمة المتاجر
+    useEffect(() => {
+        const id = axios.interceptors.response.use(undefined, (error) => {
+            const code = error?.response?.status === 403 ? error.response.data?.code : null;
+            if (code && ACCESS_LOSS_CODES.includes(code)) {
+                sessionStorage.setItem('storeAccessLost', code);
+                fetchStores();
+                if (!window.location.pathname.startsWith('/dashboard/settings/stores')) navigate('/dashboard/settings/stores');
+            }
+            return Promise.reject(error);
+        });
+        return () => axios.interceptors.response.eject(id);
+    }, [fetchStores, navigate]);
+
     useEffect(() => {
         if (myStores?.length > 0) {
             const savedStoreId = localStorage.getItem('storeId');
             const savedStore = savedStoreId ? myStores.find(s => s.id?.toString() === savedStoreId.toString()) : null;
-            setSelectedProject(savedStore || myStores[0]);
+            setSelectedProject(savedStore || myStores.find(s => s.selectable !== false) || myStores[0]);
         } else {
             setSelectedProject(null);
         }
@@ -387,7 +429,7 @@ export default function LayoutDashboard() {
 
                 <main className="flex-1 p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto">
-                        <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user }} />
+                        <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user, refreshInvitations }} />
                         <TrialOffer />
                     </div>
                 </main>

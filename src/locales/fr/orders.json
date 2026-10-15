@@ -105,7 +105,8 @@
     "no_products": "Aucun produit trouvé",
     "free_shipping_badge": "Livraison gratuite",
     "free_shipping_reached": "Cette commande bénéficie de la livraison gratuite",
-    "free_shipping_remaining": "Ajoutez {{amount}} de plus pour la livraison gratuite"
+    "free_shipping_remaining": "Ajoutez {{amount}} de plus pour la livraison gratuite",
+    "option_unavailable": "indisponible"
   },
   "export": {
     "customer_name": "Nom du client",

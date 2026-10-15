@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useOutletContext, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Store, Plus, Edit2, Trash2, ExternalLink, Loader2, CheckCircle2, Eye, ShoppingBag, Package, AlertTriangle, Undo2, SkipForward } from 'lucide-react';
+import { Store, Plus, Edit2, Trash2, ExternalLink, Loader2, CheckCircle2, Eye, ShoppingBag, Package, AlertTriangle, Undo2, SkipForward, Users, LogOut } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
 import SectionTitle from './SectionTitle';
+import { saveSelectedStore } from '../../../../services/selectedStore';
 
 const getCount = (store, key) => store[`${key}Count`] ?? store[key]?.length ?? 0;
 const REQUIRED_DELETE_TEXT = 'DELETE';
@@ -13,6 +14,11 @@ const REQUIRED_DELETE_TEXT = 'DELETE';
 export default function StoresTab() {
   const { t } = useTranslation('translation', { keyPrefix: 'settings' });
   const { t: tStores } = useTranslation('translation', { keyPrefix: 'stores' });
+  const { t: tTeam } = useTranslation('translation', { keyPrefix: 'team' });
+  // رسالة فقدان الوصول لمتجر مشترك (من interceptor في التخطيط)
+  const [accessLost, setAccessLost] = useState(() => sessionStorage.getItem('storeAccessLost'));
+  useEffect(() => { if (accessLost) sessionStorage.removeItem('storeAccessLost'); }, [accessLost]);
+  const [leavingId, setLeavingId] = useState(null);
   const navigate = useNavigate();
   const { myStores, fetchStores, setSelectedProject } = useOutletContext();
   const token = getAccessToken();
@@ -36,8 +42,20 @@ export default function StoresTab() {
   const stores = myStores || [];
   const loading = !myStores;
 
+  const handleLeave = async (store) => {
+    if (!window.confirm(tTeam('confirm_leave'))) return;
+    setLeavingId(store.id);
+    try {
+      await axios.post(`${baseURL}/stores/${store.id}/leave`, {}, headers);
+      if (localStorage.getItem('storeId') === store.id) localStorage.removeItem('storeId');
+      await fetchStores();
+    } catch (e) { console.error(e); }
+    finally { setLeavingId(null); }
+  };
+
   const handleSelect = (store) => {
-    localStorage.setItem('storeId', store.id);
+    if (store.selectable === false) return;
+    saveSelectedStore(store.id);
     localStorage.setItem('storeName', store.name);
     setCurrentStoreId(store.id);
     setSelectedProject?.(store);
@@ -241,8 +259,17 @@ export default function StoresTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 max-h-[62vh] overflow-y-auto pr-1 scrollbar-thin">
+          {accessLost && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 text-sm font-semibold text-amber-700 dark:text-amber-300">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <span className="flex-1">{tTeam('access_lost', { reason: tTeam(`reason.${accessLost}`) })}</span>
+              <button onClick={() => setAccessLost(null)} className="text-amber-500">✕</button>
+            </div>
+          )}
           {stores.map((store) => {
             const isCurrent = store.id === currentStoreId;
+            const isMember = store.role === 'member';
+            const blocked = store.selectable === false;
             return (
               <div
                 key={store.id}
@@ -272,7 +299,14 @@ export default function StoresTab() {
                         <CheckCircle2 size={10} /> {t('stores_current')}
                       </span>
                     )}
+                    {isMember && (
+                      <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 dark:bg-violet-900/20 text-violet-600 dark:text-violet-300">
+                        <Users size={10} /> {tTeam('shared')}{store.groupName ? ` · ${store.groupName}` : ''}
+                      </span>
+                    )}
                   </div>
+                  {isMember && <p className="text-[11px] text-gray-400">{tTeam('owner_label', { name: store.ownerName })}</p>}
+                  {blocked && <p className="text-[11px] font-semibold text-rose-500">{tTeam(`reason.${store.reason}`)}</p>}
                   <a
                     href={`https://${store.subdomain}.mdstore.top`}
                     target="_blank"
@@ -298,11 +332,21 @@ export default function StoresTab() {
                   {!isCurrent && (
                     <button
                       onClick={() => handleSelect(store)}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-indigo-400 hover:text-indigo-500 text-xs font-bold transition-all"
+                      disabled={blocked}
+                      className="disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-indigo-400 hover:text-indigo-500 text-xs font-bold transition-all"
                     >
                       <CheckCircle2 size={14} /> {t('stores_select')}
                     </button>
                   )}
+                  {isMember ? (
+                    <button
+                      onClick={() => handleLeave(store)}
+                      disabled={leavingId === store.id}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all disabled:opacity-50"
+                    >
+                      {leavingId === store.id ? <Loader2 size={14} className="animate-spin" /> : <LogOut size={14} />} {tTeam('leave')}
+                    </button>
+                  ) : (<>
                   <button
                     onClick={() => handleToggle(store.id)}
                     disabled={togglingId === store.id}
@@ -324,6 +368,7 @@ export default function StoresTab() {
                   >
                     {deletingId === store.id ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
                   </button>
+                  </>)}
                 </div>
               </div>
             );
