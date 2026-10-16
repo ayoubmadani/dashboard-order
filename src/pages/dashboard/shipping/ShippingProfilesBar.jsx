@@ -24,6 +24,9 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
   const selected = profiles.find((p) => p.id === selectedId) || profiles[0];
   const storeProfile = profiles.find((p) => p.stores.some((s) => s.id === storeId));
   const usedByCurrentStore = storeProfile?.id === selected?.id;
+  // حساب الشحن يستعمله فقط متجر من نفس دولته (حساب تونسي لمتجر تونسي)
+  const storeCountry = storeProfile?.stores.find((s) => s.id === storeId)?.country || 'DZ';
+  const countryMismatch = (selected?.country || 'DZ') !== storeCountry;
 
   const submitModal = async () => {
     const name = modal?.name?.trim();
@@ -39,9 +42,8 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
         await onChanged(selected.id);
         showToast('success', t('renamed'));
       }
-      setModal(null);
-    } catch { showToast('error', t('error')); }
-    finally { setBusy(false); }
+    } catch (e) { showToast('error', e?.response?.data?.message || t('error')); }
+    finally { setBusy(false); setModal(null); } // النافذة تُغلق بعد الحفظ دائماً (نجاحاً أو برسالة الخطأ)
   };
 
   const removeProfile = async () => {
@@ -63,7 +65,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
       await axios.post(`${baseURL}/shipping/store-profile`, { storeId, profileId: selected.id }, headers);
       await onChanged(selected.id);
       showToast('success', t('assigned', { name: selected.name }));
-    } catch { showToast('error', t('error')); }
+    } catch (e) { showToast('error', e?.response?.data?.message || t('error')); }
     finally { setBusy(false); }
   };
 
@@ -121,8 +123,9 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
               <Check className="w-3.5 h-3.5" /> {t('current_store_uses')}
             </span>
           ) : (
-            <button onClick={useForStore} disabled={busy}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-60">
+            <button onClick={useForStore} disabled={busy || countryMismatch}
+              title={countryMismatch ? t('country_mismatch', { profile: selected?.country || 'DZ', store: storeCountry }) : undefined}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Store className="w-3.5 h-3.5" />} {t('use_for_store')}
             </button>
           ))}

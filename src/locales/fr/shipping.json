@@ -121,6 +121,7 @@
     "submit_error": "Échec de l'ajout des wilayas sélectionnées"
   },
   "profiles": {
+    "country_mismatch": "Un compte {{profile}} ne peut servir qu'à une boutique du même pays (boutique actuelle : {{store}})",
     "country": "Pays",
     "country_soon": "Bientôt",
     "country_fresh_hint": "Le compte démarre avec les régions de ce pays et des tarifs à 0 ; définissez ensuite vos tarifs.",

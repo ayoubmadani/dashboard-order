@@ -121,6 +121,7 @@
     "submit_error": "Failed to add the selected states"
   },
   "profiles": {
+    "country_mismatch": "A {{profile}} account can only be used by a store in the same country (current store: {{store}})",
     "country": "Country",
     "country_soon": "Soon",
     "country_fresh_hint": "The account starts with this country's regions at 0; then set your prices.",

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -31,6 +31,8 @@ const UpdateStore = () => {
   const [faviconPreview, setFaviconPreview] = useState(null);
   const [folder, setFolder] = useState()
   const [wilayas, setWilayas] = useState([]);
+  // دولة المتجر المحمَّل — قائمة الولايات الجزائرية لا تطغى على ولايات دولته
+  const storeCountryRef = useRef('DZ');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -77,7 +79,7 @@ const UpdateStore = () => {
           axios.get(`${baseURL}/shipping/wilayas`),
         ]);
         setNiche(nichesRes.data?.data ?? []);
-        setWilayas(wilayasRes.data);
+        if (storeCountryRef.current === 'DZ') setWilayas(wilayasRes.data);
       } catch (error) {
         console.error('Error loading data:', error);
       }
@@ -100,6 +102,12 @@ const UpdateStore = () => {
       });
       if (response.data.success) {
         const store = response.data.data;
+        // ولايات دولة المتجر (الجزائر افتراضياً)
+        storeCountryRef.current = store.country || 'DZ';
+        if (store.country && store.country !== 'DZ') {
+          axios.get(`${baseURL}/shipping/wilayas`, { params: { country: store.country } })
+            .then(({ data }) => setWilayas(Array.isArray(data) ? data : [])).catch(() => {});
+        }
         setFormData({
           name: store.name || '',
           domain: store.subdomain || '',

@@ -119,6 +119,9 @@
     "status_failed": "Could not change the store status"
   },
   "form": {
+    "country_label": "Country",
+    "country_hint": "The store uses the first shipping account of this country — create it first in Shipping prices.",
+    "countries": {"DZ": "Algeria", "TN": "Tunisia", "MA": "Morocco"},
     "basic_info": "Basic Store Information",
     "name_label": "Store Name",
     "name_placeholder": "Example: Fashion Store",

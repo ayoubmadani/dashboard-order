@@ -119,6 +119,9 @@
     "status_failed": "Impossible de changer le statut de la boutique"
   },
   "form": {
+    "country_label": "Pays",
+    "country_hint": "La boutique utilise le premier compte de livraison de ce pays — créez-le d'abord dans Tarifs de livraison.",
+    "countries": {"DZ": "Algérie", "TN": "Tunisie", "MA": "Maroc"},
     "basic_info": "Informations de base",
     "name_label": "Nom de la boutique",
     "name_placeholder": "Ex: Boutique de Mode",

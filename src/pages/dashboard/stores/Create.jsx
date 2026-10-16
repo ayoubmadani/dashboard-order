@@ -8,7 +8,6 @@ import {
   Trash2
 } from 'lucide-react';
 import ModelImages from '../../../components/ModelImages';
-import StoreThemePicker from './StoreThemePicker';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import axios from 'axios';
@@ -56,12 +55,12 @@ const CreateStore = () => {
     showTopBar: true,
     topBarText: '',
     currency: 'DZD',
+    country: 'DZ',
     language: 'ar',
     cart: false,
     supportQty: true,
     supportFreeShipping: false,
     freeShippingMinAmount: '',
-    themeId: null,
   });
 
   const [logoPreview, setLogoPreview] = useState(null);
@@ -71,6 +70,8 @@ const CreateStore = () => {
   const [notification, setNotification] = useState({ show: false, type: '', message: '' });
   const [niches, setNiches] = useState([]);
   const [wilayas, setWilayas] = useState([]);
+  // الدول المتاحة (لها ولايات في المنصة وغير متوقفة)
+  const [countries, setCountries] = useState(['DZ']);
   const [faviconPreview, setFaviconPreview] = useState(null);
   const [folder, setFolder] = useState()
 
@@ -78,13 +79,13 @@ const CreateStore = () => {
     const fetchData = async () => {
       try {
         // تنفيذ الطلبين في وقت واحد لسرعة الأداء
-        const [nichesRes, wilayasRes] = await Promise.all([
+        const [nichesRes, countriesRes] = await Promise.all([
           axios.get(`${baseURL}/niches`),
-          axios.get(`${baseURL}/shipping/wilayas`)
+          axios.get(`${baseURL}/shipping/countries`).catch(() => ({ data: ['DZ'] })),
         ]);
 
         setNiches(nichesRes.data?.data ?? []);
-        setWilayas(wilayasRes.data);
+        if (Array.isArray(countriesRes.data) && countriesRes.data.length) setCountries(countriesRes.data);
 
         console.log("Data loaded successfully");
       } catch (error) {
@@ -94,6 +95,13 @@ const CreateStore = () => {
 
     fetchData();
   }, []);
+
+  // ولايات دولة المتجر
+  useEffect(() => {
+    axios.get(`${baseURL}/shipping/wilayas`, { params: { country: formData.country } })
+      .then(({ data }) => setWilayas(Array.isArray(data) ? data : []))
+      .catch(() => setWilayas([]));
+  }, [formData.country]);
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
@@ -189,6 +197,7 @@ const CreateStore = () => {
           name: formData.name.trim(),
           subdomain: generateSubdomain(formData.name),
           currency: formData.currency,
+          country: formData.country,
           language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
           nicheId: formData.niche || null,
           cart: formData.cart || false,
@@ -229,13 +238,6 @@ const CreateStore = () => {
       });
 
       if (response.data.success) {
-        // الثيم المختار يُطبَّق بعد إنشاء المتجر — فشله لا يلغي المتجر (يبقى الافتراضي)
-        const storeId = response.data.data?.id ?? response.data.id;
-        if (formData.themeId && storeId) {
-          await axios.post(`${baseURL}/theme/apply`, { storeId, themeId: formData.themeId }, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).catch(() => showNotification('error', t('theme_picker.apply_failed')));
-        }
         showNotification('success', t('create.success'));
         setTimeout(() => navigate('/dashboard/settings/stores'), 500);
       }
@@ -337,6 +339,26 @@ const CreateStore = () => {
                 ))}
               </select>
             </div>
+
+            {/* Country — يحدد حسابات الشحن التي يمكن للمتجر استعمالها */}
+            {(
+              <div>
+                <label className={labelClass}>
+                  <MapPin size={14} className="inline me-1" />
+                  {t('form.country_label')}
+                </label>
+                <select
+                  name="country"
+                  value={formData.country}
+                  onChange={(e) => setFormData((f) => ({ ...f, country: e.target.value, wilaya: '', currency: e.target.value === 'DZ' ? 'DZD' : f.currency }))}
+                  disabled={countries.length < 2}
+                  className={inputClass(false)}
+                >
+                  {countries.map((cc) => <option key={cc} value={cc}>{t(`form.countries.${cc}`, { defaultValue: cc })}</option>)}
+                </select>
+                {formData.country !== 'DZ' && <p className="mt-1 text-xs text-gray-400">{t('form.country_hint')}</p>}
+              </div>
+            )}
 
             {/* Wilaya */}
             <div>
@@ -565,14 +587,6 @@ const CreateStore = () => {
             </div>
           </div>
         </div>
-
-        {/* ── Theme ── */}
-        <StoreThemePicker
-          value={formData.themeId}
-          onChange={(themeId) => setFormData((prev) => ({ ...prev, themeId }))}
-          sectionClass={sectionClass}
-          sectionTitle={sectionTitle}
-        />
 
         {/* ── Design & Colors ── */}
         <div className={sectionClass}>
