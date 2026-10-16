@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Layers, Plus, Pencil, Trash2, Check, Loader2, Store, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { baseURL } from '../../../constents/const.';
+import { baseURL, locationsURL } from '../../../constents/const.';
+
+const flag = (cc) => cc.replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
 
 // شريط «حسابات الشحن»: لكل حساب أسعاره وولاياته، والتاجر يختار الحساب الذي يستعمله كل متجر.
 // الجدول أسفل الصفحة يعرض/يعدّل أسعار الحساب المختار هنا.
@@ -10,6 +12,14 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
   const { t } = useTranslation('translation', { keyPrefix: 'shipping.profiles' });
   const [modal, setModal] = useState(null); // { mode: 'create' | 'rename', name }
   const [busy, setBusy] = useState(false);
+  const [countries, setCountries] = useState([{ code: 'DZ', ar_name: 'الجزائر', name: 'Algeria' }]);
+  // الدول التي لها مناطق في المنصة (يمكن تسعيرها) — الباقي يظهر «قريباً»
+  const [shippingCountries, setShippingCountries] = useState(['DZ']);
+
+  useEffect(() => {
+    axios.get(`${locationsURL}/v1/countries`).then(({ data }) => { if (Array.isArray(data) && data.length) setCountries(data); }).catch(() => {});
+    axios.get(`${baseURL}/shipping/countries`).then(({ data }) => { if (Array.isArray(data) && data.length) setShippingCountries(data); }).catch(() => {});
+  }, []);
 
   const selected = profiles.find((p) => p.id === selectedId) || profiles[0];
   const storeProfile = profiles.find((p) => p.stores.some((s) => s.id === storeId));
@@ -21,7 +31,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
     setBusy(true);
     try {
       if (modal.mode === 'create') {
-        const { data } = await axios.post(`${baseURL}/shipping/profiles`, { name, copyFromId: selected?.id }, headers);
+        const { data } = await axios.post(`${baseURL}/shipping/profiles`, { name, copyFromId: selected?.id, country: modal.country || 'DZ' }, headers);
         await onChanged(data.id);
         showToast('success', t('created'));
       } else {
@@ -147,7 +157,26 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
               className="w-full border rounded-xl py-2.5 px-3 text-sm outline-none bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-800 dark:text-zinc-100 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
             />
             {modal.mode === 'create' && (
-              <p className="mt-2 text-xs text-gray-400 dark:text-zinc-500">{t('copy_hint', { name: selected.name })}</p>
+              <>
+                <label className="block mt-4 mb-1.5 text-xs font-bold text-gray-500 dark:text-zinc-400">{t('country')}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {countries.map((c) => {
+                    const available = shippingCountries.includes(c.code);
+                    const on = (modal.country || 'DZ') === c.code;
+                    return (
+                      <button key={c.code} type="button" disabled={!available} onClick={() => setModal({ ...modal, country: c.code })}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${on ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200'}`}>
+                        <span className="text-lg leading-none">{flag(c.code)}</span>
+                        <span className="truncate">{isRtl ? c.ar_name : c.name}</span>
+                        {!available && <span className="ms-auto text-[10px] text-gray-400">{t('country_soon')}</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-xs text-gray-400 dark:text-zinc-500">
+                  {(modal.country || 'DZ') === (selected.country || 'DZ') ? t('copy_hint', { name: selected.name }) : t('country_fresh_hint')}
+                </p>
+              </>
             )}
             <button onClick={submitModal} disabled={busy || !modal.name.trim()}
               className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all disabled:opacity-60">

@@ -113,7 +113,7 @@ function EmptyState({ onInitialize, isLoading }) {
 // ─────────────────────────────────────────────
 //  Sub-component: wilaya row
 // ─────────────────────────────────────────────
-function WilayaRow({ wilaya, onPriceChange, onToggle, onTypeToggle, onSave, onDelete, toggleLoading, saveLoading, isSelected, onToggleSelect }) {
+function WilayaRow({ wilaya, onPriceChange, onToggle, onTypeToggle, onSave, onDelete, onCommunes, toggleLoading, saveLoading, isSelected, onToggleSelect }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const isSaving   = saveLoading  === wilaya.id;
   const isToggling = toggleLoading === wilaya.id;
@@ -181,6 +181,14 @@ function WilayaRow({ wilaya, onPriceChange, onToggle, onTypeToggle, onSave, onDe
             </button>
           )}
           <button
+            onClick={() => onCommunes(wilaya)}
+            title={t('communes.button')}
+            className={`relative flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95 ${wilaya.restrictedCommunes ? 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400' : 'bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-600 dark:text-zinc-300'}`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            {wilaya.restrictedCommunes ? wilaya.restrictedCommunes : null}
+          </button>
+          <button
             onClick={() => onDelete(wilaya)}
             title={t('delete_row')}
             className="p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all active:scale-95"
@@ -242,7 +250,131 @@ function DeleteConfirmModal({ names, isRtl, isDeleting, onConfirm, onClose }) {
 //  Sub-component: add-missing-wilayas modal
 //  يجلب قائمة كل الولايات، يحسب الناقصة منها محلياً، ويترك الأدمن يختار أيها يضيف
 // ─────────────────────────────────────────────
-function AddMissingWilayasModal({ headers, isRtl, existingIds, onClose, onAdded }) {
+// ─────────────────────────────────────────────
+//  Sub-component: بلديات الولاية — تعطيل بلدية كلياً أو للمنزل/المكتب فقط
+// ─────────────────────────────────────────────
+function CommunesModal({ wilaya, headers, isRtl, onClose, onSaved }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [communes, setCommunes] = useState([]);
+  const [initial, setInitial] = useState({});
+  const [query, setQuery] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/shipping/communes/${wilaya.id}`, headers)
+      .then(({ data }) => {
+        const rows = Array.isArray(data) ? data : [];
+        setCommunes(rows);
+        setInitial(Object.fromEntries(rows.map(c => [c.id, `${c.homeEnabled}|${c.officeEnabled}`])));
+      })
+      .catch(() => setError(t('communes.load_error')))
+      .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wilaya.id]);
+
+  const update = (id, patch) => setCommunes(prev => prev.map(c => (c.id === id ? { ...c, ...patch } : c)));
+  const setAll = (on) => setCommunes(prev => prev.map(c => ({ ...c, homeEnabled: on, officeEnabled: on })));
+  const changed = communes.filter(c => initial[c.id] !== `${c.homeEnabled}|${c.officeEnabled}`);
+  const disabledCount = communes.filter(c => !c.homeEnabled && !c.officeEnabled).length;
+  const q = query.trim().toLowerCase();
+  const shown = q ? communes.filter(c => c.name.toLowerCase().includes(q) || (c.ar_name ?? '').includes(query.trim())) : communes;
+
+  const handleSave = async () => {
+    if (!changed.length) return onClose();
+    setIsSaving(true);
+    setError(null);
+    try {
+      const { data } = await axios.post(
+        `${baseURL}/shipping/communes/${wilaya.id}`,
+        { communes: changed.map(c => ({ communeId: c.id, homeEnabled: !!c.homeEnabled, officeEnabled: !!c.officeEnabled })) },
+        headers,
+      );
+      onSaved(wilaya.id, data?.restricted ?? 0);
+      onClose();
+    } catch (e) {
+      console.error(e);
+      setError(e?.response?.data?.message || t('communes.save_error'));
+    } finally { setIsSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div dir={isRtl ? 'rtl' : 'ltr'} className="relative z-10 w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+              <MapPin className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div>
+              <h2 className="text-sm font-black text-gray-900 dark:text-white">{t('communes.title', { wilaya: wilaya.name })}</h2>
+              <p className="text-xs text-gray-400 dark:text-zinc-500">{t('communes.subtitle')}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-400 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-5 mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-50 dark:bg-rose-900/20 text-rose-500 text-xs font-semibold">
+            <ShieldX className="w-4 h-4 shrink-0" /> {error}
+          </div>
+        )}
+
+        {isLoading ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-indigo-500" /></div>
+        ) : (
+          <>
+            <div className="px-5 pt-4 flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute top-1/2 -translate-y-1/2 start-3 w-4 h-4 text-gray-400" />
+                <input value={query} onChange={e => setQuery(e.target.value)} placeholder={t('communes.search')}
+                  className="w-full ps-9 pe-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-sm outline-none focus:border-indigo-500" />
+              </div>
+              <button onClick={() => setAll(true)} className="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">{t('communes.enable_all')}</button>
+              <button onClick={() => setAll(false)} className="px-3 py-2 rounded-xl text-xs font-semibold bg-rose-50 text-rose-500 dark:bg-rose-500/10">{t('communes.disable_all')}</button>
+            </div>
+            <div className="px-5 pt-3 pb-1 flex items-center justify-between text-[11px] font-bold text-gray-400 dark:text-zinc-500">
+              <span>{t('communes.count', { total: communes.length, disabled: disabledCount })}</span>
+              <span className="flex gap-6"><span>{t('types.home')}</span><span>{t('types.office')}</span></span>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 pb-3">
+              {shown.map(c => {
+                const off = !c.homeEnabled && !c.officeEnabled;
+                return (
+                  <div key={c.id} className={`flex items-center justify-between py-2.5 border-b border-gray-50 dark:border-zinc-800 ${off ? 'opacity-50' : ''}`}>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-zinc-100 truncate">{isRtl ? (c.ar_name || c.name) : c.name}</p>
+                      {off && <p className="text-[11px] text-rose-500 font-semibold">{t('communes.disabled')}</p>}
+                    </div>
+                    <div className="flex items-center gap-5 shrink-0">
+                      <TypeSwitch enabled={c.homeEnabled} onToggle={() => update(c.id, { homeEnabled: !c.homeEnabled })} color="bg-indigo-500" title={t('types.home')} />
+                      <TypeSwitch enabled={c.officeEnabled} onToggle={() => update(c.id, { officeEnabled: !c.officeEnabled })} color="bg-emerald-500" title={t('types.office')} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-gray-100 dark:border-zinc-800">
+          <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">{t('communes.cancel')}</button>
+          <button onClick={handleSave} disabled={isSaving || isLoading}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-60">
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {t('communes.save', { count: changed.length })}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddMissingWilayasModal({ headers, isRtl, existingIds, country = 'DZ', onClose, onAdded }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const [isLoading, setIsLoading] = useState(true);
   const [missing, setMissing] = useState([]);
@@ -252,7 +384,7 @@ function AddMissingWilayasModal({ headers, isRtl, existingIds, onClose, onAdded 
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(`${baseURL}/shipping/wilayas`)
+    axios.get(`${baseURL}/shipping/wilayas`, { params: { country } })
       .then(({ data }) => {
         const missingWilayas = (data || []).filter(w => !existingIds.has(w.id));
         setMissing(missingWilayas);
@@ -914,6 +1046,7 @@ export default function Shipping() {
   const [isBulkToggling,   setIsBulkToggling]   = useState(false);
   const [profiles,         setProfiles]         = useState([]);
   const [profileId,        setProfileId]        = useState(null);
+  const [communesTarget,   setCommunesTarget]   = useState(null);
 
   // كل طلبات الأسعار تخص «حساب الشحن» المختار (بدونه = الحساب الافتراضي)
   const rateCfg = useMemo(
@@ -1191,11 +1324,25 @@ export default function Shipping() {
       )}
 
       {/* ── Add missing wilayas modal ── */}
+      {communesTarget && (
+        <CommunesModal
+          wilaya={communesTarget}
+          headers={rateCfg}
+          isRtl={isRtl}
+          onClose={() => setCommunesTarget(null)}
+          onSaved={(wilayaId, restricted) => {
+            setWilayas(prev => prev.map(w => (w.id === wilayaId ? { ...w, restrictedCommunes: restricted } : w)));
+            showToast('success', t('communes.saved'));
+          }}
+        />
+      )}
+
       {showMissingModal && (
         <AddMissingWilayasModal
           headers={rateCfg}
           isRtl={isRtl}
           existingIds={new Set(wilayas.map(w => w.id))}
+          country={profiles.find(p => p.id === profileId)?.country || profiles.find(p => p.isDefault)?.country || 'DZ'}
           onClose={() => setShowMissingModal(false)}
           onAdded={handleMissingAdded}
         />
@@ -1452,6 +1599,7 @@ export default function Shipping() {
                   onTypeToggle={toggleType}
                   onSave={handleSaveRow}
                   onDelete={requestDeleteRow}
+                  onCommunes={setCommunesTarget}
                   toggleLoading={toggleLoading}
                   saveLoading={saveLoading}
                   isSelected={selectedIds.has(wilaya.id)}

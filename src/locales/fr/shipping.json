@@ -121,6 +121,9 @@
     "submit_error": "Échec de l'ajout des wilayas sélectionnées"
   },
   "profiles": {
+    "country": "Pays",
+    "country_soon": "Bientôt",
+    "country_fresh_hint": "Le compte démarre avec les régions de ce pays et des tarifs à 0 ; définissez ensuite vos tarifs.",
     "title": "Comptes de livraison",
     "subtitle": "Chaque compte a ses tarifs et ses wilayas — choisissez le compte de chaque boutique",
     "new": "Nouveau compte",
@@ -130,7 +133,7 @@
     "delete": "Supprimer le compte",
     "delete_confirm": "Supprimer « {{name}} » ? Les boutiques qui l'utilisent reviendront au compte par défaut.",
     "name_placeholder": "Ex : Tarifs Alger",
-    "copy_hint": "Le nouveau compte démarre avec une copie des tarifs de « {{name}} », modifiables ensuite.",
+    "copy_hint": "Le nouveau compte démarre avec une copie des tarifs et des communes désactivées de « {{name}} », modifiables ensuite.",
     "save": "Enregistrer",
     "wilayas_count": "{{count}} wilayas",
     "used_by": "Utilisé par : {{stores}}",
@@ -144,6 +147,8 @@
     "error": "Une erreur est survenue, réessayez"
   },
   "types": {
+    "home": "Domicile",
+    "office": "Bureau",
     "enable_home": "Activer la livraison à domicile",
     "disable_home": "Désactiver la livraison à domicile",
     "enable_office": "Activer la livraison au bureau",
@@ -153,5 +158,20 @@
     "office_only": "Bureau seul",
     "both": "Les deux",
     "bulk_success": "Type de livraison mis à jour pour {{count}} wilayas"
+  },
+  "communes": {
+    "button": "Communes",
+    "title": "Communes de {{wilaya}}",
+    "subtitle": "Désactivez les communes non desservies, ou seulement la livraison à domicile/au bureau",
+    "search": "Rechercher une commune...",
+    "enable_all": "Tout activer",
+    "disable_all": "Tout désactiver",
+    "count": "{{total}} communes · {{disabled}} désactivées",
+    "disabled": "Désactivée — masquée pour le client",
+    "cancel": "Annuler",
+    "save": "Enregistrer ({{count}})",
+    "saved": "Communes enregistrées",
+    "load_error": "Impossible de charger les communes",
+    "save_error": "Impossible d'enregistrer les communes"
   }
 }

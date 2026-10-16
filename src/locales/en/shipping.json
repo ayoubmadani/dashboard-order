@@ -121,6 +121,9 @@
     "submit_error": "Failed to add the selected states"
   },
   "profiles": {
+    "country": "Country",
+    "country_soon": "Soon",
+    "country_fresh_hint": "The account starts with this country's regions at 0; then set your prices.",
     "title": "Shipping accounts",
     "subtitle": "Each account has its own prices and wilayas — pick the one each store uses",
     "new": "New account",
@@ -130,7 +133,7 @@
     "delete": "Delete account",
     "delete_confirm": "Delete \"{{name}}\"? Stores using it will fall back to the default account.",
     "name_placeholder": "e.g. Algiers prices",
-    "copy_hint": "The new account starts as a copy of \"{{name}}\" prices; edit them afterwards.",
+    "copy_hint": "The new account starts as a copy of \"{{name}}\" prices and disabled communes; edit them afterwards.",
     "save": "Save",
     "wilayas_count": "{{count}} wilayas",
     "used_by": "Used by: {{stores}}",
@@ -144,6 +147,8 @@
     "error": "Something went wrong, try again"
   },
   "types": {
+    "home": "Home",
+    "office": "Office",
     "enable_home": "Enable home delivery",
     "disable_home": "Disable home delivery",
     "enable_office": "Enable office delivery",
@@ -153,5 +158,20 @@
     "office_only": "Office only",
     "both": "Both",
     "bulk_success": "Delivery type updated for {{count}} wilayas"
+  },
+  "communes": {
+    "button": "Communes",
+    "title": "{{wilaya}} communes",
+    "subtitle": "Disable communes you do not deliver to, or only home/office delivery",
+    "search": "Search a commune...",
+    "enable_all": "Enable all",
+    "disable_all": "Disable all",
+    "count": "{{total}} communes · {{disabled}} disabled",
+    "disabled": "Disabled — hidden from customers",
+    "cancel": "Cancel",
+    "save": "Save ({{count}})",
+    "saved": "Communes saved",
+    "load_error": "Could not load communes",
+    "save_error": "Could not save communes"
   }
 }
