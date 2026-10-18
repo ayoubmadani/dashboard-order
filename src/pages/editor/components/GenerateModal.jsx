@@ -5,17 +5,6 @@ import { X, Sparkles, Loader2, Search, Package, Check, ImagePlus, Trash2 } from 
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
-// القيمة تُرسل كما هي للخادم (برومبت عربي)
-const STYLES = [
-  { key: 'auto', value: 'auto' },
-  { key: 'fun', value: 'مرح' },
-  { key: 'luxury', value: 'فاخر' },
-  { key: 'sport', value: 'رياضي' },
-  { key: 'medical', value: 'طبي' },
-  { key: 'kids', value: 'أطفال' },
-  { key: 'traditional', value: 'تقليدي' },
-  { key: 'minimal', value: 'عصري بسيط' },
-];
 const MAX_PHOTOS = 3;
 
 const LANGUAGES = [
@@ -105,17 +94,19 @@ function ProductPicker({ selectedProductId, onSelect }) {
   );
 }
 
-export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage }) {
+export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage, pageId }) {
   const { t, i18n } = useTranslation();
   const [kind, setKind] = useState('blocks'); // 'blocks' | 'images'
   const [mode, setMode] = useState('product'); // 'product' | 'manual'
   const [description, setDescription] = useState('');
   const [productId, setProductId] = useState(null);
   const [language, setLanguage] = useState(['ar', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'ar');
-  const [style, setStyle] = useState('auto');
+  const [product, setProduct] = useState(null);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [price, setPrice] = useState('');
   const [photos, setPhotos] = useState([]); // [{ blob, url }]
   const fileInput = useRef(null);
+  const photoRequest = useRef(0);
 
   const isImages = kind === 'images';
   const busy = generating || !!imagePage?.step;
@@ -125,23 +116,49 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   // روابط المعاينة تُحرَّر عند الاستبدال/الإغلاق
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
+
   if (!open) return null;
 
   const addPhotos = (blobs) => {
     setPhotos((prev) => [...prev, ...blobs.map((blob) => ({ blob, url: URL.createObjectURL(blob) }))].slice(0, MAX_PHOTOS));
   };
 
-  // صور المنتج الحالية تُقترح تلقائيًا (إن سمح بها المتصفح)
-  const handleSelectProduct = async (id, product) => {
+  // صور المنتج تُجلب تلقائيًا عبر الخادم (R2 لا يسمح للمتصفح بقراءتها مباشرة)
+  const loadProductPhotos = async (p) => {
+    const count = Math.min(MAX_PHOTOS, p?.imagesProduct?.length || 0);
+    if (!count || !pageId) return;
+    const requestId = (photoRequest.current += 1);
+    setLoadingPhotos(true);
+    const blobs = await Promise.all(
+      Array.from({ length: count }, (_, n) =>
+        axios
+          .get(`${baseURL}/builder-pages/${pageId}/image-page-product-photo`, {
+            params: { productId: p.id, n },
+            responseType: 'blob',
+            headers: { Authorization: `Bearer ${getAccessToken()}` },
+          })
+          .then((r) => r.data)
+          .catch(() => null),
+      ),
+    );
+    if (requestId !== photoRequest.current) return; // اختار منتجًا آخر في الأثناء
+    setPhotos(blobs.filter(Boolean).map((blob) => ({ blob, url: URL.createObjectURL(blob) })));
+    setLoadingPhotos(false);
+  };
+
+  const handleSelectProduct = (id, p) => {
     setProductId(id);
-    if (!isImages || photos.length) return;
-    const urls = (product?.imagesProduct || []).map((i) => i.imageUrl).filter(Boolean).slice(0, MAX_PHOTOS);
-    const blobs = (await Promise.all(urls.map((u) => fetch(u).then((r) => (r.ok ? r.blob() : null)).catch(() => null)))).filter(Boolean);
-    if (blobs.length) addPhotos(blobs);
+    setProduct(p || null);
+    if (isImages) loadProductPhotos(p);
+  };
+
+  const switchKind = (k) => {
+    setKind(k);
+    if (k === 'images' && mode === 'product' && product && !photos.length) loadProductPhotos(product);
   };
 
   const hasSource = mode === 'product' ? !!productId : !!description.trim();
-  const canSubmit = isImages ? hasSource && photos.length > 0 && !limitReached : hasSource;
+  const canSubmit = isImages ? hasSource && photos.length > 0 && !limitReached && !loadingPhotos : hasSource;
 
   const handleSubmit = async () => {
     if (!canSubmit || busy) return;
@@ -153,7 +170,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
     };
     const ok = await onSubmit(
       isImages
-        ? { ...base, files: photos.map((p) => p.blob), style, price: mode === 'manual' && price !== '' ? Number(price) : undefined }
+        ? { ...base, files: photos.map((p) => p.blob), style: 'auto', price: mode === 'manual' && price !== '' ? Number(price) : undefined }
         : base,
     );
     if (ok) onClose();
@@ -192,7 +209,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
               <button
                 key={k}
                 type="button"
-                onClick={() => setKind(k)}
+                onClick={() => switchKind(k)}
                 disabled={busy}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60 ${
                   kind === k ? 'bg-white dark:bg-zinc-900 text-amber-600 shadow-sm' : 'text-gray-500 dark:text-zinc-400'
@@ -269,7 +286,12 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
                   </button>
                 </div>
               ))}
-              {photos.length < MAX_PHOTOS && (
+              {loadingPhotos && (
+                <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-gray-400">
+                  <Loader2 size={16} className="animate-spin" />
+                </div>
+              )}
+              {!loadingPhotos && photos.length < MAX_PHOTOS && (
                 <button
                   type="button"
                   disabled={busy}
@@ -302,19 +324,6 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
             </button>
           ))}
         </div>
-
-        {isImages && (
-          <div className="mb-3">
-            <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-1.5">{t('editor.imagePage.style')}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {STYLES.map((s) => (
-                <button key={s.key} type="button" onClick={() => setStyle(s.value)} disabled={busy} className={pill(style === s.value)}>
-                  {t(`editor.imagePage.styles.${s.key}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         <p className="text-[11px] text-amber-600 dark:text-amber-400 mb-2">{t('editor.generate.warning')}</p>
 

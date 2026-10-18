@@ -370,6 +370,7 @@ export default function PageEditor() {
         generating={generating}
         isDemo={isDemo}
         imagePage={{ step: imagePage.step, usage: imagePage.usage }}
+        pageId={id}
       />
       {imagePage.canRetry && !imagePage.step && (
         <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4">
