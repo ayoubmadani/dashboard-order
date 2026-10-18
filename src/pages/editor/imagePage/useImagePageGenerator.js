@@ -11,6 +11,20 @@ import { fillPlaceholders, captureSections } from './capture';
 const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
 const uuid = () => crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+// حد جسم الطلب في Vercel 4.5MB — نرفع الأقسام على دفعات أصغر من ذلك
+const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024;
+
+export function chunkBySize(blobs, max = MAX_UPLOAD_BYTES) {
+  const chunks = [];
+  blobs.forEach((blob, i) => {
+    const last = chunks[chunks.length - 1];
+    const size = last ? last.items.reduce((n, x) => n + x.size, 0) : 0;
+    if (last && size + blob.size <= max) last.items.push(blob);
+    else chunks.push({ start: i, items: [blob] });
+  });
+  return chunks;
+}
+
 export function buildImagePageTree(urls, { form, formAfter, productId }) {
   const images = urls.map((src) => ({
     id: uuid(),
@@ -51,11 +65,16 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     setStep('capture');
     const blobs = await captureSections(fillPlaceholders(g.html, g.images));
     setStep('upload');
-    const body = new FormData();
-    body.append('generationId', g.generationId);
-    blobs.forEach((b, i) => body.append('files', b, `${i + 1}.${b.type === 'image/webp' ? 'webp' : 'jpg'}`));
-    const res = await axios.post(`${baseURL}/builder-pages/${pageId}/image-page-sections`, body, { headers: authHeaders() });
-    onTree?.(buildImagePageTree(res.data.urls, g));
+    const urls = [];
+    for (const { start, items } of chunkBySize(blobs)) {
+      const body = new FormData();
+      body.append('generationId', g.generationId);
+      body.append('startIndex', String(start));
+      items.forEach((b, i) => body.append('files', b, `${start + i + 1}.${b.type === 'image/webp' ? 'webp' : 'jpg'}`));
+      const res = await axios.post(`${baseURL}/builder-pages/${pageId}/image-page-sections`, body, { headers: authHeaders() });
+      urls.push(...res.data.urls);
+    }
+    onTree?.(buildImagePageTree(urls, g));
     last.current = null;
     setCanRetry(false);
     return true;
