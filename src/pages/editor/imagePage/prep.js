@@ -60,15 +60,68 @@ async function sha256(blob) {
   return Array.from(new Uint8Array(hash), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// تنظيف حواف القص: البكسل شبه الشفاف يُحذف، وبكسل الحافة يأخذ لون أقرب بكسلات المنتج المعتمة
+// (بدل بقايا الخلفية — الهالة البيضاء حول الشعر والأطراف). يعدّل data (RGBA) في مكانه.
+export function refineAlpha(data, width, height, radius = 3) {
+  const alpha = new Uint8ClampedArray(width * height);
+  for (let i = 0; i < alpha.length; i++) alpha[i] = data[i * 4 + 3] < 64 ? 0 : data[i * 4 + 3];
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = y * width + x;
+      const a = alpha[i];
+      data[i * 4 + 3] = a;
+      if (a === 0 || a >= 250) continue;
+      let r = 0, g = 0, b = 0, n = 0;
+      for (let dy = -radius; dy <= radius; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= height) continue;
+        for (let dx = -radius; dx <= radius; dx++) {
+          const xx = x + dx;
+          if (xx < 0 || xx >= width) continue;
+          const j = yy * width + xx;
+          if (alpha[j] < 250) continue;
+          r += data[j * 4]; g += data[j * 4 + 1]; b += data[j * 4 + 2]; n++;
+        }
+      }
+      if (!n) {
+        data[i * 4 + 3] = 0; // بقعة معزولة من الخلفية
+        continue;
+      }
+      data[i * 4] = r / n; data[i * 4 + 1] = g / n; data[i * 4 + 2] = b / n;
+    }
+  }
+  return data;
+}
+
+async function refineCutout(png) {
+  try {
+    const bmp = await createImageBitmap(png);
+    const canvas = makeCanvas(bmp.width, bmp.height);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bmp, 0, 0);
+    bmp.close?.();
+    const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    refineAlpha(img.data, img.width, img.height);
+    ctx.putImageData(img, 0, 0);
+    return await canvasToBlob(canvas, 'image/png');
+  } catch {
+    return png; // متصفح بلا canvas كافٍ: نرجع نتيجة النموذج كما هي
+  }
+}
+
+// يتغير مع النموذج/التنظيف حتى لا تُستعمل قصّات قديمة محفوظة
+const CUTOUT_VERSION = 'fp16-refine-1';
+
 export async function removeBackgroundCached(blob) {
-  const key = await sha256(blob);
+  const key = `${CUTOUT_VERSION}:${await sha256(blob)}`;
   const hit = memory.get(key) ?? (await idb('readonly', (s) => s.get(key)));
   if (hit) {
     memory.set(key, hit);
     return hit;
   }
   const { removeBackground } = await import('@imgly/background-removal');
-  const out = await removeBackground(blob, { output: { format: 'image/png' } });
+  // النموذج المتوسط: الكبير أعطى نفس النتيجة تقريبًا بعد تنظيف الحواف، بضعف حجم التحميل
+  const out = await refineCutout(await removeBackground(blob, { model: 'isnet_fp16', output: { format: 'image/png' } }));
   memory.set(key, out);
   await idb('readwrite', (s) => s.put(out, key));
   return out;
