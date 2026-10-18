@@ -1,6 +1,6 @@
 import { useDraggable } from '@dnd-kit/core';
 import { useTranslation } from 'react-i18next';
-import { Lock, Type, MousePointerClick, Image as ImageIcon } from 'lucide-react';
+import { Lock, Type, MousePointerClick, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { componentsMap, blockTypes } from '../blocks/componentsMap';
 import MobileDrawer from './MobileDrawer';
 
@@ -60,15 +60,25 @@ function PaletteItem({ blockType, disabled }) {
 }
 
 // Placing a block also closes this drawer on mobile — see PageEditor.jsx.
-export default function Sidebar({ blocks, mobileOpen, onMobileClose }) {
+export default function Sidebar({ blocks, mobileOpen, onMobileClose, onOpenGenerate }) {
   const { t } = useTranslation();
   const placedTypes = new Set((blocks || []).map((b) => b.type));
 
   return (
     <MobileDrawer open={mobileOpen} onClose={onMobileClose} widthClass="md:w-64" borderClass="border-e" className="p-3">
-      {/* "Generate with AI" trigger hidden for now — onOpenGenerate/GenerateModal
-          are untouched, just not linked to any visible UI, so this is a
-          one-line revert (re-add the button below) when it comes back. */}
+      {onOpenGenerate && (
+        <button
+          type="button"
+          onClick={() => {
+            onOpenGenerate();
+            onMobileClose?.();
+          }}
+          className="w-full flex items-center justify-center gap-2 mb-4 px-3 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 transition-all"
+        >
+          <Sparkles size={16} />
+          {t('editor.generate.trigger')}
+        </button>
+      )}
 
       <div className="px-1 mb-3">
         <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('editor.sidebar.title')}</h2>
