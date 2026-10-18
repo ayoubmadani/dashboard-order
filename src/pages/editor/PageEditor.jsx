@@ -363,15 +363,18 @@ export default function PageEditor() {
         isRtl={isRtl}
         isDemo={isDemo}
       />
-      <GenerateModal
-        open={showGenerateModal}
-        onClose={() => setShowGenerateModal(false)}
-        onSubmit={handleGenerate}
-        generating={generating}
-        isDemo={isDemo}
-        imagePage={{ step: imagePage.step, usage: imagePage.usage }}
-        pageId={id}
-      />
+      {showGenerateModal && (
+        <GenerateModal
+          open={showGenerateModal}
+          onClose={() => setShowGenerateModal(false)}
+          onSubmit={handleGenerate}
+          generating={generating}
+          isDemo={isDemo}
+          imagePage={{ step: imagePage.step, usage: imagePage.usage }}
+          pageId={id}
+          pageProductId={productId}
+        />
+      )}
       {imagePage.canRetry && !imagePage.step && (
         <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4">
           <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs shadow-xl">

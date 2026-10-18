@@ -94,15 +94,32 @@ function ProductPicker({ selectedProductId, onSelect }) {
   );
 }
 
-export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage, pageId }) {
+// صور المنتج عبر الخادم (R2 لا يسمح للمتصفح بقراءتها مباشرة) — حتى 3، والمفقودة تُتجاهل
+function fetchProductPhotos(pageId, productId) {
+  return Promise.all(
+    Array.from({ length: MAX_PHOTOS }, (_, n) =>
+      axios
+        .get(`${baseURL}/builder-pages/${pageId}/image-page-product-photo`, {
+          params: { productId, n },
+          responseType: 'blob',
+          headers: { Authorization: `Bearer ${getAccessToken()}` },
+        })
+        .then((r) => r.data)
+        .catch(() => null),
+    ),
+  ).then((blobs) => blobs.filter(Boolean).map((blob) => ({ blob, url: URL.createObjectURL(blob) })));
+}
+
+// تُركَّب عند الفتح فقط: منتج الصفحة يُختار مسبقًا وتُجلب صوره
+export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage, pageId, pageProductId }) {
   const { t, i18n } = useTranslation();
-  const [kind, setKind] = useState('blocks'); // 'blocks' | 'images'
+  // صفحة الصور هي الطريقة الوحيدة؛ «بلوكات» تبقى فقط للتجربة المجانية (demo) لأنها بلا صفحة حقيقية
+  const kind = isDemo ? 'blocks' : 'images';
   const [mode, setMode] = useState('product'); // 'product' | 'manual'
   const [description, setDescription] = useState('');
-  const [productId, setProductId] = useState(null);
+  const [productId, setProductId] = useState(pageProductId || null);
   const [language, setLanguage] = useState(['ar', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'ar');
-  const [product, setProduct] = useState(null);
-  const [loadingPhotos, setLoadingPhotos] = useState(false);
+  const [loadingPhotos, setLoadingPhotos] = useState(!isDemo && !!pageProductId && !!pageId);
   const [price, setPrice] = useState('');
   const [photos, setPhotos] = useState([]); // [{ blob, url }]
   const fileInput = useRef(null);
@@ -116,6 +133,17 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   // روابط المعاينة تُحرَّر عند الاستبدال/الإغلاق
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
+  // منتج الصفحة: صوره تُجلب مرة واحدة عند الفتح
+  useEffect(() => {
+    if (isDemo || !pageProductId || !pageId) return;
+    const requestId = (photoRequest.current += 1);
+    fetchProductPhotos(pageId, pageProductId).then((list) => {
+      if (requestId !== photoRequest.current) return;
+      setPhotos(list);
+      setLoadingPhotos(false);
+    });
+  }, [isDemo, pageId, pageProductId]);
+
 
   if (!open) return null;
 
@@ -123,38 +151,15 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
     setPhotos((prev) => [...prev, ...blobs.map((blob) => ({ blob, url: URL.createObjectURL(blob) }))].slice(0, MAX_PHOTOS));
   };
 
-  // صور المنتج تُجلب تلقائيًا عبر الخادم (R2 لا يسمح للمتصفح بقراءتها مباشرة)
-  const loadProductPhotos = async (p) => {
-    const count = Math.min(MAX_PHOTOS, p?.imagesProduct?.length || 0);
-    if (!count || !pageId) return;
+  const handleSelectProduct = async (id) => {
+    setProductId(id);
+    if (!isImages || !pageId) return;
     const requestId = (photoRequest.current += 1);
     setLoadingPhotos(true);
-    const blobs = await Promise.all(
-      Array.from({ length: count }, (_, n) =>
-        axios
-          .get(`${baseURL}/builder-pages/${pageId}/image-page-product-photo`, {
-            params: { productId: p.id, n },
-            responseType: 'blob',
-            headers: { Authorization: `Bearer ${getAccessToken()}` },
-          })
-          .then((r) => r.data)
-          .catch(() => null),
-      ),
-    );
+    const list = await fetchProductPhotos(pageId, id);
     if (requestId !== photoRequest.current) return; // اختار منتجًا آخر في الأثناء
-    setPhotos(blobs.filter(Boolean).map((blob) => ({ blob, url: URL.createObjectURL(blob) })));
+    setPhotos(list);
     setLoadingPhotos(false);
-  };
-
-  const handleSelectProduct = (id, p) => {
-    setProductId(id);
-    setProduct(p || null);
-    if (isImages) loadProductPhotos(p);
-  };
-
-  const switchKind = (k) => {
-    setKind(k);
-    if (k === 'images' && mode === 'product' && product && !photos.length) loadProductPhotos(product);
   };
 
   const hasSource = mode === 'product' ? !!productId : !!description.trim();
@@ -202,24 +207,6 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
             <X size={18} />
           </button>
         </div>
-
-        {!isDemo && (
-          <div className="grid grid-cols-2 gap-1 p-1 mb-3 rounded-xl bg-gray-100 dark:bg-zinc-800">
-            {['blocks', 'images'].map((k) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => switchKind(k)}
-                disabled={busy}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-60 ${
-                  kind === k ? 'bg-white dark:bg-zinc-900 text-amber-600 shadow-sm' : 'text-gray-500 dark:text-zinc-400'
-                }`}
-              >
-                {t(`editor.imagePage.kind.${k}`)}
-              </button>
-            ))}
-          </div>
-        )}
 
         <div className="flex items-center gap-2 mb-3">
           {[
