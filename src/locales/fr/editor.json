@@ -311,5 +311,41 @@
     "newButton": "Nouveau bouton",
     "width": "Largeur (%)",
     "height": "Hauteur (px)"
+  },
+  "imagePage": {
+    "kind": {
+      "blocks": "Blocs",
+      "images": "Page d'images pro"
+    },
+    "photos": "Photos du produit (1 à 3)",
+    "photosHint": "Photos nettes du produit, l'arrière-plan sera retiré automatiquement",
+    "addPhoto": "Ajouter une photo",
+    "style": "Style",
+    "styles": {
+      "auto": "Automatique",
+      "fun": "Ludique",
+      "luxury": "Luxe",
+      "sport": "Sportif",
+      "medical": "Médical",
+      "kids": "Enfants",
+      "traditional": "Traditionnel",
+      "minimal": "Moderne épuré"
+    },
+    "price": "Prix",
+    "usage": "{{used}} sur {{limit}} utilisées ce mois-ci",
+    "upgrade": "Limite mensuelle atteinte — passez à un plan supérieur",
+    "unavailable": "Non disponible dans votre plan — passez à un plan supérieur",
+    "steps": {
+      "cutout": "Suppression de l'arrière-plan...",
+      "palette": "Extraction des couleurs...",
+      "design": "Conception de la page...",
+      "capture": "Conversion des sections en images...",
+      "upload": "Téléversement des images..."
+    },
+    "success": "Page d'images créée",
+    "error": "Impossible de créer la page d'images",
+    "unsupported": "Format d'image non pris en charge par ce navigateur, essayez JPG ou PNG",
+    "retryCapture": "Réessayer",
+    "captureFailed": "Design prêt, mais la conversion ou l'envoi des images a échoué"
   }
 }

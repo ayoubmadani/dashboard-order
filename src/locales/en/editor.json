@@ -311,5 +311,41 @@
     "newButton": "New button",
     "width": "Width (%)",
     "height": "Height (px)"
+  },
+  "imagePage": {
+    "kind": {
+      "blocks": "Blocks",
+      "images": "Pro image page"
+    },
+    "photos": "Product photos (1 to 3)",
+    "photosHint": "Clear product photos — the background is removed automatically",
+    "addPhoto": "Add photo",
+    "style": "Style",
+    "styles": {
+      "auto": "Automatic",
+      "fun": "Playful",
+      "luxury": "Luxury",
+      "sport": "Sporty",
+      "medical": "Medical",
+      "kids": "Kids",
+      "traditional": "Traditional",
+      "minimal": "Modern minimal"
+    },
+    "price": "Price",
+    "usage": "Used {{used}} of {{limit}} this month",
+    "upgrade": "Monthly limit reached — upgrade your plan",
+    "unavailable": "Not available on your plan — upgrade your plan",
+    "steps": {
+      "cutout": "Removing background...",
+      "palette": "Extracting colors...",
+      "design": "Designing the page...",
+      "capture": "Turning sections into images...",
+      "upload": "Uploading images..."
+    },
+    "success": "Image page created",
+    "error": "Could not create the image page",
+    "unsupported": "This image format isn't supported by this browser, try JPG or PNG",
+    "retryCapture": "Try again",
+    "captureFailed": "Design is ready, but converting or uploading the images failed"
   }
 }

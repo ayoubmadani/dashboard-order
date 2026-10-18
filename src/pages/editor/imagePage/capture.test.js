@@ -2,11 +2,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const calls = [];
-const toBlob = vi.fn(async (node, opts) => {
-  calls.push('toBlob');
-  return new Blob(['x'], { type: opts.type });
-});
-vi.mock('html-to-image', () => ({ toBlob }));
+// html-to-image يتجاهل type في toBlob — نرسم بـ toCanvas ونرمّز بأنفسنا
+let encode = (type) => type;
+const fakeCanvas = () => ({ toBlob: (cb, type, quality) => { calls.push(`encode:${type}:${quality}`); cb(new Blob(['x'], { type: encode(type) })); } });
+const toCanvas = vi.fn(async () => { calls.push('toBlob'); return fakeCanvas(); });
+vi.mock('html-to-image', () => ({ toCanvas }));
 vi.mock('./fonts.js', () => ({ loadFontCss: async () => "@font-face{font-family:'Lalezar';src:url(data:font/ttf;base64,AA==)}" }));
 
 const { fillPlaceholders, captureSections, TRANSPARENT_PNG } = await import('./capture.js');
@@ -18,8 +18,8 @@ let fonts, lastIframe;
 beforeEach(() => {
   vi.restoreAllMocks();
   calls.length = 0;
-  toBlob.mockClear();
-  toBlob.mockImplementation(async (node, opts) => { calls.push('toBlob'); return new Blob(['x'], { type: opts.type }); });
+  toCanvas.mockClear();
+  encode = (type) => type;
   fonts = { ready: Promise.resolve(), load: vi.fn(async () => { calls.push('fonts.load'); return []; }) };
   const orig = document.body.appendChild.bind(document.body);
   vi.spyOn(document.body, 'appendChild').mockImplementation((node) => {
@@ -48,15 +48,21 @@ describe('fillPlaceholders', () => {
 });
 
 describe('captureSections', () => {
+  it('encodes webp 0.92 by default', async () => {
+    const [blob] = await captureSections(page('<section class="s">a</section>'));
+    expect(blob.type).toBe('image/webp');
+    expect(calls).toContain('encode:image/webp:0.92');
+  });
+
   it('captures every section.s in order', async () => {
     const blobs = await captureSections(page('<section class="s">1</section><div>x</div><section class="s hero">2</section>'));
     expect(blobs).toHaveLength(2);
-    expect(toBlob.mock.calls.map((c) => c[0].textContent)).toEqual(['1', '2']);
+    expect(toCanvas.mock.calls.map((c) => c[0].textContent)).toEqual(['1', '2']);
   });
 
   it('capture crops tall sections', async () => {
     await captureSections(page('<section class="s" style="height:1500px">t</section>'));
-    const opts = toBlob.mock.calls[0][1];
+    const opts = toCanvas.mock.calls[0][1];
     expect(opts.height * opts.pixelRatio).toBeLessThanOrEqual(1100 * 1.5);
     expect(opts.width).toBe(720);
   });
@@ -75,9 +81,10 @@ describe('captureSections', () => {
   });
 
   it('falls back to jpeg when webp is unsupported', async () => {
-    toBlob.mockImplementationOnce(async () => new Blob(['x'], { type: 'image/png' }));
+    encode = (type) => (type === 'image/webp' ? 'image/png' : type); // Safari القديم
     const [blob] = await captureSections(page('<section class="s">a</section>'));
     expect(blob.type).toBe('image/jpeg');
-    expect(toBlob.mock.calls[1][1]).toMatchObject({ type: 'image/jpeg', quality: 0.9 });
+    expect(calls).toContain('encode:image/jpeg:0.9');
+    expect(toCanvas).toHaveBeenCalledTimes(1); // بلا إعادة رسم
   });
 });

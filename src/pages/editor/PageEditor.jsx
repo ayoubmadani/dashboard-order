@@ -14,6 +14,7 @@ import PagePixelsModal from './components/PagePixelsModal';
 import PageDomainModal from './components/PageDomainModal';
 import Loading from '../../components/Loading';
 import usePageBuilder from './hooks/usePageBuilder';
+import useImagePageGenerator from './imagePage/useImagePageGenerator';
 import { componentsMap } from './blocks/componentsMap';
 
 export default function PageEditor() {
@@ -277,7 +278,40 @@ export default function PageEditor() {
     }
   };
 
-  const handleGenerate = async ({ productId, description, language }) => {
+  const imagePage = useImagePageGenerator(id, {
+    onTree: (tree) => {
+      setBlocks(tree);
+      setSelectedId(null);
+      setSelectedElementId(null);
+    },
+  });
+
+  // فشل بعد التصميم (تصوير/رفع): إعادة المحاولة بنفس التصميم، بلا احتساب جديد
+  const imagePageFailed = (err) => {
+    const msg = err?.message === 'unsupported_image' ? t('editor.imagePage.unsupported') : err?.response?.data?.message || t('editor.imagePage.error');
+    toast.error(msg, { duration: 15000 });
+  };
+  const retryImageCapture = async () => {
+    try {
+      await imagePage.retryCapture();
+      toast.success(t('editor.imagePage.success'));
+    } catch (err) {
+      imagePageFailed(err);
+    }
+  };
+  const handleImagePage = async (input) => {
+    try {
+      await imagePage.run(input);
+      toast.success(t('editor.imagePage.success'));
+      return true;
+    } catch (err) {
+      imagePageFailed(err);
+      return false;
+    }
+  };
+
+  const handleGenerate = async ({ kind, productId, description, language, ...rest }) => {
+    if (kind === 'images') return handleImagePage({ productId, description, language, ...rest });
     try {
       const { imageFailed } = await generate({ productId, description, language });
       setSelectedId(null);
@@ -335,7 +369,18 @@ export default function PageEditor() {
         onSubmit={handleGenerate}
         generating={generating}
         isDemo={isDemo}
+        imagePage={{ step: imagePage.step, usage: imagePage.usage }}
       />
+      {imagePage.canRetry && !imagePage.step && (
+        <div className="fixed bottom-4 inset-x-0 z-50 flex justify-center px-4">
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs shadow-xl">
+            <span>{t('editor.imagePage.captureFailed')}</span>
+            <button onClick={retryImageCapture} className="px-3 py-1 rounded-lg bg-amber-500 font-semibold hover:bg-amber-600">
+              {t('editor.imagePage.retryCapture')}
+            </button>
+          </div>
+        </div>
+      )}
       <PageSettingsModal
         open={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}

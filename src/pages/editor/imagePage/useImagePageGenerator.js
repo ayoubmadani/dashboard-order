@@ -1,0 +1,122 @@
+// صفحة صور احترافية: تجهيز الصور في المتصفح ← تصميم Claude ← تصوير الأقسام ← رفعها ← بلوكات المحرر.
+// retryCapture يعيد التصوير والرفع فقط بنفس التصميم (بلا طلب Claude جديد ولا احتساب).
+import { useCallback, useEffect, useRef, useState } from 'react';
+import axios from 'axios';
+import { baseURL } from '../../../constents/const.';
+import { getAccessToken } from '../../../services/access-token';
+import { componentsMap } from '../blocks/componentsMap';
+import { downscale, removeBackgroundCached, extractPalette, blobToDataUrl } from './prep';
+import { fillPlaceholders, captureSections } from './capture';
+
+const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
+const uuid = () => crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+export function buildImagePageTree(urls, { form, formAfter, productId }) {
+  const images = urls.map((src) => ({
+    id: uuid(),
+    type: 'image',
+    props: { ...componentsMap.image.defaultProps, src, width: 100 },
+  }));
+  const formBlock = {
+    id: uuid(),
+    type: 'productForm',
+    props: { ...componentsMap.productForm.defaultProps, ...form, productId: productId || '' },
+  };
+  const at = Math.min(Math.max(0, formAfter ?? images.length - 1), images.length - 1) + 1;
+  return [...images.slice(0, at), formBlock, ...images.slice(at)];
+}
+
+export default function useImagePageGenerator(pageId, { onTree } = {}) {
+  const [step, setStep] = useState(null);
+  const [usage, setUsage] = useState({ used: 0, limit: 0 });
+  const [canRetry, setCanRetry] = useState(false);
+  const last = useRef(null);
+
+  const refreshUsage = useCallback(async () => {
+    try {
+      const res = await axios.get(`${baseURL}/builder-pages/image-pages/usage`, { headers: authHeaders() });
+      setUsage({ used: Number(res.data?.used) || 0, limit: Number(res.data?.limit) || 0 });
+    } catch {
+      /* العدّاد اختياري للعرض — الخادم هو من يفرض الحد */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pageId && pageId !== 'demo') refreshUsage();
+  }, [pageId, refreshUsage]);
+
+  // تصوير الأقسام ← رفعها ← بناء الصفحة (يُعاد كما هو في retryCapture)
+  const finish = useCallback(async () => {
+    const g = last.current;
+    setStep('capture');
+    const blobs = await captureSections(fillPlaceholders(g.html, g.images));
+    setStep('upload');
+    const body = new FormData();
+    body.append('generationId', g.generationId);
+    blobs.forEach((b, i) => body.append('files', b, `${i + 1}.${b.type === 'image/webp' ? 'webp' : 'jpg'}`));
+    const res = await axios.post(`${baseURL}/builder-pages/${pageId}/image-page-sections`, body, { headers: authHeaders() });
+    onTree?.(buildImagePageTree(res.data.urls, g));
+    last.current = null;
+    setCanRetry(false);
+    return true;
+  }, [pageId, onTree]);
+
+  const run = useCallback(async ({ files, productId, description, price, language, style }) => {
+    setCanRetry(false);
+    last.current = null;
+    try {
+      setStep('cutout');
+      const photos = await Promise.all(files.slice(0, 3).map((f) => downscale(f)));
+      const cutouts = [];
+      for (const p of photos) cutouts.push(await removeBackgroundCached(p)); // واحدة تلو الأخرى: الذاكرة على الهاتف
+
+      setStep('palette');
+      const palette = await extractPalette(cutouts[0], 5);
+
+      setStep('design');
+      const res = await axios.post(
+        `${baseURL}/builder-pages/${pageId}/generate-image-page`,
+        {
+          productId: productId || undefined,
+          description: description || undefined,
+          price,
+          language,
+          style,
+          palette: palette.length ? palette : ['#1f2937'],
+          cutouts: cutouts.length,
+          details: photos.length,
+        },
+        { headers: authHeaders() },
+      );
+      last.current = {
+        ...res.data,
+        productId,
+        images: {
+          IMG: await Promise.all(cutouts.map(blobToDataUrl)),
+          DETAIL: await Promise.all(photos.map(blobToDataUrl)),
+        },
+      };
+      refreshUsage();
+      return await finish();
+    } catch (err) {
+      setCanRetry(!!last.current); // فشل بعد التصميم: إعادة التصوير بلا احتساب
+      throw err;
+    } finally {
+      setStep(null);
+    }
+  }, [pageId, finish, refreshUsage]);
+
+  const retryCapture = useCallback(async () => {
+    if (!last.current) return false;
+    try {
+      return await finish();
+    } catch (err) {
+      setCanRetry(!!last.current);
+      throw err;
+    } finally {
+      setStep(null);
+    }
+  }, [finish]);
+
+  return { run, step, usage, canRetry, retryCapture, refreshUsage };
+}

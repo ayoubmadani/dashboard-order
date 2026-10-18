@@ -1,6 +1,6 @@
 // تحويل أقسام صفحة الصور (<section class="s">) إلى صور في المتصفح.
 // الـ HTML من Claude يُعرض في iframe معزول بلا سكربتات، ثم يُصوَّر كل قسم بعرض 720 × pixelRatio.
-import { toBlob } from 'html-to-image';
+import { toCanvas } from 'html-to-image';
 import { loadFontCss } from './fonts.js';
 
 export const TRANSPARENT_PNG =
@@ -29,11 +29,14 @@ function mount(html) {
   return { iframe, doc };
 }
 
+const encode = (canvas, type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+
+// toBlob في html-to-image يتجاهل type/quality (يرجع PNG دائمًا) — نرسم ثم نرمّز بأنفسنا
 async function render(node, opts) {
-  const blob = await toBlob(node, { ...opts, type: 'image/webp', quality: 0.92 });
-  // Safari القديم يرجع PNG عند طلب WebP
-  if (blob?.type === 'image/webp') return blob;
-  return toBlob(node, { ...opts, type: 'image/jpeg', quality: 0.9 });
+  const canvas = await toCanvas(node, opts);
+  const webp = await encode(canvas, 'image/webp', 0.92);
+  if (webp?.type === 'image/webp') return webp;
+  return encode(canvas, 'image/jpeg', 0.9); // Safari القديم يرجع PNG عند طلب WebP
 }
 
 export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100 } = {}) {
