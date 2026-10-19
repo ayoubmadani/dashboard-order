@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest';
-import { buildImagePageTree, chunkBySize } from './useImagePageGenerator';
+import { buildImagePageTree, chunkBySize, countSections } from './useImagePageGenerator';
 
 describe('buildImagePageTree', () => {
   const form = { buttonText: 'اطلب', buttonBackgroundColor: '#ff0000', title: 'x' };
@@ -30,5 +30,11 @@ describe('chunkBySize', () => {
   });
   it('a single oversized blob still gets its own chunk', () => {
     expect(chunkBySize([b(9), b(1)], 4)).toEqual([{ start: 0, items: [b(9)] }, { start: 1, items: [b(1)] }]);
+  });
+});
+
+describe('countSections', () => {
+  it('counts section.s like the server validator', () => {
+    expect(countSections('<section class="s">a</section><section class="hero s" id="x">b</section><section class="x">c</section>')).toBe(2);
   });
 });

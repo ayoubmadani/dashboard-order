@@ -47,7 +47,8 @@ async function render(node, opts, maxBytes) {
   return blob;
 }
 
-export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100, maxBytes = 3.8 * 1024 * 1024 } = {}) {
+// onProgress(index, blob): يُستدعى فور تصوير كل قسم — لعرض الصور واحدة بواحدة
+export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100, maxBytes = 3.8 * 1024 * 1024, onProgress } = {}) {
   const fontCss = await loadFontCss();
   const { iframe, doc } = mount(html);
   try {
@@ -68,6 +69,7 @@ export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100
       const blob = await render(section, { width: WIDTH, height, pixelRatio, fontEmbedCSS: fontCss, style: { margin: '0' } }, maxBytes);
       if (!blob) throw new Error('capture_failed');
       out.push(blob);
+      onProgress?.(out.length - 1, blob);
     }
     return out;
   } finally {

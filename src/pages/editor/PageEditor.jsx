@@ -15,6 +15,7 @@ import PageDomainModal from './components/PageDomainModal';
 import Loading from '../../components/Loading';
 import usePageBuilder from './hooks/usePageBuilder';
 import useImagePageGenerator from './imagePage/useImagePageGenerator';
+import ImagePagePreview from './imagePage/ImagePagePreview';
 import { componentsMap } from './blocks/componentsMap';
 
 export default function PageEditor() {
@@ -299,15 +300,13 @@ export default function PageEditor() {
       imagePageFailed(err);
     }
   };
-  const handleImagePage = async (input) => {
-    try {
-      await imagePage.run(input);
-      toast.success(t('editor.imagePage.success'));
-      return true;
-    } catch (err) {
-      imagePageFailed(err);
-      return false;
-    }
+  // النافذة تُغلق فورًا؛ التقدّم يظهر مكان الصفحة (ImagePagePreview)
+  const handleImagePage = (input) => {
+    imagePage
+      .run(input)
+      .then(() => toast.success(t('editor.imagePage.success')))
+      .catch(imagePageFailed);
+    return true;
   };
 
   const handleGenerate = async ({ kind, productId, description, language, ...rest }) => {
@@ -409,24 +408,28 @@ export default function PageEditor() {
       <DndContext sensors={sensors} collisionDetection={collisionDetection} onDragEnd={handleDragEnd}>
         <div className="flex-1 flex overflow-hidden">
           <Sidebar
-            onOpenGenerate={() => setShowGenerateModal(true)}
+            onOpenGenerate={() => !imagePage.preview && setShowGenerateModal(true)}
             blocks={blocks}
             mobileOpen={mobileDrawer === 'sidebar'}
             onMobileClose={() => setMobileDrawer(null)}
           />
-          <Canvas
-            blocks={blocks}
-            pageProductId={productId}
-            settings={settings}
-            selectedId={selectedId}
-            onSelect={handleSelectBlock}
-            onDelete={handleDelete}
-            onDeleteAt={handleDeleteAt}
-            onDuplicate={handleDuplicate}
-            onUpdateProps={handleUpdateProps}
-            selectedElementId={selectedElementId}
-            onSelectElement={handleSelectElement}
-          />
+          {imagePage.preview ? (
+            <ImagePagePreview preview={imagePage.preview} step={imagePage.step} />
+          ) : (
+            <Canvas
+              blocks={blocks}
+              pageProductId={productId}
+              settings={settings}
+              selectedId={selectedId}
+              onSelect={handleSelectBlock}
+              onDelete={handleDelete}
+              onDeleteAt={handleDeleteAt}
+              onDuplicate={handleDuplicate}
+              onUpdateProps={handleUpdateProps}
+              selectedElementId={selectedElementId}
+              onSelectElement={handleSelectElement}
+            />
+          )}
           <PropsPanel
             block={selectedBlock}
             blocks={blocks}

@@ -100,4 +100,9 @@ describe('captureSections', () => {
     expect(blob.size).toBe(3_000_000);
     expect(calls.some((c) => /encode:image\/webp:0\.7/.test(c))).toBe(true);
   });
+  it('reports each section as soon as it is captured', async () => {
+    const seen = [];
+    await captureSections(page('<section class="s">1</section><section class="s">2</section>'), { onProgress: (i, blob) => seen.push([i, blob.type]) });
+    expect(seen).toEqual([[0, 'image/webp'], [1, 'image/webp']]);
+  });
 });

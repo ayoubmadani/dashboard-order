@@ -25,6 +25,11 @@ export function chunkBySize(blobs, max = MAX_UPLOAD_BYTES) {
   return chunks;
 }
 
+// نفس عدّ الخادم (validateImagePageHtml)
+export function countSections(html) {
+  return (html.match(/<section\b[^>]*class\s*=\s*["'][^"']*\bs\b[^"']*["']/gi) || []).length;
+}
+
 export function buildImagePageTree(urls, { form, formAfter, productId }) {
   const images = urls.map((src) => ({
     id: uuid(),
@@ -44,6 +49,15 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
   const [step, setStep] = useState(null);
   const [usage, setUsage] = useState({ used: 0, limit: 0 });
   const [canRetry, setCanRetry] = useState(false);
+  // معاينة أثناء الإنشاء: { count: null | n, images: (url|null)[] } — null = لا إنشاء جارٍ
+  const [preview, setPreview] = useState(null);
+  const previewUrls = useRef([]);
+
+  const clearPreview = useCallback(() => {
+    previewUrls.current.forEach((u) => URL.revokeObjectURL(u));
+    previewUrls.current = [];
+    setPreview(null);
+  }, []);
   const last = useRef(null);
 
   const refreshUsage = useCallback(async () => {
@@ -63,7 +77,15 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
   const finish = useCallback(async () => {
     const g = last.current;
     setStep('capture');
-    const blobs = await captureSections(fillPlaceholders(g.html, g.images));
+    const count = countSections(g.html);
+    setPreview({ count, images: Array(count).fill(null) });
+    const blobs = await captureSections(fillPlaceholders(g.html, g.images), {
+      onProgress: (i, blob) => {
+        const url = URL.createObjectURL(blob);
+        previewUrls.current.push(url);
+        setPreview((p) => (p ? { ...p, images: p.images.map((x, j) => (j === i ? url : x)) } : p));
+      },
+    });
     setStep('upload');
     const urls = [];
     for (const { start, items } of chunkBySize(blobs)) {
@@ -75,14 +97,17 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
       urls.push(...res.data.urls);
     }
     onTree?.(buildImagePageTree(urls, g));
+    clearPreview();
     last.current = null;
     setCanRetry(false);
     return true;
-  }, [pageId, onTree]);
+  }, [pageId, onTree, clearPreview]);
 
   const run = useCallback(async ({ files, productId, description, price, language, style }) => {
     setCanRetry(false);
     last.current = null;
+    clearPreview();
+    setPreview({ count: null, images: [] });
     try {
       setStep('cutout');
       const photos = await Promise.all(files.slice(0, 3).map((f) => downscale(f)));
@@ -121,11 +146,12 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
       return await finish();
     } catch (err) {
       setCanRetry(!!last.current); // فشل بعد التصميم: إعادة التصوير بلا احتساب
+      clearPreview();
       throw err;
     } finally {
       setStep(null);
     }
-  }, [pageId, finish, refreshUsage]);
+  }, [pageId, finish, refreshUsage, clearPreview]);
 
   const retryCapture = useCallback(async () => {
     if (!last.current) return false;
@@ -133,11 +159,12 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
       return await finish();
     } catch (err) {
       setCanRetry(!!last.current);
+      clearPreview();
       throw err;
     } finally {
       setStep(null);
     }
-  }, [finish]);
+  }, [finish, clearPreview]);
 
-  return { run, step, usage, canRetry, retryCapture, refreshUsage };
+  return { run, step, usage, canRetry, retryCapture, refreshUsage, preview };
 }
