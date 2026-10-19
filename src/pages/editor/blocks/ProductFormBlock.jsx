@@ -148,6 +148,7 @@ export default function ProductFormBlock({
     backgroundColor: inputBackgroundColor || inputStyle.backgroundColor,
     borderColor: inputBorderColor || inputStyle.borderColor,
     color: inputTextColor || inputStyle.color,
+    borderRadius: borderRadius ?? 10, // كل الزوايا تتبع إعداد الانحناء نفسه
   };
   // "Couleurs du bouton actif/désactivé" apply to every selectable-choice
   // button in the form (delivery type, offers, attribute/variant options,
@@ -366,7 +367,7 @@ export default function ProductFormBlock({
               {product && showProductName !== false && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
                   {product.productImage && (
-                    <img src={product.productImage} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+                    <img src={product.productImage} alt="" style={{ width: 48, height: 48, borderRadius: Math.min(8, sectionRadius), objectFit: 'cover' }} />
                   )}
                   <div>
                     <p style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{productName || product.name}</p>
@@ -391,7 +392,7 @@ export default function ProductFormBlock({
                               justifyContent: 'space-between',
                               gap: 10,
                               padding: '12px 14px',
-                              borderRadius: 10,
+                              borderRadius: sectionRadius,
                               // المختار: خلفية بلون الزر (شفافة) + إطار 2px — أوضح من الإطار وحده
                               border: `2px solid ${isSel ? accentColor : inactiveBtnBorder}`,
                               backgroundColor: isSel ? `color-mix(in srgb, ${accentColor} 14%, transparent)` : 'transparent',
@@ -497,7 +498,7 @@ export default function ProductFormBlock({
                                       position: 'relative',
                                       width: 100,
                                       height: 100,
-                                      borderRadius: 8,
+                                      borderRadius: Math.min(8, sectionRadius),
                                       padding: 0,
                                       backgroundImage: `url(${v.value})`,
                                       backgroundSize: 'cover',
@@ -534,7 +535,7 @@ export default function ProductFormBlock({
                                     aria-disabled={!available}
                                   style={{
                                     padding: '8px 14px',
-                                    borderRadius: 6,
+                                    borderRadius: Math.min(6, sectionRadius),
                                     fontSize: 12,
                                     backgroundColor: isSelected ? accentColor : inactiveBtnBg,
                                     color: isSelected ? activeBtnText : inactiveBtnText,
@@ -598,7 +599,7 @@ export default function ProductFormBlock({
                 /* Email or WhatsApp — digital products need no shipping info */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.contactQuestion}</p>
-                  <div style={{ display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${inputBorderColor || inputStyle.borderColor}` }}>
+                  <div style={{ display: 'flex', borderRadius: sectionRadius, overflow: 'hidden', border: `1px solid ${inputBorderColor || inputStyle.borderColor}` }}>
                     <button
                       type="button"
                       onClick={() => setContactMethod('email')}
@@ -731,7 +732,7 @@ export default function ProductFormBlock({
                               alignItems: 'center',
                               gap: 6,
                               padding: '12px 8px',
-                              borderRadius: 14,
+                              borderRadius: sectionRadius,
                               border: `2px solid ${isSelected ? activeBtnBorder : inactiveBtnBorder}`,
                               backgroundColor: isSelected ? accentColor : inactiveBtnBg,
                               color: isSelected ? activeBtnText : inactiveBtnText,
@@ -768,7 +769,7 @@ export default function ProductFormBlock({
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, quantity: Math.max(1, f.quantity - 1) }))}
                       disabled={form.quantity <= 1}
-                      style={quantityButtonStyle(accentColor, form.quantity <= 1)}
+                      style={{ ...quantityButtonStyle(accentColor, form.quantity <= 1), borderRadius: sectionRadius }}
                     >
                       <Minus size={14} strokeWidth={2.5} />
                     </button>
@@ -778,7 +779,7 @@ export default function ProductFormBlock({
                     <button
                       type="button"
                       onClick={() => setForm((f) => ({ ...f, quantity: f.quantity + 1 }))}
-                      style={quantityButtonStyle(accentColor, false)}
+                      style={{ ...quantityButtonStyle(accentColor, false), borderRadius: sectionRadius }}
                     >
                       <Plus size={14} strokeWidth={2.5} />
                     </button>
@@ -802,7 +803,7 @@ export default function ProductFormBlock({
                     return (
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.75 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Tag size={13} color="#f59e0b" /> {t.offer}</span>
-                        <span style={{ color: '#d97706', fontWeight: 700, backgroundColor: '#fffbeb', padding: '3px 8px', borderRadius: 8, fontSize: 11, border: '1px solid #fde68a' }}>{offer.name}</span>
+                        <span style={{ color: '#d97706', fontWeight: 700, backgroundColor: '#fffbeb', padding: '3px 8px', borderRadius: Math.min(8, sectionRadius), fontSize: 11, border: '1px solid #fde68a' }}>{offer.name}</span>
                       </div>
                     );
                   })()}
@@ -816,7 +817,7 @@ export default function ProductFormBlock({
                         <span>{attrName}</span>
                         <span style={{ fontWeight: 600, opacity: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                           {attr?.displayMode === 'color' && <span style={{ width: 15, height: 15, borderRadius: '50%', border: `1px solid ${baseInputStyle.borderColor}`, backgroundColor: val }} />}
-                          {attr?.displayMode === 'image' && <span style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${baseInputStyle.borderColor}`, backgroundImage: `url(${val})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />}
+                          {attr?.displayMode === 'image' && <span style={{ width: 30, height: 30, borderRadius: Math.min(6, sectionRadius), border: `1px solid ${baseInputStyle.borderColor}`, backgroundImage: `url(${val})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />}
                           {!attr?.displayMode && <span>{variant.name || val}</span>}
                         </span>
                       </div>
@@ -873,7 +874,7 @@ export default function ProductFormBlock({
                       justifyContent: 'center',
                       gap: 8,
                       padding: '13px 24px',
-                      borderRadius: 14,
+                      borderRadius: sectionRadius,
                       border: btnBorder ? `2px solid ${btnBorder}` : 'none',
                       backgroundColor: btnBg,
                       color: btnText,
