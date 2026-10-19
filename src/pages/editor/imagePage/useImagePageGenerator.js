@@ -46,7 +46,12 @@ export function buildImagePageTree(urls, { form, formAfter, productId }) {
 }
 
 export default function useImagePageGenerator(pageId, { onTree } = {}) {
-  const [step, setStep] = useState(null);
+  const [step, setStepState] = useState(null);
+  const [stepAt, setStepAt] = useState(0); // بداية المرحلة الحالية — لشريط التقدّم
+  const setStep = useCallback((s) => {
+    setStepState(s);
+    setStepAt(Date.now());
+  }, []);
   const [usage, setUsage] = useState({ used: 0, limit: 0 });
   const [canRetry, setCanRetry] = useState(false);
   // معاينة أثناء الإنشاء: { count: null | n, images: (url|null)[] } — null = لا إنشاء جارٍ
@@ -101,7 +106,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     last.current = null;
     setCanRetry(false);
     return true;
-  }, [pageId, onTree, clearPreview]);
+  }, [pageId, onTree, clearPreview, setStep]);
 
   const run = useCallback(async ({ files, productId, description, price, language, style }) => {
     setCanRetry(false);
@@ -151,7 +156,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     } finally {
       setStep(null);
     }
-  }, [pageId, finish, refreshUsage, clearPreview]);
+  }, [pageId, finish, refreshUsage, clearPreview, setStep]);
 
   const retryCapture = useCallback(async () => {
     if (!last.current) return false;
@@ -164,7 +169,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     } finally {
       setStep(null);
     }
-  }, [finish, clearPreview]);
+  }, [finish, clearPreview, setStep]);
 
-  return { run, step, usage, canRetry, retryCapture, refreshUsage, preview };
+  return { run, step, stepAt, usage, canRetry, retryCapture, refreshUsage, preview };
 }

@@ -414,7 +414,7 @@ export default function PageEditor() {
             onMobileClose={() => setMobileDrawer(null)}
           />
           {imagePage.preview ? (
-            <ImagePagePreview preview={imagePage.preview} step={imagePage.step} />
+            <ImagePagePreview preview={imagePage.preview} step={imagePage.step} stepAt={imagePage.stepAt} />
           ) : (
             <Canvas
               blocks={blocks}
