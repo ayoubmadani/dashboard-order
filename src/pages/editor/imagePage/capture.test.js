@@ -4,7 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const calls = [];
 // html-to-image يتجاهل type في toBlob — نرسم بـ toCanvas ونرمّز بأنفسنا
 let encode = (type) => type;
-const fakeCanvas = () => ({ toBlob: (cb, type, quality) => { calls.push(`encode:${type}:${quality}`); cb(new Blob(['x'], { type: encode(type) })); } });
+let sizeFor = () => 1;
+const fakeCanvas = () => ({ toBlob: (cb, type, quality) => { calls.push(`encode:${type}:${quality}`); const b = new Blob(['x'], { type: encode(type) }); Object.defineProperty(b, 'size', { value: sizeFor(type, quality) }); cb(b); } });
 const toCanvas = vi.fn(async () => { calls.push('toBlob'); return fakeCanvas(); });
 vi.mock('html-to-image', () => ({ toCanvas }));
 vi.mock('./fonts.js', () => ({ loadFontCss: async () => "@font-face{font-family:'Lalezar';src:url(data:font/ttf;base64,AA==)}" }));
@@ -20,6 +21,7 @@ beforeEach(() => {
   calls.length = 0;
   toCanvas.mockClear();
   encode = (type) => type;
+  sizeFor = () => 1;
   fonts = { ready: Promise.resolve(), load: vi.fn(async () => { calls.push('fonts.load'); return []; }) };
   const orig = document.body.appendChild.bind(document.body);
   vi.spyOn(document.body, 'appendChild').mockImplementation((node) => {
@@ -86,5 +88,16 @@ describe('captureSections', () => {
     expect(blob.type).toBe('image/jpeg');
     expect(calls).toContain('encode:image/jpeg:0.9');
     expect(toCanvas).toHaveBeenCalledTimes(1); // بلا إعادة رسم
+  });
+  it('long page: custom maxHeight is respected', async () => {
+    await captureSections(page('<section class="s" style="height:5000px">t</section>'), { maxHeight: 6000 });
+    expect(toCanvas.mock.calls[0][1].height).toBe(5000);
+  });
+
+  it('lowers quality until the image fits under maxBytes', async () => {
+    sizeFor = (_t, q) => (q > 0.75 ? 5_000_000 : 3_000_000);
+    const [blob] = await captureSections(page('<section class="s">a</section>'), { maxBytes: 4_000_000 });
+    expect(blob.size).toBe(3_000_000);
+    expect(calls.some((c) => /encode:image\/webp:0\.7/.test(c))).toBe(true);
   });
 });

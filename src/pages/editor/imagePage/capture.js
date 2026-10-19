@@ -31,15 +31,23 @@ function mount(html) {
 
 const encode = (canvas, type, quality) => new Promise((resolve) => canvas.toBlob(resolve, type, quality));
 
-// toBlob في html-to-image يتجاهل type/quality (يرجع PNG دائمًا) — نرسم ثم نرمّز بأنفسنا
-async function render(node, opts) {
+// toBlob في html-to-image يتجاهل type/quality (يرجع PNG دائمًا) — نرسم ثم نرمّز بأنفسنا.
+// الصورة الطويلة قد تتجاوز حد الرفع: نخفض الجودة تدريجيًا حتى تدخل تحت maxBytes.
+const QUALITIES = [0.92, 0.85, 0.75, 0.7, 0.6, 0.5];
+
+async function render(node, opts, maxBytes) {
   const canvas = await toCanvas(node, opts);
-  const webp = await encode(canvas, 'image/webp', 0.92);
-  if (webp?.type === 'image/webp') return webp;
-  return encode(canvas, 'image/jpeg', 0.9); // Safari القديم يرجع PNG عند طلب WebP
+  const probe = await encode(canvas, 'image/webp', QUALITIES[0]);
+  const type = probe?.type === 'image/webp' ? 'image/webp' : 'image/jpeg'; // Safari القديم يرجع PNG عند طلب WebP
+  let blob = type === 'image/webp' ? probe : await encode(canvas, 'image/jpeg', 0.9);
+  for (const q of QUALITIES.slice(1)) {
+    if (!blob || blob.size <= maxBytes) break;
+    blob = await encode(canvas, type, q);
+  }
+  return blob;
 }
 
-export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100 } = {}) {
+export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100, maxBytes = 3.8 * 1024 * 1024 } = {}) {
   const fontCss = await loadFontCss();
   const { iframe, doc } = mount(html);
   try {
@@ -57,7 +65,7 @@ export async function captureSections(html, { pixelRatio = 1.5, maxHeight = 1100
     const out = [];
     for (const section of sections) {
       const height = Math.min(section.scrollHeight || section.offsetHeight || maxHeight, maxHeight);
-      const blob = await render(section, { width: WIDTH, height, pixelRatio, fontEmbedCSS: fontCss, style: { margin: '0' } });
+      const blob = await render(section, { width: WIDTH, height, pixelRatio, fontEmbedCSS: fontCss, style: { margin: '0' } }, maxBytes);
       if (!blob) throw new Error('capture_failed');
       out.push(blob);
     }

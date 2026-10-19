@@ -63,7 +63,8 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
   const finish = useCallback(async () => {
     const g = last.current;
     setStep('capture');
-    const blobs = await captureSections(fillPlaceholders(g.html, g.images));
+    // الصفحة قسم واحد طويل (حتى 6000px) يتحول إلى صورة واحدة
+    const blobs = await captureSections(fillPlaceholders(g.html, g.images), { maxHeight: 6000 });
     setStep('upload');
     const urls = [];
     for (const { start, items } of chunkBySize(blobs)) {
