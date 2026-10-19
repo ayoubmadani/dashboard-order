@@ -5,7 +5,7 @@ import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { componentsMap } from '../blocks/componentsMap';
-import { downscale, removeBackgroundCached, extractPalette, blobToDataUrl } from './prep';
+import { downscale, removeBackgroundCached, extractPalette, extractBackgroundPalette, blobToDataUrl } from './prep';
 import { fillPlaceholders, captureSections } from './capture';
 
 const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
@@ -91,6 +91,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
 
       setStep('palette');
       const palette = await extractPalette(cutouts[0], 5);
+      const backgroundPalette = await extractBackgroundPalette(photos[0], cutouts[0], 4).catch(() => []);
 
       setStep('design');
       const res = await axios.post(
@@ -102,6 +103,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
           language,
           style,
           palette: palette.length ? palette : ['#1f2937'],
+          backgroundPalette,
           cutouts: cutouts.length,
           details: photos.length,
         },

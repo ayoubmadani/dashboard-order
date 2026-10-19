@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const removeBackground = vi.fn(async () => new Blob(['png'], { type: 'image/png' }));
 vi.mock('@imgly/background-removal', () => ({ removeBackground }));
 
-const { downscale, extractPalette, removeBackgroundCached, blobToDataUrl, refineAlpha } = await import('./prep.js');
+const { downscale, extractPalette, extractBackgroundPalette, removeBackgroundCached, blobToDataUrl, refineAlpha } = await import('./prep.js');
 
 // jsdom بلا canvas: canvas وهمي يسجّل المقاس ويرجع بكسلات محددة
 let lastCanvas;
@@ -93,5 +93,24 @@ describe('refineAlpha', () => {
     const data = px([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [255, 255, 255, 160]]);
     refineAlpha(data, 5, 1);
     expect(data[19]).toBe(0);
+  });
+});
+
+describe('extractBackgroundPalette', () => {
+  it('takes colors only where the cutout is transparent (the removed background)', async () => {
+    const n = 64 * 64;
+    const photo = [], cut = [];
+    for (let i = 0; i < n; i++) {
+      const isProduct = i % 2 === 0;
+      photo.push(...(isProduct ? [232, 65, 12, 255] : [242, 230, 216, 255])); // منتج برتقالي، خلفية بيج
+      cut.push(...(isProduct ? [232, 65, 12, 255] : [0, 0, 0, 0]));
+    }
+    const queue = [new Uint8ClampedArray(photo), new Uint8ClampedArray(cut)];
+    vi.spyOn(document, 'createElement').mockImplementation(() => {
+      const data = queue.shift();
+      return { width: 0, height: 0, getContext: () => ({ drawImage() {}, getImageData: () => ({ data }) }) };
+    });
+    const colors = await extractBackgroundPalette(new Blob(['p']), new Blob(['c']), 4);
+    expect(colors).toEqual(['#f2e6d8']);
   });
 });

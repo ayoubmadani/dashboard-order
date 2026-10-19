@@ -130,18 +130,20 @@ export async function removeBackgroundCached(blob) {
 // ---- الألوان: تجميع البكسلات في خانات ثم متوسط كل خانة ----
 const hex = (r, g, b) => '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
 
-export async function extractPalette(blob, count = 5) {
+async function samplePixels(blob) {
   const bmp = await decode(blob);
   const canvas = makeCanvas(64, 64);
   const ctx = canvas.getContext('2d');
   ctx.drawImage(bmp, 0, 0, 64, 64);
   bmp.close?.();
-  const { data } = ctx.getImageData(0, 0, 64, 64);
+  return ctx.getImageData(0, 0, 64, 64).data;
+}
 
+function paletteFromPixels(data, count, keep = () => true) {
   const buckets = new Map();
   for (let i = 0; i < data.length; i += 4) {
     const [r, g, b, a] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
-    if (a < 128) continue; // شفاف (بعد نزع الخلفية)
+    if (a < 128 || !keep(i)) continue; // شفاف (بعد نزع الخلفية) أو خارج القناع
     if (Math.min(r, g, b) > 235 || Math.max(r, g, b) < 20) continue; // شبه أبيض / شبه أسود
     const key = (r >> 4) * 256 + (g >> 4) * 16 + (b >> 4);
     const s = buckets.get(key) || { n: 0, r: 0, g: 0, b: 0 };
@@ -158,6 +160,17 @@ export async function extractPalette(blob, count = 5) {
     if (picked.length === count) break;
   }
   return picked.map((c) => hex(...c));
+}
+
+export async function extractPalette(blob, count = 5) {
+  return paletteFromPixels(await samplePixels(blob), count);
+}
+
+// ألوان خلفية الصورة الأصلية: البكسلات التي صارت شفافة في القصّ
+export async function extractBackgroundPalette(photo, cutout, count = 4) {
+  const original = await samplePixels(photo);
+  const mask = await samplePixels(cutout);
+  return paletteFromPixels(original, count, (i) => mask[i + 3] < 128);
 }
 
 export function blobToDataUrl(blob) {
