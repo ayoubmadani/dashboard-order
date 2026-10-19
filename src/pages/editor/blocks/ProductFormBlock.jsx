@@ -162,7 +162,7 @@ export default function ProductFormBlock({
     ...baseInputStyle,
     ...extra,
     ...(focusedField === name
-      ? { borderColor: accentColor, backgroundColor: '#ffffff', boxShadow: `0 0 0 3px ${accentShadow}` }
+      ? { borderColor: accentColor, boxShadow: `0 0 0 3px ${accentShadow}` } // لون الحقل يبقى كما هو — الأبيض كان يخفي الكتابة الفاتحة في النماذج الداكنة
       : {}),
   });
   // Same merchant-configurable radius as the outer card, applied to every
