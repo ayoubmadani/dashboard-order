@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Minus, Plus, ShoppingCart, MapPin, Phone, User, Home,
-  ChevronDown, Truck, Package, Building2, AlertCircle, Tag, Mail, MessageCircle,
+  ChevronDown, Truck, Package, Building2, AlertCircle, Mail, MessageCircle,
   Check as CheckIcon,
 } from 'lucide-react';
 import axios from 'axios';
@@ -343,8 +343,6 @@ export default function ProductFormBlock({
     }
   };
 
-
-  const selectedAttrEntries = Object.entries(selectedVariants);
 
   return (
     // Stable id a "jump to order form" button (see ElementsOverlay.jsx)
@@ -796,40 +794,13 @@ export default function ProductFormBlock({
               )}
               </div>
 
-              {/* Order summary */}
+              {/* ملخص الطلب: المنتج، التوصيل، سعر القطعة، الإجمالي فقط */}
               {product && (
                 <div style={{ borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}`, padding: 16, display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Package size={14} /> {t.product}</span>
                     <span style={{ fontWeight: 700, opacity: 1, maxWidth: '55%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{product.name}</span>
                   </div>
-
-                  {selectedOffer && (() => {
-                    const offer = product.offers?.find((o) => o.id === selectedOffer);
-                    if (!offer) return null;
-                    return (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.75 }}>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Tag size={13} color="#f59e0b" /> {t.offer}</span>
-                        <span style={{ color: '#d97706', fontWeight: 700, backgroundColor: '#fffbeb', padding: '3px 8px', borderRadius: Math.min(8, sectionRadius), fontSize: 11, border: '1px solid #fde68a' }}>{offer.name}</span>
-                      </div>
-                    );
-                  })()}
-
-                  {selectedAttrEntries.map(([attrName, val]) => {
-                    const attr = product.attributes?.find((a) => a.name === attrName);
-                    const variant = attr?.variants?.find((v) => v.value === val);
-                    if (!variant) return null;
-                    return (
-                      <div key={attrName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: 0.75 }}>
-                        <span>{attrName}</span>
-                        <span style={{ fontWeight: 600, opacity: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
-                          {attr?.displayMode === 'color' && <span style={{ width: 15, height: 15, borderRadius: '50%', border: `1px solid ${baseInputStyle.borderColor}`, backgroundColor: val }} />}
-                          {attr?.displayMode === 'image' && <span style={{ width: 30, height: 30, borderRadius: Math.min(6, sectionRadius), border: `1px solid ${baseInputStyle.borderColor}`, backgroundImage: `url(${val})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />}
-                          {!attr?.displayMode && <span>{variant.name || val}</span>}
-                        </span>
-                      </div>
-                    );
-                  })}
 
                   {!product.isDigital && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
@@ -844,12 +815,6 @@ export default function ProductFormBlock({
                     <span>{t.unitPrice}</span>
                     <span style={{ fontWeight: 700, opacity: 1 }}>{formatPrice(getUnitPrice())}</span>
                   </div>
-                  {supportQty && !product.isDigital && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', opacity: 0.75 }}>
-                      <span>{t.quantity}</span>
-                      <span style={{ fontWeight: 700, opacity: 1 }}>× {form.quantity}</span>
-                    </div>
-                  )}
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: `1.5px dashed ${baseInputStyle.borderColor}` }}>
                     <span style={{ fontWeight: 700, fontSize: 14 }}>{t.total}</span>
