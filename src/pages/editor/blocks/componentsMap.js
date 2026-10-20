@@ -115,6 +115,8 @@ export const componentsMap = {
       paddingY: 0,
       borderRadius: 0,
       sectionGap: 14,
+      labelPosition: 'inside',
+      fieldVariant: 'outlined',
     },
     fields: [
       { key: 'showProductName', labelKey: 'editor.fields.showProductName', type: 'checkbox' },
@@ -125,6 +127,18 @@ export const componentsMap = {
       { key: 'paddingY', labelKey: 'editor.fields.paddingY', type: 'number', min: 0, max: 60 },
       { key: 'borderRadius', labelKey: 'editor.fields.borderRadius', type: 'number', min: 0, max: 60 },
       { key: 'sectionGap', labelKey: 'editor.fields.sectionGap', type: 'number', min: 0, max: 40 },
+      {
+        key: 'labelPosition',
+        labelKey: 'editor.fields.labelPosition',
+        type: 'select',
+        options: ['inside', 'above'].map((value) => ({ value, labelKey: `editor.fields.labelPositionOptions.${value}` })),
+      },
+      {
+        key: 'fieldVariant',
+        labelKey: 'editor.fields.fieldVariant',
+        type: 'select',
+        options: ['outlined', 'filled', 'underline'].map((value) => ({ value, labelKey: `editor.fields.fieldVariantOptions.${value}` })),
+      },
       {
         key: 'formColors',
         type: 'colorGroup',

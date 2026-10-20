@@ -59,12 +59,13 @@ function deliveryAllowed(wilaya, type) {
   return type === 'office' ? wilaya.officeEnabled !== false : wilaya.homeEnabled !== false;
 }
 
-function FieldWrapper({ label, labelColor, error, children }) {
+function FieldWrapper({ label, labelColor, error, required, plain, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {label && (
-        <label style={{ fontSize: 12, fontWeight: 700, color: labelColor, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+        <label style={plain ? { fontSize: 14, fontWeight: 700, color: labelColor } : { fontSize: 12, fontWeight: 700, color: labelColor, textTransform: 'uppercase', letterSpacing: 0.4 }}>
           {label}
+          {required && <span style={{ color: '#ef4444', marginInlineStart: 4 }}>*</span>}
         </label>
       )}
       {children}
@@ -110,6 +111,9 @@ export default function ProductFormBlock({
   paddingY,
   borderRadius,
   sectionGap,
+  // شكل النموذج: اسم الحقل داخله أو فوقه، والحقل بإطار / ممتلئ / خط سفلي
+  labelPosition = 'inside',
+  fieldVariant = 'outlined',
   language,
 }) {
   const t = getProductFormStrings(language);
@@ -149,7 +153,10 @@ export default function ProductFormBlock({
     borderColor: inputBorderColor || inputStyle.borderColor,
     color: inputTextColor || inputStyle.color,
     borderRadius: borderRadius ?? 10, // كل الزوايا تتبع إعداد الانحناء نفسه
+    ...(fieldVariant === 'filled' ? { borderColor: 'transparent', backgroundColor: inputBackgroundColor || '#f4f4f5' } : {}),
+    ...(fieldVariant === 'underline' ? { borderWidth: '0 0 1.5px 0', borderRadius: 0, backgroundColor: 'transparent' } : {}),
   };
+  const showLabels = labelPosition === 'above';
   // "Couleurs du bouton actif/désactivé" apply to every selectable-choice
   // button in the form (delivery type, offers, attribute/variant options,
   // digital contact-method toggle) — active = the currently-picked choice,
@@ -163,7 +170,7 @@ export default function ProductFormBlock({
     ...baseInputStyle,
     ...extra,
     ...(focusedField === name
-      ? { borderColor: accentColor, boxShadow: `0 0 0 3px ${accentShadow}` } // لون الحقل يبقى كما هو — الأبيض كان يخفي الكتابة الفاتحة في النماذج الداكنة
+      ? { borderColor: accentColor, boxShadow: fieldVariant === 'underline' ? 'none' : `0 0 0 3px ${accentShadow}` } // لون الحقل يبقى كما هو — الأبيض كان يخفي الكتابة الفاتحة في النماذج الداكنة
       : {}),
   });
   // Same merchant-configurable radius as the outer card, applied to every
@@ -561,7 +568,7 @@ export default function ProductFormBlock({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: 12, borderRadius: sectionRadius, backgroundColor: backgroundColor || '#ffffff', border: `1px solid ${baseInputStyle.borderColor}` }}>
               {/* Name + Phone — بدون أسماء حقول: الـ placeholder يحمل اسم الحقل (نفس المتجر: hideLabels) */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
-                <FieldWrapper>
+                <FieldWrapper label={showLabels ? t.fullName : undefined} labelColor={muted} plain required>
                   <div style={{ position: 'relative' }}>
                     <User size={15} style={iconInFieldStyle} />
                     <input
@@ -576,7 +583,7 @@ export default function ProductFormBlock({
                     />
                   </div>
                 </FieldWrapper>
-                <FieldWrapper>
+                <FieldWrapper label={showLabels ? t.phone : undefined} labelColor={muted} plain required>
                   <div style={{ position: 'relative' }}>
                     <Phone size={15} style={iconInFieldStyle} />
                     <input
@@ -631,7 +638,7 @@ export default function ProductFormBlock({
                   </div>
 
                   {contactMethod === 'email' ? (
-                    <FieldWrapper>
+                    <FieldWrapper label={showLabels ? t.email : undefined} labelColor={muted} plain required>
                       <div style={{ position: 'relative' }}>
                         <Mail size={15} style={iconInFieldStyle} />
                         <input
@@ -648,7 +655,7 @@ export default function ProductFormBlock({
                       </div>
                     </FieldWrapper>
                   ) : (
-                    <FieldWrapper>
+                    <FieldWrapper label={showLabels ? t.whatsapp : undefined} labelColor={muted} plain required>
                       <div style={{ position: 'relative' }}>
                         <MessageCircle size={15} style={iconInFieldStyle} />
                         <input
@@ -670,7 +677,7 @@ export default function ProductFormBlock({
                 <>
                   {/* Wilaya + Commune */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <FieldWrapper>
+                    <FieldWrapper label={showLabels ? t.wilaya : undefined} labelColor={muted} plain required>
                       <div style={{ position: 'relative' }}>
                         <MapPin size={15} style={iconInFieldStyle} />
                         <select
@@ -690,7 +697,7 @@ export default function ProductFormBlock({
                         <ChevronDown size={14} style={chevronInFieldStyle} />
                       </div>
                     </FieldWrapper>
-                    <FieldWrapper>
+                    <FieldWrapper label={showLabels ? t.commune : undefined} labelColor={muted} plain>
                       <div style={{ position: 'relative' }}>
                         <MapPin size={15} style={iconInFieldStyle} />
                         <select

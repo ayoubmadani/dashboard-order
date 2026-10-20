@@ -299,7 +299,18 @@
       "WhatsApp": "WhatsApp"
     },
     "floatingWidth": "Largeur (px)",
-    "floatingHeight": "Hauteur (px)"
+    "floatingHeight": "Hauteur (px)",
+    "labelPosition": "Libellés des champs",
+    "labelPositionOptions": {
+      "inside": "Dans le champ",
+      "above": "Au-dessus du champ"
+    },
+    "fieldVariant": "Style des champs",
+    "fieldVariantOptions": {
+      "outlined": "Bordé",
+      "filled": "Rempli",
+      "underline": "Souligné"
+    }
   },
   "canvasSection": {
     "elements": "Éléments",

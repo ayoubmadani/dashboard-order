@@ -299,7 +299,18 @@
       "WhatsApp": "واتساب"
     },
     "floatingWidth": "العرض (px)",
-    "floatingHeight": "الارتفاع (px)"
+    "floatingHeight": "الارتفاع (px)",
+    "labelPosition": "أسماء الحقول",
+    "labelPositionOptions": {
+      "inside": "داخل الحقل",
+      "above": "فوق الحقل"
+    },
+    "fieldVariant": "شكل الحقول",
+    "fieldVariantOptions": {
+      "outlined": "بإطار",
+      "filled": "ممتلئ",
+      "underline": "خط سفلي"
+    }
   },
   "canvasSection": {
     "elements": "العناصر",
