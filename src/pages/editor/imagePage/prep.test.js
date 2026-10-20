@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const removeBackground = vi.fn(async () => new Blob(['png'], { type: 'image/png' }));
-vi.mock('@imgly/background-removal', () => ({ removeBackground }));
+// إزالة الخلفية على الخادم (BiRefNet) — نتحقق من الطلب ومن الحفظ
+const post = vi.fn(async () => ({ data: new Blob(['webp'], { type: 'image/webp' }) }));
+vi.mock('axios', () => ({ default: { post } }));
+vi.mock('../../../services/access-token', () => ({ getAccessToken: () => 'tok' }));
 
-const { downscale, extractPalette, extractBackgroundPalette, removeBackgroundCached, blobToDataUrl, refineAlpha } = await import('./prep.js');
+const { downscale, extractPalette, extractBackgroundPalette, removeBackgroundCached, blobToDataUrl } = await import('./prep.js');
 
 // jsdom بلا canvas: canvas وهمي يسجّل المقاس ويرجع بكسلات محددة
 let lastCanvas;
@@ -62,12 +64,15 @@ describe('extractPalette', () => {
 });
 
 describe('removeBackgroundCached', () => {
-  it('cache hit returns stored blob without calling remover', async () => {
-    const input = new Blob(['same-bytes'], { type: 'image/jpeg' });
-    const a = await removeBackgroundCached(input);
-    const b = await removeBackgroundCached(new Blob(['same-bytes'], { type: 'image/jpeg' }));
-    expect(removeBackground).toHaveBeenCalledTimes(1);
-    expect(b.type).toBe('image/png');
+  it('sends the photo to the page cutout endpoint, then serves repeats from cache', async () => {
+    const a = await removeBackgroundCached(new Blob(['same-bytes'], { type: 'image/jpeg' }), 'page-1');
+    const b = await removeBackgroundCached(new Blob(['same-bytes'], { type: 'image/jpeg' }), 'page-1');
+    expect(post).toHaveBeenCalledTimes(1);
+    const [url, body, opts] = post.mock.calls[0];
+    expect(url).toMatch(/\/builder-pages\/page-1\/image-page-cutout$/);
+    expect(body.get('file')).toBeInstanceOf(Blob);
+    expect(opts).toMatchObject({ responseType: 'blob', headers: { Authorization: 'Bearer tok' } });
+    expect(b.type).toBe('image/webp');
     expect(await b.text()).toBe(await a.text());
   });
 });
@@ -75,24 +80,6 @@ describe('removeBackgroundCached', () => {
 describe('blobToDataUrl', () => {
   it('encodes as data URL', async () => {
     expect(await blobToDataUrl(new Blob(['hi'], { type: 'text/plain' }))).toBe('data:text/plain;base64,aGk=');
-  });
-});
-
-describe('refineAlpha', () => {
-  // صف واحد: منتج أحمر معتم | حافة نصف شفافة بيضاء (هالة) | بكسل شبه شفاف | خلفية شفافة
-  const px = (list) => new Uint8ClampedArray(list.flat());
-  it('recolors the white halo from the opaque product and drops faint pixels', () => {
-    const data = px([[200, 0, 0, 255], [200, 0, 0, 255], [250, 250, 250, 140], [250, 250, 250, 30], [0, 0, 0, 0]]);
-    refineAlpha(data, 5, 1);
-    expect([...data.slice(8, 12)]).toEqual([200, 0, 0, 140]); // الهالة تأخذ لون المنتج
-    expect(data[15]).toBe(0); // شبه شفاف → شفاف
-    expect([...data.slice(0, 4)]).toEqual([200, 0, 0, 255]); // المنتج لا يتغير
-  });
-
-  it('isolated semi-transparent pixel with no opaque neighbour is removed', () => {
-    const data = px([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [255, 255, 255, 160]]);
-    refineAlpha(data, 5, 1);
-    expect(data[19]).toBe(0);
   });
 });
 

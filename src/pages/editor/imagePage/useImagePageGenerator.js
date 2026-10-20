@@ -117,7 +117,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
       setStep('cutout');
       const photos = await Promise.all(files.slice(0, 3).map((f) => downscale(f)));
       const cutouts = [];
-      for (const p of photos) cutouts.push(await removeBackgroundCached(p)); // واحدة تلو الأخرى: الذاكرة على الهاتف
+      for (const p of photos) cutouts.push(await removeBackgroundCached(p, pageId)); // واحدة تلو الأخرى
 
       setStep('palette');
       const palette = await extractPalette(cutouts[0], 5);
