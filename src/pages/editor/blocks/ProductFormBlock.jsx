@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   Minus, Plus, ShoppingCart, MapPin, Phone, User, Home,
-  ChevronDown, Truck, Shield, Package, Building2, AlertCircle, Tag, Mail, MessageCircle,
+  ChevronDown, Truck, Package, Building2, AlertCircle, Tag, Mail, MessageCircle,
   Check as CheckIcon,
 } from 'lucide-react';
 import axios from 'axios';
@@ -909,10 +909,6 @@ export default function ProductFormBlock({
                 </div>
               )}
 
-              <p style={{ margin: 0, fontSize: 11, textAlign: 'center', opacity: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                <Shield size={12} />
-                {t.secure}
-              </p>
             </form>
           )}
         </div>
