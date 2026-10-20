@@ -108,7 +108,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     return true;
   }, [pageId, onTree, clearPreview, setStep]);
 
-  const run = useCallback(async ({ files, productId, description, price, language, style }) => {
+  const run = useCallback(async ({ files, productId, description, price, language, style, primaryColor }) => {
     setCanRetry(false);
     last.current = null;
     clearPreview();
@@ -134,6 +134,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
           style,
           palette: palette.length ? palette : ['#1f2937'],
           backgroundPalette,
+          primaryColor,
           cutouts: cutouts.length,
           details: photos.length,
         },

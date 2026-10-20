@@ -121,6 +121,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   const [language, setLanguage] = useState(['ar', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'ar');
   const [loadingPhotos, setLoadingPhotos] = useState(!isDemo && !!pageProductId && !!pageId);
   const [price, setPrice] = useState('');
+  const [primaryColor, setPrimaryColor] = useState(null); // null = ألوان تلقائية
   const [photos, setPhotos] = useState([]); // [{ blob, url }]
   const fileInput = useRef(null);
   const photoRequest = useRef(0);
@@ -175,7 +176,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
     };
     const ok = await onSubmit(
       isImages
-        ? { ...base, files: photos.map((p) => p.blob), style: 'auto', price: mode === 'manual' && price !== '' ? Number(price) : undefined }
+        ? { ...base, files: photos.map((p) => p.blob), style: 'auto', primaryColor: primaryColor || undefined, price: mode === 'manual' && price !== '' ? Number(price) : undefined }
         : base,
     );
     if (ok) onClose();
@@ -311,6 +312,32 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
             </button>
           ))}
         </div>
+
+        {isImages && (
+          <div className="mb-3">
+            <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-0.5">{t('editor.imagePage.primaryColor')}</p>
+            <p className="text-[11px] text-gray-400 mb-2">{t('editor.imagePage.primaryColorHint')}</p>
+            <div className="flex items-center gap-2">
+              <button type="button" onClick={() => setPrimaryColor(null)} disabled={busy} className={pill(!primaryColor)}>
+                {t('editor.imagePage.styles.auto')}
+              </button>
+              <label
+                className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-xs font-semibold ${
+                  primaryColor ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900' : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400'
+                }`}
+              >
+                <input
+                  type="color"
+                  value={primaryColor || '#f59e0b'}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  disabled={busy}
+                  className="w-6 h-6 p-0 border-0 rounded cursor-pointer bg-transparent"
+                />
+                {primaryColor || t('editor.imagePage.pickColor')}
+              </label>
+            </div>
+          </div>
+        )}
 
         <p className="text-[11px] text-amber-600 dark:text-amber-400 mb-2">{t('editor.generate.warning')}</p>
 

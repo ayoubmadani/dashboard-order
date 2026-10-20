@@ -357,6 +357,9 @@
     "error": "Impossible de créer la page d'images",
     "unsupported": "Format d'image non pris en charge par ce navigateur, essayez JPG ou PNG",
     "retryCapture": "Réessayer",
-    "captureFailed": "Design prêt, mais la conversion ou l'envoi des images a échoué"
+    "captureFailed": "Design prêt, mais la conversion ou l'envoi des images a échoué",
+    "primaryColor": "Couleur principale",
+    "primaryColorHint": "Choisissez la couleur de votre marque, l'IA en déduira une couleur secondaire assortie",
+    "pickColor": "Choisir une couleur"
   }
 }

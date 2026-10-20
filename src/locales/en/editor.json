@@ -357,6 +357,9 @@
     "error": "Could not create the image page",
     "unsupported": "This image format isn't supported by this browser, try JPG or PNG",
     "retryCapture": "Try again",
-    "captureFailed": "Design is ready, but converting or uploading the images failed"
+    "captureFailed": "Design is ready, but converting or uploading the images failed",
+    "primaryColor": "Primary color",
+    "primaryColorHint": "Pick your brand color — the AI derives a matching secondary color",
+    "pickColor": "Pick a color"
   }
 }
