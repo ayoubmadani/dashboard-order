@@ -48,11 +48,11 @@
     "title": "Paiement en USDT",
     "amount": "Montant exact (USDT)",
     "address": "Adresse de dépôt — {{network}}",
-    "warning": "Envoyez exactement {{amount}} USDT sur le réseau {{network}}. Un autre montant ou réseau ne sera pas crédité automatiquement.",
-    "txid": "ID de transaction (TxID)",
-    "txid_placeholder": "Collez le TxID après le transfert",
+    "warning": "Uniquement depuis votre compte Binance : Wallet → Withdraw → USDT, collez cette adresse, choisissez le réseau {{network}} et saisissez exactement {{amount}} USDT. Binance affichera « Internal transfer » avec 0 frais. Les transferts depuis un autre portefeuille ou une autre plateforme ne sont pas acceptés pour le moment.",
+    "txid": "ID du transfert (TxID)",
+    "txid_placeholder": "Ex. : Off-chain transfer 123456789",
     "confirm": "Confirmer le paiement",
-    "hint": "Après le transfert, attendez la confirmation du réseau (1 à quelques minutes) puis collez le TxID.",
+    "hint": "Après le transfert, ouvrez l'historique des retraits Binance (Withdraw History) et copiez l'ID « Internal transfer » — le numéro seul suffit.",
     "error": "Impossible de vérifier la transaction, réessayez"
   }
 }
