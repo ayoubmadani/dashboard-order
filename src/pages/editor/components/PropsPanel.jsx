@@ -39,6 +39,7 @@ const BUTTON_ELEMENT_FIELDS = [
   { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
   { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
   { key: 'fontSize', labelKey: 'editor.fields.fontSize', type: 'number' },
+  { key: 'borderRadius', labelKey: 'editor.fields.floatingRadius', type: 'number', min: 0, max: 999 },
   { key: 'animation', labelKey: 'editor.fields.animation', type: 'select', options: BUTTON_ANIMATIONS.map((value) => ({ value, labelKey: `editor.fields.animationOptions.${value}` })) },
   { key: 'width', labelKey: 'editor.canvasSection.width', type: 'number', min: 5, max: 100 },
   { key: 'height', labelKey: 'editor.canvasSection.height', type: 'number' },

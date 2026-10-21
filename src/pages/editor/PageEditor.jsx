@@ -158,7 +158,7 @@ export default function PageEditor() {
 
       let newElement;
       if (activeData.elementType === 'button') {
-        newElement = { id: crypto.randomUUID(), type: 'button', text: t('editor.canvasSection.newButton'), linkType: 'external', link: '#', x, y, backgroundColor: '#10b981', textColor: '#ffffff' };
+        newElement = { id: crypto.randomUUID(), type: 'button', text: t('editor.canvasSection.newButton'), linkType: 'external', link: '#', x, y, backgroundColor: '#10b981', borderRadius: 8, textColor: '#ffffff' };
       } else if (activeData.elementType === 'image') {
         newElement = { id: crypto.randomUUID(), type: 'image', src: '', alt: '', x, y, width: 40, height: 160 };
       } else {
