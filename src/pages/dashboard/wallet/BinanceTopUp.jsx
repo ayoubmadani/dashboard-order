@@ -54,52 +54,46 @@ export default function BinanceTopUp({ config, onPaid }) {
     }
   };
 
+  // نفس أسلوب وضع البطاقة: عناوين صغيرة، حقول بنفس الشكل، وارتفاع قريب منه
+  const label = 'text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest';
+
   return (
     <div className="space-y-4">
-      {/* 1. QR يفتح Binance Pay */}
-      {qrValue && (
-        <div className="flex flex-col items-center gap-2">
-          <div className="p-3 bg-white rounded-2xl border border-gray-200">
-            <QRCodeSVG value={qrValue} size={168} level="M" />
+      {/* QR صغير + السعر والزر والـ UID بجانبه */}
+      <div className="flex items-stretch gap-3">
+        {qrValue && (
+          <div className="shrink-0 p-2 bg-white rounded-xl border border-gray-100 dark:border-zinc-800 self-center">
+            <QRCodeSVG value={qrValue} size={104} level="M" />
           </div>
-          <p className="text-xs text-gray-500 dark:text-zinc-400">{t('scan')} · 1 USDT = {config.rate} DA</p>
+        )}
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
+          <p className={label}><span dir="ltr">1 USDT = {config.rate} DA</span></p>
+          {config.payLink && (
+            <a
+              href={config.payLink}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#FCD535] text-gray-900 text-sm font-black hover:brightness-95"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {t('open_binance')}
+            </a>
+          )}
+          {config.uid && <CopyRow label="UID" value={config.uid} />}
         </div>
-      )}
+      </div>
+      <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed -mt-1">{t('scan_or_uid')}</p>
 
-      {/* 2. رابط يفتح الدفع في Binance */}
-      {config.payLink && (
-        <a
-          href={config.payLink}
-          target="_blank"
-          rel="noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#FCD535] text-gray-900 font-black hover:brightness-95"
-        >
-          <ExternalLink className="w-4 h-4" />
-          {t('open_binance')}
-        </a>
-      )}
-
-      {/* الـ UID للإرسال اليدوي: Pay ← Send ← UID */}
-      {config.uid && (
-        <div className="space-y-1">
-          {!qrValue && <p className="text-xs text-gray-500 dark:text-zinc-400">1 USDT = {config.rate} DA</p>}
-          <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">{t('uid_label')}</p>
-          <CopyRow label="" value={config.uid} />
-          <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed">{t('uid_note')}</p>
-        </div>
-      )}
-
-      {/* 3. رقم المعاملة */}
+      {/* رقم المعاملة */}
       <div className="space-y-1.5">
-        <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest block">{t('txid')}</label>
+        <label className={`${label} block`}>{t('txid')}</label>
         <input
           dir="ltr"
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(null); }}
           placeholder={t('txid_placeholder')}
-          className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-mono text-gray-900 dark:text-white outline-none focus:border-indigo-400"
+          className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
         />
-        <p className="text-[11px] text-gray-400 dark:text-zinc-500">{t('hint')}</p>
       </div>
 
       {error && <p className="text-xs text-rose-500">{error}</p>}
@@ -107,11 +101,13 @@ export default function BinanceTopUp({ config, onPaid }) {
       <button
         onClick={claim}
         disabled={loading || !code.trim()}
-        className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black rounded-xl hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50 disabled:translate-y-0"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
         {t('confirm')}
       </button>
+
+      <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{t('hint')}</p>
     </div>
   );
 }

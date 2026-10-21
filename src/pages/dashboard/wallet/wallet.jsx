@@ -87,7 +87,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
                 key={m}
                 type="button"
                 onClick={() => { setMethod(m); clearError(); }}
-                className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${method === m
+                className={`py-2.5 rounded-xl text-xs font-bold border outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 transition-all ${method === m
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
                     : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-300 border-gray-100 dark:border-zinc-800'
                   }`}

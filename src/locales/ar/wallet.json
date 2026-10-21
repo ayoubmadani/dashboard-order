@@ -46,13 +46,11 @@
   },
   "binance": {
     "txid": "رقم المعاملة",
-    "txid_placeholder": "الصق رقم المعاملة من Binance",
+    "txid_placeholder": "Order ID من Binance Pay",
     "confirm": "تأكيد الدفع",
-    "hint": "تجده في Binance: Pay ← History ← المعاملة (Order ID).",
+    "hint": "رقم المعاملة في Binance: Pay ← History.",
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
-    "scan": "امسح بتطبيق Binance وأرسل أي مبلغ USDT",
     "open_binance": "ادفع عبر Binance",
-    "uid_note": "أو من تطبيق Binance: Pay ← Send ← UID والصق الرقم، ثم اختر USDT. فوري وبلا رسوم — يُشحن رصيدك بالمبلغ × السعر.",
-    "uid_label": "أو أرسل إلى Binance UID (رقم حساب MdStore في Binance)"
+    "scan_or_uid": "امسح الرمز بتطبيق Binance، أو Pay ← Send ← UID، وأرسل أي مبلغ USDT — بلا رسوم."
   }
 }

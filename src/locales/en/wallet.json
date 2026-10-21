@@ -46,13 +46,11 @@
   },
   "binance": {
     "txid": "Transaction ID",
-    "txid_placeholder": "Paste the Binance transaction ID",
+    "txid_placeholder": "Binance Pay Order ID",
     "confirm": "Confirm payment",
-    "hint": "Find it in Binance: Pay → History → the transaction (Order ID).",
+    "hint": "Transaction ID in Binance: Pay → History.",
     "error": "Couldn't verify the transaction, try again",
-    "scan": "Scan with the Binance app and send any USDT amount",
     "open_binance": "Pay with Binance",
-    "uid_note": "Or in the Binance app: Pay → Send → UID, paste this number and choose USDT. Instant, no fee — credited as amount × rate.",
-    "uid_label": "Or send to Binance UID (MdStore's Binance account ID)"
+    "scan_or_uid": "Scan with the Binance app, or Pay → Send → UID, and send any USDT amount — no fee."
   }
 }

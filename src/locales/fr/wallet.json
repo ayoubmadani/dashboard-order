@@ -46,13 +46,11 @@
   },
   "binance": {
     "txid": "ID de la transaction",
-    "txid_placeholder": "Collez l'ID de la transaction Binance",
+    "txid_placeholder": "Order ID de Binance Pay",
     "confirm": "Confirmer le paiement",
-    "hint": "Dans Binance : Pay → History → la transaction (Order ID).",
+    "hint": "ID de la transaction dans Binance : Pay → History.",
     "error": "Impossible de vérifier la transaction, réessayez",
-    "scan": "Scannez avec l'app Binance et envoyez le montant USDT de votre choix",
     "open_binance": "Payer avec Binance",
-    "uid_note": "Ou dans l'app Binance : Pay → Send → UID, collez ce numéro et choisissez USDT. Instantané et sans frais — solde crédité du montant × le taux.",
-    "uid_label": "Ou envoyez au Binance UID (identifiant du compte Binance MdStore)"
+    "scan_or_uid": "Scannez avec l'app Binance, ou Pay → Send → UID, et envoyez le montant USDT de votre choix — sans frais."
   }
 }
