@@ -747,10 +747,10 @@ export default function ProductFormBlock({
                             }}
                           >
                             <opt.Icon size={20} style={{ opacity: isSelected ? 1 : 0.5 }} />
-                            <span style={{ textAlign: 'start' }}>
-                              <span style={{ display: 'block', fontSize: 13, fontWeight: 700 }}>{opt.label}</span>
+                            <span style={{ whiteSpace: 'nowrap' }}>{/* الاسم والسعر في سطر واحد بجانب الأيقونة */}
+                              <span style={{ fontSize: 13, fontWeight: 700 }}>{opt.label}</span>
                               {selectedWilaya && (
-                                <span style={{ display: 'block', fontSize: 10.5, marginTop: 2, opacity: isSelected ? 0.85 : 0.55 }}>
+                                <span style={{ fontSize: 12, fontWeight: 600, marginInlineStart: 6, opacity: isSelected ? 0.9 : 0.6 }}>
                                   {formatPrice(opt.type === 'home' ? selectedWilaya.livraisonHome : selectedWilaya.livraisonOfice)}
                                 </span>
                               )}
