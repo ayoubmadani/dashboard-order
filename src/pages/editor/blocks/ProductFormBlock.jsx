@@ -360,7 +360,7 @@ export default function ProductFormBlock({
       }}
     >
       <div style={{ backgroundColor: containerBackgroundColor || '#ffffff', color: muted, overflow: 'hidden', borderRadius: borderRadius ?? 0 }}>
-        <div style={{ paddingTop: gapPx }}>
+        <div style={{ paddingBlock: gapPx }}>{/* نفس المسافة فوق وتحت — كان الملخص ملتصقاً بأسفل البلوك */}
           {!productId ? (
             <p style={{ textAlign: 'center', fontSize: 14, opacity: 0.6 }}>{t.noProductSelected}</p>
           ) : submitted ? (
