@@ -1,14 +1,12 @@
-// شحن المحفظة بـ USDT عبر Binance: QR ورابط يفتحان صفحة الدفع في Binance، ثم رقم المعاملة.
-// المبلغ = ما وصل فعلاً × سعر الأدمن. UID والعناوين في «طرق أخرى».
+// شحن المحفظة بـ USDT عبر Binance Pay إلى UID المنصة: QR ورابط يفتحان الدفع في Binance، ثم رقم المعاملة.
+// المبلغ = ما وصل فعلاً × سعر الأدمن.
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { QRCodeSVG } from 'qrcode.react';
-import { Copy, Check, Loader2, CheckCircle2, ExternalLink, ChevronDown } from 'lucide-react';
+import { Copy, Check, Loader2, CheckCircle2, ExternalLink } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
-
-const NETWORK_LABEL = { TRX: 'TRC20 (Tron)', BSC: 'BEP20 (BNB Smart Chain)' };
 
 function CopyRow({ label, value }) {
   const [copied, setCopied] = useState(false);
@@ -35,11 +33,8 @@ export default function BinanceTopUp({ config, onPaid }) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showOther, setShowOther] = useState(!config.payLink);
-
-  // QR: رابط Binance Pay إن وُجد، وإلا أول عنوان إيداع
-  const firstNetwork = Object.keys(config.addresses || {})[0];
-  const qrValue = config.payLink || (firstNetwork ? config.addresses[firstNetwork] : config.uid);
+  // QR: رابط استلام Binance Pay (يفتح الدفع إلى UID في التطبيق)؛ بدونه نعرض الـ UID للنسخ فقط
+  const qrValue = config.payLink || null;
 
   const claim = async () => {
     if (!code.trim()) return;
@@ -61,15 +56,15 @@ export default function BinanceTopUp({ config, onPaid }) {
 
   return (
     <div className="space-y-4">
-      {/* 1. QR */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="p-3 bg-white rounded-2xl border border-gray-200">
-          <QRCodeSVG value={qrValue} size={168} level="M" />
+      {/* 1. QR يفتح Binance Pay */}
+      {qrValue && (
+        <div className="flex flex-col items-center gap-2">
+          <div className="p-3 bg-white rounded-2xl border border-gray-200">
+            <QRCodeSVG value={qrValue} size={168} level="M" />
+          </div>
+          <p className="text-xs text-gray-500 dark:text-zinc-400">{t('scan')} · 1 USDT = {config.rate} DA</p>
         </div>
-        <p className="text-xs text-gray-500 dark:text-zinc-400">
-          {config.payLink ? t('scan') : t('scan_address', { network: NETWORK_LABEL[firstNetwork] || 'UID' })} · 1 USDT = {config.rate} DA
-        </p>
-      </div>
+      )}
 
       {/* 2. رابط يفتح الدفع في Binance */}
       {config.payLink && (
@@ -84,28 +79,12 @@ export default function BinanceTopUp({ config, onPaid }) {
         </a>
       )}
 
-      {/* طرق أخرى: UID والعناوين */}
-      {(config.uid || firstNetwork) && (
-        <div>
-          {config.payLink && (
-            <button
-              type="button"
-              onClick={() => setShowOther((v) => !v)}
-              className="flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-zinc-500 hover:text-gray-600"
-            >
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showOther ? 'rotate-180' : ''}`} />
-              {t('other_ways')}
-            </button>
-          )}
-          {showOther && (
-            <div className="mt-2 space-y-1.5">
-              {config.uid && <CopyRow label="UID" value={config.uid} />}
-              {Object.entries(config.addresses || {}).map(([n, addr]) => (
-                <CopyRow key={n} label={NETWORK_LABEL[n]} value={addr} />
-              ))}
-              <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed">{t('other_note')}</p>
-            </div>
-          )}
+      {/* الـ UID للإرسال اليدوي: Pay ← Send ← UID */}
+      {config.uid && (
+        <div className="space-y-1">
+          {!qrValue && <p className="text-xs text-gray-500 dark:text-zinc-400">1 USDT = {config.rate} DA</p>}
+          <CopyRow label="UID" value={config.uid} />
+          <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed">{t('uid_note')}</p>
         </div>
       )}
 

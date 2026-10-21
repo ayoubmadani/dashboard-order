@@ -48,12 +48,10 @@
     "txid": "رقم المعاملة",
     "txid_placeholder": "الصق رقم المعاملة من Binance",
     "confirm": "تأكيد الدفع",
-    "hint": "تجده في Binance: Pay ← History (Order ID) أو سجل السحب (Internal transfer).",
+    "hint": "تجده في Binance: Pay ← History ← المعاملة (Order ID).",
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
     "scan": "امسح بتطبيق Binance وأرسل أي مبلغ USDT",
-    "scan_address": "امسح من Binance ← Withdraw ← USDT ({{network}})",
     "open_binance": "ادفع عبر Binance",
-    "other_ways": "طرق أخرى (UID أو عنوان)",
-    "other_note": "من حسابك في Binance فقط (Pay إلى UID أو Withdraw إلى العنوان) — بلا رسوم. يُشحن رصيدك بالمبلغ الذي يصل × السعر."
+    "uid_note": "أو من تطبيق Binance: Pay ← Send ← UID والصق الرقم، ثم اختر USDT. فوري وبلا رسوم — يُشحن رصيدك بالمبلغ × السعر."
   }
 }

@@ -48,12 +48,10 @@
     "txid": "Transaction ID",
     "txid_placeholder": "Paste the Binance transaction ID",
     "confirm": "Confirm payment",
-    "hint": "Find it in Binance: Pay → History (Order ID) or Withdraw History (Internal transfer).",
+    "hint": "Find it in Binance: Pay → History → the transaction (Order ID).",
     "error": "Couldn't verify the transaction, try again",
     "scan": "Scan with the Binance app and send any USDT amount",
-    "scan_address": "Scan from Binance → Withdraw → USDT ({{network}})",
     "open_binance": "Pay with Binance",
-    "other_ways": "Other ways (UID or address)",
-    "other_note": "From your Binance account only (Pay to the UID or Withdraw to the address) — no fee. Your balance is credited with the amount received × the rate."
+    "uid_note": "Or in the Binance app: Pay → Send → UID, paste this number and choose USDT. Instant, no fee — credited as amount × rate."
   }
 }
