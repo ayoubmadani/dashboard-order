@@ -52,6 +52,7 @@
     "error": "Couldn't verify the transaction, try again",
     "scan": "Scan with the Binance app and send any USDT amount",
     "open_binance": "Pay with Binance",
-    "uid_note": "Or in the Binance app: Pay → Send → UID, paste this number and choose USDT. Instant, no fee — credited as amount × rate."
+    "uid_note": "Or in the Binance app: Pay → Send → UID, paste this number and choose USDT. Instant, no fee — credited as amount × rate.",
+    "uid_label": "Or send to Binance UID (MdStore's Binance account ID)"
   }
 }

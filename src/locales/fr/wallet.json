@@ -52,6 +52,7 @@
     "error": "Impossible de vérifier la transaction, réessayez",
     "scan": "Scannez avec l'app Binance et envoyez le montant USDT de votre choix",
     "open_binance": "Payer avec Binance",
-    "uid_note": "Ou dans l'app Binance : Pay → Send → UID, collez ce numéro et choisissez USDT. Instantané et sans frais — solde crédité du montant × le taux."
+    "uid_note": "Ou dans l'app Binance : Pay → Send → UID, collez ce numéro et choisissez USDT. Instantané et sans frais — solde crédité du montant × le taux.",
+    "uid_label": "Ou envoyez au Binance UID (identifiant du compte Binance MdStore)"
   }
 }

@@ -19,7 +19,7 @@ function CopyRow({ label, value }) {
   };
   return (
     <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl">
-      <span className="shrink-0 text-[10px] font-bold text-gray-400 dark:text-zinc-500">{label}</span>
+      {label && <span className="shrink-0 text-[10px] font-bold text-gray-400 dark:text-zinc-500">{label}</span>}
       <span dir="ltr" className="flex-1 min-w-0 truncate text-xs font-mono text-gray-900 dark:text-white">{value}</span>
       <button type="button" onClick={copy} className="shrink-0 p-1 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-800">
         {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -83,7 +83,8 @@ export default function BinanceTopUp({ config, onPaid }) {
       {config.uid && (
         <div className="space-y-1">
           {!qrValue && <p className="text-xs text-gray-500 dark:text-zinc-400">1 USDT = {config.rate} DA</p>}
-          <CopyRow label="UID" value={config.uid} />
+          <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest">{t('uid_label')}</p>
+          <CopyRow label="" value={config.uid} />
           <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed">{t('uid_note')}</p>
         </div>
       )}

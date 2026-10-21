@@ -52,6 +52,7 @@
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
     "scan": "امسح بتطبيق Binance وأرسل أي مبلغ USDT",
     "open_binance": "ادفع عبر Binance",
-    "uid_note": "أو من تطبيق Binance: Pay ← Send ← UID والصق الرقم، ثم اختر USDT. فوري وبلا رسوم — يُشحن رصيدك بالمبلغ × السعر."
+    "uid_note": "أو من تطبيق Binance: Pay ← Send ← UID والصق الرقم، ثم اختر USDT. فوري وبلا رسوم — يُشحن رصيدك بالمبلغ × السعر.",
+    "uid_label": "أو أرسل إلى Binance UID (رقم حساب MdStore في Binance)"
   }
 }
