@@ -45,11 +45,9 @@
     "close": "Close"
   },
   "binance": {
-    "title": "Pay with USDT",
-    "amount": "Exact amount (USDT)",
     "address": "Deposit address — {{network}}",
-    "warning": "From your Binance account only: Wallet → Withdraw → USDT, paste this address, choose the {{network}} network and enter exactly {{amount}} USDT. Binance will show “Internal transfer” with 0 fee. Transfers from other wallets or exchanges aren't accepted for now.",
-    "txid": "Transfer ID (TxID)",
+    "warning": "From your Binance account only: Wallet → Withdraw → USDT, paste this address, choose the {{network}} network and send any amount. Binance shows “Internal transfer” with 0 fee; your balance is credited with the amount received × the rate.",
+    "txid": "Transfer number",
     "txid_placeholder": "e.g. Off-chain transfer 123456789",
     "confirm": "Confirm payment",
     "hint": "After transferring, open Binance Withdraw History and copy the “Internal transfer” ID — the number alone is enough.",

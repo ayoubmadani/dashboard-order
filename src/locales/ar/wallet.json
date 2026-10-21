@@ -45,14 +45,12 @@
     "close": "إغلاق"
   },
   "binance": {
-    "title": "الدفع بـ USDT",
-    "amount": "المبلغ بالضبط (USDT)",
     "address": "عنوان الإيداع — {{network}}",
-    "warning": "من حسابك في Binance فقط: Wallet ← Withdraw ← USDT، الصق هذا العنوان واختر شبكة {{network}}، واكتب {{amount}} USDT بالضبط. سيظهر «Internal transfer» برسوم 0. التحويل من محفظة أو منصة أخرى غير مقبول حالياً.",
-    "txid": "رقم التحويل (TxID)",
+    "warning": "من حسابك في Binance فقط: Wallet ← Withdraw ← USDT، الصق هذا العنوان واختر شبكة {{network}}، وأرسل أي مبلغ. سيظهر «Internal transfer» برسوم 0، ويُشحن رصيدك بالمبلغ الذي يصل × السعر.",
+    "txid": "رقم التحويل",
     "txid_placeholder": "مثال: Off-chain transfer 123456789",
     "confirm": "تأكيد الدفع",
-    "hint": "بعد التحويل افتح سجل السحب في Binance (Withdraw History) وانسخ رقم التحويل «Internal transfer» — يكفي الرقم فقط.",
+    "hint": "بعد التحويل افتح سجل السحب في Binance (Withdraw History) وانسخ رقم «Internal transfer» — يكفي الرقم فقط.",
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى"
   }
 }
