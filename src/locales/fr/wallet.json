@@ -45,16 +45,15 @@
     "close": "Fermer"
   },
   "binance": {
-    "address": "Adresse de dépôt — {{network}}",
-    "warning": "Uniquement depuis votre compte Binance : Wallet → Withdraw → USDT, collez cette adresse, choisissez le réseau {{network}} et envoyez le montant de votre choix. Binance affichera « Internal transfer » avec 0 frais ; votre solde sera crédité du montant reçu × le taux.",
-    "txid": "Numéro du transfert",
-    "txid_placeholder": "Ex. : Off-chain transfer 123456789",
+    "txid": "ID de la transaction",
+    "txid_placeholder": "Collez l'ID de la transaction Binance",
     "confirm": "Confirmer le paiement",
-    "hint": "Après le transfert, ouvrez l'historique des retraits Binance (Withdraw History) et copiez l'ID « Internal transfer » — le numéro seul suffit.",
+    "hint": "Dans Binance : Pay → History (Order ID) ou l'historique des retraits (Internal transfer).",
     "error": "Impossible de vérifier la transaction, réessayez",
-    "uid": "Binance UID du destinataire",
-    "warning_uid": "Dans l'app Binance : Pay → Send → choisissez UID et collez ce numéro, choisissez USDT et envoyez le montant de votre choix (instantané, sans frais). Votre solde est crédité du montant × le taux.",
-    "txid_placeholder_uid": "Ex. : M_P_71505104267788288",
-    "hint_uid": "Après l'envoi, ouvrez Pay → History et copiez l'ID de la transaction (Order ID)."
+    "scan": "Scannez avec l'app Binance et envoyez le montant USDT de votre choix",
+    "scan_address": "Scannez depuis Binance → Withdraw → USDT ({{network}})",
+    "open_binance": "Payer avec Binance",
+    "other_ways": "Autres moyens (UID ou adresse)",
+    "other_note": "Uniquement depuis votre compte Binance (Pay vers l'UID ou Withdraw vers l'adresse) — sans frais. Votre solde est crédité du montant reçu × le taux."
   }
 }

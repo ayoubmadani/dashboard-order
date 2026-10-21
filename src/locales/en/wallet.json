@@ -45,16 +45,15 @@
     "close": "Close"
   },
   "binance": {
-    "address": "Deposit address — {{network}}",
-    "warning": "From your Binance account only: Wallet → Withdraw → USDT, paste this address, choose the {{network}} network and send any amount. Binance shows “Internal transfer” with 0 fee; your balance is credited with the amount received × the rate.",
-    "txid": "Transfer number",
-    "txid_placeholder": "e.g. Off-chain transfer 123456789",
+    "txid": "Transaction ID",
+    "txid_placeholder": "Paste the Binance transaction ID",
     "confirm": "Confirm payment",
-    "hint": "After transferring, open Binance Withdraw History and copy the “Internal transfer” ID — the number alone is enough.",
+    "hint": "Find it in Binance: Pay → History (Order ID) or Withdraw History (Internal transfer).",
     "error": "Couldn't verify the transaction, try again",
-    "uid": "Recipient Binance UID",
-    "warning_uid": "In the Binance app: Pay → Send → choose UID and paste this number, pick USDT and send any amount (instant, no fee). Your balance is credited with the amount × the rate.",
-    "txid_placeholder_uid": "e.g. M_P_71505104267788288",
-    "hint_uid": "After sending, open Pay → History and copy the transaction ID (Order ID)."
+    "scan": "Scan with the Binance app and send any USDT amount",
+    "scan_address": "Scan from Binance → Withdraw → USDT ({{network}})",
+    "open_binance": "Pay with Binance",
+    "other_ways": "Other ways (UID or address)",
+    "other_note": "From your Binance account only (Pay to the UID or Withdraw to the address) — no fee. Your balance is credited with the amount received × the rate."
   }
 }

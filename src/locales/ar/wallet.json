@@ -45,16 +45,15 @@
     "close": "إغلاق"
   },
   "binance": {
-    "address": "عنوان الإيداع — {{network}}",
-    "warning": "من حسابك في Binance فقط: Wallet ← Withdraw ← USDT، الصق هذا العنوان واختر شبكة {{network}}، وأرسل أي مبلغ. سيظهر «Internal transfer» برسوم 0، ويُشحن رصيدك بالمبلغ الذي يصل × السعر.",
-    "txid": "رقم التحويل",
-    "txid_placeholder": "مثال: Off-chain transfer 123456789",
+    "txid": "رقم المعاملة",
+    "txid_placeholder": "الصق رقم المعاملة من Binance",
     "confirm": "تأكيد الدفع",
-    "hint": "بعد التحويل افتح سجل السحب في Binance (Withdraw History) وانسخ رقم «Internal transfer» — يكفي الرقم فقط.",
+    "hint": "تجده في Binance: Pay ← History (Order ID) أو سجل السحب (Internal transfer).",
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
-    "uid": "Binance UID للإرسال",
-    "warning_uid": "من تطبيق Binance: Pay ← Send ← اختر UID والصق هذا الرقم، واختر USDT وأرسل أي مبلغ (فوري وبلا رسوم). يُشحن رصيدك بالمبلغ × السعر.",
-    "txid_placeholder_uid": "مثال: M_P_71505104267788288",
-    "hint_uid": "بعد الإرسال افتح Pay ← History وانسخ رقم المعاملة (Order ID)."
+    "scan": "امسح بتطبيق Binance وأرسل أي مبلغ USDT",
+    "scan_address": "امسح من Binance ← Withdraw ← USDT ({{network}})",
+    "open_binance": "ادفع عبر Binance",
+    "other_ways": "طرق أخرى (UID أو عنوان)",
+    "other_note": "من حسابك في Binance فقط (Pay إلى UID أو Withdraw إلى العنوان) — بلا رسوم. يُشحن رصيدك بالمبلغ الذي يصل × السعر."
   }
 }
