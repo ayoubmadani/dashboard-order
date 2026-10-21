@@ -2,17 +2,13 @@
   "title": "Wallet",
   "subtitle": "Manage your balance and financial transactions",
   "refresh": "Refresh",
-
   "balance": "Available Balance",
   "currency": "DA",
   "top_up_btn": "Top Up Balance",
-
   "total_top_up": "Total Topped Up",
   "total_spent": "Total Spent",
-
   "transactions": "Transaction History",
   "no_transactions": "No transactions yet",
-
   "action": {
     "deposit": "Top-up",
     "payment": "Purchase"
@@ -25,27 +21,38 @@
     "sell_theme": "Theme Purchase",
     "top_up": "Top-up"
   },
-
   "modal": {
     "title": "Top Up Balance",
     "preset_label": "Suggested amounts",
     "custom_label": "Or enter a custom amount (DA)",
     "custom_placeholder": "1000",
     "confirm": "Confirm Top-up",
-    "powered_by": "Powered by Chargily Pay"
+    "powered_by": "Powered by Chargily Pay",
+    "method_card": "Card (CIB / Edahabia)",
+    "method_usdt": "USDT via Binance",
+    "usdt_rate": "1 USDT = {{rate}} DA"
   },
-
   "error": {
     "fetch": "Failed to load wallet data",
     "min_amount": "Minimum top-up amount is 100 DA",
     "top_up": "Error creating payment session"
   },
-
   "payment_status": {
     "success_title": "Payment Successful",
     "success_desc": "Your balance has been topped up successfully.",
     "failed_title": "Payment Failed",
     "failed_desc": "Something went wrong while processing your payment. Please try again.",
     "close": "Close"
+  },
+  "binance": {
+    "title": "Pay with USDT",
+    "amount": "Exact amount (USDT)",
+    "address": "Deposit address — {{network}}",
+    "warning": "Send exactly {{amount}} USDT on the {{network}} network. A different amount or network won't be credited automatically.",
+    "txid": "Transaction ID (TxID)",
+    "txid_placeholder": "Paste the TxID after transferring",
+    "confirm": "Confirm payment",
+    "hint": "After transferring, wait for network confirmation (one to a few minutes), then paste the TxID.",
+    "error": "Couldn't verify the transaction, try again"
   }
 }

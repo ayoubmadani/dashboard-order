@@ -18,6 +18,7 @@ import {
 import { getAccessToken } from '../../../services/access-token';
 import { baseURL } from '../../../constents/const.';
 import { useSearchParams } from 'react-router-dom';
+import BinanceTopUp from './BinanceTopUp';
 
 // ─────────────────────────────────────────────
 //  Constants
@@ -52,7 +53,7 @@ const Skeleton = ({ className = '' }) => (
 // ─────────────────────────────────────────────
 //  Top-Up Modal
 // ─────────────────────────────────────────────
-function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmount, clearError }) {
+function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmount, clearError, binance, method, setMethod }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'wallet' });
 
   return (
@@ -74,6 +75,34 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
             <X className="w-4 h-4" />
           </button>
         </div>
+
+        {/* طريقة الدفع — USDT تظهر فقط إذا فعّلها الأدمن */}
+        {binance?.enabled && (
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              ['card', t('modal.method_card')],
+              ['usdt', t('modal.method_usdt')],
+            ].map(([m, label]) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => { setMethod(m); clearError(); }}
+                className={`py-2.5 rounded-xl text-xs font-bold border transition-all ${method === m
+                    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
+                    : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-300 border-gray-100 dark:border-zinc-800'
+                  }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+        {method === 'usdt' && binance?.rate && (
+          <p className="text-xs text-gray-500 dark:text-zinc-400 -mt-2">
+            {t('modal.usdt_rate', { rate: binance.rate })}
+            {Number(amount) > 0 && <> · ≈ <b dir="ltr">{(Number(amount) / binance.rate).toFixed(2)} USDT</b></>}
+          </p>
+        )}
 
         {/* Presets */}
         <div>
@@ -132,9 +161,11 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
           {t('modal.confirm')}
         </button>
 
-        <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">
-          {t('modal.powered_by')}
-        </p>
+        {method !== 'usdt' && (
+          <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">
+            {t('modal.powered_by')}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -208,6 +239,9 @@ export default function WalletPage() {
   const [topUpAmount, setTopUpAmount] = useState('');
   const [topUpLoading, setTopUpLoading] = useState(false);
   const [topUpError, setTopUpError] = useState(null);
+  const [binance, setBinance] = useState(null); // { enabled, rate, minDzd, maxDzd }
+  const [topUpMethod, setTopUpMethod] = useState('card');
+  const [binanceRequest, setBinanceRequest] = useState(null);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [statusPayment, setStatusPayment] = useState(null);
@@ -230,6 +264,10 @@ export default function WalletPage() {
   };
 
   useEffect(() => { fetchWallet(); }, []);
+  useEffect(() => {
+    axios.get(`${baseURL}/payment/binance/config`, headers).then((r) => setBinance(r.data)).catch(() => setBinance(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ── Payment redirect status (from backend payment-success / payment-failed) ── */
   useEffect(() => {
@@ -264,6 +302,18 @@ export default function WalletPage() {
     if (!amount || amount < 100) { setTopUpError(t('error.min_amount')); return; }
     setTopUpLoading(true);
     setTopUpError(null);
+    if (topUpMethod === 'usdt') {
+      try {
+        const res = await axios.post(`${baseURL}/payment/binance/request`, { amount }, headers);
+        setShowTopUp(false);
+        setBinanceRequest(res.data);
+      } catch (e) {
+        setTopUpError(e.response?.data?.message || t('error.top_up'));
+      } finally {
+        setTopUpLoading(false);
+      }
+      return;
+    }
     try {
       const res = await axios.post(`${baseURL}/payment/top-up`, { amount }, headers);
       const { checkoutUrl } = res.data;
@@ -483,6 +533,25 @@ export default function WalletPage() {
           amount={topUpAmount}
           setAmount={setTopUpAmount}
           clearError={() => setTopUpError(null)}
+          binance={binance}
+          method={topUpMethod}
+          setMethod={setTopUpMethod}
+        />
+      )}
+
+      {/* ── USDT (Binance) ── */}
+      {binanceRequest && (
+        <BinanceTopUp
+          request={binanceRequest}
+          isRtl={isRtl}
+          onClose={() => setBinanceRequest(null)}
+          onPaid={(amountDzd) => {
+            setBinanceRequest(null);
+            setTopUpAmount('');
+            setPaymentAmount(amountDzd);
+            setStatusPayment('success');
+            fetchWallet();
+          }}
         />
       )}
 

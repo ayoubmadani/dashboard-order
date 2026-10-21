@@ -2,17 +2,13 @@
   "title": "Portefeuille",
   "subtitle": "Gérez votre solde et vos transactions financières",
   "refresh": "Actualiser",
-
   "balance": "Solde Disponible",
   "currency": "DA",
   "top_up_btn": "Recharger le solde",
-
   "total_top_up": "Total Rechargé",
   "total_spent": "Total Dépensé",
-
   "transactions": "Historique des Transactions",
   "no_transactions": "Aucune transaction pour le moment",
-
   "action": {
     "deposit": "Rechargement",
     "payment": "Achat"
@@ -25,27 +21,38 @@
     "sell_theme": "Achat de thème",
     "top_up": "Rechargement"
   },
-
   "modal": {
     "title": "Recharger le solde",
     "preset_label": "Montants suggérés",
     "custom_label": "Ou entrez un montant personnalisé (DA)",
     "custom_placeholder": "1000",
     "confirm": "Confirmer le rechargement",
-    "powered_by": "Propulsé par Chargily Pay"
+    "powered_by": "Propulsé par Chargily Pay",
+    "method_card": "Carte (CIB / Edahabia)",
+    "method_usdt": "USDT via Binance",
+    "usdt_rate": "1 USDT = {{rate}} DA"
   },
-
   "error": {
     "fetch": "Échec du chargement du portefeuille",
     "min_amount": "Le montant minimum de recharge est de 100 DA",
     "top_up": "Erreur lors de la création de la session de paiement"
   },
-
   "payment_status": {
     "success_title": "Paiement réussi",
     "success_desc": "Votre solde a été rechargé avec succès.",
     "failed_title": "Échec du paiement",
     "failed_desc": "Une erreur s'est produite lors du traitement de votre paiement. Veuillez réessayer.",
     "close": "Fermer"
+  },
+  "binance": {
+    "title": "Paiement en USDT",
+    "amount": "Montant exact (USDT)",
+    "address": "Adresse de dépôt — {{network}}",
+    "warning": "Envoyez exactement {{amount}} USDT sur le réseau {{network}}. Un autre montant ou réseau ne sera pas crédité automatiquement.",
+    "txid": "ID de transaction (TxID)",
+    "txid_placeholder": "Collez le TxID après le transfert",
+    "confirm": "Confirmer le paiement",
+    "hint": "Après le transfert, attendez la confirmation du réseau (1 à quelques minutes) puis collez le TxID.",
+    "error": "Impossible de vérifier la transaction, réessayez"
   }
 }
