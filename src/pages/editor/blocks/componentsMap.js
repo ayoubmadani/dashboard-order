@@ -243,6 +243,7 @@ export const componentsMap = {
       textColor: '#ffffff',
       fontSize: 14,
       animation: 'none',
+      borderRadius: 999, // 999 = دائرة/كبسولة كاملة
     },
     fields: [
       {
@@ -288,6 +289,7 @@ export const componentsMap = {
       },
       { key: 'width', labelKey: 'editor.fields.floatingWidth', type: 'number', min: 32, max: 300 },
       { key: 'height', labelKey: 'editor.fields.floatingHeight', type: 'number', min: 32, max: 300 },
+      { key: 'borderRadius', labelKey: 'editor.fields.floatingRadius', type: 'number', min: 0, max: 999 },
       { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
       { key: 'textColor', labelKey: 'editor.fields.textColor', type: 'color' },
       { key: 'animation', labelKey: 'editor.fields.animation', type: 'select', options: BUTTON_ANIMATIONS.map((value) => ({ value, labelKey: `editor.fields.animationOptions.${value}` })) },

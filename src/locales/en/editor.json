@@ -310,7 +310,8 @@
       "outlined": "Outlined",
       "filled": "Filled",
       "underline": "Underline"
-    }
+    },
+    "floatingRadius": "Corner radius (px) — 999 = circle"
   },
   "canvasSection": {
     "elements": "Elements",

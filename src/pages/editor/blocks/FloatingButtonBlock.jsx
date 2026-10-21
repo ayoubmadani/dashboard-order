@@ -13,7 +13,7 @@ import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
 // consistent with how SpacerBlock.jsx's own pinned mode is previewed: show
 // it as a normal, fully visible in-flow preview of what the button looks
 // like, with a small badge noting where it'll actually stick once published.
-export default function FloatingButtonBlock({ position, contentType, text, icon, width, height, backgroundColor, textColor, fontSize, animation }) {
+export default function FloatingButtonBlock({ position, contentType, text, icon, width, height, backgroundColor, textColor, fontSize, animation, borderRadius }) {
   const { t } = useTranslation();
   const isText = (contentType || 'icon') === 'text';
   const Icon = FLOATING_BUTTON_ICONS[icon] || FLOATING_BUTTON_ICONS.MessageCircle;
@@ -34,7 +34,8 @@ export default function FloatingButtonBlock({ position, contentType, text, icon,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: isText ? 12 : '50%',
+          // الأزرار القديمة بلا قيمة تبقى كما كانت (نص 12، أيقونة دائرة)
+          borderRadius: borderRadius ?? (isText ? 12 : '50%'),
           backgroundColor: backgroundColor || '#10b981',
           color: textColor || '#ffffff',
           boxShadow: '0 10px 25px -5px rgba(0,0,0,0.25)',

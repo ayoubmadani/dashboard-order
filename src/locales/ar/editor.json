@@ -310,7 +310,8 @@
       "outlined": "بإطار",
       "filled": "ممتلئ",
       "underline": "خط سفلي"
-    }
+    },
+    "floatingRadius": "استدارة الحواف (px) — 999 = دائرة"
   },
   "canvasSection": {
     "elements": "العناصر",

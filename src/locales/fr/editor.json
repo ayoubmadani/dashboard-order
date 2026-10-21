@@ -310,7 +310,8 @@
       "outlined": "Bordé",
       "filled": "Rempli",
       "underline": "Souligné"
-    }
+    },
+    "floatingRadius": "Arrondi des angles (px) — 999 = cercle"
   },
   "canvasSection": {
     "elements": "Éléments",
