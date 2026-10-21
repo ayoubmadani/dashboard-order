@@ -51,6 +51,7 @@
     "hint": "ID de la transaction dans Binance : Pay → History.",
     "error": "Impossible de vérifier la transaction, réessayez",
     "open_binance": "Payer avec Binance",
-    "scan_or_uid": "Scannez avec l'app Binance, ou Pay → Send → UID, et envoyez le montant USDT de votre choix — sans frais."
+    "scan_or_uid": "Scannez avec l'app Binance, ou Pay → Send → UID, et envoyez le montant USDT de votre choix — sans frais.",
+    "calc_label": "Combien voulez-vous recharger ? (en DA)"
   }
 }

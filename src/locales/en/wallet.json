@@ -51,6 +51,7 @@
     "hint": "Transaction ID in Binance: Pay → History.",
     "error": "Couldn't verify the transaction, try again",
     "open_binance": "Pay with Binance",
-    "scan_or_uid": "Scan with the Binance app, or Pay → Send → UID, and send any USDT amount — no fee."
+    "scan_or_uid": "Scan with the Binance app, or Pay → Send → UID, and send any USDT amount — no fee.",
+    "calc_label": "How much do you want to top up? (DA)"
   }
 }

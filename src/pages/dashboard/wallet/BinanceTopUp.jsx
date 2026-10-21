@@ -33,6 +33,9 @@ export default function BinanceTopUp({ config, onPaid }) {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  // حاسبة: كم يريد بالدينار ← كم يرسل بالدولار (USDT)، مقرّب للأعلى لسنت
+  const [dzd, setDzd] = useState('');
+  const usdt = Number(dzd) > 0 ? Math.ceil((Number(dzd) / config.rate) * 100) / 100 : null;
   // QR: رابط استلام Binance Pay (يفتح الدفع إلى UID في التطبيق)؛ بدونه نعرض الـ UID للنسخ فقط
   const qrValue = config.payLink || null;
 
@@ -59,6 +62,27 @@ export default function BinanceTopUp({ config, onPaid }) {
 
   return (
     <div className="space-y-4">
+      {/* حاسبة الدينار ← الدولار */}
+      <div className="space-y-1.5">
+        <label className={`${label} block`}>{t('calc_label')}</label>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            dir="ltr"
+            min={0}
+            value={dzd}
+            onChange={(e) => setDzd(e.target.value)}
+            placeholder="1000"
+            className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
+          />
+          <span className="text-xs font-bold text-gray-400">DA</span>
+          <span className="text-gray-300 dark:text-zinc-600">=</span>
+          <span dir="ltr" className="shrink-0 min-w-[96px] text-center px-3 py-2.5 rounded-xl bg-[#FCD535]/15 text-[#b8860b] dark:text-[#FCD535] text-sm font-black">
+            {usdt != null ? `$${usdt.toFixed(2)}` : '$0.00'}
+          </span>
+        </div>
+      </div>
+
       {/* QR صغير + السعر والزر والـ UID بجانبه */}
       <div className="flex items-stretch gap-3">
         {qrValue && (

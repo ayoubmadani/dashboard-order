@@ -51,6 +51,7 @@
     "hint": "رقم المعاملة في Binance: Pay ← History.",
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
     "open_binance": "ادفع عبر Binance",
-    "scan_or_uid": "امسح الرمز بتطبيق Binance، أو Pay ← Send ← UID، وأرسل أي مبلغ USDT — بلا رسوم."
+    "scan_or_uid": "امسح الرمز بتطبيق Binance، أو Pay ← Send ← UID، وأرسل أي مبلغ USDT — بلا رسوم.",
+    "calc_label": "كم تريد أن تشحن؟ (بالدينار)"
   }
 }
