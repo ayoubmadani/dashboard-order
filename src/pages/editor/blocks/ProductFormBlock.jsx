@@ -716,8 +716,11 @@ export default function ProductFormBlock({
                     </FieldWrapper>
                   </div>
 
-                  {/* Delivery type */}
+                  {/* Delivery type — عنوانه يظهر مع «أسماء الحقول فوق الحقل» مثل باقي الحقول */}
                   <div>
+                    {showLabels && (
+                      <p style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 700, color: muted }}>{t.deliveryType}</p>
+                    )}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {[
                         { type: 'home', Icon: Home, label: t.home },
