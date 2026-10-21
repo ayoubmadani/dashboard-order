@@ -722,7 +722,8 @@ export default function ProductFormBlock({
                       {[
                         { type: 'home', Icon: Home, label: t.home },
                         { type: 'office', Icon: Building2, label: t.office },
-                      ].filter((opt) => selectedWilaya && deliveryAllowed(selectedWilaya, opt.type)).map((opt, _i, shown) => {
+                      // نوعا التوصيل ظاهران دائماً؛ بعد اختيار الولاية يبقى المتاح فيها فقط ويظهر سعره
+                      ].filter((opt) => !selectedWilaya || deliveryAllowed(selectedWilaya, opt.type)).map((opt, _i, shown) => {
                         const isSelected = form.typeShip === opt.type;
                         return (
                           <button
