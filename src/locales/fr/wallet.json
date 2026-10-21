@@ -51,6 +51,10 @@
     "txid_placeholder": "Ex. : Off-chain transfer 123456789",
     "confirm": "Confirmer le paiement",
     "hint": "Après le transfert, ouvrez l'historique des retraits Binance (Withdraw History) et copiez l'ID « Internal transfer » — le numéro seul suffit.",
-    "error": "Impossible de vérifier la transaction, réessayez"
+    "error": "Impossible de vérifier la transaction, réessayez",
+    "uid": "Binance UID du destinataire",
+    "warning_uid": "Dans l'app Binance : Pay → Send → choisissez UID et collez ce numéro, choisissez USDT et envoyez le montant de votre choix (instantané, sans frais). Votre solde est crédité du montant × le taux.",
+    "txid_placeholder_uid": "Ex. : M_P_71505104267788288",
+    "hint_uid": "Après l'envoi, ouvrez Pay → History et copiez l'ID de la transaction (Order ID)."
   }
 }

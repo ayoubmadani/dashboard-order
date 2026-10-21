@@ -51,6 +51,10 @@
     "txid_placeholder": "e.g. Off-chain transfer 123456789",
     "confirm": "Confirm payment",
     "hint": "After transferring, open Binance Withdraw History and copy the “Internal transfer” ID — the number alone is enough.",
-    "error": "Couldn't verify the transaction, try again"
+    "error": "Couldn't verify the transaction, try again",
+    "uid": "Recipient Binance UID",
+    "warning_uid": "In the Binance app: Pay → Send → choose UID and paste this number, pick USDT and send any amount (instant, no fee). Your balance is credited with the amount × the rate.",
+    "txid_placeholder_uid": "e.g. M_P_71505104267788288",
+    "hint_uid": "After sending, open Pay → History and copy the transaction ID (Order ID)."
   }
 }

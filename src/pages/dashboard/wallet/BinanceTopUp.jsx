@@ -7,7 +7,7 @@ import { Copy, Check, Loader2, AlertTriangle, CheckCircle2 } from 'lucide-react'
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
-const NETWORK_LABEL = { TRX: 'TRC20 (Tron)', BSC: 'BEP20 (BNB Smart Chain)' };
+const NETWORK_LABEL = { UID: 'Binance Pay (UID)', TRX: 'TRC20 (Tron)', BSC: 'BEP20 (BNB Smart Chain)' };
 
 function CopyField({ label, value }) {
   const [copied, setCopied] = useState(false);
@@ -33,7 +33,8 @@ function CopyField({ label, value }) {
 
 export default function BinanceTopUp({ config, onPaid }) {
   const { t } = useTranslation('translation', { keyPrefix: 'wallet.binance' });
-  const networks = Object.keys(config.addresses || {});
+  // Binance Pay إلى UID أولاً (الأسهل: فوري وبلا رسوم)، ثم عناوين الإيداع
+  const networks = [...(config.uid ? ['UID'] : []), ...Object.keys(config.addresses || {})];
   const [network, setNetwork] = useState(networks[0]);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -62,13 +63,13 @@ export default function BinanceTopUp({ config, onPaid }) {
       <p className="text-xs text-gray-500 dark:text-zinc-400">1 USDT = {config.rate} DA</p>
 
       {networks.length > 1 && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className={`grid gap-2 ${networks.length > 2 ? 'grid-cols-3' : 'grid-cols-2'}`}>
           {networks.map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setNetwork(n)}
-              className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+              className={`py-2 px-1 rounded-xl text-[11px] font-bold border transition-all ${
                 network === n ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent' : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300'
               }`}
             >
@@ -78,11 +79,15 @@ export default function BinanceTopUp({ config, onPaid }) {
         </div>
       )}
 
-      <CopyField label={t('address', { network: NETWORK_LABEL[network] })} value={config.addresses[network]} />
+      {network === 'UID' ? (
+        <CopyField label={t('uid')} value={config.uid} />
+      ) : (
+        <CopyField label={t('address', { network: NETWORK_LABEL[network] })} value={config.addresses[network]} />
+      )}
 
       <div className="flex gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs leading-relaxed">
         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-        <span>{t('warning', { network: NETWORK_LABEL[network] })}</span>
+        <span>{network === 'UID' ? t('warning_uid') : t('warning', { network: NETWORK_LABEL[network] })}</span>
       </div>
 
       <div className="space-y-1.5">
@@ -91,7 +96,7 @@ export default function BinanceTopUp({ config, onPaid }) {
           dir="ltr"
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(null); }}
-          placeholder={t('txid_placeholder')}
+          placeholder={network === 'UID' ? t('txid_placeholder_uid') : t('txid_placeholder')}
           className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm font-mono text-gray-900 dark:text-white outline-none focus:border-indigo-400"
         />
       </div>
@@ -106,7 +111,7 @@ export default function BinanceTopUp({ config, onPaid }) {
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
         {t('confirm')}
       </button>
-      <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{t('hint')}</p>
+      <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{network === 'UID' ? t('hint_uid') : t('hint')}</p>
     </div>
   );
 }
