@@ -141,6 +141,18 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
           {t('open_binance')}
         </a>
       )}
+      {/* BSC: صفحة سحب USDT في Binance (يلصق العنوان ويختار شبكة BSC) */}
+      {via === 'bsc' && (
+        <a
+          href="https://www.binance.com/my/wallet/account/main/withdrawal/crypto/USDT"
+          target="_blank"
+          rel="noreferrer"
+          className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+        >
+          <ExternalLink className="w-4 h-4" />
+          {t('open_withdraw')}
+        </a>
+      )}
       {/* رقم المعاملة */}
       <div className="space-y-1.5">
         <label className={`${label} block`}>{t('txid')}</label>

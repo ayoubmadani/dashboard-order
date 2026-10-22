@@ -59,6 +59,7 @@
     "hint_bsc": "رقم التحويل في Binance: سجل السحب (Withdraw History) ← Internal transfer.",
     "bsc_network": "الشبكة",
     "bsc_coin": "العملة",
-    "pay_method": "الطريقة"
+    "pay_method": "الطريقة",
+    "open_withdraw": "اسحب USDT من Binance"
   }
 }

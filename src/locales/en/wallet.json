@@ -59,6 +59,7 @@
     "hint_bsc": "ID in Binance: Withdraw History → Internal transfer.",
     "bsc_network": "Network",
     "bsc_coin": "Coin",
-    "pay_method": "Method"
+    "pay_method": "Method",
+    "open_withdraw": "Withdraw USDT from Binance"
   }
 }
