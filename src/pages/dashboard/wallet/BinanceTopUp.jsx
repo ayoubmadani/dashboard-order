@@ -63,7 +63,9 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
   const label = 'text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest';
 
   return (
-    <div className="space-y-4">
+    <div className="flex-1 min-h-0 flex flex-col">
+    {/* المحتوى — يتمرّر */}
+    <div className="flex-1 min-h-0 overflow-y-auto px-6 space-y-4">
       {/* حاسبة الدينار ← الدولار */}
       <div className="space-y-1.5">
         <label className={`${label} block`}>{t('calc_label')}</label>
@@ -135,7 +137,10 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
       </div>
 
       {error && <p className="text-xs text-rose-500">{error}</p>}
+    </div>
 
+    {/* زر التأكيد — ثابت في الأسفل */}
+    <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
       <button
         onClick={claim}
         disabled={loading || !code.trim()}
@@ -146,6 +151,7 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
       </button>
 
       <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{via === 'bsc' ? t('hint_bsc') : t('hint')}</p>
+    </div>
     </div>
   );
 }

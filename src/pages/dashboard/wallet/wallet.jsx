@@ -62,10 +62,11 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 w-full max-w-lg h-[640px] max-h-[92vh] overflow-y-auto p-6 space-y-5 shadow-2xl"
+        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 w-full max-w-lg h-[640px] max-h-[92vh] overflow-hidden flex flex-col shadow-2xl"
         dir={isRtl ? 'rtl' : 'ltr'}
       >
-        {/* Header */}
+        {/* الرأس والتبويبات — ثابتة */}
+        <div className="shrink-0 px-6 pt-6 pb-4 space-y-5">
         <div className="flex items-center justify-between">
           <h3 className="font-black text-gray-900 dark:text-white">{t('modal.title')}</h3>
           <button
@@ -98,10 +99,13 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
             ))}
           </div>
         )}
+        </div>
         {method === 'usdt' || method === 'bsc' ? (
           <BinanceTopUp key={method} config={binance} via={method === 'bsc' ? 'bsc' : 'pay'} onPaid={onBinancePaid} />
         ) : (
-        <>
+        <div className="flex-1 min-h-0 flex flex-col">
+        {/* المحتوى — يتمرّر */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-6 space-y-5">
         {/* Presets */}
         <div>
           <p className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-2">
@@ -149,7 +153,10 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
           </div>
         )}
 
-        {/* Confirm */}
+        </div>
+
+        {/* زر التأكيد — ثابت في الأسفل */}
+        <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
         <button
           onClick={onConfirm}
           disabled={loading || !amount}
@@ -164,7 +171,8 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
         <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">
           {t('modal.powered_by')}
         </p>
-        </>
+        </div>
+        </div>
         )}
       </div>
     </div>
