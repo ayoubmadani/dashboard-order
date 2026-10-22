@@ -58,6 +58,7 @@
     "txid_placeholder_bsc": "Off-chain transfer 123456789",
     "hint_bsc": "رقم التحويل في Binance: سجل السحب (Withdraw History) ← Internal transfer.",
     "bsc_network": "الشبكة",
-    "bsc_coin": "العملة"
+    "bsc_coin": "العملة",
+    "pay_method": "الطريقة"
   }
 }
