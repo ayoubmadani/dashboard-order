@@ -130,6 +130,10 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
           </div>
         </div>
 
+        </div>
+
+        {/* المبلغ المخصص وزر التأكيد — ثابتان في الأسفل */}
+        <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
         {/* Custom amount */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-widest block">
@@ -154,10 +158,6 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
           </div>
         )}
 
-        </div>
-
-        {/* زر التأكيد — ثابت في الأسفل */}
-        <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
         <button
           onClick={onConfirm}
           disabled={loading || !amount}
