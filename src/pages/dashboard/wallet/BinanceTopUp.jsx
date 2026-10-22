@@ -96,17 +96,6 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
           <p className={label}><span dir="ltr">1 USDT = {config.rate} DA</span></p>
-          {via === 'pay' && config.payLink && (
-            <a
-              href={config.payLink}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#FCD535] text-gray-900 text-sm font-black hover:brightness-95"
-            >
-              <ExternalLink className="w-4 h-4" />
-              {t('open_binance')}
-            </a>
-          )}
           {via === 'pay' && config.uid && <CopyRow label="UID" value={config.uid} />}
           {/* تفاصيل الطريقة — نفس المكان في التبويبين */}
           <div className="rounded-xl border border-gray-200 dark:border-zinc-700 divide-y divide-gray-100 dark:divide-zinc-800 text-xs">
@@ -128,6 +117,18 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
 
     {/* رقم المعاملة وزر التأكيد — ثابتان في الأسفل */}
     <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
+      {/* زر يفتح الدفع في Binance */}
+      {via === 'pay' && config.payLink && (
+        <a
+          href={config.payLink}
+          target="_blank"
+          rel="noreferrer"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#FCD535] text-gray-900 text-sm font-black hover:brightness-95"
+        >
+          <ExternalLink className="w-4 h-4" />
+          {t('open_binance')}
+        </a>
+      )}
       {/* رقم المعاملة */}
       <div className="space-y-1.5">
         <label className={`${label} block`}>{t('txid')}</label>
