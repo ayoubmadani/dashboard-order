@@ -106,6 +106,18 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
             </a>
           )}
           {via === 'pay' && config.uid && <CopyRow label="UID" value={config.uid} />}
+          {via === 'bsc' && (
+            <div className="rounded-xl border border-gray-200 dark:border-zinc-700 divide-y divide-gray-100 dark:divide-zinc-800 text-xs">
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-gray-400 dark:text-zinc-500">{t('bsc_network')}</span>
+                <span dir="ltr" className="font-bold text-gray-900 dark:text-white">BNB Smart Chain (BEP20)</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-gray-400 dark:text-zinc-500">{t('bsc_coin')}</span>
+                <span dir="ltr" className="font-bold text-gray-900 dark:text-white">USDT</span>
+              </div>
+            </div>
+          )}
           {via === 'bsc' && <CopyRow label="BEP20" value={bsc} />}
         </div>
       </div>

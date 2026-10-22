@@ -56,6 +56,8 @@
     "calc_label": "كم تريد أن تشحن؟ (بالدينار)",
     "bsc_note": "من حسابك في Binance: Wallet ← Withdraw ← USDT، الصق العنوان واختر شبكة BSC (BEP20). سيظهر «Internal transfer» برسوم 0. التحويل من محفظة أو منصة أخرى غير مقبول حالياً.",
     "txid_placeholder_bsc": "Off-chain transfer 123456789",
-    "hint_bsc": "رقم التحويل في Binance: سجل السحب (Withdraw History) ← Internal transfer."
+    "hint_bsc": "رقم التحويل في Binance: سجل السحب (Withdraw History) ← Internal transfer.",
+    "bsc_network": "الشبكة",
+    "bsc_coin": "العملة"
   }
 }
