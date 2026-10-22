@@ -116,6 +116,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
             {PRESET_AMOUNTS.map((preset) => (
               <button
                 key={preset}
+                dir="ltr" // «DA» على يمين الرقم في كل اللغات
                 onClick={() => { setAmount(String(preset)); clearError(); }}
                 className={`flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-sm font-bold border transition-all ${amount === String(preset)
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
