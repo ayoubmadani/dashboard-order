@@ -62,7 +62,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 w-full max-w-sm p-6 space-y-5 shadow-2xl"
+        className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 w-full max-w-lg max-h-[92vh] overflow-y-auto p-6 space-y-5 shadow-2xl"
         dir={isRtl ? 'rtl' : 'ltr'}
       >
         {/* Header */}

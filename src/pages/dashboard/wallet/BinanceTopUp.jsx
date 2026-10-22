@@ -89,7 +89,7 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
       <div className="flex items-stretch gap-3">
         {qrValue && (
           <div className="shrink-0 p-2 bg-white rounded-xl border border-gray-100 dark:border-zinc-800 self-center">
-            <QRCodeSVG value={qrValue} size={104} level="M" />
+            <QRCodeSVG value={qrValue} size={128} level="M" />
           </div>
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
