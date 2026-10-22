@@ -23,7 +23,7 @@ import BinanceTopUp from './BinanceTopUp';
 // ─────────────────────────────────────────────
 //  Constants
 // ─────────────────────────────────────────────
-const PRESET_AMOUNTS = [500, 1000, 2000, 5000];
+const PRESET_AMOUNTS = [2500, 5000, 7500, 10000];
 
 // ─────────────────────────────────────────────
 //  Helpers
@@ -117,7 +117,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
               <button
                 key={preset}
                 onClick={() => { setAmount(String(preset)); clearError(); }}
-                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold border transition-all ${amount === String(preset)
+                className={`flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl text-sm font-bold border transition-all ${amount === String(preset)
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
                     : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-300 border-gray-100 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-600'
                   }`}
