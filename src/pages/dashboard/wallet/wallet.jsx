@@ -134,7 +134,7 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
             value={amount}
             onChange={(e) => { setAmount(e.target.value); clearError(); }}
             placeholder={t('modal.custom_placeholder')}
-            className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
           />
         </div>
 

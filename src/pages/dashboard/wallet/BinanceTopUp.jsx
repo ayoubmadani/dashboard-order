@@ -73,7 +73,7 @@ export default function BinanceTopUp({ config, onPaid }) {
             value={dzd}
             onChange={(e) => setDzd(e.target.value)}
             placeholder="1000"
-            className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
+            className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none flex-1 min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
           />
           <span className="text-xs font-bold text-gray-400">DA</span>
           <span className="text-gray-300 dark:text-zinc-600">=</span>
