@@ -85,3 +85,14 @@ select:not(.rounded-full),
 textarea:not(.rounded-full) {
   border-radius: 0.5rem !important;
 }
+
+/* بلا أسهم زيادة/نقصان في كل خانات الأرقام على المنصة */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
