@@ -124,6 +124,10 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
       </div>
       <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed -mt-1">{via === 'bsc' ? t('bsc_note') : t('scan_or_uid')}</p>
 
+    </div>
+
+    {/* رقم المعاملة وزر التأكيد — ثابتان في الأسفل */}
+    <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
       {/* رقم المعاملة */}
       <div className="space-y-1.5">
         <label className={`${label} block`}>{t('txid')}</label>
@@ -137,10 +141,6 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
       </div>
 
       {error && <p className="text-xs text-rose-500">{error}</p>}
-    </div>
-
-    {/* زر التأكيد — ثابت في الأسفل */}
-    <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
       <button
         onClick={claim}
         disabled={loading || !code.trim()}
