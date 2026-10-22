@@ -29,8 +29,9 @@
     "confirm": "Confirmer le rechargement",
     "powered_by": "Propulsé par Chargily Pay",
     "method_card": "Carte (CIB / Edahabia)",
-    "method_usdt": "USDT via Binance",
-    "usdt_rate": "1 USDT = {{rate}} DA"
+    "method_usdt": "Binance Pay",
+    "usdt_rate": "1 USDT = {{rate}} DA",
+    "method_bsc": "USDT BEP20 (BSC)"
   },
   "error": {
     "fetch": "Échec du chargement du portefeuille",

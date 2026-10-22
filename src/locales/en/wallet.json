@@ -29,8 +29,9 @@
     "confirm": "Confirm Top-up",
     "powered_by": "Powered by Chargily Pay",
     "method_card": "Card (CIB / Edahabia)",
-    "method_usdt": "USDT via Binance",
-    "usdt_rate": "1 USDT = {{rate}} DA"
+    "method_usdt": "Binance Pay",
+    "usdt_rate": "1 USDT = {{rate}} DA",
+    "method_bsc": "USDT BEP20 (BSC)"
   },
   "error": {
     "fetch": "Failed to load wallet data",

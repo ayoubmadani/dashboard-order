@@ -28,7 +28,7 @@ function CopyRow({ label, value }) {
   );
 }
 
-export default function BinanceTopUp({ config, onPaid }) {
+export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
   const { t } = useTranslation('translation', { keyPrefix: 'wallet.binance' });
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,10 +36,8 @@ export default function BinanceTopUp({ config, onPaid }) {
   // حاسبة: كم يريد بالدينار ← كم يرسل بالدولار (USDT)، مقرّب للأعلى لسنت
   const [dzd, setDzd] = useState('');
   const usdt = Number(dzd) > 0 ? Math.ceil((Number(dzd) / config.rate) * 100) / 100 : null;
-  // تبويبان: Binance Pay (UID) أو عنوان BEP20 على شبكة BSC
+  // via يأتي من تبويبات النافذة: Binance Pay (UID) أو عنوان BEP20 على شبكة BSC
   const bsc = config.addresses?.BSC || null;
-  const hasPay = !!(config.payLink || config.uid);
-  const [via, setVia] = useState(hasPay ? 'pay' : 'bsc');
   // QR: رابط استلام Binance Pay، أو عنوان BSC في تبويبه
   const qrValue = via === 'bsc' ? bsc : config.payLink || null;
 
@@ -86,27 +84,6 @@ export default function BinanceTopUp({ config, onPaid }) {
           </span>
         </div>
       </div>
-
-      {/* التبويبات */}
-      {hasPay && bsc && (
-        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-gray-100 dark:bg-zinc-800">
-          {[
-            ['pay', 'Binance Pay (UID)'],
-            ['bsc', 'BEP20 (BSC)'],
-          ].map(([v, name]) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => { setVia(v); setError(null); }}
-              className={`py-1.5 rounded-lg text-xs font-bold outline-none transition-all ${
-                via === v ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400'
-              }`}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* QR صغير + السعر والزر والـ UID/العنوان بجانبه */}
       <div className="flex items-stretch gap-3">

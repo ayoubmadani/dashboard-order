@@ -29,8 +29,9 @@
     "confirm": "تأكيد الشحن",
     "powered_by": "مدعوم بـ Chargily Pay",
     "method_card": "بطاقة (CIB / الذهبية)",
-    "method_usdt": "USDT عبر Binance",
-    "usdt_rate": "1 USDT = {{rate}} DA"
+    "method_usdt": "Binance Pay",
+    "usdt_rate": "1 USDT = {{rate}} DA",
+    "method_bsc": "USDT BEP20 (BSC)"
   },
   "error": {
     "fetch": "فشل تحميل بيانات المحفظة",

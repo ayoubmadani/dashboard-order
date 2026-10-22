@@ -78,16 +78,17 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
 
         {/* طريقة الدفع — USDT تظهر فقط إذا فعّلها الأدمن */}
         {binance?.enabled && (
-          <div className="grid grid-cols-2 gap-2">
+          <div className={`grid gap-2 ${binance.addresses?.BSC ? 'grid-cols-3' : 'grid-cols-2'}`}>
             {[
               ['card', t('modal.method_card')],
-              ['usdt', t('modal.method_usdt')],
+              ...((binance.uid || binance.payLink) ? [['usdt', t('modal.method_usdt')]] : []),
+              ...(binance.addresses?.BSC ? [['bsc', t('modal.method_bsc')]] : []),
             ].map(([m, label]) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => { setMethod(m); clearError(); }}
-                className={`py-2.5 rounded-xl text-xs font-bold border outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 transition-all ${method === m
+                className={`py-2.5 px-1 rounded-xl text-[11px] font-bold border outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 transition-all ${method === m
                     ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-transparent shadow-md'
                     : 'bg-white dark:bg-zinc-900 text-gray-600 dark:text-zinc-300 border-gray-100 dark:border-zinc-800'
                   }`}
@@ -97,8 +98,8 @@ function TopUpModal({ isRtl, onClose, onConfirm, loading, error, amount, setAmou
             ))}
           </div>
         )}
-        {method === 'usdt' ? (
-          <BinanceTopUp config={binance} onPaid={onBinancePaid} />
+        {method === 'usdt' || method === 'bsc' ? (
+          <BinanceTopUp key={method} config={binance} via={method === 'bsc' ? 'bsc' : 'pay'} onPaid={onBinancePaid} />
         ) : (
         <>
         {/* Presets */}
