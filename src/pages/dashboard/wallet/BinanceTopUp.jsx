@@ -24,26 +24,6 @@ function CopyButton({ value }) {
   );
 }
 
-function CopyRow({ label, value }) {
-  const [copied, setCopied] = useState(false);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch { /* المتصفح منع النسخ — القيمة ظاهرة للنسخ اليدوي */ }
-  };
-  return (
-    <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl">
-      {label && <span className="shrink-0 text-[10px] font-bold text-gray-400 dark:text-zinc-500">{label}</span>}
-      <span dir="ltr" className="flex-1 min-w-0 truncate text-xs font-mono text-gray-900 dark:text-white">{value}</span>
-      <button type="button" onClick={copy} className="shrink-0 p-1 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-800">
-        {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-      </button>
-    </div>
-  );
-}
-
 export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
   const { t } = useTranslation('translation', { keyPrefix: 'wallet.binance' });
   const [code, setCode] = useState('');
@@ -122,6 +102,15 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
               <span className="text-gray-400 dark:text-zinc-500">{t('bsc_coin')}</span>
               <span dir="ltr" className="font-bold text-gray-900 dark:text-white">USDT</span>
             </div>
+            {via === 'bsc' && bsc && (
+              <div className="flex items-center justify-between gap-2 px-3 py-1.5">
+                <span className="shrink-0 text-gray-400 dark:text-zinc-500">BEP20</span>
+                <span className="flex items-center gap-1 min-w-0">
+                  <span dir="ltr" className="font-mono font-bold text-gray-900 dark:text-white truncate" title={bsc}>{bsc}</span>
+                  <CopyButton value={bsc} />
+                </span>
+              </div>
+            )}
             {via === 'pay' && config.uid && (
               <div className="flex items-center justify-between px-3 py-1.5">
                 <span className="text-gray-400 dark:text-zinc-500">UID</span>
@@ -132,7 +121,6 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
               </div>
             )}
           </div>
-          {via === 'bsc' && <CopyRow label="BEP20" value={bsc} />}
         </div>
       </div>
       <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed -mt-1">{via === 'bsc' ? t('bsc_note') : t('scan_or_uid')}</p>
