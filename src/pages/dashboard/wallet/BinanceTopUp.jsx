@@ -8,6 +8,22 @@ import { Copy, Check, Loader2, CheckCircle2, ExternalLink } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
+function CopyButton({ value }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* المتصفح منع النسخ — القيمة ظاهرة للنسخ اليدوي */ }
+  };
+  return (
+    <button type="button" onClick={copy} className="p-1 rounded-lg text-gray-500 hover:bg-gray-200 dark:hover:bg-zinc-800">
+      {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
+
 function CopyRow({ label, value }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
@@ -96,7 +112,6 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
           <p className={label}><span dir="ltr">1 USDT = {config.rate} DA</span></p>
-          {via === 'pay' && config.uid && <CopyRow label="UID" value={config.uid} />}
           {/* تفاصيل الطريقة — نفس المكان في التبويبين */}
           <div className="rounded-xl border border-gray-200 dark:border-zinc-700 divide-y divide-gray-100 dark:divide-zinc-800 text-xs">
             <div className="flex items-center justify-between px-3 py-2">
@@ -107,6 +122,15 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
               <span className="text-gray-400 dark:text-zinc-500">{t('bsc_coin')}</span>
               <span dir="ltr" className="font-bold text-gray-900 dark:text-white">USDT</span>
             </div>
+            {via === 'pay' && config.uid && (
+              <div className="flex items-center justify-between px-3 py-1.5">
+                <span className="text-gray-400 dark:text-zinc-500">UID</span>
+                <span className="flex items-center gap-1">
+                  <span dir="ltr" className="font-mono font-bold text-gray-900 dark:text-white">{config.uid}</span>
+                  <CopyButton value={config.uid} />
+                </span>
+              </div>
+            )}
           </div>
           {via === 'bsc' && <CopyRow label="BEP20" value={bsc} />}
         </div>
