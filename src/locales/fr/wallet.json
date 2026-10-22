@@ -52,6 +52,9 @@
     "error": "Impossible de vérifier la transaction, réessayez",
     "open_binance": "Payer avec Binance",
     "scan_or_uid": "Scannez avec l'app Binance, ou Pay → Send → UID, et envoyez le montant USDT de votre choix — sans frais.",
-    "calc_label": "Combien voulez-vous recharger ? (en DA)"
+    "calc_label": "Combien voulez-vous recharger ? (en DA)",
+    "bsc_note": "Depuis votre compte Binance : Wallet → Withdraw → USDT, collez l'adresse et choisissez le réseau BSC (BEP20). Binance affichera « Internal transfer » avec 0 frais. Les autres portefeuilles ou plateformes ne sont pas acceptés pour le moment.",
+    "txid_placeholder_bsc": "Off-chain transfer 123456789",
+    "hint_bsc": "ID dans Binance : historique des retraits (Withdraw History) → Internal transfer."
   }
 }

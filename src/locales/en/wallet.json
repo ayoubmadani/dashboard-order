@@ -52,6 +52,9 @@
     "error": "Couldn't verify the transaction, try again",
     "open_binance": "Pay with Binance",
     "scan_or_uid": "Scan with the Binance app, or Pay → Send → UID, and send any USDT amount — no fee.",
-    "calc_label": "How much do you want to top up? (DA)"
+    "calc_label": "How much do you want to top up? (DA)",
+    "bsc_note": "From your Binance account: Wallet → Withdraw → USDT, paste the address and choose the BSC (BEP20) network. Binance shows “Internal transfer” with 0 fee. Other wallets or exchanges aren't accepted for now.",
+    "txid_placeholder_bsc": "Off-chain transfer 123456789",
+    "hint_bsc": "ID in Binance: Withdraw History → Internal transfer."
   }
 }

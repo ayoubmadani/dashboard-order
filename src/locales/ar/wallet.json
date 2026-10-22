@@ -52,6 +52,9 @@
     "error": "تعذّر التحقق من المعاملة، حاول مرة أخرى",
     "open_binance": "ادفع عبر Binance",
     "scan_or_uid": "امسح الرمز بتطبيق Binance، أو Pay ← Send ← UID، وأرسل أي مبلغ USDT — بلا رسوم.",
-    "calc_label": "كم تريد أن تشحن؟ (بالدينار)"
+    "calc_label": "كم تريد أن تشحن؟ (بالدينار)",
+    "bsc_note": "من حسابك في Binance: Wallet ← Withdraw ← USDT، الصق العنوان واختر شبكة BSC (BEP20). سيظهر «Internal transfer» برسوم 0. التحويل من محفظة أو منصة أخرى غير مقبول حالياً.",
+    "txid_placeholder_bsc": "Off-chain transfer 123456789",
+    "hint_bsc": "رقم التحويل في Binance: سجل السحب (Withdraw History) ← Internal transfer."
   }
 }

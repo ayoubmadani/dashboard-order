@@ -36,8 +36,12 @@ export default function BinanceTopUp({ config, onPaid }) {
   // حاسبة: كم يريد بالدينار ← كم يرسل بالدولار (USDT)، مقرّب للأعلى لسنت
   const [dzd, setDzd] = useState('');
   const usdt = Number(dzd) > 0 ? Math.ceil((Number(dzd) / config.rate) * 100) / 100 : null;
-  // QR: رابط استلام Binance Pay (يفتح الدفع إلى UID في التطبيق)؛ بدونه نعرض الـ UID للنسخ فقط
-  const qrValue = config.payLink || null;
+  // تبويبان: Binance Pay (UID) أو عنوان BEP20 على شبكة BSC
+  const bsc = config.addresses?.BSC || null;
+  const hasPay = !!(config.payLink || config.uid);
+  const [via, setVia] = useState(hasPay ? 'pay' : 'bsc');
+  // QR: رابط استلام Binance Pay، أو عنوان BSC في تبويبه
+  const qrValue = via === 'bsc' ? bsc : config.payLink || null;
 
   const claim = async () => {
     if (!code.trim()) return;
@@ -83,7 +87,28 @@ export default function BinanceTopUp({ config, onPaid }) {
         </div>
       </div>
 
-      {/* QR صغير + السعر والزر والـ UID بجانبه */}
+      {/* التبويبات */}
+      {hasPay && bsc && (
+        <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-gray-100 dark:bg-zinc-800">
+          {[
+            ['pay', 'Binance Pay (UID)'],
+            ['bsc', 'BEP20 (BSC)'],
+          ].map(([v, name]) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => { setVia(v); setError(null); }}
+              className={`py-1.5 rounded-lg text-xs font-bold outline-none transition-all ${
+                via === v ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-zinc-400'
+              }`}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* QR صغير + السعر والزر والـ UID/العنوان بجانبه */}
       <div className="flex items-stretch gap-3">
         {qrValue && (
           <div className="shrink-0 p-2 bg-white rounded-xl border border-gray-100 dark:border-zinc-800 self-center">
@@ -92,7 +117,7 @@ export default function BinanceTopUp({ config, onPaid }) {
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-between gap-2">
           <p className={label}><span dir="ltr">1 USDT = {config.rate} DA</span></p>
-          {config.payLink && (
+          {via === 'pay' && config.payLink && (
             <a
               href={config.payLink}
               target="_blank"
@@ -103,10 +128,11 @@ export default function BinanceTopUp({ config, onPaid }) {
               {t('open_binance')}
             </a>
           )}
-          {config.uid && <CopyRow label="UID" value={config.uid} />}
+          {via === 'pay' && config.uid && <CopyRow label="UID" value={config.uid} />}
+          {via === 'bsc' && <CopyRow label="BEP20" value={bsc} />}
         </div>
       </div>
-      <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed -mt-1">{t('scan_or_uid')}</p>
+      <p className="text-[11px] text-gray-400 dark:text-zinc-500 leading-relaxed -mt-1">{via === 'bsc' ? t('bsc_note') : t('scan_or_uid')}</p>
 
       {/* رقم المعاملة */}
       <div className="space-y-1.5">
@@ -115,7 +141,7 @@ export default function BinanceTopUp({ config, onPaid }) {
           dir="ltr"
           value={code}
           onChange={(e) => { setCode(e.target.value); setError(null); }}
-          placeholder={t('txid_placeholder')}
+          placeholder={via === 'bsc' ? t('txid_placeholder_bsc') : t('txid_placeholder')}
           className="w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-950 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-400 transition-all"
         />
       </div>
@@ -131,7 +157,7 @@ export default function BinanceTopUp({ config, onPaid }) {
         {t('confirm')}
       </button>
 
-      <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{t('hint')}</p>
+      <p className="text-center text-[11px] text-gray-400 dark:text-zinc-500">{via === 'bsc' ? t('hint_bsc') : t('hint')}</p>
     </div>
   );
 }
