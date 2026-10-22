@@ -129,13 +129,13 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
 
     {/* رقم المعاملة وزر التأكيد — ثابتان في الأسفل */}
     <div className="shrink-0 px-6 pt-4 pb-6 space-y-3">
-      {/* زر يفتح الدفع في Binance */}
+      {/* رابط يفتح الدفع في Binance */}
       {via === 'pay' && config.payLink && (
         <a
           href={config.payLink}
           target="_blank"
           rel="noreferrer"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#FCD535] text-gray-900 text-sm font-black hover:brightness-95"
+          className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
         >
           <ExternalLink className="w-4 h-4" />
           {t('open_binance')}
