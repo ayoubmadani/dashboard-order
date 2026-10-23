@@ -16,6 +16,30 @@ const STATUS_CLS = {
   out: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
 };
 
+// النسخة كما يراها الزبون: نص يُكتب، صورة مصغّرة، أو دائرة لون (قيمتهما رابط/كود لا اسم)
+const toParts = (v) => (Array.isArray(v) ? v.map((a) => ({ mode: a.mode || a.displayMode || 'text', value: String(a.value ?? ''), attr: a.attr || a.attrName || '' })) : []);
+
+function VariantParts({ parts, className = '' }) {
+  const list = toParts(parts);
+  if (!list.length) return null;
+  return (
+    <span className={`inline-flex items-center gap-1.5 flex-wrap ${className}`}>
+      {list.map((p, i) => (
+        <span key={i} className="inline-flex items-center gap-1">
+          {i > 0 && <span className="text-gray-300 dark:text-zinc-600">/</span>}
+          {p.mode === 'image' ? (
+            <img src={p.value} alt={p.attr} title={p.attr} className="w-5 h-5 rounded-md object-cover border border-gray-200 dark:border-zinc-700" />
+          ) : p.mode === 'color' ? (
+            <span title={p.attr} className="w-4 h-4 rounded-full border border-gray-200 dark:border-zinc-700" style={{ backgroundColor: p.value }} />
+          ) : (
+            <span>{p.value}</span>
+          )}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function StatusBadge({ status }) {
   const { t } = useTranslation('translation', { keyPrefix: 'inventory' });
   return <span className={`px-2 py-0.5 rounded-lg text-[11px] font-bold ${STATUS_CLS[status]}`}>{t(`status.${status}`)}</span>;
@@ -210,7 +234,7 @@ function StockTab({ storeId }) {
                 </tr>,
                 ...(expanded ? p.variants.map((v) => (
                   <tr key={v.id} className="bg-gray-50/60 dark:bg-zinc-950/40 border-b border-gray-50 dark:border-zinc-800/60">
-                    <td className="px-4 py-2 ps-16 text-gray-600 dark:text-zinc-300">{v.label}</td>
+                    <td className="px-4 py-2 ps-16 text-gray-600 dark:text-zinc-300"><VariantParts parts={v.parts} /></td>
                     <td className="px-4 py-2 font-bold text-gray-900 dark:text-white" dir="ltr">{fmt(v.stock)}</td>
                     <td className="px-4 py-2"><StatusBadge status={v.status} /></td>
                     <td className="px-4 py-2" />
@@ -252,7 +276,6 @@ function HistoryTab({ storeId }) {
 
   if (!data) return <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>;
   const pages = Math.max(1, Math.ceil(data.total / data.limit));
-  const variantLabel = (name) => (Array.isArray(name) ? name.map((a) => (a.displayMode === 'color' ? a.attrName : a.value)).join(' / ') : '');
 
   return (
     <div className="space-y-3">
@@ -270,7 +293,7 @@ function HistoryTab({ storeId }) {
                 <td className="px-4 py-2.5 text-xs text-gray-500 whitespace-nowrap">{new Date(m.createdAt).toLocaleString(i18n.language === 'ar' ? 'ar-DZ' : i18n.language)}</td>
                 <td className="px-4 py-2.5">
                   <p className="font-semibold text-gray-900 dark:text-white truncate max-w-[220px]">{m.productName || '—'}</p>
-                  {m.variantName && <p className="text-[11px] text-gray-400">{variantLabel(m.variantName)}</p>}
+                  {m.variantName && <VariantParts parts={m.variantName} className="text-[11px] text-gray-400" />}
                 </td>
                 <td className={`px-4 py-2.5 font-black ${m.delta > 0 ? 'text-emerald-500' : 'text-rose-500'}`} dir="ltr">{m.delta > 0 ? `+${m.delta}` : m.delta}</td>
                 <td className="px-4 py-2.5 font-bold text-gray-900 dark:text-white" dir="ltr">{m.stockAfter}</td>
