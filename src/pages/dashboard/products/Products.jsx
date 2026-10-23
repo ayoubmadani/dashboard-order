@@ -193,7 +193,7 @@ const Products = () => {
   const isDeleteConfirmed = confirmName.trim().toUpperCase() === requiredText;
 
   const activeCount = products.filter(p => p.isActive).length;
-  const outOfStock = products.filter(p => p.stock === 0).length;
+  const outOfStock = products.filter(p => (p.totalStock ?? p.stock) <= 0).length;
 
   if (!storeId) return <NoStoreState title={t('no_store.title')} subtitle={t('no_store.subtitle')} cta={t('no_store.cta')} isRtl={isRtl} />;
 
@@ -509,20 +509,22 @@ const Products = () => {
                         )}
                       </td>
 
-                      {/* Stock */}
+                      {/* Stock — منتج بنسخ: مجموع مخزون النسخ (totalStock من الخادم) */}
                       <td className="px-4 py-4">
+                        {(() => { const stock = product.totalStock ?? product.stock; const low = product.lowStockThreshold ?? 5; return (
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                          product.stock === 0
+                          stock <= 0
                             ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                            : product.stock < 5
+                            : stock <= low
                             ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400'
                             : 'bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300'
                         }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${
-                            product.stock === 0 ? 'bg-rose-500' : product.stock < 5 ? 'bg-amber-500' : 'bg-emerald-500'
+                            stock <= 0 ? 'bg-rose-500' : stock <= low ? 'bg-amber-500' : 'bg-emerald-500'
                           }`} />
-                          {product.stock}
+                          {stock}
                         </span>
+                        ); })()}
                       </td>
 
                       {/* Shows */}
