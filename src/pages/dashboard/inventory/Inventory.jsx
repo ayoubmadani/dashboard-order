@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Boxes, Search, Plus, ClipboardCheck, ChevronDown, Loader2, Package, AlertTriangle, X } from 'lucide-react';
+import { Boxes, Search, Plus, ClipboardCheck, ChevronDown, Loader2, Package, AlertTriangle, X, ExternalLink } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
@@ -296,6 +296,20 @@ function HistoryTab({ storeId }) {
   );
 }
 
+// تطبيق المخزون (MD Stock): دخول مباشر برمز لمرة واحدة — لا يمرّ رمز الجلسة في الرابط
+const STOCK_URL = import.meta.env.VITE_STOCK_URL || 'https://stock.mdstore.top';
+
+async function openStockApp(storeId) {
+  const win = window.open('about:blank', '_blank'); // فوراً عند الضغط، قبل الطلب، حتى لا يمنعه المتصفح
+  try {
+    const { data } = await axios.post(`${baseURL}/auth/handoff`, {}, headers());
+    const url = `${STOCK_URL}/handoff?code=${encodeURIComponent(data.code)}&store=${encodeURIComponent(storeId)}`;
+    if (win) win.location.href = url; else window.location.href = url;
+  } catch {
+    if (win) win.location.href = `${STOCK_URL}/login`;
+  }
+}
+
 export default function Inventory() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'inventory' });
   const [storeId] = useState(() => localStorage.getItem('storeId'));
@@ -312,6 +326,11 @@ export default function Inventory() {
             <p className="text-xs text-gray-400">{t('subtitle')}</p>
           </div>
         </div>
+        <div className="flex items-center gap-2">
+        <button type="button" onClick={() => openStockApp(storeId)}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500">
+          <ExternalLink className="w-3.5 h-3.5" />{t('open_app')}
+        </button>
         <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-gray-100 dark:bg-zinc-800">
           {['stock', 'history'].map((k) => (
             <button key={k} type="button" onClick={() => setTab(k)}
@@ -319,6 +338,7 @@ export default function Inventory() {
               {t(`tab_${k}`)}
             </button>
           ))}
+        </div>
         </div>
       </div>
       <p className="flex items-center gap-2 text-xs text-gray-500 dark:text-zinc-400">

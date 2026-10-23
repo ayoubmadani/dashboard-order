@@ -60,5 +60,6 @@
   "order": "Order #{{id}}",
   "prev": "Previous",
   "next": "Next",
-  "auto_note": "Stock goes down automatically when an order is confirmed, and comes back on cancellation or return."
+  "auto_note": "Stock goes down automatically when an order is confirmed, and comes back on cancellation or return.",
+  "open_app": "Open Stock app"
 }
