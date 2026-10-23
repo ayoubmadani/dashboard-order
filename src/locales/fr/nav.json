@@ -1,6 +1,7 @@
 {
-    "home": "Accueil",
-    "about": "À Propos",
-    "contact": "Contactez-nous",
-    "plan":"Tarifs"
+  "home": "Accueil",
+  "about": "À Propos",
+  "contact": "Contactez-nous",
+  "plan": "Tarifs",
+  "inventory": "Stock"
 }

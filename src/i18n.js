@@ -39,6 +39,7 @@ import arSeo from './locales/ar/seo.json';
 import arAbtest from './locales/ar/abtest.json';
 import arTeam from './locales/ar/team.json';
 import arWallet from './locales/ar/wallet.json';
+import arInventory from './locales/ar/inventory.json';
 import arLayout from './locales/ar/layout.json';
 import arPixel from './locales/ar/pixel.json';
 import arDomain from './locales/ar/domain.json';
@@ -83,6 +84,7 @@ import enSeo from './locales/en/seo.json';
 import enAbtest from './locales/en/abtest.json';
 import enTeam from './locales/en/team.json';
 import enWallet from './locales/en/wallet.json';
+import enInventory from './locales/en/inventory.json';
 import enLayout from './locales/en/layout.json';
 import enPixel from './locales/en/pixel.json';
 import enDomain from './locales/en/domain.json';
@@ -133,6 +135,7 @@ import frSeo from './locales/fr/seo.json';
 import frAbtest from './locales/fr/abtest.json';
 import frTeam from './locales/fr/team.json';
 import frWallet from './locales/fr/wallet.json';
+import frInventory from './locales/fr/inventory.json';
 import frLayout from './locales/fr/layout.json';
 import frPixel from './locales/fr/pixel.json';
 import frDomain from './locales/fr/domain.json';
@@ -185,6 +188,7 @@ const resources = {
       abtest: arAbtest,
       team: arTeam,
       wallet: arWallet,
+      inventory: arInventory,
       layout: arLayout,
       Pixels: arPixel,
       domain: arDomain,
@@ -230,6 +234,7 @@ const resources = {
       abtest: enAbtest,
       team: enTeam,
       wallet: enWallet,
+      inventory: enInventory,
       layout: enLayout,
       Pixels: enPixel,
       domain: enDomain,
@@ -275,6 +280,7 @@ const resources = {
       abtest: frAbtest,
       team: frTeam,
       wallet: frWallet,
+      inventory: frInventory,
       layout: frLayout,
       Pixels: frPixel,
       domain: frDomain,

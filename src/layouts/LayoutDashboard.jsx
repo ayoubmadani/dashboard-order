@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail, Boxes,
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
@@ -219,6 +219,7 @@ export default function LayoutDashboard() {
                 { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, owner: true },
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
+                { name: t('nav.inventory', 'المخزون'), href: '/dashboard/inventory', icon: Boxes, perm: 'product.crud' },
                 { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate, owner: true },
                 { name: t('nav.team', 'الفريق'), href: '/dashboard/team', icon: Users, owner: true },
             ],

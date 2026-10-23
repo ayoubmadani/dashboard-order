@@ -32,6 +32,7 @@ import ShowProduct from './pages/dashboard/products/Show';
 import Theme from './pages/dashboard/theme/Theme';
 import CustomTheme from './pages/dashboard/theme/CustomTheme';
 import Wallet from './pages/dashboard/wallet/wallet';
+import Inventory from './pages/dashboard/inventory/Inventory';
 import Pixels from './pages/dashboard/pixels/pixels';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
@@ -110,6 +111,7 @@ const App = () => {
             </Route>
 
             <Route path='Wallet' element={<Wallet />} />
+            <Route path='inventory' element={<Inventory />} />
 
 
             <Route path="landing-pages">

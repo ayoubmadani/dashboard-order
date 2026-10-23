@@ -1,6 +1,7 @@
- {
-        "home": "Home",
-        "about": "About Us",
-        "contact": "Contact Us",
-        "plan":"Pricing"
-    }
+{
+  "home": "Home",
+  "about": "About Us",
+  "contact": "Contact Us",
+  "plan": "Pricing",
+  "inventory": "Inventory"
+}
