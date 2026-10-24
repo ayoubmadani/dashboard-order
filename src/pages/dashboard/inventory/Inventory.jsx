@@ -1,9 +1,9 @@
 // المخزون: الكميات لكل منتج ونسخة، التنبيهات، القيمة، وسجل كل حركة.
 // ينقص تلقائياً عند تأكيد الطلب ويعود عند الإلغاء/الإرجاع (الخادم: InventoryService).
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Boxes, Search, Plus, ClipboardCheck, ChevronDown, Loader2, Package, AlertTriangle, X, ExternalLink } from 'lucide-react';
+import { Boxes, Search, Plus, Minus, SlidersHorizontal, Loader2, Package, AlertTriangle, X, ExternalLink } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
@@ -120,12 +120,116 @@ function InlineNumber({ value, onSave, placeholder }) {
   );
 }
 
+// سطور المخزون الموحّدة: المنتج نفسه أو نسخه، النافد ثم المنخفض أولاً
+const RANK = { out: 0, low: 1, ok: 2 };
+const stockLines = (p) => (p.variants?.length
+  ? p.variants.map((v, i) => ({ key: v.id, variantId: v.id, parts: v.parts, label: v.label, stock: v.stock, status: v.status, i }))
+    .sort((a, b) => (RANK[a.status] ?? 2) - (RANK[b.status] ?? 2) || a.i - b.i)
+  : [{ key: p.id, variantId: null, parts: null, label: '', stock: p.stock, status: p.status }]);
+
+const SAVE_AFTER_MS = 700;
+
+// − الرقم ＋: الضغطات المتتالية تُحفظ مرة واحدة كحركة واحدة؛ الرقم يفتح التوريد/الجرد
+function Stepper({ storeId, productId, variantId, value, name, onOpen, onSaved }) {
+  const [shown, setShown] = useState(value);
+  const shownRef = useRef(value);
+  const saved = useRef(value);
+  const timer = useRef(null);
+
+  useEffect(() => {
+    if (timer.current) return;
+    saved.current = value;
+    shownRef.current = value;
+    setShown(value);
+  }, [value]);
+
+  const commit = async () => {
+    timer.current = null;
+    const delta = shownRef.current - saved.current;
+    if (!delta) return;
+    saved.current += delta;
+    try {
+      await axios.post(`${baseURL}/stores/${storeId}/inventory/adjust`, { productId, variantDetailId: variantId || null, mode: 'add', quantity: delta }, headers());
+      onSaved?.();
+    } catch {
+      saved.current -= delta;
+      shownRef.current = saved.current;
+      setShown(saved.current);
+    }
+  };
+
+  const bump = (d) => {
+    const next = Math.max(0, shownRef.current + d);
+    shownRef.current = next;
+    setShown(next);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(commit, SAVE_AFTER_MS);
+  };
+
+  useEffect(() => () => {
+    if (timer.current) { clearTimeout(timer.current); commit(); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="flex items-center gap-2">
+      <button type="button" onClick={() => bump(-1)} disabled={shown <= 0} aria-label="−"
+        className="w-10 h-10 shrink-0 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-white flex items-center justify-center active:scale-95 disabled:opacity-40">
+        <Minus className="w-4 h-4" />
+      </button>
+      <button type="button" onClick={() => onOpen({ productId, variantId, name, stock: shown, mode: 'add' })}
+        className="flex-1 min-w-0 h-10 rounded-xl bg-gray-50 dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 font-black text-gray-900 dark:text-white" dir="ltr">
+        {fmt(shown)}
+      </button>
+      <button type="button" onClick={() => bump(1)} aria-label="+"
+        className="w-10 h-10 shrink-0 rounded-xl bg-indigo-600 text-white flex items-center justify-center active:scale-95">
+        <Plus className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+// نافذة المنتج: كل أسطره بأزرار − و＋
+function StockModal({ p, storeId, onAdjust, onChanged, onClose }) {
+  const { t } = useTranslation('translation', { keyPrefix: 'inventory' });
+  return (
+    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm sm:p-4" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-2xl border border-gray-100 dark:border-zinc-800 w-full sm:max-w-md max-h-[85vh] flex flex-col shadow-2xl">
+        <div className="flex items-center gap-3 p-4 border-b border-gray-100 dark:border-zinc-800">
+          <div className="w-11 h-11 rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
+            {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-gray-400" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-sm text-gray-900 dark:text-white truncate"><bdi>{p.name}</bdi></p>
+            <p className="text-xs text-gray-400">{t('total')}: <b className="text-gray-900 dark:text-white" dir="ltr">{fmt(p.stock)}</b></p>
+          </div>
+          <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {stockLines(p).map((l) => (
+            <div key={l.key} className="flex items-center gap-3">
+              <div className="w-28 shrink-0 min-w-0 space-y-1">
+                {l.parts ? <VariantParts parts={l.parts} className="text-sm font-semibold text-gray-700 dark:text-zinc-200" /> : <span className="text-sm text-gray-500">{t('quantity')}</span>}
+                <div><StatusBadge status={l.status} /></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <Stepper storeId={storeId} productId={p.id} variantId={l.variantId} value={l.stock}
+                  name={l.parts ? `${p.name} — ${l.label}` : p.name} onOpen={onAdjust} onSaved={onChanged} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StockTab({ storeId }) {
   const { t } = useTranslation('translation', { keyPrefix: 'inventory' });
   const [data, setData] = useState(null);
   const [filter, setFilter] = useState('all');
   const [q, setQ] = useState('');
-  const [open, setOpen] = useState({});
+  const [openId, setOpenId] = useState(null);
   const [adjust, setAdjust] = useState(null);
 
   const load = useCallback(() => {
@@ -193,21 +297,19 @@ function StockTab({ storeId }) {
               <tr><td colSpan={6} className="text-center text-gray-400 py-12">{t('empty')}</td></tr>
             )}
             {rows.map((p) => {
-              const hasVariants = p.variants.length > 0;
-              const expanded = !!open[p.id];
-              return [
-                <tr key={p.id} className="border-b border-gray-50 dark:border-zinc-800/60">
+              const problems = p.variants.filter((v) => v.status !== 'ok').length;
+              return (
+                <tr key={p.id} className="border-b border-gray-50 dark:border-zinc-800/60 hover:bg-gray-50/60 dark:hover:bg-zinc-800/30">
                   <td className="px-4 py-3">
-                    <button type="button" disabled={!hasVariants} onClick={() => setOpen((o) => ({ ...o, [p.id]: !o[p.id] }))} className="flex items-center gap-3 text-start">
+                    <button type="button" onClick={() => setOpenId(p.id)} className="flex items-center gap-3 text-start">
                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
                         {p.image ? <img src={p.image} alt="" className="w-full h-full object-cover" /> : <Package className="w-4 h-4 text-gray-400" />}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold text-gray-900 dark:text-white truncate max-w-[240px]">{p.name}</p>
-                        {hasVariants && (
-                          <p className="text-[11px] text-gray-400 flex items-center gap-1">
-                            {t('variants', { count: p.variants.length })}
-                            <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                        <p className="font-semibold text-gray-900 dark:text-white truncate max-w-[240px]"><bdi>{p.name}</bdi></p>
+                        {p.variants.length > 0 && (
+                          <p className="text-[11px] text-gray-400">
+                            {t('variants', { count: p.variants.length })}{problems > 0 && <span className="text-amber-500"> · {t('need_attention', { count: problems })}</span>}
                           </p>
                         )}
                       </div>
@@ -218,47 +320,23 @@ function StockTab({ storeId }) {
                   <td className="px-4 py-3"><InlineNumber key={`t-${p.id}-${p.lowStockThreshold}`} value={p.lowStockThreshold} onSave={(v) => saveSettings(p.id, { lowStockThreshold: v ?? 0 })} /></td>
                   <td className="px-4 py-3"><InlineNumber key={`c-${p.id}-${p.costPrice}`} value={p.costPrice} placeholder="—" onSave={(v) => saveSettings(p.id, { costPrice: v })} /></td>
                   <td className="px-4 py-3">
-                    {!hasVariants && (
-                      <div className="flex justify-end gap-1.5">
-                        <button type="button" onClick={() => setAdjust({ productId: p.id, name: p.name, stock: p.stock, mode: 'add' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                          <Plus className="w-3.5 h-3.5" />{t('restock')}
-                        </button>
-                        <button type="button" onClick={() => setAdjust({ productId: p.id, name: p.name, stock: p.stock, mode: 'set' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          <ClipboardCheck className="w-3.5 h-3.5" />{t('count')}
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex justify-end">
+                      <button type="button" onClick={() => setOpenId(p.id)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+                        <SlidersHorizontal className="w-3.5 h-3.5" />{t('quantities')}
+                      </button>
+                    </div>
                   </td>
-                </tr>,
-                ...(expanded ? p.variants.map((v) => (
-                  <tr key={v.id} className="bg-gray-50/60 dark:bg-zinc-950/40 border-b border-gray-50 dark:border-zinc-800/60">
-                    <td className="px-4 py-2 ps-16 text-gray-600 dark:text-zinc-300"><VariantParts parts={v.parts} /></td>
-                    <td className="px-4 py-2 font-bold text-gray-900 dark:text-white" dir="ltr">{fmt(v.stock)}</td>
-                    <td className="px-4 py-2"><StatusBadge status={v.status} /></td>
-                    <td className="px-4 py-2" />
-                    <td className="px-4 py-2" />
-                    <td className="px-4 py-2">
-                      <div className="flex justify-end gap-1.5">
-                        <button type="button" onClick={() => setAdjust({ productId: p.id, variantId: v.id, name: `${p.name} — ${v.label}`, stock: v.stock, mode: 'add' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-                          <Plus className="w-3.5 h-3.5" />{t('restock')}
-                        </button>
-                        <button type="button" onClick={() => setAdjust({ productId: p.id, variantId: v.id, name: `${p.name} — ${v.label}`, stock: v.stock, mode: 'set' })}
-                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-zinc-300">
-                          <ClipboardCheck className="w-3.5 h-3.5" />{t('count')}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )) : []),
-              ];
+                </tr>
+              );
             })}
           </tbody>
         </table>
       </div>
 
+      {openId && data.products.some((x) => x.id === openId) && (
+        <StockModal p={data.products.find((x) => x.id === openId)} storeId={storeId} onAdjust={setAdjust} onChanged={load} onClose={() => setOpenId(null)} />
+      )}
       {adjust && <AdjustModal target={adjust} storeId={storeId} onClose={() => setAdjust(null)} onSaved={() => { setAdjust(null); load(); }} />}
     </div>
   );

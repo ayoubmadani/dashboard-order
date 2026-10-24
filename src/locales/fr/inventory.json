@@ -61,5 +61,8 @@
   "prev": "Précédent",
   "next": "Suivant",
   "auto_note": "Le stock diminue automatiquement à la confirmation d'une commande et revient en cas d'annulation ou de retour.",
-  "open_app": "Ouvrir l'app Stock"
+  "open_app": "Ouvrir l'app Stock",
+  "total": "Total",
+  "need_attention": "{{count}} à surveiller",
+  "quantities": "Quantités"
 }
