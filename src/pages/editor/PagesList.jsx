@@ -13,6 +13,7 @@ import { getAccessToken } from '../../services/access-token';
 import Loading from '../../components/Loading';
 import NoStoreState from '../../components/NoStoreState';
 import ProductPicker from './components/ProductPicker';
+import PageDomainModal from './components/PageDomainModal';
 
 export default function PagesList() {
   const { t, i18n } = useTranslation();
@@ -35,6 +36,7 @@ export default function PagesList() {
   const [updatingPlatformId, setUpdatingPlatformId] = useState(null);
 
   const storeId = localStorage.getItem('storeId');
+  const [domainPageId, setDomainPageId] = useState(null);
   const authHeaders = () => ({ Authorization: `Bearer ${getAccessToken()}` });
 
   const fetchPages = useCallback(async () => {
@@ -55,6 +57,14 @@ export default function PagesList() {
       setLoading(false);
     }
   }, [storeId, t]);
+
+  // بعد اختيار/فك دومين: تحديث صامت للبطاقات (بلا شاشة تحميل)
+  const closeDomainModal = () => {
+    setDomainPageId(null);
+    axios.get(`${baseURL}/builder-pages/store/${storeId}`, { headers: authHeaders() })
+      .then((res) => setPages(Array.isArray(res.data) ? res.data : res.data?.data ?? []))
+      .catch(() => {});
+  };
 
   useEffect(() => {
     fetchPages();
@@ -152,6 +162,7 @@ export default function PagesList() {
   return (
     <div className="min-h-[calc(100vh-200px)] bg-gray-50 dark:bg-zinc-950 pb-20" dir={isRtl ? 'rtl' : 'ltr'}>
       <Toaster position="top-center" richColors />
+      <PageDomainModal open={!!domainPageId} onClose={closeDomainModal} storeId={storeId} pageId={domainPageId} />
 
       <div className="bg-white dark:bg-zinc-900 border-b border-gray-200 dark:border-zinc-800 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
@@ -321,24 +332,22 @@ export default function PagesList() {
                   </button>
                 </div>
 
-                {/* روابط الصفحة: الدومينات المخصصة ثم رابط /lp */}
-                {(page.domains?.length > 0 || page.domain) && (
-                  <div className="flex flex-col gap-1.5 mb-4">
-                    {[...(page.domains || []), ...(page.domain ? [page.domain] : [])].map((d) => (
-                      <a
-                        key={d}
-                        href={`https://${d}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        dir="ltr"
-                        className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-gray-100 dark:border-zinc-800 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:border-blue-200"
-                      >
-                        <Globe size={12} className="shrink-0 text-gray-400" />
-                        <span className="truncate">{d}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
+                {/* دومينات الصفحة المربوطة بها مباشرة فقط (لا دومين اختبار A/B ولا رابط /lp) */}
+                <div className="flex flex-col gap-1.5 mb-4">
+                  {page.domains?.length > 0 ? page.domains.map((d) => (
+                    <div key={d} className="flex items-center gap-1 p-1 ps-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-gray-100 dark:border-zinc-800">
+                      <Globe size={12} className="shrink-0 text-gray-400" />
+                      <a href={`https://${d}`} target="_blank" rel="noreferrer" dir="ltr" className="flex-1 min-w-0 truncate text-start font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:underline">{d}</a>
+                      <button type="button" onClick={() => setDomainPageId(page.id)} title={t('editor.list.manageDomain', 'إدارة الدومين')} className="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-zinc-700 dark:hover:text-zinc-200">
+                        <Pencil size={12} />
+                      </button>
+                    </div>
+                  )) : (
+                    <button type="button" onClick={() => setDomainPageId(page.id)} className="flex items-center justify-center gap-1.5 p-2 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10">
+                      <Globe size={13} />{t('editor.list.pickDomain', 'اختر domain')}
+                    </button>
+                  )}
+                </div>
 
                 <div className="flex items-center justify-between border-t border-gray-100 dark:border-zinc-800 pt-4">
                   <div className="flex items-center gap-1.5">

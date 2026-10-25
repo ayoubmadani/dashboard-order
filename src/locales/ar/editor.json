@@ -39,7 +39,9 @@
     "toggleError": "تعذر تغيير حالة الصفحة",
     "duplicateError": "تعذر نسخ الصفحة",
     "platformError": "تعذر تحديث المنصة",
-    "noProduct": "بلا منتج"
+    "noProduct": "بلا منتج",
+    "pickDomain": "اختر domain",
+    "manageDomain": "إدارة الدومين"
   },
   "topbar": {
     "backToList": "العودة للصفحات",

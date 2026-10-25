@@ -39,7 +39,9 @@
     "toggleError": "Failed to change page status",
     "duplicateError": "Failed to duplicate page",
     "platformError": "Failed to update platform",
-    "noProduct": "No product"
+    "noProduct": "No product",
+    "pickDomain": "Choose a domain",
+    "manageDomain": "Manage domain"
   },
   "topbar": {
     "backToList": "Back to pages",

@@ -39,7 +39,9 @@
     "toggleError": "Échec du changement de statut de la page",
     "duplicateError": "Échec de la duplication de la page",
     "platformError": "Échec de la mise à jour de la plateforme",
-    "noProduct": "Sans produit"
+    "noProduct": "Sans produit",
+    "pickDomain": "Choisir un domaine",
+    "manageDomain": "Gérer le domaine"
   },
   "topbar": {
     "backToList": "Retour aux pages",
