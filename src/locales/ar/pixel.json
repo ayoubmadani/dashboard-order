@@ -61,7 +61,14 @@
       "landing_page": "صفحة هبوط"
     },
     "saveChanges": "حفظ التغييرات",
-    "addPixel": "إضافة البكسل"
+    "addPixel": "إضافة البكسل",
+    "capiHint": "يرسل الخادم «Lead» عند كل طلب و«Purchase» عند تأكيده إلى Meta مباشرة — أدق من البكسل وحده (لا يتأثر بحجب الإعلانات وiOS). التوكن من Events Manager ← الإعدادات ← Conversions API ← إنشاء رمز وصول.",
+    "tokenSaved": "محفوظ ✓ — اكتب رمزاً جديداً لتغييره",
+    "removeToken": "إزالة التوكن (إيقاف Conversions API)",
+    "keepToken": "تراجع — إبقاء التوكن",
+    "testEventCodeLabel": "رمز اختبار الأحداث (اختياري)",
+    "testEventCodeHint": "من Events Manager ← اختبار الأحداث. احذفه بعد التجربة، وإلا تبقى الأحداث «تجريبية».",
+    "testMode": "وضع الاختبار"
   },
   "cancel": "إلغاء"
 }

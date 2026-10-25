@@ -61,7 +61,14 @@
       "landing_page": "Landing page"
     },
     "saveChanges": "Save Changes",
-    "addPixel": "Add Pixel"
+    "addPixel": "Add Pixel",
+    "capiHint": "The server sends \"Lead\" for every order and \"Purchase\" when it is confirmed straight to Meta — more reliable than the pixel alone (ad blockers, iOS). Token: Events Manager → Settings → Conversions API → Generate access token.",
+    "tokenSaved": "Saved ✓ — type a new token to change it",
+    "removeToken": "Remove token (turn off Conversions API)",
+    "keepToken": "Undo — keep the token",
+    "testEventCodeLabel": "Test event code (optional)",
+    "testEventCodeHint": "From Events Manager → Test events. Remove it after testing, or events stay \"test\".",
+    "testMode": "test mode"
   },
   "cancel": "Cancel"
 }

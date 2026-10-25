@@ -67,6 +67,8 @@ export const PixelManager = ({ storeId }) => {
     type: 'facebook',
     pixelId: '',
     accessToken: '',
+    testEventCode: '',
+    clearToken: false,
     events: DEFAULT_EVENTS,
     isActive: true,
   });
@@ -106,7 +108,15 @@ export const PixelManager = ({ storeId }) => {
       
       const method = editingPixel ? 'patch' : 'post';
       
-      await axios[method](url, formData, {
+      // التوكن لا يُعاد من الخادم أبداً: يُرسل فقط إن كُتب جديد، أو "" لمسحه
+      const { accessToken, clearToken, testEventCode, ...rest } = formData;
+      const payload = { ...rest };
+      if (formData.type === 'facebook') {
+        if (accessToken.trim()) payload.accessToken = accessToken.trim();
+        else if (clearToken) payload.accessToken = '';
+        payload.testEventCode = testEventCode.trim();
+      }
+      await axios[method](url, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -155,6 +165,8 @@ export const PixelManager = ({ storeId }) => {
       type: 'facebook',
       pixelId: '',
       accessToken: '',
+      testEventCode: '',
+      clearToken: false,
       events: DEFAULT_EVENTS,
       isActive: true,
     });
@@ -166,7 +178,9 @@ export const PixelManager = ({ storeId }) => {
       name: pixel.name || '',
       type: pixel.type,
       pixelId: pixel.pixelId,
-      accessToken: pixel.accessToken || '',
+      accessToken: '',
+      testEventCode: pixel.testEventCode || '',
+      clearToken: false,
       events: DEFAULT_EVENTS,
       isActive: pixel.isActive,
     });
@@ -292,6 +306,11 @@ export const PixelManager = ({ storeId }) => {
                       <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
                         {t(`form.scope.${pixel.scope || 'store'}`)}
                       </span>
+                      {pixel.type === 'facebook' && pixel.hasAccessToken && (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-semibold">
+                          Conversions API ✓{pixel.testEventCode ? ` · ${t('form.testMode')}` : ''}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -401,6 +420,45 @@ export const PixelManager = ({ storeId }) => {
                 />
               </div>
 
+              {/* Meta Conversions API — فيسبوك فقط */}
+              {formData.type === 'facebook' && (
+                <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/5 p-4 space-y-3">
+                  <div>
+                    <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">Conversions API</p>
+                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 leading-relaxed">{t('form.capiHint')}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">{t('form.accessTokenLabel')}</label>
+                    <input
+                      type="password"
+                      autoComplete="off"
+                      dir="ltr"
+                      value={formData.accessToken}
+                      onChange={(e) => setFormData({ ...formData, accessToken: e.target.value, clearToken: false })}
+                      placeholder={editingPixel?.hasAccessToken && !formData.clearToken ? t('form.tokenSaved') : t('form.accessTokenPlaceholder')}
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
+                    />
+                    {editingPixel?.hasAccessToken && !formData.accessToken && (
+                      <button type="button" onClick={() => setFormData({ ...formData, clearToken: !formData.clearToken })}
+                        className={`mt-2 text-xs font-semibold ${formData.clearToken ? 'text-gray-500' : 'text-rose-500'}`}>
+                        {formData.clearToken ? t('form.keepToken') : t('form.removeToken')}
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">{t('form.testEventCodeLabel')}</label>
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={formData.testEventCode}
+                      onChange={(e) => setFormData({ ...formData, testEventCode: e.target.value })}
+                      placeholder="TEST12345"
+                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
+                    />
+                    <p className="text-[11px] text-gray-400 mt-1">{t('form.testEventCodeHint')}</p>
+                  </div>
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">

@@ -61,7 +61,14 @@
       "landing_page": "Page d'atterrissage"
     },
     "saveChanges": "Enregistrer les modifications",
-    "addPixel": "Ajouter le Pixel"
+    "addPixel": "Ajouter le Pixel",
+    "capiHint": "Le serveur envoie « Lead » à chaque commande et « Purchase » à sa confirmation directement à Meta — plus fiable que le pixel seul (bloqueurs, iOS). Jeton : Events Manager ← Paramètres ← Conversions API ← Générer un jeton d'accès.",
+    "tokenSaved": "Enregistré ✓ — saisissez un nouveau jeton pour le changer",
+    "removeToken": "Retirer le jeton (désactiver Conversions API)",
+    "keepToken": "Annuler — garder le jeton",
+    "testEventCodeLabel": "Code d'événement test (optionnel)",
+    "testEventCodeHint": "Depuis Events Manager ← Tester les événements. Retirez-le après le test, sinon les événements restent « test ».",
+    "testMode": "mode test"
   },
   "cancel": "Annuler"
 }
