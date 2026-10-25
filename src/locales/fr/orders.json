@@ -209,5 +209,15 @@
     "button_select_all": "Livraison groupée ({{count}})",
     "button_ship_selected": "Livrer {{count}} commandes",
     "clear_selection": "Annuler la sélection"
+  },
+  "abandoned": {
+    "title": "Commandes abandonnées",
+    "subtitle": "Clients qui ont saisi leur téléphone sans valider (depuis au moins 30 min) — rappelez-les",
+    "empty": "Aucune commande abandonnée",
+    "no_name": "Sans nom",
+    "past": "{{count}} commande(s) passée(s)",
+    "convert": "Créer la commande",
+    "dismiss": "Ignorer",
+    "more": "Voir plus"
   }
 }

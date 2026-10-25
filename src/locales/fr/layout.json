@@ -25,7 +25,8 @@
     "group_system": "Système",
     "stores_count": "boutiques",
     "team": "Équipe",
-    "invitations": "Invitations"
+    "invitations": "Invitations",
+    "abandoned": "Commandes abandonnées"
   },
   "store_selector": {
     "current_store": "Boutique actuelle",

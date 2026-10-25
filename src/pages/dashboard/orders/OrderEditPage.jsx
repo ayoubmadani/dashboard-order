@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
   ShoppingBag, Trash2, CheckCircle2, Calendar, Check
@@ -117,6 +117,7 @@ export default function OrderEditPage({ isNew = false }) {
   console.log(cartId);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [editedCart, setEditedCart] = useState(null);
   const [originalCart, setOriginalCart] = useState(null);
@@ -219,7 +220,8 @@ export default function OrderEditPage({ isNew = false }) {
 
   const fetchOrderData = useCallback(async () => {
     if (isNew) {
-      setEditedCart(EMPTY_ORDER);
+      const draft = location.state?.draft; // من «الطلبات المتروكة»
+      setEditedCart(draft ? { ...EMPTY_ORDER, customerName: draft.name || '', customerPhone: draft.phone || '' } : EMPTY_ORDER);
       setOriginalCart(EMPTY_ORDER);
       setLoading(false);
       return;

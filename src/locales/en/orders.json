@@ -209,5 +209,15 @@
     "button_select_all": "Bulk Deliver ({{count}})",
     "button_ship_selected": "Deliver {{count}} orders",
     "clear_selection": "Clear Selection"
+  },
+  "abandoned": {
+    "title": "Abandoned orders",
+    "subtitle": "Customers who typed their phone but didn't finish (at least 30 min ago) — call them",
+    "empty": "No abandoned orders",
+    "no_name": "No name",
+    "past": "{{count}} past order(s)",
+    "convert": "Create order",
+    "dismiss": "Dismiss",
+    "more": "Load more"
   }
 }

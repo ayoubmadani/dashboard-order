@@ -33,6 +33,7 @@ import Theme from './pages/dashboard/theme/Theme';
 import CustomTheme from './pages/dashboard/theme/CustomTheme';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Inventory from './pages/dashboard/inventory/Inventory';
+import Abandoned from './pages/dashboard/orders/Abandoned';
 import Pixels from './pages/dashboard/pixels/pixels';
 import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
@@ -125,6 +126,7 @@ const App = () => {
             <Route path="orders">
               <Route index  element={<Orders />} />
               <Route path='new' element={<OrderEditPage isNew />} />
+              <Route path='abandoned' element={<Abandoned />} />
               <Route path=':id'  element={<OrderEditPage />} />
             </Route>
 

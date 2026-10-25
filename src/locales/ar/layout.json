@@ -25,7 +25,8 @@
     "group_system": "النظام",
     "stores_count": "متاجر",
     "team": "الفريق",
-    "invitations": "الدعوات"
+    "invitations": "الدعوات",
+    "abandoned": "طلبات متروكة"
   },
   "store_selector": {
     "current_store": "المتجر الحالي",
