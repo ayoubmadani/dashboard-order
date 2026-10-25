@@ -262,8 +262,14 @@ export default function PagesList() {
             {filteredPages.map((page) => (
               <div
                 key={page.id}
-                className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 hover:shadow-xl transition-all duration-300 p-5"
+                className="group relative overflow-hidden bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 hover:shadow-xl transition-all duration-300 p-5"
               >
+                {/* غلاف البطاقة: أول صورة في صفحة الهبوط */}
+                <div className="-mx-5 -mt-5 mb-4 h-36 relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-indigo-50 to-emerald-50 dark:from-indigo-500/10 dark:to-emerald-500/5 border-b border-gray-100 dark:border-zinc-800">
+                  {page.cover
+                    ? <img src={page.cover} alt="" loading="lazy" className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
+                    : <div className="w-full h-full flex items-center justify-center"><LayoutTemplate size={28} className="text-indigo-300 dark:text-zinc-600" /></div>}
+                </div>
                 <div className="flex items-start justify-between mb-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
