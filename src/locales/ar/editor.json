@@ -38,7 +38,8 @@
     "duplicate": "نسخ الصفحة",
     "toggleError": "تعذر تغيير حالة الصفحة",
     "duplicateError": "تعذر نسخ الصفحة",
-    "platformError": "تعذر تحديث المنصة"
+    "platformError": "تعذر تحديث المنصة",
+    "noProduct": "بلا منتج"
   },
   "topbar": {
     "backToList": "العودة للصفحات",

@@ -38,7 +38,8 @@
     "duplicate": "Duplicate page",
     "toggleError": "Failed to change page status",
     "duplicateError": "Failed to duplicate page",
-    "platformError": "Failed to update platform"
+    "platformError": "Failed to update platform",
+    "noProduct": "No product"
   },
   "topbar": {
     "backToList": "Back to pages",

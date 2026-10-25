@@ -6,7 +6,7 @@ import { toast, Toaster } from 'sonner';
 import {
   LayoutTemplate, Plus, Search, X, Trash2, Pencil,
   Loader2, AlertCircle, RefreshCw,
-  Package, ChevronDown, Check, Eye, Share2, Power, Copy, CopyPlus, FlaskConical,
+  Package, ChevronDown, Check, Eye, Share2, Power, Copy, CopyPlus, FlaskConical, Globe,
 } from 'lucide-react';
 import { baseURL } from '../../constents/const.';
 import { getAccessToken } from '../../services/access-token';
@@ -276,6 +276,18 @@ export default function PagesList() {
                   </div>
                 </div>
 
+                {/* منتج الصفحة: صورة + اسم */}
+                <div className="flex items-center gap-3 mb-3 p-2 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-100 dark:border-zinc-800">
+                  <span className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0 flex items-center justify-center">
+                    {page.product?.image
+                      ? <img src={page.product.image} alt="" loading="lazy" className="w-full h-full object-cover" />
+                      : <Package size={16} className="text-gray-400" />}
+                  </span>
+                  <p dir="auto" className={`min-w-0 flex-1 text-start text-xs font-semibold line-clamp-2 ${page.product ? 'text-gray-700 dark:text-zinc-200' : 'text-gray-400'}`} title={page.product?.name}>
+                    {page.product?.name || t('editor.list.noProduct', 'بلا منتج')}
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   <div className="bg-gray-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 text-center">
                     <p className="text-[10px] text-gray-500 dark:text-zinc-500 mb-1">{t('editor.list.views')}</p>
@@ -309,16 +321,22 @@ export default function PagesList() {
                   </button>
                 </div>
 
-                {page.domain && (
-                  <div className="flex items-center gap-2 mb-4 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-gray-100 dark:border-zinc-800">
-                    <a
-                      href={`https://${page.domain}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex-1 truncate font-mono text-[10px] text-blue-600 dark:text-blue-400"
-                    >
-                      {page.domain}
-                    </a>
+                {/* روابط الصفحة: الدومينات المخصصة ثم رابط /lp */}
+                {(page.domains?.length > 0 || page.domain) && (
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    {[...(page.domains || []), ...(page.domain ? [page.domain] : [])].map((d) => (
+                      <a
+                        key={d}
+                        href={`https://${d}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        dir="ltr"
+                        className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-gray-100 dark:border-zinc-800 font-mono text-[11px] text-blue-600 dark:text-blue-400 hover:border-blue-200"
+                      >
+                        <Globe size={12} className="shrink-0 text-gray-400" />
+                        <span className="truncate">{d}</span>
+                      </a>
+                    ))}
                   </div>
                 )}
 
