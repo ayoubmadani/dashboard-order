@@ -31,6 +31,7 @@ export default function Meta() {
   const [products, setProducts] = useState([]);
   const [busy, setBusy] = useState(null);
   const [pixels, setPixels] = useState(null);
+  const [newPixel, setNewPixel] = useState(null);
 
   const base = `${baseURL}/stores/${storeId}/meta`;
   const loadStatus = useCallback(() => axios.get(base, headers()).then((r) => { setStatus(r.data); setRate(r.data.usdRate ? String(r.data.usdRate) : ''); }).catch(() => setStatus({ connected: false })), [base]);
@@ -88,6 +89,13 @@ export default function Meta() {
     await axios.post(`${base}/pixels/${px.id}`, {}, headers());
     setNotice({ ok: true, text: t('pixel_added') });
     setPixels((l) => l.map((x) => (x.id === px.id ? { ...x, added: true } : x)));
+  });
+  const createPixel = () => run('px-new', async () => {
+    await axios.post(`${base}/pixels`, { name: newPixel }, headers());
+    setNotice({ ok: true, text: t('pixel_created') });
+    setNewPixel(null);
+    setPixels(null);
+    loadPixels();
   });
   const disconnect = () => window.confirm(t('confirm_disconnect')) && run('disconnect', async () => {
     await axios.delete(base, headers());
@@ -185,6 +193,17 @@ export default function Meta() {
                               </button>}
                         </div>
                       ))}
+                    </div>
+                  )}
+                {newPixel === null
+                  ? <button type="button" onClick={() => setNewPixel('')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700 text-sm font-semibold text-indigo-600 dark:text-indigo-400"><Plus className="w-4 h-4" />{t('create_pixel')}</button>
+                  : (
+                    <div className="flex flex-wrap gap-2 max-w-lg">
+                      <input autoFocus value={newPixel} onChange={(e) => setNewPixel(e.target.value)} maxLength={100} placeholder={t('pixel_name')} className="flex-1 min-w-[12rem] px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-transparent text-sm text-gray-900 dark:text-white outline-none focus:border-indigo-500" />
+                      <button type="button" disabled={busy === 'px-new'} onClick={createPixel} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold disabled:opacity-50">
+                        {busy === 'px-new' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}{t('create')}
+                      </button>
+                      <button type="button" onClick={() => setNewPixel(null)} className="px-3 py-2 rounded-lg text-xs font-bold text-gray-500">{t('cancel')}</button>
                     </div>
                   )}
                 <p className="text-xs text-gray-400">{t('pixels_hint')}</p>
