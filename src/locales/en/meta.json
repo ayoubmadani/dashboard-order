@@ -1,0 +1,38 @@
+{
+  "title": "Meta ads",
+  "subtitle": "Connect your Facebook ad account: each campaign's real spend, linked to products in the profit report",
+  "connect_title": "Connect your Facebook ad account",
+  "connect_hint": "We fetch each campaign's spend day by day; link it to a product to see the real profit. We never change your campaigns.",
+  "connect": "Connect Facebook",
+  "connected": "Facebook connected ✓ — pick the ad account",
+  "connect_failed": "Couldn't connect",
+  "pick_account": "Pick the ad account for this store",
+  "no_accounts": "No ad accounts",
+  "inactive": "inactive",
+  "usd_rate": "Dollar rate",
+  "sync": "Refresh from Meta",
+  "synced": "Refreshed — {{campaigns}} campaign(s)",
+  "last_sync": "Last refreshed: {{date}}",
+  "need_rate": "Enter the dollar rate so spend is counted in dinars",
+  "no_campaigns": "No campaigns",
+  "sync_first": "Click “Refresh from Meta” to load your campaigns",
+  "link_product": "— Link a product —",
+  "confirm_disconnect": "Disconnect Facebook? The token and campaign stats are deleted right away.",
+  "disconnect": "Disconnect",
+  "profit_note": "A campaign linked to a product adds its spend to that product's ads in the profit report.",
+  "error": "Something went wrong",
+  "total": "Total",
+  "period": {
+    "today": "Today",
+    "7d": "7 days",
+    "30d": "30 days",
+    "month": "This month"
+  },
+  "col": {
+    "campaign": "Campaign",
+    "spend": "Spend",
+    "impressions": "Impressions",
+    "clicks": "Clicks",
+    "product": "Product"
+  }
+}

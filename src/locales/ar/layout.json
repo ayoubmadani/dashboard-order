@@ -26,7 +26,8 @@
     "stores_count": "متاجر",
     "team": "الفريق",
     "invitations": "الدعوات",
-    "abandoned": "طلبات متروكة"
+    "abandoned": "طلبات متروكة",
+    "meta": "إعلانات Meta"
   },
   "store_selector": {
     "current_store": "المتجر الحالي",

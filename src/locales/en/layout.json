@@ -26,7 +26,8 @@
     "stores_count": "stores",
     "team": "Team",
     "invitations": "Invitations",
-    "abandoned": "Abandoned orders"
+    "abandoned": "Abandoned orders",
+    "meta": "Meta ads"
   },
   "store_selector": {
     "current_store": "Current Store",

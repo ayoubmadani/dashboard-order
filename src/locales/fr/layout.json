@@ -26,7 +26,8 @@
     "stores_count": "boutiques",
     "team": "Équipe",
     "invitations": "Invitations",
-    "abandoned": "Commandes abandonnées"
+    "abandoned": "Commandes abandonnées",
+    "meta": "Publicités Meta"
   },
   "store_selector": {
     "current_store": "Boutique actuelle",

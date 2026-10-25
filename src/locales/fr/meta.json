@@ -1,0 +1,38 @@
+{
+  "title": "Publicités Meta",
+  "subtitle": "Connectez votre compte publicitaire Facebook : la dépense réelle de chaque campagne, liée aux produits dans la rentabilité",
+  "connect_title": "Connectez votre compte publicitaire Facebook",
+  "connect_hint": "Nous récupérons les dépenses de chaque campagne jour par jour ; associez-la à un produit pour voir le vrai bénéfice. Nous ne modifions rien dans vos campagnes.",
+  "connect": "Connecter Facebook",
+  "connected": "Facebook connecté ✓ — choisissez le compte publicitaire",
+  "connect_failed": "Connexion impossible",
+  "pick_account": "Choisissez le compte publicitaire de cette boutique",
+  "no_accounts": "Aucun compte publicitaire",
+  "inactive": "inactif",
+  "usd_rate": "Taux du dollar",
+  "sync": "Actualiser depuis Meta",
+  "synced": "Actualisé — {{campaigns}} campagne(s)",
+  "last_sync": "Dernière actualisation : {{date}}",
+  "need_rate": "Saisissez le taux du dollar pour convertir les dépenses en dinars",
+  "no_campaigns": "Aucune campagne",
+  "sync_first": "Cliquez « Actualiser depuis Meta » pour récupérer vos campagnes",
+  "link_product": "— Associer un produit —",
+  "confirm_disconnect": "Déconnecter Facebook ? Le jeton et les statistiques sont supprimés immédiatement.",
+  "disconnect": "Déconnecter",
+  "profit_note": "Les dépenses d'une campagne associée à un produit s'ajoutent à la pub de ce produit dans la rentabilité.",
+  "error": "Une erreur est survenue",
+  "total": "Total",
+  "period": {
+    "today": "Aujourd'hui",
+    "7d": "7 jours",
+    "30d": "30 jours",
+    "month": "Ce mois"
+  },
+  "col": {
+    "campaign": "Campagne",
+    "spend": "Dépense",
+    "impressions": "Impressions",
+    "clicks": "Clics",
+    "product": "Produit"
+  }
+}

@@ -6,6 +6,7 @@ import {
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
     LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail, Boxes,
   ShoppingBasket,
+  Megaphone,
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
@@ -218,6 +219,7 @@ export default function LayoutDashboard() {
                 { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, owner: true },
                 { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles, owner: true },
                 { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, owner: true },
+                { name: t('nav.meta', 'إعلانات Meta'), href: '/dashboard/meta', icon: Megaphone, perm: 'product.crud' },
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
                 { name: t('nav.inventory', 'المخزون'), href: '/dashboard/inventory', icon: Boxes, perm: 'product.crud' },
