@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { Facebook, Loader2, RefreshCw, Unplug, Megaphone } from 'lucide-react';
+import { Check, Code2, Facebook, Loader2, Plus, RefreshCw, Unplug, Megaphone } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
@@ -30,6 +30,7 @@ export default function Meta() {
   const [campaigns, setCampaigns] = useState(null);
   const [products, setProducts] = useState([]);
   const [busy, setBusy] = useState(null);
+  const [pixels, setPixels] = useState(null);
 
   const base = `${baseURL}/stores/${storeId}/meta`;
   const loadStatus = useCallback(() => axios.get(base, headers()).then((r) => { setStatus(r.data); setRate(r.data.usdRate ? String(r.data.usdRate) : ''); }).catch(() => setStatus({ connected: false })), [base]);
@@ -49,6 +50,12 @@ export default function Meta() {
     if (!status.adAccountId) axios.get(`${base}/ad-accounts`, headers()).then((r) => setAccounts(r.data)).catch((e) => { setAccounts([]); setNotice({ ok: false, text: msg(e, t('error')) }); });
     axios.get(`${baseURL}/stores/${storeId}/products`, headers()).then((r) => setProducts(r.data?.products || r.data?.data || [])).catch(() => {});
   }, [status?.connected, status?.adAccountId, base, storeId, t]);
+
+  const loadPixels = useCallback(() => {
+    if (!status?.adAccountId) return;
+    axios.get(`${base}/pixels`, headers()).then((r) => setPixels(r.data)).catch(() => setPixels([]));
+  }, [base, status?.adAccountId]);
+  useEffect(() => { loadPixels(); }, [loadPixels]);
 
   const loadCampaigns = useCallback(() => {
     if (!status?.adAccountId) return;
@@ -76,6 +83,11 @@ export default function Meta() {
   const link = (c, productId) => run(c.campaignId, async () => {
     await axios.put(`${base}/campaigns/${c.campaignId}/product`, { productId: productId || null }, headers());
     setCampaigns((l) => l.map((x) => (x.campaignId === c.campaignId ? { ...x, productId } : x)));
+  });
+  const addPixel = (px) => run(`px-${px.id}`, async () => {
+    await axios.post(`${base}/pixels/${px.id}`, {}, headers());
+    setNotice({ ok: true, text: t('pixel_added') });
+    setPixels((l) => l.map((x) => (x.id === px.id ? { ...x, added: true } : x)));
   });
   const disconnect = () => window.confirm(t('confirm_disconnect')) && run('disconnect', async () => {
     await axios.delete(base, headers());
@@ -151,6 +163,31 @@ export default function Meta() {
                       {!a.active && <span className="text-xs text-amber-600">{t('inactive')}</span>}
                     </button>
                   ))}
+              </div>
+            )}
+
+            {status.adAccountId && (
+              <div className={`${card} p-4 space-y-3`}>
+                <p className="flex items-center gap-2 font-bold text-sm text-gray-900 dark:text-white"><Code2 className="w-4 h-4 text-gray-400" />{t('pixels')}</p>
+                {pixels === null ? <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+                  : pixels.length === 0 ? <p className="text-xs text-gray-400">{t('no_pixels')}</p>
+                  : (
+                    <div className="grid sm:grid-cols-2 gap-2">
+                      {pixels.map((px) => (
+                        <div key={px.id} className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-zinc-800 p-3">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate"><bdi>{px.name}</bdi></p>
+                            <p className="text-[11px] text-gray-400" dir="ltr" style={{ textAlign: 'start' }}>{px.id}{px.lastFiredAt ? ` · ${new Date(px.lastFiredAt).toLocaleDateString()}` : ''}</p>
+                          </div>
+                          {px.added ? <span className="flex items-center gap-1 text-xs font-bold text-emerald-600"><Check className="w-4 h-4" />{t('pixel_in_store')}</span>
+                            : <button type="button" disabled={busy === `px-${px.id}` || !px.available} onClick={() => addPixel(px)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold disabled:opacity-50">
+                                {busy === `px-${px.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}{t('add_pixel')}
+                              </button>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                <p className="text-xs text-gray-400">{t('pixels_hint')}</p>
               </div>
             )}
 

@@ -34,5 +34,11 @@
     "impressions": "Impressions",
     "clicks": "Clics",
     "product": "Produit"
-  }
+  },
+  "pixels": "Pixels du compte publicitaire",
+  "no_pixels": "Aucun pixel — créez-en un dans Events Manager",
+  "pixel_added": "Pixel ajouté avec Conversions API ✓",
+  "pixel_in_store": "Dans la boutique",
+  "add_pixel": "Ajouter",
+  "pixels_hint": "Un pixel ajouté ici fonctionne dans la boutique avec l'API Conversions automatiquement (sans copier de jeton)."
 }

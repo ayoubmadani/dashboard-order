@@ -34,5 +34,11 @@
     "impressions": "Impressions",
     "clicks": "Clicks",
     "product": "Product"
-  }
+  },
+  "pixels": "Ad account pixels",
+  "no_pixels": "No pixels — create one in Events Manager",
+  "pixel_added": "Pixel added with Conversions API ✓",
+  "pixel_in_store": "In store",
+  "add_pixel": "Add to store",
+  "pixels_hint": "A pixel added here runs in the store with the Conversions API automatically (no token to copy)."
 }
