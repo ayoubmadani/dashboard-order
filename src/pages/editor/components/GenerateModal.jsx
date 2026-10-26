@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { X, Sparkles, Loader2, Search, Package, Check, ImagePlus, Trash2 } from 'lucide-react';
+import { movePhoto } from '../imagePage/photos';
+import { X, Sparkles, Loader2, Search, Package, Check, ImagePlus, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
@@ -260,10 +261,16 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
           <div className="mb-3">
             <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-0.5">{t('editor.imagePage.photos')}</p>
             <p className="text-[11px] text-gray-400 mb-2">{t('editor.imagePage.photosHint')}</p>
+            <p className="flex items-start gap-2 p-2.5 mb-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[11px] leading-relaxed"><AlertTriangle size={15} className="shrink-0" />{t('editor.imagePage.photosWarning')}</p>
             <div className="flex gap-2">
               {photos.map((p, i) => (
-                <div key={p.url} className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 dark:border-zinc-700">
-                  <img src={p.url} alt="" className="w-full h-full object-cover" />
+                <div key={p.url} className="flex flex-col items-center gap-1">
+                <div className={`relative w-16 h-16 rounded-xl overflow-hidden border ${i === 0 ? 'border-2 border-amber-500' : 'border-gray-200 dark:border-zinc-700'}`}>
+                  {/* الضغط على الصورة يجعلها الرئيسية */}
+                  <button type="button" disabled={busy} onClick={() => setPhotos((prev) => movePhoto(prev, i, 0))} title={t('editor.imagePage.makeMain')} className="w-full h-full">
+                    <img src={p.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                  {i === 0 && <span className="absolute bottom-0 inset-x-0 bg-amber-500 text-white text-[9px] font-bold text-center py-0.5 pointer-events-none">{t('editor.imagePage.main')}</span>}
                   <button
                     type="button"
                     disabled={busy}
@@ -272,6 +279,11 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
                   >
                     <Trash2 size={12} />
                   </button>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button type="button" disabled={busy || i === 0} onClick={() => setPhotos((prev) => movePhoto(prev, i, i - 1))} className="p-0.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-20"><ChevronRight size={14} className="ltr:rotate-180" /></button>
+                  <button type="button" disabled={busy || i === photos.length - 1} onClick={() => setPhotos((prev) => movePhoto(prev, i, i + 1))} className="p-0.5 rounded text-gray-400 hover:text-gray-700 disabled:opacity-20"><ChevronLeft size={14} className="ltr:rotate-180" /></button>
+                </div>
                 </div>
               ))}
               {loadingPhotos && (

@@ -364,6 +364,9 @@
     "captureFailed": "Design prêt, mais la conversion ou l'envoi des images a échoué",
     "primaryColor": "Couleur principale",
     "primaryColorHint": "Choisissez la couleur de votre marque, l'IA en déduira une couleur secondaire assortie",
-    "pickColor": "Choisir une couleur"
+    "pickColor": "Choisir une couleur",
+    "photosWarning": "Choisissez des photos où le produit apparaît en entier (non coupé), sur un fond simple — la photo principale est détourée et devient l'image du produit. Cliquez une photo pour la rendre principale.",
+    "makeMain": "Rendre principale",
+    "main": "Principale"
   }
 }
