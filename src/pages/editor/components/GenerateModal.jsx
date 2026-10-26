@@ -139,7 +139,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   const [price, setPrice] = useState('');
   const [primaryColor, setPrimaryColor] = useState(null); // null = ألوان تلقائية
   const [photos, setPhotos] = useState([]); // [{ blob, url, n? (رقم صورة المنتج) }]
-  const [adder, setAdder] = useState(null); // null | 'menu' | 'library' | 'product'
+  const [adder, setAdder] = useState(null); // null | 'library' | 'product'
   const [productUrls, setProductUrls] = useState([]);
   const [picked, setPicked] = useState([]); // أرقام صور المنتج المختارة في نافذة «صور المنتج»
   const [adding, setAdding] = useState(false);
@@ -326,17 +326,6 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
                   <Loader2 size={16} className="animate-spin" />
                 </div>
               )}
-              {!loadingPhotos && photos.length < MAX_PHOTOS && (
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => setAdder(adder === 'menu' ? null : 'menu')}
-                  title={t('editor.imagePage.addPhoto')}
-                  className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 dark:border-zinc-700 flex items-center justify-center text-gray-400 hover:border-amber-400 hover:text-amber-500 disabled:opacity-60"
-                >
-                  <ImagePlus size={18} />
-                </button>
-              )}
               {adding && <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-gray-400"><Loader2 size={16} className="animate-spin" /></div>}
               <input
                 ref={fileInput}
@@ -353,11 +342,12 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
           </div>
         )}
 
-        {isImages && adder === 'menu' && (
-          <div className="grid grid-cols-3 gap-2 -mt-1 mb-3">
-            <button type="button" onClick={() => { setAdder(null); fileInput.current?.click(); }} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50"><Monitor size={18} className="text-amber-500" />{t('editor.imagePage.addDevice')}</button>
-            <button type="button" onClick={() => setAdder('library')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50"><Images size={18} className="text-amber-500" />{t('editor.imagePage.addLibrary')}</button>
-            <button type="button" disabled={!productUrls.length} onClick={() => setAdder('product')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50 disabled:opacity-40"><Package size={18} className="text-amber-500" />{t('editor.imagePage.addProduct')}</button>
+        {/* طرق الإضافة ظاهرة دائماً — تتعطل عند 3 صور */}
+        {isImages && (
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <button type="button" disabled={busy || photos.length >= MAX_PHOTOS} onClick={() => { setAdder(null); fileInput.current?.click(); }} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50 disabled:opacity-40"><Monitor size={18} className="text-amber-500" />{t('editor.imagePage.addDevice')}</button>
+            <button type="button" disabled={busy || photos.length >= MAX_PHOTOS} onClick={() => setAdder('library')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50 disabled:opacity-40"><Images size={18} className="text-amber-500" />{t('editor.imagePage.addLibrary')}</button>
+            <button type="button" disabled={busy || !productUrls.length || photos.length >= MAX_PHOTOS} onClick={() => setAdder('product')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50 disabled:opacity-40"><Package size={18} className="text-amber-500" />{t('editor.imagePage.addProduct')}</button>
           </div>
         )}
         {isImages && adder === 'product' && (
