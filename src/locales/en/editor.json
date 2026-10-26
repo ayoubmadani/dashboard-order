@@ -367,6 +367,11 @@
     "pickColor": "Pick a color",
     "photosWarning": "Pick photos that show the whole product (not cropped) on a plain background — the main photo is cut out and becomes the product image. Click a photo to make it the main one.",
     "makeMain": "Make main",
-    "main": "Main"
+    "main": "Main",
+    "addDevice": "From computer",
+    "addLibrary": "Image library",
+    "addProduct": "Product photos",
+    "added": "Added",
+    "addN": "Add ({{count}})"
   }
 }

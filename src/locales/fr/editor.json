@@ -367,6 +367,11 @@
     "pickColor": "Choisir une couleur",
     "photosWarning": "Choisissez des photos où le produit apparaît en entier (non coupé), sur un fond simple — la photo principale est détourée et devient l'image du produit. Cliquez une photo pour la rendre principale.",
     "makeMain": "Rendre principale",
-    "main": "Principale"
+    "main": "Principale",
+    "addDevice": "Depuis l'ordinateur",
+    "addLibrary": "Bibliothèque",
+    "addProduct": "Photos du produit",
+    "added": "Ajoutée",
+    "addN": "Ajouter ({{count}})"
   }
 }

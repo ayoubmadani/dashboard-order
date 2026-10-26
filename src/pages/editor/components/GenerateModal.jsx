@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { movePhoto } from '../imagePage/photos';
-import { X, Sparkles, Loader2, Search, Package, Check, ImagePlus, Trash2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Sparkles, Loader2, Search, Package, Check, ImagePlus, Trash2, AlertTriangle, ChevronLeft, ChevronRight, Monitor, Images } from 'lucide-react';
+import ModelImages from '../../../components/ModelImages';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
@@ -95,6 +96,20 @@ function ProductPicker({ selectedProductId, onSelect }) {
   );
 }
 
+const photoGet = (pageId, path, params) =>
+  axios.get(`${baseURL}/builder-pages/${pageId}/${path}`, { params, responseType: 'blob', headers: { Authorization: `Bearer ${getAccessToken()}` } }).then((r) => r.data);
+const fetchProductPhoto = (pageId, productId, n) => photoGet(pageId, 'image-page-product-photo', { productId, n });
+const fetchStoredPhoto = (pageId, url) => photoGet(pageId, 'image-page-photo', { url });
+
+// كل صور المنتج (روابط بترتيبها) — للعرض في «صور المنتج»
+const productImageUrls = (productId) =>
+  axios.get(`${baseURL}/stores/${localStorage.getItem('storeId')}/products/${productId}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
+    .then(({ data }) => {
+      const p = data?.data ?? data;
+      return [...(p?.imagesProduct ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((i) => i.imageUrl).filter(Boolean);
+    })
+    .catch(() => []);
+
 // صور المنتج عبر الخادم (R2 لا يسمح للمتصفح بقراءتها مباشرة) — حتى 3، والمفقودة تُتجاهل
 function fetchProductPhotos(pageId, productId) {
   return Promise.all(
@@ -108,7 +123,7 @@ function fetchProductPhotos(pageId, productId) {
         .then((r) => r.data)
         .catch(() => null),
     ),
-  ).then((blobs) => blobs.filter(Boolean).map((blob) => ({ blob, url: URL.createObjectURL(blob) })));
+  ).then((blobs) => blobs.map((blob, n) => (blob ? { blob, n, url: URL.createObjectURL(blob) } : null)).filter(Boolean));
 }
 
 // تُركَّب عند الفتح فقط: منتج الصفحة يُختار مسبقًا وتُجلب صوره
@@ -123,7 +138,11 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   const [loadingPhotos, setLoadingPhotos] = useState(!isDemo && !!pageProductId && !!pageId);
   const [price, setPrice] = useState('');
   const [primaryColor, setPrimaryColor] = useState(null); // null = ألوان تلقائية
-  const [photos, setPhotos] = useState([]); // [{ blob, url }]
+  const [photos, setPhotos] = useState([]); // [{ blob, url, n? (رقم صورة المنتج) }]
+  const [adder, setAdder] = useState(null); // null | 'menu' | 'library' | 'product'
+  const [productUrls, setProductUrls] = useState([]);
+  const [picked, setPicked] = useState([]); // أرقام صور المنتج المختارة في نافذة «صور المنتج»
+  const [adding, setAdding] = useState(false);
   const fileInput = useRef(null);
   const photoRequest = useRef(0);
 
@@ -144,10 +163,25 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
       setPhotos(list);
       setLoadingPhotos(false);
     });
+    productImageUrls(pageProductId).then(setProductUrls);
   }, [isDemo, pageId, pageProductId]);
 
 
   if (!open) return null;
+
+  // إضافة من صور المنتج (برقمها) أو من مكتبة الصور (برابطها) — تُجلب كملفات فوراً
+  const addFetched = async (jobs) => {
+    setAdding(true);
+    try {
+      const got = (await Promise.all(jobs.map((j) => j.fetch().then((blob) => ({ blob, url: URL.createObjectURL(blob), n: j.n })).catch(() => null)))).filter(Boolean);
+      setPhotos((prev) => [...prev, ...got].slice(0, MAX_PHOTOS));
+    } finally {
+      setAdding(false);
+      setAdder(null);
+      setPicked([]);
+    }
+  };
+  const chosenNs = photos.map((p) => p.n).filter((n) => n !== undefined);
 
   const addPhotos = (blobs) => {
     setPhotos((prev) => [...prev, ...blobs.map((blob) => ({ blob, url: URL.createObjectURL(blob) }))].slice(0, MAX_PHOTOS));
@@ -158,6 +192,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
     if (!isImages || !pageId) return;
     const requestId = (photoRequest.current += 1);
     setLoadingPhotos(true);
+    productImageUrls(id).then((urls) => requestId === photoRequest.current && setProductUrls(urls));
     const list = await fetchProductPhotos(pageId, id);
     if (requestId !== photoRequest.current) return; // اختار منتجًا آخر في الأثناء
     setPhotos(list);
@@ -295,13 +330,14 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => fileInput.current?.click()}
+                  onClick={() => setAdder(adder === 'menu' ? null : 'menu')}
                   title={t('editor.imagePage.addPhoto')}
                   className="w-16 h-16 rounded-xl border-2 border-dashed border-gray-300 dark:border-zinc-700 flex items-center justify-center text-gray-400 hover:border-amber-400 hover:text-amber-500 disabled:opacity-60"
                 >
                   <ImagePlus size={18} />
                 </button>
               )}
+              {adding && <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-zinc-700 flex items-center justify-center text-gray-400"><Loader2 size={16} className="animate-spin" /></div>}
               <input
                 ref={fileInput}
                 type="file"
@@ -316,6 +352,36 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
             </div>
           </div>
         )}
+
+        {isImages && adder === 'menu' && (
+          <div className="grid grid-cols-3 gap-2 -mt-1 mb-3">
+            <button type="button" onClick={() => { setAdder(null); fileInput.current?.click(); }} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50"><Monitor size={18} className="text-amber-500" />{t('editor.imagePage.addDevice')}</button>
+            <button type="button" onClick={() => setAdder('library')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50"><Images size={18} className="text-amber-500" />{t('editor.imagePage.addLibrary')}</button>
+            <button type="button" disabled={!productUrls.length} onClick={() => setAdder('product')} className="flex flex-col items-center gap-1 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 text-[11px] font-bold text-gray-700 dark:text-zinc-200 hover:bg-amber-50 disabled:opacity-40"><Package size={18} className="text-amber-500" />{t('editor.imagePage.addProduct')}</button>
+          </div>
+        )}
+        {isImages && adder === 'product' && (
+          <div className="mb-3 p-3 rounded-xl border border-gray-200 dark:border-zinc-700 space-y-2">
+            <div className="flex items-center justify-between"><p className="text-xs font-bold text-gray-700 dark:text-zinc-200">{t('editor.imagePage.addProduct')}</p><button type="button" onClick={() => { setAdder(null); setPicked([]); }} className="text-gray-400"><X size={14} /></button></div>
+            <div className="grid grid-cols-4 gap-2">
+              {productUrls.map((u, n) => {
+                const used = chosenNs.includes(n);
+                const sel = picked.includes(n);
+                return (
+                  <button key={u} type="button" disabled={used} onClick={() => setPicked((l) => (l.includes(n) ? l.filter((x) => x !== n) : l.length < MAX_PHOTOS - photos.length ? [...l, n] : l))}
+                    className={`relative aspect-square rounded-lg overflow-hidden ${sel ? 'ring-[3px] ring-amber-500' : ''} ${used ? 'opacity-40' : ''}`}>
+                    <img src={u} alt="" className="w-full h-full object-cover" />
+                    {used && <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] font-bold py-0.5">{t('editor.imagePage.added')}</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" disabled={!picked.length || adding} onClick={() => addFetched(picked.map((n) => ({ n, fetch: () => fetchProductPhoto(pageId, productId, n) })))}
+              className="w-full py-2 rounded-lg bg-amber-500 text-white text-xs font-bold disabled:opacity-50">{t('editor.imagePage.addN', { count: picked.length })}</button>
+          </div>
+        )}
+        <ModelImages isOpen={isImages && adder === 'library'} close={() => setAdder(null)} initialFolder="products" maxSelectable={MAX_PHOTOS - photos.length}
+          onSelectImage={(img) => addFetched([{ fetch: () => fetchStoredPhoto(pageId, img.url) }])} />
 
         <div className="flex items-center gap-2 mb-3">
           {LANGUAGES.map((lang) => (
