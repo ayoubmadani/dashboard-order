@@ -15,7 +15,8 @@
     "returned": "مُرجع",
     "delivered": "تم التوصيل",
     "delivered_digital": "تم البيع",
-    "postponed": "مؤجل"
+    "postponed": "مؤجل",
+    "unpaid": "دفع لاحقاً"
   },
   "list": {
     "select_all": "تحديد الكل ({{count}})",

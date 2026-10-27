@@ -15,7 +15,8 @@
     "returned": "Retourné",
     "delivered": "Livré",
     "delivered_digital": "Vendu",
-    "postponed": "Reporté"
+    "postponed": "Reporté",
+    "unpaid": "Paiement plus tard"
   },
   "list": {
     "select_all": "Tout sélectionner ({{count}})",

@@ -734,7 +734,7 @@ export default function OrderEditPage({ isNew = false }) {
                         <div className="flex gap-4 mb-5">
                           <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
                             <img
-                              src={item.product?.imagesProduct[0].imageUrl}
+                              src={item.product?.imagesProduct?.[0]?.imageUrl}
                               alt=""
                               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
@@ -743,7 +743,7 @@ export default function OrderEditPage({ isNew = false }) {
                           <div className="flex-1 flex flex-col justify-between py-0.5">
                             <div className="flex justify-between items-center">
                               <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
-                                {item.product?.name || item.productName || t('edit.product_unknown')}
+                                {item.product?.name || item.title || item.productName || t('edit.product_unknown')}
                                 {item.addons?.length > 0 && (
                                   <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
                                     + {item.addons.map(a => `${a.name}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}

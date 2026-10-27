@@ -65,7 +65,7 @@ export const mapApiOrder = (raw) => ({
   id:              raw.id,
   name:            raw.customerName || '',
   phone:           raw.customerPhone || '',
-  product:         raw.product?.name || '',
+  product:         raw.product?.name || raw.title || '', // title = سطر خدمة بلا منتج (بيع في المحل)
   productId:       raw.productId,
   unityPrice:      parseFloat(raw.unityPrice) || parseFloat(raw.variantDetail?.price) || 0,
   priceShip:       parseFloat(raw.priceShip) || 0,

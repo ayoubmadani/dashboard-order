@@ -15,7 +15,8 @@
     "returned": "Returned",
     "delivered": "Delivered",
     "delivered_digital": "Sold",
-    "postponed": "Postponed"
+    "postponed": "Postponed",
+    "unpaid": "Pay later"
   },
   "list": {
     "select_all": "Select all ({{count}})",

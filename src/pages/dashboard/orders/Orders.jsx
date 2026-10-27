@@ -36,13 +36,15 @@ const STATUS_STYLES = {
   returned: 'text-rose-600 bg-rose-50 dark:bg-rose-500/10 border-rose-200 dark:border-rose-500/20',
   delivered: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20',
   postponed: 'text-gray-500 bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700',
+  // بيع في المحل بالدين (من تطبيق الهاتف)
+  unpaid: 'text-orange-600 bg-orange-50 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20',
 };
 
 /* نقطة ملوّنة لقائمة تغيير الحالة — مشتقة من نفس الألوان أعلاه */
 const STATUS_DOT = {
   pending: 'bg-amber-500', appl1: 'bg-orange-500', appl2: 'bg-orange-500', appl3: 'bg-orange-500',
   confirmed: 'bg-blue-500', shipping: 'bg-cyan-500', cancelled: 'bg-purple-500',
-  returned: 'bg-rose-500', delivered: 'bg-emerald-500', postponed: 'bg-gray-400',
+  returned: 'bg-rose-500', delivered: 'bg-emerald-500', postponed: 'bg-gray-400', unpaid: 'bg-orange-500',
 };
 
 const PAGE_SIZE = 50;
@@ -304,7 +306,7 @@ function BulkShipModal({ orders, accountId, token, storeId, onClose, onDone, t }
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{order.customerName}</p>
                 <p className="text-[11px] text-gray-400 dark:text-zinc-500 truncate">
-                  {truncate(order.items?.[0]?.product?.name || '', 30)}
+                  {truncate(order.items?.[0]?.product?.name || order.items?.[0]?.title || '', 30)}
                 </p>
               </div>
               <div className="shrink-0 text-right">
@@ -404,7 +406,7 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
             {[
               { label: t('delete_modal.customer'), value: order.customerName },
               { label: t('delete_modal.phone'), value: order.customerPhone, blue: true },
-              { label: t('delete_modal.product'), value: order.items?.map(i => i.product?.name).filter(Boolean).join(', ') },
+              { label: t('delete_modal.product'), value: order.items?.map(i => i.product?.name || i.title).filter(Boolean).join(', ') },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center">
                 <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">{row.label}</span>
@@ -849,7 +851,7 @@ export default function Orders() {
       [t('export.customer_email')]: order.customerEmail || '',
       [t('export.customer_whatsapp')]: order.customerWhatsapp || '',
       [t('export.type')]: order.isDigital ? t('export.digital') : t('export.physical'),
-      [t('export.product')]: (order.items || []).map(i => `${i.quantity}x ${i.product?.name || ''}`).join(' | '),
+      [t('export.product')]: (order.items || []).map(i => `${i.quantity}x ${i.product?.name || i.title || ''}`).join(' | '),
       [t('export.wilaya')]: order.customerWilaya?.ar_name || '',
       [t('export.commune')]: order.customerCommune?.ar_name || '',
       [t('export.ship_type')]: order.typeShip === 'office' ? t('export.ship_office') : t('export.ship_home'),
@@ -1120,8 +1122,8 @@ export default function Orders() {
 
                 {/* المنتجات */}
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || ''}${it.addons?.length ? ` + ${it.addons.map(a => a.name).join('، ')}` : ''}`).join(' • ')}>
-                    {items[0] ? `${items[0].quantity}× ${truncate(items[0].product?.name || '', 26)}` : '—'}
+                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || it.title || ''}${it.addons?.length ? ` + ${it.addons.map(a => a.name).join('، ')}` : ''}`).join(' • ')}>
+                    {items[0] ? `${items[0].quantity}× ${truncate(items[0].product?.name || items[0].title || '', 26)}` : '—'}
                   </span>
                   {items.length > 1 && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-500/10 px-1.5 py-0.5 rounded w-fit">
