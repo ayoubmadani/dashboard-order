@@ -25,7 +25,7 @@ export default function TrialOffer() {
     try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch { /* ignore */ }
     if (dismissed) return;
     axios.get(`${baseURL}/subscription/trial`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
-      .then(({ data }) => { if (data?.eligible && data.plans?.length) setOffer(data); })
+      .then(({ data }) => { if (data?.eligible && (data.plans?.length || data.freePlan)) setOffer(data); })
       .catch(() => {});
   }, []);
 
@@ -45,6 +45,24 @@ export default function TrialOffer() {
       try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
       setDone(true);
       // حدود الخطة الجديدة (متاجر، منتجات، ثيمات) تُقرأ من جديد في كل الصفحات
+      window.location.reload();
+    } catch (err) {
+      const m = err?.response?.data?.message;
+      setError((Array.isArray(m) ? m[0] : m) || t('trial_error'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  // بديل التجربة: الخطة المجانية يفعّلها التاجر بنفسه
+  const activateFree = async () => {
+    setBusy(offer.freePlan.id);
+    setError('');
+    try {
+      await axios.post(`${baseURL}/subscription/subscribe`, { planId: offer.freePlan.id, interval: 'month' }, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      clearPlanCache();
+      try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
+      setDone(true);
       window.location.reload();
     } catch (err) {
       const m = err?.response?.data?.message;
@@ -114,6 +132,26 @@ export default function TrialOffer() {
             );
           })}
         </div>
+
+        {offer.freePlan && (
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl border-2 border-gray-100 dark:border-zinc-800 p-5">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="font-black text-lg text-gray-900 dark:text-white capitalize">{offer.freePlan.name}</p>
+                <span className="text-sm font-black text-emerald-500">{t('free')}</span>
+              </div>
+              <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                {buildFeatureSummary(offer.freePlan.features, t).map(({ text }) => (
+                  <li key={text} className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-zinc-400"><Check size={13} className="text-emerald-500 shrink-0" /> {text}</li>
+                ))}
+              </ul>
+            </div>
+            <button type="button" onClick={activateFree} disabled={!!busy}
+              className="shrink-0 flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-black text-sm border-2 border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition disabled:opacity-50">
+              {busy === offer.freePlan.id && <Loader2 size={15} className="animate-spin" />} {t('sub_activate')}
+            </button>
+          </div>
+        )}
 
         <label className="flex items-start gap-3 cursor-pointer rounded-2xl bg-gray-50 dark:bg-zinc-800/50 p-4">
           <input type="checkbox" checked={autoRenew} onChange={(e) => setAutoRenew(e.target.checked)} className="mt-0.5 w-4 h-4 accent-indigo-600" />
