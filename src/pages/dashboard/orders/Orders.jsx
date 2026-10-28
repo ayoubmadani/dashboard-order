@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
   Search, RefreshCw, Download, Trash2, Edit2,
   Package, AlertTriangle, ChevronDown,
@@ -14,6 +14,7 @@ import {
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import OrderModal from './orderModel';
+import { can } from '../../../services/storeAccess';
 import NoStoreState from '../../../components/NoStoreState';
 import { timeAgo, formatOrderDate } from '../../../utils/orderTime';
 import { toast, Toaster } from 'sonner';
@@ -441,7 +442,7 @@ const SHIPPING_PHASE = ['shipping'];
 const confirmationLock = (cart) =>
   !cart.confirmationCompanyId ? null : AFTER_CONFIRMATION.includes(cart.status) ? 'shippingOnly' : 'locked';
 
-function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }) {
+function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t, readOnly }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -457,6 +458,12 @@ function StatusCell({ cart, open, busy, onToggle, onPick, statusKeys, isRtl, t }
     ? statusKeys.filter(k => !DIGITAL_HIDDEN_STATUSES.includes(k))
     : statusKeys
   ).filter(k => lock !== 'shippingOnly' || k === cart.status || SHIPPING_PHASE.includes(k));
+
+  if (readOnly) return (
+    <span className={`w-full md:w-auto min-w-[112px] inline-flex items-center px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide border ${style}`}>
+      <span className="truncate">{statusLabel(t, cart.status, cart.isDigital) || cart.status}</span>
+    </span>
+  );
 
   return (
     <div className="relative" ref={ref} onClick={e => e.stopPropagation()}>
@@ -660,6 +667,9 @@ export default function Orders() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
   const navigate = useNavigate();
+  // عضو بلا «إدارة الطلبات»: عرض فقط — بلا إنشاء/تعديل/حذف/حالة/إرسال/شحن
+  const { selectedProject } = useOutletContext() || {};
+  const canManage = can(selectedProject, 'order.manage');
 
   // إعادة رسم كل دقيقة حتى يبقى "منذ X دقيقة" دقيقاً
   const { t: tc } = useTranslation('translation', { keyPrefix: 'confirmation' });
@@ -747,9 +757,9 @@ export default function Orders() {
   // منتج رقمي لا يُشحن — لا يدخل قائمة "الطلبات القابلة للشحن" إطلاقاً
   const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital);
   // كل ما يمكن تحديده: جاهز للشحن، ينتظر التأكيد (إرسال/استرجاع)، أو ألغته شركة التأكيد (استرجاع)
-  const isSelectable = (c) => (c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
+  const isSelectable = (c) => canManage && ((c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
     || ['pending', 'appl1', 'appl2', 'appl3', 'postponed'].includes(c.status)
-    || (c.status === 'cancelled' && !!c.confirmationCompanyId);
+    || (c.status === 'cancelled' && !!c.confirmationCompanyId));
   const selectableOrders = orders.filter(isSelectable);
   const allConfirmedSelected = selectableOrders.length > 0 && selectableOrders.every(c => selectedIds.has(c.id));
   const someSelected = selectedIds.size > 0;
@@ -945,10 +955,12 @@ export default function Orders() {
               )}
             </div>
 
-            <button onClick={() => navigate('/dashboard/orders/new')} title={t('list.new_order')}
-              className="h-10 shrink-0 flex items-center justify-center gap-1.5 px-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all">
-              <Plus size={16} /><span className="hidden sm:inline">{t('list.new_order')}</span>
-            </button>
+            {canManage && (
+              <button onClick={() => navigate('/dashboard/orders/new')} title={t('list.new_order')}
+                className="h-10 shrink-0 flex items-center justify-center gap-1.5 px-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all">
+                <Plus size={16} /><span className="hidden sm:inline">{t('list.new_order')}</span>
+              </button>
+            )}
             <button onClick={exportToExcel} disabled={!orders.length} title={t('list.export_excel')}
               className="w-10 h-10 shrink-0 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-40">
               <Download size={16} />
@@ -1187,6 +1199,7 @@ export default function Orders() {
                     statusKeys={statusKeys}
                     isRtl={isRtl}
                     t={t}
+                    readOnly={!canManage}
                   />
                   {cart.confirmationCompany && (
                     <span title={cart.confirmationCompany.name}
@@ -1205,6 +1218,7 @@ export default function Orders() {
                   >
                     <Eye size={14} />
                   </button>
+                  {canManage && <>
                   <button
                     onClick={() => navigate(`/dashboard/orders/${cart.id}`)}
                     disabled={!!confirmationLock(cart)}
@@ -1224,6 +1238,7 @@ export default function Orders() {
                   >
                     <Trash2 size={14} />
                   </button>
+                  </>}
                 </div>
               </div>
             );
@@ -1304,7 +1319,7 @@ export default function Orders() {
         </div>
       )}
 
-      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} />
+      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} readOnly={!canManage} />
 
       {sendIds && (
         <SendConfirmationModal

@@ -88,7 +88,7 @@ const S = `
   .dark .om-loading { background:rgba(24,24,27,0.9); }
 `;
 
-export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
+export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readOnly = false }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
   const navigate = useNavigate();
@@ -231,8 +231,8 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
                   const active = status === o.value;
                   return (
                     <button key={o.value} type="button" className="om-status-btn"
-                      disabled={atConfirmation}
-                      style={{ ...(active ? { borderColor: m.color, background: m.bg, color: m.labelColor } : {}), ...(atConfirmation ? { opacity: 0.5, cursor: 'not-allowed' } : {}) }}
+                      disabled={atConfirmation || readOnly}
+                      style={{ ...(active ? { borderColor: m.color, background: m.bg, color: m.labelColor } : {}), ...(atConfirmation ? { opacity: 0.5, cursor: 'not-allowed' } : readOnly ? { cursor: 'default' } : {}) }}
                       onClick={() => setStatus(o.value)}>
                       <span className="om-status-name">
                         <span className="dot" style={{ background: m.color }} />
@@ -248,15 +248,17 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh }) {
 
           {/* Footer */}
           <div className="om-footer">
-            <button type="button" className="om-link-full" onClick={goFull}>
-              <ExternalLink size={12} /> {t('list.edit')}
-            </button>
+            {readOnly ? <span /> : (
+              <button type="button" className="om-link-full" onClick={goFull}>
+                <ExternalLink size={12} /> {t('list.edit')}
+              </button>
+            )}
             <div className="om-footer-actions">
               <button className="om-btn-cancel" onClick={onClose}>{t('modal.close')}</button>
-              <button className="om-btn-save" onClick={handleSave} disabled={loading || !hasChanges || atConfirmation}
+              {!readOnly && <button className="om-btn-save" onClick={handleSave} disabled={loading || !hasChanges || atConfirmation}
                 title={atConfirmation ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : undefined}>
                 {loading ? <><Loader2 size={13} className="animate-spin" />{t('modal.saving')}</> : <><Save size={13} />{t('modal.save')}</>}
-              </button>
+              </button>}
             </div>
           </div>
         </div>

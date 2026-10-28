@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
+import { can } from '../../../services/storeAccess';
 import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
   ShoppingBag, Trash2, CheckCircle2, Calendar, Check
@@ -118,6 +119,10 @@ export default function OrderEditPage({ isNew = false }) {
 
   const navigate = useNavigate();
   const location = useLocation();
+  // صفحة الإنشاء/التعديل لمن يملك «إدارة الطلبات» فقط — عضو العرض يكتفي بالعرض السريع في القائمة
+  const { selectedProject } = useOutletContext() || {};
+  const canManage = can(selectedProject, 'order.manage');
+  useEffect(() => { if (!canManage) navigate('/dashboard/orders', { replace: true }); }, [canManage, navigate]);
 
   const [editedCart, setEditedCart] = useState(null);
   const [originalCart, setOriginalCart] = useState(null);
