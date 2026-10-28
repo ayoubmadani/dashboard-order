@@ -168,6 +168,7 @@
   "trial_free_days": "{{days}} days free",
   "trial_then": "then {{price}} {{currency}} / {{period}}",
   "trial_start": "Start trial",
+  "trial_cta": "Try any paid plan free for {{days}} days — no payment",
   "trial_skip": "Later",
   "trial_auto_renew": "Auto-renew from wallet when the trial ends",
   "trial_auto_renew_hint": "If your wallet balance is too low or renewal is off, the subscription simply ends with no charge — you can activate the free plan anytime.",

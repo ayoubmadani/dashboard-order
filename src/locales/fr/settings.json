@@ -168,6 +168,7 @@
   "trial_free_days": "{{days}} jours gratuits",
   "trial_then": "puis {{price}} {{currency}} / {{period}}",
   "trial_start": "Commencer l'essai",
+  "trial_cta": "Essayez n'importe quel plan payant {{days}} jours gratuitement — sans paiement",
   "trial_skip": "Plus tard",
   "trial_auto_renew": "Renouvellement automatique depuis le portefeuille après l'essai",
   "trial_auto_renew_hint": "Si le solde est insuffisant ou le renouvellement désactivé, l'abonnement s'arrête sans aucun débit — vous pouvez activer le plan gratuit à tout moment.",

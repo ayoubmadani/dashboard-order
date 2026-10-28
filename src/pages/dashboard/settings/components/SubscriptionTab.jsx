@@ -8,6 +8,7 @@ import { baseURL } from '../../../../constents/const.';
 import { getAccessToken } from '../../../../services/access-token';
 import CouponInput from '../../../../components/CouponInput';
 import SectionTitle from './SectionTitle';
+import TrialOffer from '../../../../components/TrialOffer';
 import { isFree, getPlanPrice, getDiscountedPrice, buildFeatureSummary, perMonth } from './utils';
 
 export default function SubscriptionTab() {
@@ -27,6 +28,15 @@ export default function SubscriptionTab() {
   const [couponChecking, setCouponChecking] = useState(false);
   const [couponInfo, setCouponInfo] = useState(null);
   const [couponError, setCouponError] = useState('');
+  // التجربة المجانية لمن تخطّى عرضها أول دخول (ما دام الحساب مؤهلاً)
+  const [trial, setTrial] = useState(null);
+  const [trialOpen, setTrialOpen] = useState(false);
+
+  useEffect(() => {
+    axios.get(`${baseURL}/subscription/trial`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => setTrial(data?.eligible && data.plans?.length ? data : null))
+      .catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     setSubLoading(true);
@@ -115,6 +125,16 @@ export default function SubscriptionTab() {
     <>
       <div className="bg-white dark:bg-zinc-900 p-8 rounded-[2rem] border border-gray-100 dark:border-zinc-800 shadow-sm space-y-6">
         <SectionTitle>{t('tab_subscription')}</SectionTitle>
+
+        {trial && (
+          <button type="button" onClick={() => setTrialOpen(true)}
+            className="w-full flex items-center gap-3 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200/60 dark:border-amber-500/20 text-start hover:bg-amber-100/60 dark:hover:bg-amber-900/20 transition-colors">
+            <span className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0"><Gift size={20} /></span>
+            <span className="flex-1 min-w-0 text-sm font-bold text-amber-800 dark:text-amber-300">{t('trial_cta', { days: trial.days })}</span>
+            <span className="shrink-0 px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-black">{t('trial_start')}</span>
+          </button>
+        )}
+        {trialOpen && <TrialOffer data={trial} onClose={() => setTrialOpen(false)} />}
 
         {subLoading ? (
           <div className="flex items-center justify-center py-16 text-gray-400"><Loader2 size={24} className="animate-spin" /></div>

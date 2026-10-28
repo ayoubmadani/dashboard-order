@@ -11,10 +11,11 @@ import { getPlanPrice, buildFeatureSummary, perMonth } from '../pages/dashboard/
 
 
 // عند أول دخول لحساب جديد: يعرض الخطط مع «X أيام مجاناً» وسعر التجديد، والتاجر يختار خطة التجربة
-export default function TrialOffer() {
+// مع data/onClose: يُفتح يدوياً من صفحة الاشتراك لمن تخطّاه أول دخول
+export default function TrialOffer({ data: preset = null, onClose = null }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'settings' });
   const isRtl = i18n.dir() === 'rtl';
-  const [offer, setOffer] = useState(null);
+  const [offer, setOffer] = useState(preset);
   const [billing, setBilling] = useState('month');
   const [autoRenew, setAutoRenew] = useState(true);
   const [busy, setBusy] = useState(null);
@@ -25,17 +26,19 @@ export default function TrialOffer() {
   const DISMISS_KEY = trialDismissKey(getAccessToken());
 
   useEffect(() => {
+    if (preset) return;
     let dismissed = false;
     try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch { /* ignore */ }
     if (dismissed) return;
     axios.get(`${baseURL}/subscription/trial`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
       .then(({ data }) => { if (data?.eligible && (data.plans?.length || data.freePlan)) setOffer(data); })
       .catch(() => {});
-  }, [DISMISS_KEY]);
+  }, [DISMISS_KEY, preset]);
 
   if (!offer || done) return null;
 
   const dismiss = () => {
+    if (onClose) return onClose();
     try { localStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
     setOffer(null);
   };
