@@ -42,7 +42,8 @@ export default function CouponInput({
           <input
             type="text"
             value={code}
-            onChange={(e) => onCodeChange(e.target.value)}
+            onChange={(e) => onCodeChange(e.target.value.toUpperCase())}
+            autoCapitalize="characters"
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onApply(); } }}
             placeholder={placeholder}
             disabled={disabled}
