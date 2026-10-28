@@ -5,9 +5,10 @@ import { Gift, Loader2, Check, Sparkles } from 'lucide-react';
 import { baseURL } from '../constents/const.';
 import { getAccessToken } from '../services/access-token';
 import { clearPlanCache } from '../services/plan';
+import { trialDismissKey } from '../services/trial';
 import { getPlanPrice, buildFeatureSummary, perMonth } from '../pages/dashboard/settings/components/utils';
 
-const DISMISS_KEY = 'trialOfferDismissed';
+
 
 // عند أول دخول لحساب جديد: يعرض الخطط مع «X أيام مجاناً» وسعر التجديد، والتاجر يختار خطة التجربة
 export default function TrialOffer() {
@@ -20,6 +21,9 @@ export default function TrialOffer() {
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
+  // إخفاء العرض لكل حساب على حدة (حساب سابق على نفس المتصفح لا يخفيه)
+  const DISMISS_KEY = trialDismissKey(getAccessToken());
+
   useEffect(() => {
     let dismissed = false;
     try { dismissed = localStorage.getItem(DISMISS_KEY) === '1'; } catch { /* ignore */ }
@@ -27,7 +31,7 @@ export default function TrialOffer() {
     axios.get(`${baseURL}/subscription/trial`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
       .then(({ data }) => { if (data?.eligible && (data.plans?.length || data.freePlan)) setOffer(data); })
       .catch(() => {});
-  }, []);
+  }, [DISMISS_KEY]);
 
   if (!offer || done) return null;
 
