@@ -12,7 +12,10 @@
     "order.view": "عرض الطلبات",
     "order.manage": "إدارة الطلبات",
     "domain.crud": "الدومينات",
-    "seo.manage": "SEO (محركات البحث)"
+    "seo.manage": "SEO (محركات البحث)",
+    "delivery.rates": "أسعار التوصيل",
+    "delivery.account": "حساب التوصيل المختار (تعديل فقط)",
+    "messages.read": "قراءة الرسائل"
   },
   "perm_hint": {
     "order.manage": "يشمل عرض الطلبات"

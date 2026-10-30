@@ -12,7 +12,10 @@
     "order.view": "Voir les commandes",
     "order.manage": "Gérer les commandes",
     "domain.crud": "Domaines",
-    "seo.manage": "SEO (référencement)"
+    "seo.manage": "SEO (référencement)",
+    "delivery.rates": "Tarifs de livraison",
+    "delivery.account": "Compte de livraison choisi (modification seule)",
+    "messages.read": "Lire les messages"
   },
   "perm_hint": {
     "order.manage": "inclut la consultation"

@@ -12,7 +12,10 @@
     "order.view": "View orders",
     "order.manage": "Manage orders",
     "domain.crud": "Domains",
-    "seo.manage": "SEO"
+    "seo.manage": "SEO",
+    "delivery.rates": "Delivery rates",
+    "delivery.account": "Selected delivery account (edit only)",
+    "messages.read": "Read messages"
   },
   "perm_hint": {
     "order.manage": "includes viewing"
