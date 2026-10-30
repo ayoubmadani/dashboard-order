@@ -213,7 +213,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
               ))}
               <div className="om-totals">
                 <span className="om-tot-label">{t('modal.price_total')}</span>
-                <span className="om-tot-val">{parseFloat(cartData.totalPrice || 0).toLocaleString()} DA</span>
+                <span className="om-tot-val">{parseFloat(cartData.allPrice ?? (Number(cartData.totalPrice || 0) + Number(cartData.priceShip || 0))).toLocaleString()} DA</span>
               </div>
             </div>
 

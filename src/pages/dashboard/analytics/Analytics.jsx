@@ -253,9 +253,8 @@ export default function Analytics() {
     const delivered      = orders.filter(o => o.status === 'delivered');
     const todayOrders    = orders.filter(o => isToday(o.createdAt));
     const monthOrders    = orders.filter(o => isThisMonth(o.createdAt));
-const grossRevenue = delivered.reduce((s, o) => {
-  return s + Number(o.totalPrice || 0) - Number(o.priceShip || 0);
-}, 0);    const returnedLossAll= orders.filter(o => o.status === 'returned').reduce((s, o) => s + Number(o.priceLoss || 0), 0);
+    // totalPrice = سعر البيع (المنتجات فقط)؛ التوصيل ليس إيراداً
+    const grossRevenue = delivered.reduce((s, o) => s + Number(o.totalPrice || 0), 0);    const returnedLossAll= orders.filter(o => o.status === 'returned').reduce((s, o) => s + Number(o.priceLoss || 0), 0);
     const revenue        = grossRevenue - returnedLossAll;
     const todayRevenue   = delivered.filter(o => isToday(o.createdAt)).reduce((s, o) => s + Number(o.totalPrice || 0), 0);
     const monthRevenue   = delivered.filter(o => isThisMonth(o.createdAt)).reduce((s, o) => s + Number(o.totalPrice || 0), 0);
