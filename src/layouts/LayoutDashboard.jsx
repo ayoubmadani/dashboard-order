@@ -15,6 +15,7 @@ import { baseURL } from '../constents/const.';
 import TrialOffer from '../components/TrialOffer';
 import { can, isOwner, ACCESS_LOSS_CODES } from '../services/storeAccess';
 import { saveSelectedStore } from '../services/selectedStore';
+import { FEATURES } from '../utils/features';
 
 const getStoreGradient = (name) => {
     const gradients = [
@@ -219,7 +220,7 @@ export default function LayoutDashboard() {
                 { name: t('nav.theme', 'الثيم'), href: '/dashboard/theme', icon: Palette, owner: true },
                 { name: t('nav.custom_theme', 'ثيم خاص'), href: '/dashboard/theme/custom', icon: Sparkles, owner: true },
                 { name: t('nav.pixels', 'بيكسل'), href: '/dashboard/pixels', icon: Code2, owner: true },
-                { name: t('nav.meta', 'إعلانات Meta'), href: '/dashboard/meta', icon: Megaphone, perm: 'product.crud' },
+                ...(FEATURES.metaAds ? [{ name: t('nav.meta', 'إعلانات Meta'), href: '/dashboard/meta', icon: Megaphone, perm: 'product.crud' }] : []),
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
                 { name: t('nav.inventory', 'المخزون'), href: '/dashboard/inventory', icon: Boxes, perm: 'product.crud' },

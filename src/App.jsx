@@ -45,6 +45,7 @@ import PagesList from './pages/editor/PagesList';
 import PageEditor from './pages/editor/PageEditor';
 import SelectLang from './halper/select-lang';
 import GoogleAnalytics from './components/GoogleAnalytics';
+import { FEATURES } from './utils/features';
 
 const App = () => {
   const { i18n } = useTranslation();
@@ -114,7 +115,7 @@ const App = () => {
 
             <Route path='Wallet' element={<Wallet />} />
             <Route path='inventory' element={<Inventory />} />
-            <Route path='meta' element={<Meta />} />
+            {FEATURES.metaAds && <Route path='meta' element={<Meta />} />}
 
 
             <Route path="landing-pages">
