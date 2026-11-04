@@ -17,6 +17,7 @@ import OrderModal from './orderModel';
 import { can } from '../../../services/storeAccess';
 import NoStoreState from '../../../components/NoStoreState';
 import { timeAgo, formatOrderDate } from '../../../utils/orderTime';
+import { ShipStatusBadge } from '../../../utils/shippingStatus';
 import { toast, Toaster } from 'sonner';
 
 export const StatusEnum = {
@@ -1201,6 +1202,7 @@ export default function Orders() {
                     t={t}
                     readOnly={!canManage}
                   />
+                  {cart.status === 'shipping' && <ShipStatusBadge order={cart} t={t} className="max-w-[160px] truncate" />}
                   {cart.confirmationCompany && (
                     <span title={cart.confirmationCompany.name}
                       className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-[128px]">

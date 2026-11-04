@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ShipStatusBadge } from '../../../utils/shippingStatus';
+import { shipStatusInfo } from '../../../utils/shippingStatusInfo';
 import { useNavigate } from 'react-router-dom';
 import { X, Loader2, Save, Package, CheckCircle2, MapPin, ExternalLink, Phone } from 'lucide-react';
 import axios from 'axios';
@@ -164,6 +166,18 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
             </div>
             <button className="om-x" onClick={onClose}><X size={14} /></button>
           </div>
+
+          {/* حالة الطرد عند شركة التوصيل — «محاولة تسليم فاشلة» تطلب الاتصال بالزبون الآن */}
+          {cartData.shippingTrackingId && shipStatusInfo(cartData) && (
+            <div className="flex flex-wrap items-center gap-2 px-5 pt-3 text-xs">
+              <span className="text-gray-500 dark:text-zinc-400 font-semibold">{t('ship_status.title')}:</span>
+              <ShipStatusBadge order={cartData} t={t} />
+              <span className="text-gray-400" dir="ltr">{cartData.shippingTrackingId}</span>
+              {shipStatusInfo(cartData).urgent && cartData.status === 'shipping' && (
+                <span className="w-full font-bold text-amber-700 dark:text-amber-300">{t('ship_status.call_hint')}</span>
+              )}
+            </div>
+          )}
 
           {/* Body */}
           <div className="om-body">
