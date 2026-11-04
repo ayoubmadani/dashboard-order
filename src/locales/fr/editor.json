@@ -192,6 +192,10 @@
   },
   "fields": {
     "animation": "Animation",
+    "marquee": "Texte défilant",
+    "marqueeOptions": { "none": "Fixe", "rtl": "De droite à gauche", "ltr": "De gauche à droite" },
+    "marqueeSpeed": "Vitesse (secondes par largeur)",
+    "marqueeRepeat": "Copies visibles sur la largeur",
     "animationOptions": {
       "none": "Aucune",
       "pulse": "Pulsation",

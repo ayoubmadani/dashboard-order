@@ -192,6 +192,10 @@
   },
   "fields": {
     "animation": "الحركة",
+    "marquee": "نص متحرك",
+    "marqueeOptions": { "none": "ثابت", "rtl": "من اليمين لليسار", "ltr": "من اليسار لليمين" },
+    "marqueeSpeed": "سرعة الحركة (ثوانٍ لعبور الشريط)",
+    "marqueeRepeat": "عدد النسخ على عرض الشريط",
     "animationOptions": {
       "none": "بدون حركة",
       "pulse": "نبض",

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { BUTTON_ANIMATION_CSS, buttonAnimationClass } from './buttonAnimations';
 import { Image as ImageIcon } from 'lucide-react';
 import { startEdgeAutoScroll } from './autoScroll';
+import { MarqueeTrack, marqueeOf, marqueeRepeat } from './marquee';
 
 const MIN_SIZE = 40;
 const MIN_WIDTH_PERCENT = 5;
@@ -464,6 +465,7 @@ export default function ElementsOverlay({
         // in sync with how it'll actually shrink on a real phone screen,
         // instead of only ever showing the fixed-width desktop look.
         const basePx = el.fontSize || 24;
+        const marquee = !isEditing && marqueeOf(el);
         return (
           <div
             key={el.id}
@@ -481,9 +483,11 @@ export default function ElementsOverlay({
               fontStyle: el.fontStyle || 'normal',
               textDecoration: el.textDecoration || 'none',
               color: el.color || '#ffffff',
+              backgroundColor: el.backgroundColor || undefined,
               textAlign: 'center',
               lineHeight: 1.3,
-              overflow: boxHeight ? 'hidden' : 'visible',
+              overflow: boxHeight || marquee ? 'hidden' : 'visible',
+              ...(marquee ? { display: 'flex', alignItems: 'center' } : {}),
             }}
           >
             {isEditing ? (
@@ -506,6 +510,8 @@ export default function ElementsOverlay({
                   width: '100%',
                 }}
               />
+            ) : marquee ? (
+              <MarqueeTrack text={el.content} dir={marquee.dir} seconds={marquee.seconds} repeat={marqueeRepeat(el)} />
             ) : (
               el.content
             )}

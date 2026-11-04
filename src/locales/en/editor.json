@@ -192,6 +192,10 @@
   },
   "fields": {
     "animation": "Animation",
+    "marquee": "Scrolling text",
+    "marqueeOptions": { "none": "Static", "rtl": "Right to left", "ltr": "Left to right" },
+    "marqueeSpeed": "Speed (seconds per band width)",
+    "marqueeRepeat": "Copies across the band",
     "animationOptions": {
       "none": "None",
       "pulse": "Pulse",

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BUTTON_ANIMATIONS } from '../blocks/buttonAnimations';
+import { MARQUEE_DIRECTIONS } from '../blocks/marquee';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { Trash2, Layers, X, Type, MousePointerClick, ChevronLeft, ChevronRight, Bold, Italic, Underline, Image as ImageIcon, ArrowUp, ArrowDown, Images } from 'lucide-react';
@@ -13,7 +14,12 @@ const TEXT_ELEMENT_FIELDS = [
   { key: 'content', labelKey: 'editor.fields.content', type: 'textarea' },
   { key: 'style', type: 'textStyle' },
   { key: 'color', labelKey: 'editor.fields.color', type: 'color' },
+  { key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' },
   { key: 'fontSize', labelKey: 'editor.fields.fontSize', type: 'number' },
+  // نص متحرك: من اليمين لليسار أو العكس (اجعل العرض 100 لشريط بعرض الصفحة)
+  { key: 'marquee', labelKey: 'editor.fields.marquee', type: 'select', options: MARQUEE_DIRECTIONS.map((value) => ({ value, labelKey: `editor.fields.marqueeOptions.${value}` })) },
+  { key: 'marqueeSpeed', labelKey: 'editor.fields.marqueeSpeed', type: 'number', min: 3, max: 60, showIf: (el) => el.marquee === 'rtl' || el.marquee === 'ltr' },
+  { key: 'marqueeRepeat', labelKey: 'editor.fields.marqueeRepeat', type: 'number', min: 1, max: 10, showIf: (el) => el.marquee === 'rtl' || el.marquee === 'ltr' },
   { key: 'width', labelKey: 'editor.canvasSection.width', type: 'number', min: 5, max: 100 },
   { key: 'height', labelKey: 'editor.canvasSection.height', type: 'number' },
 ];
@@ -241,7 +247,7 @@ function Field({ field, value, onChange }) {
         <select value={value ?? ''} onChange={(e) => onChange(e.target.value)} className={commonClass}>
           {field.options.map((opt) => (
             <option key={opt.value} value={opt.value}>
-              {t(opt.labelKey)}
+              {opt.label ?? t(opt.labelKey)}
             </option>
           ))}
         </select>
