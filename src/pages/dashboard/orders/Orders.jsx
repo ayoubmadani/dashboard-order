@@ -1134,7 +1134,7 @@ export default function Orders() {
 
                 {/* المنتجات */}
                 <div className="min-w-0 flex flex-col gap-0.5">
-                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || it.title || ''}${it.addons?.length ? ` + ${it.addons.map(a => a.name).join('، ')}` : ''}`).join(' • ')}>
+                  <span className="text-[13px] text-gray-700 dark:text-zinc-300 font-medium truncate" title={items.map(it => `${it.quantity}× ${it.product?.name || it.title || ''}${it.addons?.length ? ` + ${it.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}` : ''}`).join(' • ')}>
                     {items[0] ? `${items[0].quantity}× ${truncate(items[0].product?.name || items[0].title || '', 26)}` : '—'}
                   </span>
                   {items.length > 1 && (

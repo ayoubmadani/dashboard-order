@@ -38,6 +38,18 @@ export default function ProductAddonsEditor({ value = [], onChange, isRtl }) {
                   className="w-full pl-6 pr-2 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                 />
               </div>
+              {/* أقصى كمية يختارها الزبون (فارغ أو 1 = اختيار بسيط) */}
+              <div className="relative w-16 shrink-0" dir="ltr" title={t('max_qty')}>
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">×</span>
+                <input
+                  type="number" min="1" max="99" step="1"
+                  value={a.maxQty ?? ''}
+                  onChange={(e) => update(a.id, 'maxQty', e.target.value)}
+                  placeholder="1"
+                  aria-label={t('max_qty')}
+                  className="w-full pl-5 pr-1 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                />
+              </div>
               <button type="button" title={a.isActive === false ? t('enable') : t('disable')}
                 onClick={() => update(a.id, 'isActive', a.isActive === false)}
                 className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${a.isActive === false ? 'bg-gray-300 dark:bg-zinc-700' : 'bg-orange-500'}`}>

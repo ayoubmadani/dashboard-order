@@ -84,8 +84,11 @@ function isItemFreeShipping(item) {
   return !!(item?.offer?.shippingFree || item?.product?.shippingFree);
 }
 
+// الإضافات بكمية مستقلة (separate): سعرها × كميتها مضاف لسطر الطلب فوق سعر المنتج × كميته
+const addonsExtra = (it) => (it?.addons || []).reduce((s, a) => s + (a.separate ? Number(a.price || 0) * Number(a.qty || 1) : 0), 0);
+
 function getItemsTotal(items) {
-  return (items || []).reduce((s, it) => s + (parseFloat(it.finalPrice || 0) * (it.quantity || 1)), 0);
+  return (items || []).reduce((s, it) => s + (parseFloat(it.finalPrice || 0) * (it.quantity || 1)) + addonsExtra(it), 0);
 }
 
 // خلفية/لون صريحان على <option> — color-scheme لوحده غير كافٍ لضمان تباين مقروء
@@ -403,7 +406,7 @@ export default function OrderEditPage({ isNew = false }) {
           }
         }
 
-        updatedItem.itemTotal = updatedItem.finalPrice * updatedItem.quantity;
+        updatedItem.itemTotal = updatedItem.finalPrice * updatedItem.quantity + addonsExtra(updatedItem);
         return updatedItem;
       })
     }));
@@ -751,7 +754,7 @@ export default function OrderEditPage({ isNew = false }) {
                                 {item.product?.name || item.title || item.productName || t('edit.product_unknown')}
                                 {item.addons?.length > 0 && (
                                   <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
-                                    + {item.addons.map(a => `${a.name}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                                    + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
                                   </span>
                                 )}
                               </h3>

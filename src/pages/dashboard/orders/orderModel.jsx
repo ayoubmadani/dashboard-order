@@ -204,7 +204,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
                     {item.quantity}× {item.product?.name || item.title || item.productName || t('modal.product_unknown')}
                     {item.addons?.length > 0 && (
                       <span style={{ display: 'block', fontSize: '0.75em', opacity: 0.7 }}>
-                        + {item.addons.map(a => `${a.name}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                        + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
                       </span>
                     )}
                   </span>

@@ -453,6 +453,8 @@
     "desc": "Extras the customer can add; their price is added to the product price (e.g. extra chicken +300 DZD)",
     "name_placeholder": "Add-on name, e.g. hot sauce",
     "add": "New add-on",
+    "max_qty": "Max quantity",
+    "max_qty_hint": "Maximum quantity the customer can pick (empty = 1)",
     "remove": "Remove",
     "enable": "Enable",
     "disable": "Hide"
