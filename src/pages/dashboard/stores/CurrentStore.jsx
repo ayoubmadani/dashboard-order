@@ -123,8 +123,8 @@ const CurrentStore = () => {
         const store = response.data.data;
         // ولايات دولة المتجر (الجزائر افتراضياً)
         storeCountryRef.current = store.country || 'DZ';
-        if (store.country && store.country !== 'DZ') {
-          axios.get(`${baseURL}/shipping/wilayas`, { params: { country: store.country } })
+        if ((store.country && store.country !== 'DZ') || store.division) {
+          axios.get(`${baseURL}/shipping/wilayas`, { params: { country: store.country || 'DZ', ...(store.division ? { division: store.division } : {}) } })
             .then(({ data }) => setWilayas(Array.isArray(data) ? data : [])).catch(() => {});
         }
         setFormData({

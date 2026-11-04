@@ -374,7 +374,7 @@ function CommunesModal({ wilaya, headers, isRtl, onClose, onSaved }) {
   );
 }
 
-function AddMissingWilayasModal({ headers, isRtl, existingIds, country = 'DZ', onClose, onAdded }) {
+function AddMissingWilayasModal({ headers, isRtl, existingIds, country = 'DZ', division = '', onClose, onAdded }) {
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const [isLoading, setIsLoading] = useState(true);
   const [missing, setMissing] = useState([]);
@@ -384,7 +384,7 @@ function AddMissingWilayasModal({ headers, isRtl, existingIds, country = 'DZ', o
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(`${baseURL}/shipping/wilayas`, { params: { country } })
+    axios.get(`${baseURL}/shipping/wilayas`, { params: { country, ...(division ? { division } : {}) } })
       .then(({ data }) => {
         const missingWilayas = (data || []).filter(w => !existingIds.has(w.id));
         setMissing(missingWilayas);
@@ -1343,6 +1343,7 @@ export default function Shipping() {
           isRtl={isRtl}
           existingIds={new Set(wilayas.map(w => w.id))}
           country={profiles.find(p => p.id === profileId)?.country || profiles.find(p => p.isDefault)?.country || 'DZ'}
+          division={(profiles.find(p => p.id === profileId) || profiles.find(p => p.isDefault))?.division || ''}
           onClose={() => setShowMissingModal(false)}
           onAdded={handleMissingAdded}
         />

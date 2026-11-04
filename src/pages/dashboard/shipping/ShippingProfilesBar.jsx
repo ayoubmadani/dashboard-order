@@ -16,6 +16,16 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
   // الدول التي لها مناطق في المنصة (يمكن تسعيرها) — الباقي يظهر «قريباً»
   const [shippingCountries, setShippingCountries] = useState(['DZ']);
 
+  // تقسيمات دولة الحساب الجديد (الجزائر: 58 أو 69 ولاية) — عنصر واحد = لا اختيار
+  const [divisions, setDivisions] = useState([]);
+  const modalCountry = modal?.mode === 'create' ? (modal.country || 'DZ') : null;
+  useEffect(() => {
+    if (!modalCountry) return;
+    setDivisions([]);
+    axios.get(`${baseURL}/shipping/countries/${modalCountry}/divisions`).then(({ data }) => setDivisions(Array.isArray(data) ? data : [])).catch(() => {});
+  }, [modalCountry]);
+  const divLabel = (d) => (isRtl ? d.ar : d.fr || d.en) || d.ar || d.code;
+
   useEffect(() => {
     axios.get(`${locationsURL}/v1/countries`).then(({ data }) => { if (Array.isArray(data) && data.length) setCountries(data); }).catch(() => {});
     axios.get(`${baseURL}/shipping/countries`).then(({ data }) => { if (Array.isArray(data) && data.length) setShippingCountries(data); }).catch(() => {});
@@ -24,9 +34,11 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
   const selected = profiles.find((p) => p.id === selectedId) || profiles[0];
   const storeProfile = profiles.find((p) => p.stores.some((s) => s.id === storeId));
   const usedByCurrentStore = storeProfile?.id === selected?.id;
-  // حساب الشحن يستعمله فقط متجر من نفس دولته (حساب تونسي لمتجر تونسي)
-  const storeCountry = storeProfile?.stores.find((s) => s.id === storeId)?.country || 'DZ';
-  const countryMismatch = (selected?.country || 'DZ') !== storeCountry;
+  // حساب الشحن يستعمله فقط متجر من نفس دولته وتقسيمها (حساب 69 ولاية لمتجر 69 ولاية)
+  const currentStore = storeProfile?.stores.find((s) => s.id === storeId);
+  const storeCountry = currentStore?.country || 'DZ';
+  const area = (a) => `${a?.country || 'DZ'}${a?.division ? ` (${a.division})` : ''}`;
+  const countryMismatch = area(selected) !== area(currentStore);
 
   const submitModal = async () => {
     const name = modal?.name?.trim();
@@ -34,7 +46,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
     setBusy(true);
     try {
       if (modal.mode === 'create') {
-        const { data } = await axios.post(`${baseURL}/shipping/profiles`, { name, copyFromId: selected?.id, country: modal.country || 'DZ' }, headers);
+        const { data } = await axios.post(`${baseURL}/shipping/profiles`, { name, copyFromId: selected?.id, country: modal.country || 'DZ', division: modal.division || '' }, headers);
         await onChanged(data.id);
         showToast('success', t('created'));
       } else {
@@ -93,7 +105,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
                 ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20'
                 : 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-indigo-300'}`}
             >
-              {p.name}
+              {p.name}{p.division ? <span className="ms-1 text-[10px] opacity-70">· {p.division}</span> : null}
               <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${p.id === selected.id ? 'bg-white/20' : 'bg-gray-100 dark:bg-zinc-700'}`}>
                 {t('wilayas_count', { count: p.activeWilayas })}
               </span>
@@ -124,7 +136,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
             </span>
           ) : (
             <button onClick={useForStore} disabled={busy || countryMismatch}
-              title={countryMismatch ? t('country_mismatch', { profile: selected?.country || 'DZ', store: storeCountry }) : undefined}
+              title={countryMismatch ? t('country_mismatch', { profile: area(selected), store: area(currentStore) }) : undefined}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Store className="w-3.5 h-3.5" />} {t('use_for_store')}
             </button>
@@ -167,7 +179,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
                     const available = shippingCountries.includes(c.code);
                     const on = (modal.country || 'DZ') === c.code;
                     return (
-                      <button key={c.code} type="button" disabled={!available} onClick={() => setModal({ ...modal, country: c.code })}
+                      <button key={c.code} type="button" disabled={!available} onClick={() => setModal({ ...modal, country: c.code, division: '' })}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${on ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200'}`}>
                         <span className="text-lg leading-none">{flag(c.code)}</span>
                         <span className="truncate">{isRtl ? c.ar_name : c.name}</span>
@@ -176,8 +188,24 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
                     );
                   })}
                 </div>
+                {divisions.length > 1 && (
+                  <>
+                    <label className="block mt-4 mb-1.5 text-xs font-bold text-gray-500 dark:text-zinc-400">{t('division')}</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {divisions.map((d) => {
+                        const on = (modal.division || '') === d.code;
+                        return (
+                          <button key={d.code || 'base'} type="button" onClick={() => setModal({ ...modal, division: d.code })}
+                            className={`px-3 py-2 rounded-xl border text-sm font-semibold transition-all ${on ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300'}`}>
+                            {divLabel(d)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
                 <p className="mt-2 text-xs text-gray-400 dark:text-zinc-500">
-                  {(modal.country || 'DZ') === (selected.country || 'DZ') ? t('copy_hint', { name: selected.name }) : t('country_fresh_hint')}
+                  {area({ country: modal.country, division: modal.division }) === area(selected) ? t('copy_hint', { name: selected.name }) : t('country_fresh_hint')}
                 </p>
               </>
             )}

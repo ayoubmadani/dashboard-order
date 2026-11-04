@@ -56,6 +56,7 @@ const CreateStore = () => {
     topBarText: '',
     currency: 'DZD',
     country: 'DZ',
+    division: '',
     language: 'ar',
     cart: false,
     supportQty: true,
@@ -96,12 +97,19 @@ const CreateStore = () => {
     fetchData();
   }, []);
 
-  // ولايات دولة المتجر
+  // تقسيمات الدولة (الجزائر: 58 أو 69 ولاية) — عنصر واحد = لا اختيار
+  const [divisions, setDivisions] = useState([]);
   useEffect(() => {
-    axios.get(`${baseURL}/shipping/wilayas`, { params: { country: formData.country } })
+    setDivisions([]);
+    axios.get(`${baseURL}/shipping/countries/${formData.country}/divisions`).then(({ data }) => setDivisions(Array.isArray(data) ? data : [])).catch(() => {});
+  }, [formData.country]);
+
+  // ولايات دولة المتجر وتقسيمها
+  useEffect(() => {
+    axios.get(`${baseURL}/shipping/wilayas`, { params: { country: formData.country, ...(formData.division ? { division: formData.division } : {}) } })
       .then(({ data }) => setWilayas(Array.isArray(data) ? data : []))
       .catch(() => setWilayas([]));
-  }, [formData.country]);
+  }, [formData.country, formData.division]);
 
   const showNotification = useCallback((type, message) => {
     setNotification({ show: true, type, message });
@@ -198,6 +206,7 @@ const CreateStore = () => {
           subdomain: generateSubdomain(formData.name),
           currency: formData.currency,
           country: formData.country,
+          division: formData.division || '',
           language: formData.language, // موجود مسبقاً، تأكد فقط أن formData.language يحتوي على القيمة
           nicheId: formData.niche || null,
           cart: formData.cart || false,
@@ -350,13 +359,24 @@ const CreateStore = () => {
                 <select
                   name="country"
                   value={formData.country}
-                  onChange={(e) => setFormData((f) => ({ ...f, country: e.target.value, wilaya: '', currency: e.target.value === 'DZ' ? 'DZD' : f.currency }))}
+                  onChange={(e) => setFormData((f) => ({ ...f, country: e.target.value, division: '', wilaya: '', currency: e.target.value === 'DZ' ? 'DZD' : f.currency }))}
                   disabled={countries.length < 2}
                   className={inputClass(false)}
                 >
                   {countries.map((cc) => <option key={cc} value={cc}>{t(`form.countries.${cc}`, { defaultValue: cc })}</option>)}
                 </select>
                 {formData.country !== 'DZ' && <p className="mt-1 text-xs text-gray-400">{t('form.country_hint')}</p>}
+                {divisions.length > 1 && (
+                  <select
+                    name="division"
+                    value={formData.division}
+                    onChange={(e) => setFormData((f) => ({ ...f, division: e.target.value, wilaya: '' }))}
+                    className={`${inputClass(false)} mt-2`}
+                  >
+                    {divisions.map((d) => <option key={d.code || 'base'} value={d.code}>{t(`form.divisions.${d.code || 'base'}`, { defaultValue: d.ar || d.code })}</option>)}
+                  </select>
+                )}
+                {formData.division && <p className="mt-1 text-xs text-gray-400">{t('form.country_hint')}</p>}
               </div>
             )}
 

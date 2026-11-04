@@ -124,6 +124,7 @@
     "country_mismatch": "A {{profile}} account can only be used by a store in the same country (current store: {{store}})",
     "country": "Country",
     "country_soon": "Soon",
+    "division": "Division",
     "country_fresh_hint": "The account starts with this country's regions at 0; then set your prices.",
     "title": "Shipping accounts",
     "subtitle": "Each account has its own prices and wilayas — pick the one each store uses",
