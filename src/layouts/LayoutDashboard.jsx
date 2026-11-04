@@ -345,7 +345,8 @@ export default function LayoutDashboard() {
             <div className="lg:ps-64 min-h-screen flex flex-col">
 
                 {/* Header */}
-                <header className="sticky top-0 z-30 h-16 flex items-center gap-3 px-4 lg:px-8 bg-white/80 dark:bg-[#0c0c0c]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.06]">
+                {/* z-40: فوق أشرطة الصفحات الثابتة (z-30) فلا تغطي قائمة الحساب */}
+                <header className="sticky top-0 z-40 h-16 flex items-center gap-3 px-4 lg:px-8 bg-white/80 dark:bg-[#0c0c0c]/80 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.06]">
                     <button className={`lg:hidden ${iconBtn}`} onClick={() => setSidebarOpen(true)}>
                         <Menu className="w-5 h-5" />
                     </button>
