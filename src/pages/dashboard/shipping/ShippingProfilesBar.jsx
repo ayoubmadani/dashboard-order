@@ -34,11 +34,12 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
   const selected = profiles.find((p) => p.id === selectedId) || profiles[0];
   const storeProfile = profiles.find((p) => p.stores.some((s) => s.id === storeId));
   const usedByCurrentStore = storeProfile?.id === selected?.id;
-  // حساب الشحن يستعمله فقط متجر من نفس دولته وتقسيمها (حساب 69 ولاية لمتجر 69 ولاية)
+  // حساب الشحن يستعمله فقط متجر من نفس دولته؛ داخل الدولة يتبع المتجر تقسيم الحساب (58 ← 69 ولاية)
   const currentStore = storeProfile?.stores.find((s) => s.id === storeId);
   const storeCountry = currentStore?.country || 'DZ';
   const area = (a) => `${a?.country || 'DZ'}${a?.division ? ` (${a.division})` : ''}`;
-  const countryMismatch = area(selected) !== area(currentStore);
+  const countryMismatch = (selected?.country || 'DZ') !== storeCountry;
+  const divisionSwitch = !countryMismatch && area(selected) !== area(currentStore);
 
   const submitModal = async () => {
     const name = modal?.name?.trim();
@@ -72,6 +73,7 @@ export default function ShippingProfilesBar({ profiles, selectedId, onSelect, on
 
   const useForStore = async () => {
     if (!storeId || !selected) return;
+    if (divisionSwitch && !window.confirm(t('division_switch_confirm', { count: selected.division || '58' }))) return;
     setBusy(true);
     try {
       await axios.post(`${baseURL}/shipping/store-profile`, { storeId, profileId: selected.id }, headers);

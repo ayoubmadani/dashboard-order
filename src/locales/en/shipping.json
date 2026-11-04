@@ -125,6 +125,7 @@
     "country": "Country",
     "country_soon": "Soon",
     "division": "Division",
+    "division_switch_confirm": "The store will switch to {{count}} provinces and use this account's wilayas. Continue?",
     "country_fresh_hint": "The account starts with this country's regions at 0; then set your prices.",
     "title": "Shipping accounts",
     "subtitle": "Each account has its own prices and wilayas — pick the one each store uses",

@@ -125,6 +125,7 @@
     "country": "Pays",
     "country_soon": "Bientôt",
     "division": "Découpage",
+    "division_switch_confirm": "La boutique passera au découpage {{count}} wilayas et utilisera les wilayas de ce compte. Continuer ?",
     "country_fresh_hint": "Le compte démarre avec les régions de ce pays et des tarifs à 0 ; définissez ensuite vos tarifs.",
     "title": "Comptes de livraison",
     "subtitle": "Chaque compte a ses tarifs et ses wilayas — choisissez le compte de chaque boutique",
