@@ -306,7 +306,7 @@ export default function Confirmation() {
             <select value={wilayaId} onChange={(e) => setWilayaId(e.target.value)}
               className="sm:w-56 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm outline-none dark:text-white dark:[color-scheme:dark]">
               <option value="">{t('all_wilayas')}</option>
-              {wilayas.map((w) => <option key={w.id} value={w.id}>{w.id} - {w.ar_name}</option>)}
+              {wilayas.map((w) => <option key={w.id} value={w.id}>{w.code ?? w.id} - {w.ar_name}</option>)}
             </select>
           </div>
 

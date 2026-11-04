@@ -686,7 +686,7 @@ export default function OrderEditPage({ isNew = false }) {
                           <label className="block text-xs font-semibold text-gray-500 uppercase mb-2">{t('edit.wilaya')}</label>
                           <select value={editedCart.customerWilayaId || ''} onChange={e => handleWilayaChange(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-white focus:border-indigo-500 outline-none dark:[color-scheme:dark]">
                             <option value="" className={OPTION_CLS}>{t('edit.select_wilaya')}</option>
-                            {wilayasData.map(w => <option key={w.id} value={w.id} className={OPTION_CLS}>{w.id} - {w.ar_name}</option>)}
+                            {wilayasData.map(w => <option key={w.id} value={w.id} className={OPTION_CLS}>{w.code ?? w.id} - {w.ar_name}</option>)}
                           </select>
                         </div>
                         <div>
