@@ -39,7 +39,7 @@ export default function ProductAddonsEditor({ value = [], onChange, isRtl }) {
                 />
               </div>
               {/* أقصى كمية يختارها الزبون (فارغ أو 1 = اختيار بسيط) */}
-              <div className="relative w-16 shrink-0" dir="ltr" title={t('max_qty')}>
+              <div className="relative w-16 shrink-0" dir="ltr" title={t('max_qty_hint')}>
                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">×</span>
                 <input
                   type="number" min="1" max="99" step="1"
