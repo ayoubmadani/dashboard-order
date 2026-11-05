@@ -328,7 +328,9 @@ export default function Theme() {
       setMyTheme(myThemeRes.data ?? []);
       setPlanTheme(planThemeRes.data ?? []);
       setIdActive(storeRes.data?.data?.themeId ?? '');
-      setStoreNiche(storeRes.data?.data?.niche?.id ?? '');
+      const sn = storeRes.data?.data?.niche?.id ?? '';
+      setStoreNiche(sn);
+      if (sn) setSelectedType(sn); // الفلتر يبدأ بمجال المتجر
       setPlanInfo(planRes.data ?? null);
     } catch (err) {
       setStoreNiche('');
@@ -345,7 +347,10 @@ export default function Theme() {
       setLoading(true);
       try {
         // المجال المختار (أساسي أو ثانوي)، وترتيب حسب مجال المتجر: مصممة له ← تناسبه ← عامة ← الباقي
-        const params = { ...(selectedType !== 'all' ? { niche: selectedType } : {}), ...(storeNiche ? { forNiche: storeNiche } : {}) };
+        // فلتر بالمجال فقط: ثيمات المجال (مصممة له ← تناسبه) ثم العامة. «الكل» = كل الثيمات (مجال المتجر أولاً)
+        const params = selectedType !== 'all'
+          ? { niche: selectedType, forNiche: selectedType, withGeneral: 1 }
+          : (storeNiche ? { forNiche: storeNiche } : {});
         const { data } = await axios.get(`${baseURL}/theme`, { ...headers, params });
         setThemes(data.data ?? []);
       } catch (err) {
@@ -537,10 +542,6 @@ export default function Theme() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                 {paginatedThemes.map((item, i) => (
                   <Fragment key={item.id}>
-                  {/* عنوان قسم عند تغيّر علاقة الثيم بمجال المتجر (مصممة لمجالك / تناسبه أيضاً / عامة / أخرى) */}
-                  {item.nicheMatch && item.nicheMatch !== paginatedThemes[i - 1]?.nicheMatch && (
-                    <p className="col-span-full text-sm font-black text-gray-700 dark:text-zinc-200 pt-2">{t(`niches.section_${item.nicheMatch}`)}</p>
-                  )}
                   <GalleryCard
                     item={item}
                     isInstalled={myTheme.some(m => m.id === item.id)}
