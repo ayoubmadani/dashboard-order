@@ -1,11 +1,8 @@
 {
   "title": "Domaines Personnalisés",
   "subtitle": "Liez votre propre domaine à votre boutique via un seul enregistrement CNAME",
-
   "add_label": "Ajouter un domaine",
-
   "limit_usage": "{{used}} / {{limit}} domaines",
-
   "limit_reached": "Limite de domaines de votre offre atteinte ({{limit}} par boutique). Supprimez un domaine ou passez à une offre supérieure.",
   "add_placeholder": "exemple.com",
   "add_btn": "Ajouter",
@@ -17,7 +14,6 @@
     "subtitle": "Créez d'abord une boutique pour gérer les domaines",
     "cta": "Créer une boutique"
   },
-
   "dns_section_title": "Configuration DNS — mêmes valeurs pour tous les domaines",
   "dns_section_desc": "Ajoutez cet enregistrement dans le panneau de contrôle de votre fournisseur de domaine pour tout domaine que vous souhaitez lier",
   "dns_type": "Type",
@@ -27,7 +23,6 @@
   "dns_note": "Après l'ajout de l'enregistrement, l'activation peut prendre de 5 à 30 minutes.",
   "copied": "Copié",
   "copy": "Copier",
-
   "domains_title": "Vos domaines",
   "system_domain": "Domaine système",
   "status_active": "Connecté et sécurisé",
@@ -37,14 +32,13 @@
   "delete": "Supprimer",
   "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce domaine ?",
   "dedicated_to_page": "Dédié à une page d'atterrissage",
-
   "empty_title": "Aucun domaine pour le moment",
   "empty_desc": "Ajoutez votre premier domaine ci-dessus",
   "no_match_title": "Aucun domaine correspondant",
-
   "scope_filter": {
     "all": "Tous",
     "store": "Boutique",
-    "landing_page": "Page d'atterrissage"
+    "landing_page": "Page d'atterrissage",
+    "split_test": "Tests A/B"
   }
 }

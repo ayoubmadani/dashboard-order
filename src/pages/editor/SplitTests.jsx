@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
-  FlaskConical, Plus, Loader2, Copy, ExternalLink, Trophy, Pause, Play, Trash2, X, ArrowLeft, ArrowRight, Crown, Eye, Package, ChevronDown, AlertTriangle,
+  FlaskConical, Plus, Loader2, Copy, ExternalLink, Trophy, Pause, Play, Trash2, X, ArrowLeft, ArrowRight, Crown, Eye, Package, ChevronDown, AlertTriangle, Pencil,
 } from 'lucide-react';
 import { baseURL } from '../../constents/const.';
 import { getAccessToken } from '../../services/access-token';
@@ -29,6 +29,7 @@ export default function SplitTests() {
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [editing, setEditing] = useState(null); // اختبار تُغيَّر صفحاته
   const [busy, setBusy] = useState(null);
 
   const loadStats = useCallback(async (list) => {
@@ -73,7 +74,10 @@ export default function SplitTests() {
     if (!window.confirm(t('confirm_winner'))) return;
     act(test.id, () => axios.post(`${baseURL}/split-tests/${test.id}/winner`, { builderPageId: pageId }, auth()));
   };
-  const toggle = (test) => act(test.id, () => axios.patch(`${baseURL}/split-tests/${test.id}`, { isActive: !test.isActive }, auth()));
+  const toggle = (test) => {
+    if (test.winnerPageId && !test.isActive && !window.confirm(t('confirm_continue'))) return;
+    act(test.id, () => axios.patch(`${baseURL}/split-tests/${test.id}`, { isActive: !test.isActive }, auth()));
+  };
   const remove = (test) => {
     if (!window.confirm(t('confirm_delete'))) return;
     act(test.id, () => axios.delete(`${baseURL}/split-tests/${test.id}`, auth()));
@@ -116,9 +120,15 @@ export default function SplitTests() {
         <div className="space-y-5">
           {tests.map((test) => (
             <TestCard key={test.id} test={test} stats={stats[test.id]} busy={busy === test.id} t={t} i18n={i18n}
-              onCopy={copy} onWinner={pickWinner} onToggle={toggle} onDelete={remove} />
+              onCopy={copy} onWinner={pickWinner} onToggle={toggle} onDelete={remove} onEditPages={setEditing} />
           ))}
         </div>
+      )}
+
+      {editing && (
+        <EditPagesModal t={t} test={editing} pages={pages}
+          onClose={() => setEditing(null)}
+          onSaved={() => { setEditing(null); toast.success(t('pages_saved')); load(); }} />
       )}
 
       {showCreate && (
@@ -130,7 +140,7 @@ export default function SplitTests() {
   );
 }
 
-function TestCard({ test, stats, busy, t, i18n, onCopy, onWinner, onToggle, onDelete }) {
+function TestCard({ test, stats, busy, t, i18n, onCopy, onWinner, onToggle, onDelete, onEditPages }) {
   const rows = stats?.variants ?? test.variants.map((v) => ({ ...v, views: 0, orders: 0, confirmedOrders: 0, revenue: 0, conversionPct: 0, confirmedConversionPct: 0 }));
   const winnerName = rows.find((r) => r.builderPageId === test.winnerPageId)?.name;
   const running = test.isActive && !test.winnerPageId;
@@ -160,10 +170,15 @@ function TestCard({ test, stats, busy, t, i18n, onCopy, onWinner, onToggle, onDe
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {!test.winnerPageId && (
-            <button onClick={() => onToggle(test)} disabled={busy}
+          {/* بعد اعتماد فائزة: «إكمال الاختبار» يلغي الفائزة ويعيد توزيع الزوار على الصفحات */}
+          <button onClick={() => onToggle(test)} disabled={busy}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-bold text-gray-700 dark:text-zinc-200 disabled:opacity-50">
+            {test.isActive ? <Pause size={13} /> : <Play size={13} />} {test.isActive ? t('pause') : test.winnerPageId ? t('continue_test') : t('resume')}
+          </button>
+          {(
+            <button onClick={() => onEditPages(test)} disabled={busy} title={t('edit_pages')}
               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-bold text-gray-700 dark:text-zinc-200 disabled:opacity-50">
-              {test.isActive ? <Pause size={13} /> : <Play size={13} />} {test.isActive ? t('pause') : t('resume')}
+              <Pencil size={13} /> {t('edit_pages')}
             </button>
           )}
           <button onClick={() => onDelete(test)} disabled={busy} className="p-2 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-400 hover:text-rose-500 disabled:opacity-50"><Trash2 size={15} /></button>
@@ -218,6 +233,74 @@ function TestCard({ test, stats, busy, t, i18n, onCopy, onWinner, onToggle, onDe
       </div>
 
       {lowData && <p className="text-xs text-amber-600">{t('low_data')}</p>}
+    </div>
+  );
+}
+
+// تغيير صفحات اختبار قائم (نفس الدومين): استبدال صفحة، إضافة/حذف الثالثة، أو تغيير النسب.
+// الصفحات من نفس منتج الاختبار؛ إحصائيات كل صفحة تبقى مرتبطة بها.
+function EditPagesModal({ t, test, pages, onClose, onSaved }) {
+  const [variants, setVariants] = useState(test.variants.map((v) => ({ builderPageId: v.builderPageId, weight: v.weight ?? 1 })));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const productId = pages.find((p) => test.variants.some((v) => v.builderPageId === p.id))?.productId;
+  const productPages = productId ? pages.filter((p) => p.productId === productId) : pages;
+  const setVariant = (i, patch) => setVariants((vs) => vs.map((v, j) => (j === i ? { ...v, ...patch } : v)));
+  const total = variants.reduce((sum, v) => sum + Number(v.weight || 0), 0) || 1;
+  const valid = variants.length >= 2 && variants.every((v) => v.builderPageId) && new Set(variants.map((v) => v.builderPageId)).size === variants.length;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      await axios.patch(`${baseURL}/split-tests/${test.id}`, {
+        variants: variants.map((v) => ({ builderPageId: v.builderPageId, weight: Math.max(1, Math.min(100, Number(v.weight) || 1)) })),
+      }, auth());
+      onSaved();
+    } catch (err) {
+      setError(errMsg(err, t('error')));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const input = 'w-full px-3.5 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500';
+  return (
+    <div className="fixed inset-0 z-[150] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+      <form onSubmit={submit} className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto bg-white dark:bg-zinc-900 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2"><Pencil size={17} className="text-violet-600" /> {t('edit_pages')} · {test.name}</p>
+          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-700"><X size={18} /></button>
+        </div>
+        <div className="space-y-2">
+          {variants.map((v, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <select value={v.builderPageId} onChange={(e) => setVariant(i, { builderPageId: e.target.value })} className={`${input} min-w-0`}>
+                <option value="">{t('page_n', { n: i + 1 })} — {t('choose_page')}</option>
+                {productPages.map((p) => (
+                  <option key={p.id} value={p.id} disabled={variants.some((o, j) => j !== i && o.builderPageId === p.id)}>{p.name}</option>
+                ))}
+              </select>
+              <div className="flex items-center gap-1 shrink-0">
+                <input type="number" min={1} max={100} value={v.weight} onChange={(e) => setVariant(i, { weight: e.target.value })}
+                  className="w-16 px-2 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm text-center text-gray-900 dark:text-white" aria-label={t('weight')} />
+                <span className="text-xs text-gray-400 w-9">{Math.round((Number(v.weight || 0) / total) * 100)}%</span>
+              </div>
+              {variants.length > 2 && <button type="button" onClick={() => setVariants((vs) => vs.filter((_, j) => j !== i))} className="p-1.5 text-gray-400 hover:text-rose-500 shrink-0"><X size={16} /></button>}
+            </div>
+          ))}
+          {variants.length < 3 && (
+            <button type="button" onClick={() => setVariants((vs) => [...vs, { builderPageId: '', weight: Math.round(100 / (vs.length + 1)) }])} className="text-xs font-bold text-violet-600 hover:underline">+ {t('add_page')}</button>
+          )}
+          <p className="text-xs text-gray-400">{t('edit_pages_hint')}</p>
+        </div>
+        {error && <p className="text-sm font-semibold text-rose-600">{error}</p>}
+        <button type="submit" disabled={!valid || saving}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-violet-600 text-white text-sm font-bold disabled:opacity-50">
+          {saving && <Loader2 size={15} className="animate-spin" />} {t('save')}
+        </button>
+      </form>
     </div>
   );
 }

@@ -50,5 +50,11 @@
   "preview": "Preview (not counted)",
   "product": "Product",
   "choose_product": "Pick the product whose pages you're testing",
-  "need_two_pages": "This product has only {{count}} published page(s) — you need at least 2. Duplicate its page in the editor, change it, then publish it."
+  "need_two_pages": "This product has only {{count}} published page(s) — you need at least 2. Duplicate its page in the editor, change it, then publish it.",
+  "edit_pages": "Change pages",
+  "pages_saved": "Test pages saved",
+  "edit_pages_hint": "The domain stays the same. Each page keeps its own stats; a new page starts from zero.",
+  "save": "Save",
+  "continue_test": "Continue test",
+  "confirm_continue": "The winner will be cleared and visitors split between the pages again. Past stats are kept. Continue?"
 }

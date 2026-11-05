@@ -290,7 +290,9 @@ export default function Domain() {
     }
   };
 
-  const filteredDomains = domains.filter(d => scopeFilter === 'all' || (d.scope || 'store') === scopeFilter);
+  // دومينات اختبارات A/B صنف مستقل عن صفحات الهبوط
+  const scopeOf = (d) => (d.splitTestId ? 'split_test' : d.scope || 'store');
+  const filteredDomains = domains.filter(d => scopeFilter === 'all' || scopeOf(d) === scopeFilter);
 
   // ── Render ──────────────────────────────────
   if (!storeId) {
@@ -360,7 +362,7 @@ export default function Domain() {
             {t('domains_title')}
           </label>
           <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl">
-            {['all', 'store', 'landing_page'].map(scope => (
+            {['all', 'store', 'landing_page', 'split_test'].map(scope => (
               <button
                 key={scope}
                 onClick={() => setScopeFilter(scope)}

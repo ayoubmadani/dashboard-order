@@ -50,5 +50,11 @@
   "preview": "Aperçu (non compté)",
   "product": "Produit",
   "choose_product": "Choisissez le produit dont vous testez les pages",
-  "need_two_pages": "Ce produit n'a que {{count}} page(s) publiée(s) — il en faut au moins 2. Dupliquez sa page dans l'éditeur, modifiez-la puis publiez-la."
+  "need_two_pages": "Ce produit n'a que {{count}} page(s) publiée(s) — il en faut au moins 2. Dupliquez sa page dans l'éditeur, modifiez-la puis publiez-la.",
+  "edit_pages": "Modifier les pages",
+  "pages_saved": "Pages du test enregistrées",
+  "edit_pages_hint": "Le domaine reste le même. Les statistiques de chaque page restent liées à elle ; une nouvelle page démarre à zéro.",
+  "save": "Enregistrer",
+  "continue_test": "Reprendre le test",
+  "confirm_continue": "La page gagnante sera annulée et les visiteurs seront de nouveau répartis entre les pages. Les statistiques sont conservées. Continuer ?"
 }
