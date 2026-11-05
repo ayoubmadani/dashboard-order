@@ -351,7 +351,8 @@ export default function Theme() {
         const params = selectedType !== 'all'
           ? { niche: selectedType, forNiche: selectedType, withGeneral: 1 }
           : (storeNiche ? { forNiche: storeNiche } : {});
-        const { data } = await axios.get(`${baseURL}/theme`, { ...headers, params });
+        // gallery: مثل /theme + ثيم التاجر المخصص (بريده)، بلا ثيمات التجربة
+        const { data } = await axios.get(`${baseURL}/theme/gallery`, { ...headers, params });
         setThemes(data.data ?? []);
       } catch (err) {
         console.error(err);
