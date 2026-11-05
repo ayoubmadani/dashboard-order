@@ -437,7 +437,7 @@ export default function Theme() {
     { id: 'gallery', label: t('gallery.title'),        icon: LayoutGrid },
   ];
 
-  if (loading && themes.length === 0 && types.length === 0) return <Loading />;
+  if (loading && themes.length === 0 && niches.length === 0) return <Loading />;
 
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-5 font-sans animate-in fade-in duration-500">
@@ -508,25 +508,17 @@ export default function Theme() {
       {/* ── Tab: Gallery ── */}
       {activeTab === 'gallery' && (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-6 space-y-5">
-          {/* Filter */}
-          <div className="flex flex-wrap gap-2">
-            <FilterPill
-              label={t('types.all')}
-              active={selectedType === 'all'}
-              onClick={() => { setSelectedType('all'); setCurrentPage(1); }}
-            />
+          {/* Filter — قائمة منسدلة بالمجالات (مجال المتجر أولاً) */}
+          <select
+            value={selectedType}
+            onChange={e => { setSelectedType(e.target.value); setCurrentPage(1); }}
+            className="w-full sm:w-80 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-sm font-semibold text-gray-800 dark:text-zinc-100 outline-none focus:border-indigo-500"
+          >
+            <option value="all">{t('types.all')}</option>
             {[...niches]
-              // مجال المتجر أولاً، ثم الباقي أبجدياً بلغة التاجر
               .sort((a, b) => (a.id === storeNiche ? -1 : b.id === storeNiche ? 1 : nicheName(a, i18n.language).localeCompare(nicheName(b, i18n.language))))
-              .map(n => (
-              <FilterPill
-                key={n.id}
-                label={`${n.icon} ${nicheName(n, i18n.language)}`}
-                active={selectedType === n.id}
-                onClick={() => { setSelectedType(n.id); setCurrentPage(1); }}
-              />
-            ))}
-          </div>
+              .map(n => <option key={n.id} value={n.id}>{n.icon} {nicheName(n, i18n.language)}</option>)}
+          </select>
 
           {/* Grid */}
           {loading ? (
@@ -540,7 +532,7 @@ export default function Theme() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {paginatedThemes.map((item, i) => (
+                {paginatedThemes.map((item) => (
                   <Fragment key={item.id}>
                   <GalleryCard
                     item={item}
