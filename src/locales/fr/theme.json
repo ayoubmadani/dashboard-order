@@ -49,7 +49,6 @@
     "stat_included": "Inclus",
     "stat_available": "Disponible"
   },
-
   "coupon": {
     "placeholder": "Entrez le code promo",
     "apply": "Appliquer",
@@ -101,5 +100,12 @@
       "create": "Création",
       "revision": "Modification"
     }
+  },
+  "niches": {
+    "general": "🌐 Général",
+    "section_primary": "Conçus pour votre domaine",
+    "section_secondary": "Conviennent aussi à votre domaine",
+    "section_general": "Thèmes généraux (tous domaines)",
+    "section_other": "Autres thèmes"
   }
 }

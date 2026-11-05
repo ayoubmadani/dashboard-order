@@ -7,17 +7,14 @@
     "activated": "مفعّل",
     "empty": "لا توجد قوالب مثبّتة"
   },
-
   "subscription": {
     "title": "قوالب الاشتراك",
     "pro_badge": "احترافي"
   },
-
   "types": {
     "title": "تصفية حسب النوع",
     "all": "الكل"
   },
-
   "gallery": {
     "title": "معرض القوالب",
     "empty_title": "لا توجد قوالب",
@@ -30,7 +27,6 @@
     "free_label": "مجاني",
     "price_label": "{{price}} دج"
   },
-
   "alerts": {
     "install_success": "تم تثبيت القالب بنجاح!",
     "install_error": "خطأ: {{message}}",
@@ -38,7 +34,6 @@
     "activate_error": "حدث خطأ أثناء تفعيل القالب",
     "no_store": "لم يتم العثور على متجر"
   },
-
   "coupon": {
     "placeholder": "أدخل كود الخصم",
     "apply": "تطبيق",
@@ -90,5 +85,12 @@
       "create": "إنشاء",
       "revision": "تعديل"
     }
+  },
+  "niches": {
+    "general": "🌐 عام",
+    "section_primary": "مصممة لمجال متجرك",
+    "section_secondary": "تناسب مجالك أيضاً",
+    "section_general": "ثيمات عامة تناسب كل المجالات",
+    "section_other": "ثيمات أخرى"
   }
 }

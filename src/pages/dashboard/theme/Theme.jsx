@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast, Toaster } from 'sonner';
 import {
@@ -11,6 +11,10 @@ import { baseURL, storeURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import Loading from '../../../components/Loading';
 import CouponInput from '../../../components/CouponInput';
+
+
+// اسم المجال بلغة التاجر
+const nicheName = (n, lang) => (lang?.startsWith('ar') ? n.name_ar : lang?.startsWith('fr') ? n.name_fr : n.name_en) || n.name_en;
 
 const DEFAULT_IMAGE = 'https://bloomidea.com/sites/default/files/styles/og_image/public/blog/Tipos%20de%20come%CC%81rcio%20electro%CC%81nico_0.png?itok=jC9MlQZq';
 const ITEMS_PER_PAGE = 100;
@@ -203,6 +207,7 @@ function Pagination({ currentPage, totalPages, onPageChange, isRtl }) {
 function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInstall }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'theme' });
   const name = getLocalizedThemeText(item, 'name', i18n.language);
+  const nicheLabel = item.niche ? `${item.niche.icon} ${nicheName(item.niche, i18n.language)}` : t('niches.general');
   const desc = getLocalizedThemeText(item, 'desc', i18n.language);
   const isFree = Number(item.price) === 0;
 
@@ -216,6 +221,9 @@ function GalleryCard({ item, isInstalled, isIncludedInPlan, installingId, onInst
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+
+        {/* المجال الأساسي للثيم (أو «عام») */}
+        <span className="absolute top-3 start-3 max-w-[60%] truncate bg-black/55 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[10px] font-bold">{nicheLabel}</span>
 
         <div className="absolute top-3 end-3 flex flex-col gap-1.5 items-end">
           {isIncludedInPlan && (
@@ -288,7 +296,8 @@ export default function Theme() {
   const [themes,       setThemes]       = useState([]);
   const [myTheme,      setMyTheme]      = useState([]);
   const [planTheme,    setPlanTheme]    = useState([]);
-  const [types,        setTypes]        = useState([]);
+  const [niches,       setNiches]       = useState([]); // المجالات المترجمة بدل أنواع الثيمات
+  const [storeNiche,   setStoreNiche]   = useState(null); // مجال المتجر ← ترتيب الثيمات
   const [planInfo,     setPlanInfo]     = useState(null);
   const [selectedType, setSelectedType] = useState('all');
   const [loading,      setLoading]      = useState(true);
@@ -308,18 +317,21 @@ export default function Theme() {
   const getInitialData = async () => {
     try {
       const [typesRes, myThemeRes, planThemeRes, storeRes, planRes] = await Promise.all([
-        axios.get(`${baseURL}/theme/type`),
+        axios.get(`${baseURL}/niches`),
         axios.get(`${baseURL}/theme/my`, headers),
         axios.get(`${baseURL}/theme/plan-sub`, headers),
         storeId ? axios.get(`${baseURL}/stores/${storeId}`, headers) : Promise.resolve({ data: { data: null } }),
         axios.get(`${baseURL}/theme/plan-info`, headers),
       ]);
-      setTypes(typesRes.data ?? []);
+      const nicheList = typesRes.data?.data ?? typesRes.data ?? [];
+      setNiches(Array.isArray(nicheList) ? nicheList : []);
       setMyTheme(myThemeRes.data ?? []);
       setPlanTheme(planThemeRes.data ?? []);
       setIdActive(storeRes.data?.data?.themeId ?? '');
+      setStoreNiche(storeRes.data?.data?.niche?.id ?? '');
       setPlanInfo(planRes.data ?? null);
     } catch (err) {
+      setStoreNiche('');
       console.error('Failed to load initial data:', err);
     }
   };
@@ -329,10 +341,12 @@ export default function Theme() {
   /* ── Filtered gallery ── */
   useEffect(() => {
     const fetchFilteredThemes = async () => {
+      if (storeNiche === null) return; // ننتظر معرفة مجال المتجر حتى لا يُعاد الجلب مرتين
       setLoading(true);
       try {
-        const typeQuery = selectedType === 'all' ? '' : selectedType;
-        const { data } = await axios.get(`${baseURL}/theme?type=${typeQuery}`, headers);
+        // المجال المختار (أساسي أو ثانوي)، وترتيب حسب مجال المتجر: مصممة له ← تناسبه ← عامة ← الباقي
+        const params = { ...(selectedType !== 'all' ? { niche: selectedType } : {}), ...(storeNiche ? { forNiche: storeNiche } : {}) };
+        const { data } = await axios.get(`${baseURL}/theme`, { ...headers, params });
         setThemes(data.data ?? []);
       } catch (err) {
         console.error(err);
@@ -341,7 +355,7 @@ export default function Theme() {
       }
     };
     fetchFilteredThemes();
-  }, [selectedType]);
+  }, [selectedType, storeNiche]);
 
   /* ── Handlers ── */
   const handleActiveTheme = async (themeId) => {
@@ -496,12 +510,15 @@ export default function Theme() {
               active={selectedType === 'all'}
               onClick={() => { setSelectedType('all'); setCurrentPage(1); }}
             />
-            {types.map(type => (
+            {[...niches]
+              // مجال المتجر أولاً، ثم الباقي أبجدياً بلغة التاجر
+              .sort((a, b) => (a.id === storeNiche ? -1 : b.id === storeNiche ? 1 : nicheName(a, i18n.language).localeCompare(nicheName(b, i18n.language))))
+              .map(n => (
               <FilterPill
-                key={type.id}
-                label={type.name}
-                active={selectedType === type.id}
-                onClick={() => { setSelectedType(type.id); setCurrentPage(1); }}
+                key={n.id}
+                label={`${n.icon} ${nicheName(n, i18n.language)}`}
+                active={selectedType === n.id}
+                onClick={() => { setSelectedType(n.id); setCurrentPage(1); }}
               />
             ))}
           </div>
@@ -518,9 +535,13 @@ export default function Theme() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                {paginatedThemes.map(item => (
+                {paginatedThemes.map((item, i) => (
+                  <Fragment key={item.id}>
+                  {/* عنوان قسم عند تغيّر علاقة الثيم بمجال المتجر (مصممة لمجالك / تناسبه أيضاً / عامة / أخرى) */}
+                  {item.nicheMatch && item.nicheMatch !== paginatedThemes[i - 1]?.nicheMatch && (
+                    <p className="col-span-full text-sm font-black text-gray-700 dark:text-zinc-200 pt-2">{t(`niches.section_${item.nicheMatch}`)}</p>
+                  )}
                   <GalleryCard
-                    key={item.id}
                     item={item}
                     isInstalled={myTheme.some(m => m.id === item.id)}
                     isIncludedInPlan={planThemeIds.includes(item.id)}
@@ -534,6 +555,7 @@ export default function Theme() {
                       }
                     }}
                   />
+                  </Fragment>
                 ))}
               </div>
               {totalPages > 1 && (

@@ -49,7 +49,6 @@
     "stat_included": "In your plan",
     "stat_available": "Available"
   },
-
   "coupon": {
     "placeholder": "Enter coupon code",
     "apply": "Apply",
@@ -101,5 +100,12 @@
       "create": "Create",
       "revision": "Change"
     }
+  },
+  "niches": {
+    "general": "🌐 General",
+    "section_primary": "Made for your niche",
+    "section_secondary": "Also suit your niche",
+    "section_general": "General themes (every niche)",
+    "section_other": "Other themes"
   }
 }
