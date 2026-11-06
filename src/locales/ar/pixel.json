@@ -77,6 +77,20 @@
     "empty": "لا يوجد بيكسل لهذه المنصة",
     "count": "{{count}} بيكسل",
     "advanced": "الإعدادات",
-    "capiMissing": "بدون Conversions API"
+    "capiMissing": "بدون Conversions API",
+    "name": "الاسم (اختياري)",
+    "token": "Jeton d'accès (اختياري)",
+    "tokenHelpTitle": "ما هو Jeton d'accès؟",
+    "tokenHelp1": "مفتاح يسمح لخادم MdStore بإرسال الأحداث مباشرة إلى بيكسلك (Conversions API).",
+    "tokenHelp2": "معه نرسل Lead عند إنشاء الطلب، وPurchase عند تأكيده — فيتعلم فيسبوك من الطلبات المؤكدة الحقيقية ولا تضيع الأحداث بسبب حاجبات الإعلانات أو الآيفون.",
+    "tokenHelp3": "بدونه يعمل البيكسل من متصفح الزبون فقط.",
+    "tokenHowTitle": "من أين أحصل عليه؟",
+    "tokenHow": "Events Manager ← اختر البيكسل ← Paramètres ← Conversions API ← «Générer un jeton d'accès»، ثم انسخه هنا.",
+    "tokenMeta": "أو اربط حساب Meta من صفحة Meta فيُضاف البيكسل مع الرمز تلقائياً.",
+    "close": "فهمت",
+    "withoutLabel": "بدون الرمز",
+    "without": "Purchase عند كل طلب من الموقع (حتى الطلبات التي لا تُؤكَّد).",
+    "withLabel": "مع الرمز",
+    "with": "Lead عند الطلب من الموقع، وPurchase من الخادم عند تأكيد الطلب فقط."
   }
 }

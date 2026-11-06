@@ -7,7 +7,9 @@ import {
   Trash2,
   Edit2,
   AlertCircle,
-  Loader2
+  Loader2,
+  HelpCircle,
+  X,
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import axios from 'axios';
@@ -55,7 +57,10 @@ export const PixelManager = ({ storeId }) => {
   const [editingPixel, setEditingPixel] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const [scopeFilter, setScopeFilter] = useState('all');
-  const [quick, setQuick] = useState({}); // { facebook: '123…' } — خانة الإضافة السريعة في كل بطاقة
+  const [quick, setQuick] = useState({}); // { facebook: { name, pixelId, token } } — الإضافة السريعة في كل بطاقة
+  const [tokenHelp, setTokenHelp] = useState(false);
+  const q = (type) => quick[type] || {};
+  const setQ = (type, k) => (e) => setQuick((x) => ({ ...x, [type]: { ...(x[type] || {}), [k]: e.target.value } }));
   const [adding, setAdding] = useState(null);
 
   const language = i18n.language
@@ -130,15 +135,16 @@ export const PixelManager = ({ storeId }) => {
     }
   };
 
-  // إضافة سريعة من بطاقة المنصة: المعرّف فقط (الاسم وConversions API من «الإعدادات» لاحقاً)
+  // إضافة سريعة من بطاقة المنصة: الاسم والمعرّف، ولفيسبوك رمز Conversions API (اختياري)
   const quickAdd = async (type) => {
-    const pixelId = String(quick[type] ?? '').trim();
-    if (!pixelId || !storeId) return;
+    const { name = '', pixelId = '', token = '' } = q(type);
+    if (!pixelId.trim() || !storeId) return;
     setAdding(type);
     try {
-      await axios.post(`${baseURL}/stores/${storeId}/pixels`, { name: '', type, pixelId, events: DEFAULT_EVENTS, isActive: true },
-        { headers: { Authorization: `Bearer ${getAccessToken()}` } });
-      setQuick((q) => ({ ...q, [type]: '' }));
+      const payload = { name: name.trim(), type, pixelId: pixelId.trim(), events: DEFAULT_EVENTS, isActive: true };
+      if (type === 'facebook' && token.trim()) payload.accessToken = token.trim();
+      await axios.post(`${baseURL}/stores/${storeId}/pixels`, payload, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      setQuick((x) => ({ ...x, [type]: {} }));
       fetchPixels();
     } catch (error) {
       alert(error.response?.data?.message || t('errors.saveFailed'));
@@ -255,12 +261,23 @@ export const PixelManager = ({ storeId }) => {
                 </div>
 
                 <div className="p-4 space-y-3 bg-white dark:bg-zinc-900">
-                  <form onSubmit={(e) => { e.preventDefault(); quickAdd(type.id); }} className="flex gap-2">
-                    <input type="text" dir="ltr" value={quick[type.id] ?? ''} onChange={(e) => setQuick((q) => ({ ...q, [type.id]: e.target.value }))}
+                  <form onSubmit={(e) => { e.preventDefault(); quickAdd(type.id); }}
+                    className={`grid gap-2 grid-cols-1 ${type.id === 'facebook' ? 'md:grid-cols-[1fr_1.2fr_1.4fr_auto]' : 'md:grid-cols-[1fr_1.4fr_auto]'}`}>
+                    <input type="text" value={q(type.id).name ?? ''} onChange={setQ(type.id, 'name')} placeholder={t('card.name')}
+                      className="min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-indigo-400" />
+                    <input type="text" dir="ltr" value={q(type.id).pixelId ?? ''} onChange={setQ(type.id, 'pixelId')}
                       placeholder={type.id === 'google' ? t('form.pixelIdPlaceholderGoogle') : t('card.placeholder')}
-                      className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
-                    <button type="submit" disabled={adding === type.id || !String(quick[type.id] ?? '').trim()}
-                      className="shrink-0 inline-flex items-center gap-1.5 px-4 rounded-xl text-white text-sm font-bold disabled:opacity-50"
+                      className="min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
+                    {type.id === 'facebook' && (
+                      <div className="relative min-w-0">
+                        <input type="password" autoComplete="off" dir="ltr" value={q(type.id).token ?? ''} onChange={setQ(type.id, 'token')} placeholder={t('card.token')}
+                          className="w-full px-4 pe-10 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
+                        <button type="button" onClick={() => setTokenHelp(true)} title={t('card.tokenHelpTitle')}
+                          className="absolute end-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600"><HelpCircle size={18} /></button>
+                      </div>
+                    )}
+                    <button type="submit" disabled={adding === type.id || !String(q(type.id).pixelId ?? '').trim()}
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-white text-sm font-bold whitespace-nowrap disabled:opacity-50"
                       style={{ background: dark ? '#111' : type.id === 'google' ? '#4285F4' : type.color }}>
                       {adding === type.id ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}{t('card.add')}
                     </button>
@@ -302,134 +319,116 @@ export const PixelManager = ({ storeId }) => {
         </div>
       )}
 
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" dir="auto">
-            <div className="p-6 border-b border-gray-200 dark:border-zinc-800">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {editingPixel ? t('modal.editTitle') : t('modal.addTitle')}
-              </h3>
+      {/* شرح Jeton d'accès (زر ؟ في بطاقة فيسبوك) */}
+      {tokenHelp && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[110] p-4" onClick={(e) => { if (e.target === e.currentTarget) setTokenHelp(false); }}>
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl w-full max-w-lg overflow-hidden" dir="auto">
+            <div className="flex items-center justify-between px-5 py-3.5 text-white font-bold" style={{ background: '#1877F2' }}>
+              <span className="flex items-center gap-2"><HelpCircle size={18} />{t('card.tokenHelpTitle')}</span>
+              <button type="button" onClick={() => setTokenHelp(false)} className="p-1 rounded-lg hover:bg-white/15"><X size={18} /></button>
             </div>
-
-            <div className="p-6 space-y-4">
-              {/* Type Selection */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  {t('form.typeLabel')}
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {PIXEL_TYPES.map((type) => (
-                    <button
-                      key={type.id}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, type: type.id })}
-                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
-                        formData.type === type.id
-                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
-                          : 'border-gray-200 dark:border-zinc-700'
-                      }`}
-                    >
-                      <type.icon size={20} style={{ color: type.color }} />
-                      <span className="text-sm font-medium">{t(type.labelKey)}</span>
-                    </button>
-                  ))}
+            <div className="p-5 space-y-3 text-sm text-gray-700 dark:text-zinc-300 leading-relaxed">
+              <p>{t('card.tokenHelp1')}</p>
+              <p>{t('card.tokenHelp2')}</p>
+              <p className="text-gray-500">{t('card.tokenHelp3')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div className="rounded-xl border border-gray-200 dark:border-zinc-700 p-3">
+                  <p className="font-bold text-gray-900 dark:text-white mb-1">{t('card.withoutLabel')}</p>
+                  <p>{t('card.without')}</p>
+                </div>
+                <div className="rounded-xl border-2 border-blue-500 p-3">
+                  <p className="font-bold text-blue-700 dark:text-blue-400 mb-1">{t('card.withLabel')} ✓</p>
+                  <p>{t('card.with')}</p>
                 </div>
               </div>
-
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  {t('form.nameLabel')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={t('form.namePlaceholder')}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
-                />
+              <div className="rounded-xl bg-blue-50 dark:bg-blue-500/10 p-3 space-y-1">
+                <p className="font-bold text-gray-900 dark:text-white">{t('card.tokenHowTitle')}</p>
+                <p>{t('card.tokenHow')}</p>
               </div>
-
-              {/* Pixel ID */}
-              <div>
-                <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">
-                  {t('form.pixelIdLabel')} *
-                </label>
-                <input
-                  type="text"
-                  value={formData.pixelId}
-                  onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
-                  placeholder={formData.type === 'google' ? t('form.pixelIdPlaceholderGoogle') : t('form.pixelIdPlaceholder')}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl"
-                  required
-                />
-              </div>
-
-              {/* Meta Conversions API — فيسبوك فقط */}
-              {formData.type === 'facebook' && (
-                <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/5 p-4 space-y-3">
-                  <div>
-                    <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">Conversions API</p>
-                    <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 leading-relaxed">{t('form.capiHint')}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">{t('form.accessTokenLabel')}</label>
-                    <input
-                      type="password"
-                      autoComplete="off"
-                      dir="ltr"
-                      value={formData.accessToken}
-                      onChange={(e) => setFormData({ ...formData, accessToken: e.target.value, clearToken: false })}
-                      placeholder={editingPixel?.hasAccessToken && !formData.clearToken ? t('form.tokenSaved') : t('form.accessTokenPlaceholder')}
-                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
-                    />
-                    {editingPixel?.hasAccessToken && !formData.accessToken && (
-                      <button type="button" onClick={() => setFormData({ ...formData, clearToken: !formData.clearToken })}
-                        className={`mt-2 text-xs font-semibold ${formData.clearToken ? 'text-gray-500' : 'text-rose-500'}`}>
-                        {formData.clearToken ? t('form.keepToken') : t('form.removeToken')}
-                      </button>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 dark:text-zinc-300 mb-2">{t('form.testEventCodeLabel')}</label>
-                    <input
-                      type="text"
-                      dir="ltr"
-                      value={formData.testEventCode}
-                      onChange={(e) => setFormData({ ...formData, testEventCode: e.target.value })}
-                      placeholder="TEST12345"
-                      className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm"
-                    />
-                    <p className="text-[11px] text-gray-400 mt-1">{t('form.testEventCodeHint')}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    resetForm();
-                  }}
-                  className="flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-800 rounded-xl font-semibold"
-                >
-                  {t('cancel')}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
-                >
-                  {editingPixel ? t('form.saveChanges') : t('form.addPixel')}
-                </button>
+              <p className="text-xs text-gray-500">{t('card.tokenMeta')}</p>
+              <div className="flex justify-end pt-1">
+                <button type="button" onClick={() => setTokenHelp(false)} className="px-5 py-2 rounded-xl text-white text-sm font-bold" style={{ background: '#1877F2' }}>{t('card.close')}</button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* نافذة الإعدادات: خاصة بمنصة البيكسل (رأس بلونها، بلا اختيار نوع) — عريضة على عمودين بلا تمرير */}
+      {showModal && (() => {
+        const pt = PIXEL_TYPES.find(p => p.id === formData.type) || PIXEL_TYPES[0];
+        const Icon = pt.icon;
+        const light = pt.id === 'google';
+        const fb = pt.id === 'facebook';
+        const field = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-indigo-400';
+        const label = 'block text-xs font-bold text-gray-600 dark:text-zinc-400 mb-1.5';
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4" onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); resetForm(); } }}>
+            <div className={`bg-white dark:bg-zinc-900 rounded-2xl w-full ${fb ? 'max-w-3xl' : 'max-w-xl'} max-h-[95vh] overflow-y-auto overflow-hidden`} dir="auto">
+              <div className="flex items-center gap-2 px-6 py-4 font-bold" style={{ background: light ? '#F1F5FE' : pt.color, color: light ? '#111827' : '#fff' }}>
+                <Icon size={20} style={light ? undefined : { color: '#fff' }} />
+                {t(pt.labelKey)} — {editingPixel ? t('modal.editTitle') : t('modal.addTitle')}
+              </div>
+
+              <div className={`p-6 grid gap-5 ${fb ? 'md:grid-cols-2' : ''}`}>
+                <div className="space-y-4">
+                  <div>
+                    <label className={label}>{t('form.pixelIdLabel')} *</label>
+                    <input type="text" dir="ltr" required value={formData.pixelId}
+                      onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
+                      placeholder={light ? t('form.pixelIdPlaceholderGoogle') : t('form.pixelIdPlaceholder')}
+                      className={`${field} font-mono`} />
+                  </div>
+                  <div>
+                    <label className={label}>{t('form.nameLabel')}</label>
+                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder={t('form.namePlaceholder')} className={field} />
+                  </div>
+                </div>
+
+                {fb && (
+                  <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/5 p-4 space-y-3">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">Conversions API</p>
+                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 leading-relaxed">{t('form.capiHint')}</p>
+                    </div>
+                    <div>
+                      <label className={label}>{t('form.accessTokenLabel')}</label>
+                      <input type="password" autoComplete="off" dir="ltr" value={formData.accessToken}
+                        onChange={(e) => setFormData({ ...formData, accessToken: e.target.value, clearToken: false })}
+                        placeholder={editingPixel?.hasAccessToken && !formData.clearToken ? t('form.tokenSaved') : t('form.accessTokenPlaceholder')}
+                        className={`${field} bg-white font-mono`} />
+                      {editingPixel?.hasAccessToken && !formData.accessToken && (
+                        <button type="button" onClick={() => setFormData({ ...formData, clearToken: !formData.clearToken })}
+                          className={`mt-1.5 text-xs font-semibold ${formData.clearToken ? 'text-gray-500' : 'text-rose-500'}`}>
+                          {formData.clearToken ? t('form.keepToken') : t('form.removeToken')}
+                        </button>
+                      )}
+                    </div>
+                    <div>
+                      <label className={label}>{t('form.testEventCodeLabel')}</label>
+                      <input type="text" dir="ltr" value={formData.testEventCode}
+                        onChange={(e) => setFormData({ ...formData, testEventCode: e.target.value })}
+                        placeholder="TEST12345" className={`${field} bg-white font-mono`} />
+                      <p className="text-[11px] text-gray-400 mt-1">{t('form.testEventCodeHint')}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 px-6 pb-6">
+                <button type="button" onClick={() => { setShowModal(false); resetForm(); }}
+                  className="px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 rounded-xl font-semibold text-sm">{t('cancel')}</button>
+                <button type="button" onClick={handleSubmit}
+                  className="px-5 py-2.5 text-white rounded-xl font-semibold text-sm"
+                  style={{ background: pt.id === 'tiktok' ? '#111' : light ? '#4285F4' : pt.color }}>
+                  {editingPixel ? t('form.saveChanges') : t('form.addPixel')}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

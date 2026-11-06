@@ -77,6 +77,20 @@
     "empty": "No pixel for this platform yet",
     "count": "{{count}} pixel(s)",
     "advanced": "Settings",
-    "capiMissing": "No Conversions API"
+    "capiMissing": "No Conversions API",
+    "name": "Name (optional)",
+    "token": "Access token (optional)",
+    "tokenHelpTitle": "What is the access token?",
+    "tokenHelp1": "A key that lets the MdStore server send events straight to your pixel (Conversions API).",
+    "tokenHelp2": "With it we send Lead when the order is placed and Purchase when it is confirmed — Facebook learns from real confirmed orders, with no losses from ad blockers or iPhones.",
+    "tokenHelp3": "Without it the pixel only works from the customer's browser.",
+    "tokenHowTitle": "Where do I get it?",
+    "tokenHow": "Events Manager → your pixel → Settings → Conversions API → “Generate access token”, then paste it here.",
+    "tokenMeta": "Or connect your Meta account from the Meta page: the pixel is added with the token automatically.",
+    "close": "Got it",
+    "withoutLabel": "Without token",
+    "without": "Purchase on every order from the site (even ones never confirmed).",
+    "withLabel": "With token",
+    "with": "Lead on the order from the site, then Purchase from the server only when the order is confirmed."
   }
 }

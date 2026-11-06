@@ -77,6 +77,20 @@
     "empty": "Aucun pixel pour cette plateforme",
     "count": "{{count}} pixel(s)",
     "advanced": "Réglages",
-    "capiMissing": "Sans Conversions API"
+    "capiMissing": "Sans Conversions API",
+    "name": "Nom (optionnel)",
+    "token": "Jeton d'accès (optionnel)",
+    "tokenHelpTitle": "Qu'est-ce que le jeton d'accès ?",
+    "tokenHelp1": "Une clé qui permet au serveur MdStore d'envoyer les événements directement à votre pixel (API Conversions).",
+    "tokenHelp2": "Avec elle, nous envoyons Lead à la création de la commande et Purchase à sa confirmation : Facebook apprend des vraies commandes confirmées, sans pertes dues aux bloqueurs de pub ou à l'iPhone.",
+    "tokenHelp3": "Sans elle, le pixel fonctionne seulement depuis le navigateur du client.",
+    "tokenHowTitle": "Où l'obtenir ?",
+    "tokenHow": "Gestionnaire d'événements → votre pixel → Paramètres → API Conversions → « Générer un jeton d'accès », puis collez-le ici.",
+    "tokenMeta": "Ou connectez votre compte Meta depuis la page Meta : le pixel est ajouté avec le jeton automatiquement.",
+    "close": "Compris",
+    "withoutLabel": "Sans jeton",
+    "without": "Purchase à chaque commande depuis le site (même celles jamais confirmées).",
+    "withLabel": "Avec jeton",
+    "with": "Lead à la commande depuis le site, puis Purchase depuis le serveur seulement à la confirmation."
   }
 }
