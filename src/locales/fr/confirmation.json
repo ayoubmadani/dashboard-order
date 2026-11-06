@@ -53,5 +53,7 @@
   "ship_account_saved": "Enregistré",
   "agent_pick": "Confirmateurs (optionnel)",
   "agent_hint": "Les confirmateurs choisis ont la commande pour eux seuls pendant 2 heures, puis elle passe à toute l'équipe. Sans choix : n'importe quel confirmateur.",
-  "stats_line": "{{confirmed}} confirmées · {{delivered}} livrées"
+  "stats_line": "{{confirmed}} confirmées · {{delivered}} livrées",
+  "auto_agents": "Confirmateurs préférés (optionnel)",
+  "auto_agents_hint": "Chaque nouvelle commande va d'abord aux choisis seuls pendant 2 heures, puis à toute l'équipe. Sans choix : n'importe quel confirmateur."
 }

@@ -53,5 +53,7 @@
   "ship_account_saved": "Saved",
   "agent_pick": "Confirmers (optional)",
   "agent_hint": "The chosen confirmers get the order alone for 2 hours, then it goes to the whole team. No choice: any confirmer.",
-  "stats_line": "{{confirmed}} confirmed · {{delivered}} delivered"
+  "stats_line": "{{confirmed}} confirmed · {{delivered}} delivered",
+  "auto_agents": "Preferred confirmers (optional)",
+  "auto_agents_hint": "Each new order goes to the chosen ones alone for 2 hours, then to the whole team. No choice: any confirmer."
 }

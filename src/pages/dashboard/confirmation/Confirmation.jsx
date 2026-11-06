@@ -52,7 +52,9 @@ export default function Confirmation() {
   const [wilayaId, setWilayaId] = useState('');
   const [wilayas, setWilayas] = useState([]);
   const [busyId, setBusyId] = useState(null);
-  const [auto, setAuto] = useState({ enabled: false, companyId: null });
+  const [auto, setAuto] = useState({ enabled: false, companyId: null, agentIds: [] });
+  // مؤكّدو شركة الإرسال التلقائي (فارغ إن كانت الشركة لا تسمح بالاختيار)
+  const [autoAgents, setAutoAgents] = useState([]);
   // حسابات التوصيل: كل شركة محفوظة مرتبطة بحساب تُرفع به طلباتها المؤكدة
   const [accounts, setAccounts] = useState(null);
   const [picker, setPicker] = useState(null); // { company, accountId }
@@ -108,6 +110,17 @@ export default function Confirmation() {
   };
 
   useEffect(() => { if (storeId) { loadSaved(); loadAuto(); } }, [storeId, loadSaved, loadAuto]);
+  useEffect(() => {
+    setAutoAgents([]);
+    if (!storeId || !auto.companyId) return;
+    axios.get(`${baseURL}/stores/${storeId}/confirmation/companies/${auto.companyId}/agents`, { headers })
+      .then(({ data }) => setAutoAgents(Array.isArray(data) ? data : []))
+      .catch(() => setAutoAgents([]));
+  }, [storeId, auto.companyId]); // eslint-disable-line react-hooks/exhaustive-deps
+  const toggleAutoAgent = (id) => {
+    const cur = auto.agentIds || [];
+    updateAuto({ enabled: auto.enabled, companyId: auto.companyId, agentIds: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] });
+  };
   useEffect(() => {
     if (!storeId) return;
     axios.get(`${baseURL}/stores/${storeId}/shipping/accounts`, { headers })
@@ -262,12 +275,33 @@ export default function Confirmation() {
                 aria-label={auto.enabled ? t('auto_on') : t('auto_off')}
                 title={auto.enabled ? t('auto_on') : t('auto_off')}
                 disabled={autoBusy || !auto.companyId}
-                onClick={() => updateAuto({ enabled: !auto.enabled, companyId: auto.companyId || undefined })}
+                onClick={() => updateAuto({ enabled: !auto.enabled, companyId: auto.companyId || undefined, agentIds: auto.agentIds || [] })}
                 className={`relative w-12 h-7 rounded-full transition-colors shrink-0 disabled:opacity-40 ${auto.enabled ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-zinc-700'}`}
               >
                 <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${auto.enabled ? 'start-6' : 'start-1'}`} />
               </button>
             </div>
+            {autoAgents.length > 0 && (
+              <div className="-mt-2 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm space-y-2">
+                <p className="text-xs font-bold text-gray-500">{t('auto_agents')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {autoAgents.map((a) => {
+                    const on = (auto.agentIds || []).includes(a.id);
+                    return (
+                      <button key={a.id} type="button" disabled={autoBusy} onClick={() => toggleAutoAgent(a.id)}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl border-2 text-start disabled:opacity-50 ${on ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
+                        <span className={`w-4 h-4 rounded border-2 shrink-0 ${on ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-zinc-600'}`} />
+                        <span>
+                          <span className="block text-sm font-bold text-gray-900 dark:text-white">{a.name}</span>
+                          <span className="block text-[11px] text-gray-500">{t('stats_line', a.stats || { confirmed: 0, delivered: 0 })}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-500">{t('auto_agents_hint')}</p>
+              </div>
+            )}
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {saved.map((c) => (
