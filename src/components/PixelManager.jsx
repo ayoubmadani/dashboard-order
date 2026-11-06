@@ -6,9 +6,7 @@ import {
   Plus,
   Trash2,
   Edit2,
-  Power,
   AlertCircle,
-  CheckCircle,
   Loader2
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
@@ -57,6 +55,8 @@ export const PixelManager = ({ storeId }) => {
   const [editingPixel, setEditingPixel] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const [scopeFilter, setScopeFilter] = useState('all');
+  const [quick, setQuick] = useState({}); // { facebook: '123…' } — خانة الإضافة السريعة في كل بطاقة
+  const [adding, setAdding] = useState(null);
 
   const language = i18n.language
   
@@ -126,12 +126,29 @@ export const PixelManager = ({ storeId }) => {
       fetchPixels();
     } catch (error) {
       console.error('Error saving pixel:', error);
-      alert(error.response?.data?.message || t('pixels.errors.saveFailed'));
+      alert(error.response?.data?.message || t('errors.saveFailed'));
+    }
+  };
+
+  // إضافة سريعة من بطاقة المنصة: المعرّف فقط (الاسم وConversions API من «الإعدادات» لاحقاً)
+  const quickAdd = async (type) => {
+    const pixelId = String(quick[type] ?? '').trim();
+    if (!pixelId || !storeId) return;
+    setAdding(type);
+    try {
+      await axios.post(`${baseURL}/stores/${storeId}/pixels`, { name: '', type, pixelId, events: DEFAULT_EVENTS, isActive: true },
+        { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      setQuick((q) => ({ ...q, [type]: '' }));
+      fetchPixels();
+    } catch (error) {
+      alert(error.response?.data?.message || t('errors.saveFailed'));
+    } finally {
+      setAdding(null);
     }
   };
 
   const handleDelete = async (pixelId) => {
-    if (!window.confirm(t('pixels.confirmDelete'))) return;
+    if (!window.confirm(t('confirmDelete'))) return;
 
     try {
       const token = getAccessToken();
@@ -187,12 +204,6 @@ export const PixelManager = ({ storeId }) => {
     setShowModal(true);
   };
 
-  const getPixelIcon = (type) => {
-    const pixelType = PIXEL_TYPES.find(p => p.id === type);
-    const Icon = pixelType?.icon || Facebook;
-    return <Icon size={20} style={{ color: pixelType?.color }} />;
-  };
-
   const filteredPixels = pixels.filter(p => scopeFilter === 'all' || (p.scope || 'store') === scopeFilter);
 
   if (loading) {
@@ -203,44 +214,18 @@ export const PixelManager = ({ storeId }) => {
 
   return (
     <div  className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 p-6" dir="auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Facebook size={20} className="text-indigo-600" />
-            {t('title')}
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-            {t('subtitle')}
-          </p>
-        </div>
-        <button
-          type="button"
-          disabled={!storeId}
-          onClick={(e) => {
-            e.preventDefault();
-            resetForm();
-            setEditingPixel(null);
-            setShowModal(true);
-          }}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Plus size={18} />
-          {t('addNew')}
-        </button>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('title')}</h2>
+        <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">{t('subtitle')}</p>
       </div>
 
-      {storeId && pixels.length > 0 && (
+      {storeId && pixels.some(p => (p.scope || 'store') !== 'store') && (
         <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl mb-4 w-fit">
           {['all', 'store', 'landing_page'].map(scope => (
-            <button
-              key={scope}
-              type="button"
-              onClick={() => setScopeFilter(scope)}
+            <button key={scope} type="button" onClick={() => setScopeFilter(scope)}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${scopeFilter === scope
                 ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300'
-                }`}
-            >
+                : 'text-gray-400 hover:text-gray-600 dark:hover:text-zinc-300'}`}>
               {t(`scopeFilter.${scope}`)}
             </button>
           ))}
@@ -250,107 +235,68 @@ export const PixelManager = ({ storeId }) => {
       {!storeId ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
           <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500 dark:text-zinc-400">
-            {t('noStore')}
-          </p>
-        </div>
-      ) : pixels.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-          <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500 dark:text-zinc-400">
-            {t('emptyState')}
-          </p>
-        </div>
-      ) : filteredPixels.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 dark:bg-zinc-800/50 rounded-xl">
-          <AlertCircle size={48} className="mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500 dark:text-zinc-400">
-            {t('noMatchState')}
-          </p>
+          <p className="text-gray-500 dark:text-zinc-400">{t('noStore')}</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {filteredPixels.map((pixel) => {
-            const pixelType = PIXEL_TYPES.find(p => p.id === pixel.type);
+        // بطاقة لكل منصة: رأس بلونها، إضافة سريعة بالمعرّف، ثم معرّفاتها مع تفعيل/إعدادات/حذف
+        <div className="space-y-4">
+          {PIXEL_TYPES.map((type) => {
+            const list = filteredPixels.filter(p => p.type === type.id);
+            const Icon = type.icon;
+            const dark = type.id === 'tiktok';
             return (
-              <div
-                key={pixel.id}
-                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
-                  pixel.isActive
-                    ? 'bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700'
-                    : 'bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-800 opacity-70'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 dark:bg-zinc-700 rounded-lg">
-                    {getPixelIcon(pixel.type)}
+              <section key={type.id} className="rounded-2xl border-2 overflow-hidden" style={{ borderColor: type.color }}>
+                <div className="flex items-center justify-between gap-3 px-4 py-3" style={{ background: type.id === 'google' ? '#F1F5FE' : type.color }}>
+                  <div className={`flex items-center gap-2 font-bold ${type.id === 'google' ? 'text-gray-900' : 'text-white'}`}>
+                    <Icon size={18} style={type.id === 'google' ? undefined : { color: '#fff' }} />
+                    {t(type.labelKey)}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 dark:text-white">
-                      {pixel.name || t(pixelType?.labelKey) || pixel.type}
-                    </h3>
-                    {pixel.name && (
-                      <p className="text-xs text-gray-400">{t(pixelType?.labelKey) || pixel.type}</p>
-                    )}
-                    <p className="text-sm text-gray-500 font-mono">
-                      {t('idLabel')}: {pixel.pixelId}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        pixel.isActive
-                          ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20'
-                          : 'bg-gray-100 text-gray-500 dark:bg-zinc-700'
-                      }`}>
-                        {pixel.isActive ? t('status.active') : t('status.inactive')}
-                      </span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-                        {t(`form.scope.${pixel.scope || 'store'}`)}
-                      </span>
-                      {pixel.type === 'facebook' && pixel.hasAccessToken && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-semibold">
-                          Conversions API ✓{pixel.testEventCode ? ` · ${t('form.testMode')}` : ''}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                  <span className={`text-xs font-semibold ${type.id === 'google' ? 'text-gray-500' : 'text-white/80'}`}>{t('card.count', { count: list.length })}</span>
                 </div>
 
-                <div className="flex items-center gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(pixel.id)}
-                    disabled={togglingId === pixel.id}
-                    className={`p-2 rounded-lg transition-colors ${
-                      pixel.isActive
-                        ? 'text-emerald-600 hover:bg-emerald-50'
-                        : 'text-gray-400 hover:bg-gray-100'
-                    }`}
-                    title={pixel.isActive ? t('actions.deactivate') : t('actions.activate')}
-                  >
-                    {togglingId === pixel.id ? (
-                      <Loader2 size={18} className="animate-spin" />
-                    ) : (
-                      <Power size={18} />
-                    )}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openEdit(pixel)}
-                    className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                    title={t('actions.edit')}
-                  >
-                    <Edit2 size={18} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(pixel.id)}
-                    className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                    title={t('actions.delete')}
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                <div className="p-4 space-y-3 bg-white dark:bg-zinc-900">
+                  <form onSubmit={(e) => { e.preventDefault(); quickAdd(type.id); }} className="flex gap-2">
+                    <input type="text" dir="ltr" value={quick[type.id] ?? ''} onChange={(e) => setQuick((q) => ({ ...q, [type.id]: e.target.value }))}
+                      placeholder={type.id === 'google' ? t('form.pixelIdPlaceholderGoogle') : t('card.placeholder')}
+                      className="flex-1 min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
+                    <button type="submit" disabled={adding === type.id || !String(quick[type.id] ?? '').trim()}
+                      className="shrink-0 inline-flex items-center gap-1.5 px-4 rounded-xl text-white text-sm font-bold disabled:opacity-50"
+                      style={{ background: dark ? '#111' : type.id === 'google' ? '#4285F4' : type.color }}>
+                      {adding === type.id ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}{t('card.add')}
+                    </button>
+                  </form>
+
+                  {list.length === 0 ? (
+                    <p className="text-xs text-gray-400 px-1">{t('card.empty')}</p>
+                  ) : list.map((pixel) => (
+                    <div key={pixel.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border ${pixel.isActive
+                      ? 'border-gray-200 dark:border-zinc-700'
+                      : 'border-gray-100 dark:border-zinc-800 opacity-60'}`}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-mono text-sm text-gray-900 dark:text-white truncate" dir="ltr">{pixel.pixelId}</p>
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          {pixel.name && <span className="text-[11px] text-gray-500 truncate max-w-[12rem]">{pixel.name}</span>}
+                          {(pixel.scope || 'store') !== 'store' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">{t(`form.scope.${pixel.scope}`)}</span>
+                          )}
+                          {pixel.type === 'facebook' && (pixel.hasAccessToken
+                            ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-semibold">Conversions API ✓{pixel.testEventCode ? ` · ${t('form.testMode')}` : ''}</span>
+                            : <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">{t('card.capiMissing')}</span>)}
+                        </div>
+                      </div>
+                      <button type="button" onClick={() => handleToggle(pixel.id)} disabled={togglingId === pixel.id}
+                        title={pixel.isActive ? t('actions.deactivate') : t('actions.activate')}
+                        className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${pixel.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
+                        <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${pixel.isActive ? 'start-[1.125rem]' : 'start-0.5'}`} />
+                      </button>
+                      <button type="button" onClick={() => openEdit(pixel)} title={t('card.advanced')}
+                        className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg shrink-0"><Edit2 size={16} /></button>
+                      <button type="button" onClick={() => handleDelete(pixel.id)} title={t('actions.delete')}
+                        className="p-2 text-white bg-rose-500 hover:bg-rose-600 rounded-full shrink-0"><Trash2 size={14} /></button>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              </section>
             );
           })}
         </div>

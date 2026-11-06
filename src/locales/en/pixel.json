@@ -70,5 +70,13 @@
     "testEventCodeHint": "From Events Manager → Test events. Remove it after testing, or events stay \"test\".",
     "testMode": "test mode"
   },
-  "cancel": "Cancel"
+  "cancel": "Cancel",
+  "card": {
+    "placeholder": "Pixel ID",
+    "add": "Add",
+    "empty": "No pixel for this platform yet",
+    "count": "{{count}} pixel(s)",
+    "advanced": "Settings",
+    "capiMissing": "No Conversions API"
+  }
 }

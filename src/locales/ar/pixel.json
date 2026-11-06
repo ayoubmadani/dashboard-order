@@ -70,5 +70,13 @@
     "testEventCodeHint": "من Events Manager ← اختبار الأحداث. احذفه بعد التجربة، وإلا تبقى الأحداث «تجريبية».",
     "testMode": "وضع الاختبار"
   },
-  "cancel": "إلغاء"
+  "cancel": "إلغاء",
+  "card": {
+    "placeholder": "معرّف البيكسل",
+    "add": "إضافة",
+    "empty": "لا يوجد بيكسل لهذه المنصة",
+    "count": "{{count}} بيكسل",
+    "advanced": "الإعدادات",
+    "capiMissing": "بدون Conversions API"
+  }
 }
