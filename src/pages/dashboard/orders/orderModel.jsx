@@ -205,20 +205,20 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
 
           {/* ملصق الشحن (بوليصة بالباركود) — للطلب المرفوع لشركة التوصيل */}
           {cartData.shippingTrackingId && (
-            <div className="px-5 pt-3">
+            <div className="px-5 pt-3 pb-1 flex flex-wrap items-center gap-2 shrink-0">
               <button type="button" onClick={printLabel} disabled={printing}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-zinc-700 text-white text-xs font-bold disabled:opacity-50">
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap rounded-lg bg-gray-900 dark:bg-zinc-700 text-white text-xs font-bold disabled:opacity-50">
                 {printing ? <Loader2 size={13} className="animate-spin" /> : <Printer size={13} />} {t('labels.print')}
               </button>
               {!readOnly && cartData.status === 'confirmed' && (
                 <button type="button" onClick={handover} disabled={handingOver}
-                  className="ms-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold disabled:opacity-50">
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap rounded-lg bg-cyan-600 text-white text-xs font-bold disabled:opacity-50">
                   {handingOver ? <Loader2 size={13} className="animate-spin" /> : <Truck size={13} />} {t('labels.handover')}
                 </button>
               )}
               {!readOnly && ['confirmed', 'shipping'].includes(cartData.status) && (
                 <button type="button" onClick={cancelShipping} disabled={cancelling}
-                  className="ms-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 text-red-600 text-xs font-bold disabled:opacity-50">
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap rounded-lg border border-red-200 dark:border-red-900 text-red-600 text-xs font-bold disabled:opacity-50">
                   {cancelling ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} {t('labels.cancel_ship')}
                 </button>
               )}
@@ -227,7 +227,7 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
 
           {/* حالة الطرد عند شركة التوصيل — «محاولة تسليم فاشلة» تطلب الاتصال بالزبون الآن */}
           {cartData.shippingTrackingId && shipStatusInfo(cartData) && (
-            <div className="flex flex-wrap items-center gap-2 px-5 pt-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2 px-5 pt-3 text-xs shrink-0">
               <span className="text-gray-500 dark:text-zinc-400 font-semibold">{t('ship_status.title')}:</span>
               <ShipStatusBadge order={cartData} t={t} />
               <span className="text-gray-400" dir="ltr">{cartData.shippingTrackingId}</span>
