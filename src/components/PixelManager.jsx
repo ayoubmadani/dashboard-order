@@ -261,19 +261,22 @@ export const PixelManager = ({ storeId }) => {
                 </div>
 
                 <div className="p-4 space-y-3 bg-white dark:bg-zinc-900">
-                  <form onSubmit={(e) => { e.preventDefault(); quickAdd(type.id); }}
+                  <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); quickAdd(type.id); }}
                     className={`grid gap-2 grid-cols-1 ${type.id === 'facebook' ? 'md:grid-cols-[1fr_1.2fr_1.4fr_auto]' : 'md:grid-cols-[1fr_1.4fr_auto]'}`}>
-                    <input type="text" value={q(type.id).name ?? ''} onChange={setQ(type.id, 'name')} placeholder={t('card.name')}
+                    <input type="text" name={`px-name-${type.id}`} autoComplete="off" data-1p-ignore data-lpignore="true" value={q(type.id).name ?? ''} onChange={setQ(type.id, 'name')} placeholder={t('card.name')}
                       className="min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-indigo-400" />
-                    <input type="text" dir="ltr" value={q(type.id).pixelId ?? ''} onChange={setQ(type.id, 'pixelId')}
+                    <input type="text" inputMode="numeric" name={`px-id-${type.id}`} autoComplete="off" data-1p-ignore data-lpignore="true" dir="ltr" value={q(type.id).pixelId ?? ''} onChange={setQ(type.id, 'pixelId')}
                       placeholder={type.id === 'google' ? t('form.pixelIdPlaceholderGoogle') : t('card.placeholder')}
                       className="min-w-0 px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
                     {type.id === 'facebook' && (
                       <div className="relative min-w-0">
-                        <input type="password" autoComplete="off" dir="ltr" value={q(type.id).token ?? ''} onChange={setQ(type.id, 'token')} placeholder={t('card.token')}
-                          className="w-full px-4 pe-10 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
+                        {/* نص عادي بنقاط (لا password): متصفح Chrome لا يعتبر البطاقة نموذج دخول فلا يملأ البريد وكلمة السر */}
+                        <input type="text" name={`px-token-${type.id}`} autoComplete="off" data-1p-ignore data-lpignore="true" spellCheck={false} dir="ltr"
+                          value={q(type.id).token ?? ''} onChange={setQ(type.id, 'token')} placeholder={t('card.token')}
+                          style={q(type.id).token ? { WebkitTextSecurity: 'disc' } : undefined}
+                          className="w-full pl-4 pr-10 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm outline-none focus:border-indigo-400" />
                         <button type="button" onClick={() => setTokenHelp(true)} title={t('card.tokenHelpTitle')}
-                          className="absolute end-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600"><HelpCircle size={18} /></button>
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600"><HelpCircle size={18} /></button>
                       </div>
                     )}
                     <button type="submit" disabled={adding === type.id || !String(q(type.id).pixelId ?? '').trim()}
