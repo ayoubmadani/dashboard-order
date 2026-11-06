@@ -242,6 +242,15 @@
     "print_selected": "Imprimer les étiquettes ({{count}})",
     "failed": "Étiquette impossible pour {{count}} commande(s) (non expédiée ou refusée)",
     "more": "Autre fichier à imprimer",
-    "error": "Impossible d'imprimer l'étiquette"
+    "error": "Impossible d'imprimer l'étiquette",
+    "cancel_ship": "Annuler l'expédition",
+    "cancel_ship_confirm": "Annuler l'expédition ? Le colis est supprimé chez le transporteur et la commande redevient « confirmée ». Possible seulement avant le ramassage.",
+    "cancel_ship_done": "Expédition annulée — commande de nouveau confirmée",
+    "cancel_ship_error": "Impossible d'annuler l'expédition",
+    "uploaded": "Envoyé — à emballer",
+    "handover": "Remis au livreur",
+    "handover_selected": "Remis au livreur ({{count}})",
+    "handover_done": "{{count}} commande(s) en livraison",
+    "handover_error": "Impossible de changer le statut"
   }
 }

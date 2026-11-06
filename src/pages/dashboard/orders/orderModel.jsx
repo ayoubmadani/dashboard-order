@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ShipStatusBadge } from '../../../utils/shippingStatus';
 import { shipStatusInfo } from '../../../utils/shippingStatusInfo';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader2, Save, Package, CheckCircle2, MapPin, ExternalLink, Phone, Printer } from 'lucide-react';
+import { X, Loader2, Save, Package, CheckCircle2, MapPin, ExternalLink, Phone, Printer, Undo2, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { printLabels } from '../../../utils/printLabels';
 import axios from 'axios';
@@ -109,6 +109,31 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
     } catch { toast.error(t('labels.error')); }
     finally { setPrinting(false); }
   };
+  // سُلّم للموزّع (بعد التغليف وإلصاق الملصق) ← «قيد الشحن»
+  const [handingOver, setHandingOver] = useState(false);
+  const handover = async () => {
+    setHandingOver(true);
+    try {
+      await axios.post(`${baseURL}/stores/${localStorage.getItem('storeId')}/shipping/handover`, { orderIds: [cartData.id] }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(t('labels.handover_done', { count: 1 }));
+      onRefresh?.(); onClose();
+    } catch { toast.error(t('labels.handover_error')); }
+    finally { setHandingOver(false); }
+  };
+  // إلغاء الشحن (إنزال الطرد من شركة التوصيل) قبل أن يستلمه الموزّع
+  const [cancelling, setCancelling] = useState(false);
+  const cancelShipping = async () => {
+    if (!window.confirm(t('labels.cancel_ship_confirm'))) return;
+    setCancelling(true);
+    try {
+      await axios.post(`${baseURL}/stores/${localStorage.getItem('storeId')}/shipping/orders/${cartData.id}/cancel`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(t('labels.cancel_ship_done'));
+      onRefresh?.(); onClose();
+    } catch (e) {
+      const m = e?.response?.data?.message;
+      toast.error(`${t('labels.cancel_ship_error')}${m ? ` — ${Array.isArray(m) ? m[0] : m}` : ''}`);
+    } finally { setCancelling(false); }
+  };
 
   useEffect(() => {
     if (isOpen && cartData) setStatus(cartData.status || 'pending');
@@ -185,6 +210,18 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-zinc-700 text-white text-xs font-bold disabled:opacity-50">
                 {printing ? <Loader2 size={13} className="animate-spin" /> : <Printer size={13} />} {t('labels.print')}
               </button>
+              {!readOnly && cartData.status === 'confirmed' && (
+                <button type="button" onClick={handover} disabled={handingOver}
+                  className="ms-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-600 text-white text-xs font-bold disabled:opacity-50">
+                  {handingOver ? <Loader2 size={13} className="animate-spin" /> : <Truck size={13} />} {t('labels.handover')}
+                </button>
+              )}
+              {!readOnly && ['confirmed', 'shipping'].includes(cartData.status) && (
+                <button type="button" onClick={cancelShipping} disabled={cancelling}
+                  className="ms-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900 text-red-600 text-xs font-bold disabled:opacity-50">
+                  {cancelling ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />} {t('labels.cancel_ship')}
+                </button>
+              )}
             </div>
           )}
 

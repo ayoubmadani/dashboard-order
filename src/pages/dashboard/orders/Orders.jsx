@@ -795,6 +795,20 @@ export default function Orders() {
 
   // ملصقات الشحن (بوليصة بالباركود) للطلبات المرفوعة لشركة التوصيل
   const labelSelected = selectedOrders.filter(o => o.shippingTrackingId);
+  // مرفوعة ومؤكدة (غُلّفت وأُلصق ملصقها) ← «قيد الشحن» عند تسليمها للموزّع
+  const handoverSelected = selectedOrders.filter(o => o.status === 'confirmed' && o.shippingTrackingId);
+  const [handingOver, setHandingOver] = useState(false);
+  const handoverSelectedOrders = async () => {
+    setHandingOver(true);
+    try {
+      const { data } = await axios.post(`${baseURL}/stores/${storeId}/shipping/handover`,
+        { orderIds: handoverSelected.map(o => o.id) }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(t('labels.handover_done', { count: data?.shipped?.length ?? 0 }));
+      clearSelection();
+      fetchOrders();
+    } catch { toast.error(t('labels.handover_error')); }
+    finally { setHandingOver(false); }
+  };
   const printSelectedLabels = async () => {
     setPrinting(true);
     try {
@@ -1218,6 +1232,11 @@ export default function Orders() {
                     readOnly={!canManage}
                   />
                   {cart.status === 'shipping' && <ShipStatusBadge order={cart} t={t} className="max-w-[160px] truncate" />}
+                  {cart.status === 'confirmed' && cart.shippingTrackingId && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-50 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-[11px] font-bold whitespace-nowrap">
+                      <Package size={11} /> {t('labels.uploaded')}
+                    </span>
+                  )}
                   {cart.confirmationCompany && (
                     <span title={cart.confirmationCompany.name}
                       className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate max-w-[128px]">
@@ -1323,6 +1342,12 @@ export default function Orders() {
               <button onClick={recallFromConfirmation} disabled={recalling}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
                 {recalling ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />} {tc('recall_button', { count: recallSelected.length })}
+              </button>
+            )}
+            {handoverSelected.length > 0 && (
+              <button onClick={handoverSelectedOrders} disabled={handingOver}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
+                {handingOver ? <Loader2 size={14} className="animate-spin" /> : <Truck size={14} />} {t('labels.handover_selected', { count: handoverSelected.length })}
               </button>
             )}
             {labelSelected.length > 0 && (
