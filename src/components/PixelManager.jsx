@@ -10,6 +10,7 @@ import {
   Loader2,
   HelpCircle,
   X,
+  Check,
 } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import axios from 'axios';
@@ -53,8 +54,9 @@ export const PixelManager = ({ storeId }) => {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'Pixels' });
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingPixel, setEditingPixel] = useState(null);
+  // تعديل في السطر نفسه (بلا نافذة): { id, type, name, pixelId, token, clearToken, hasAccessToken }
+  const [inline, setInline] = useState(null);
+  const [savingInline, setSavingInline] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const [scopeFilter, setScopeFilter] = useState('all');
   const [quick, setQuick] = useState({}); // { facebook: { name, pixelId, token } } — الإضافة السريعة في كل بطاقة
@@ -67,16 +69,6 @@ export const PixelManager = ({ storeId }) => {
   
   
 
-  const [formData, setFormData] = useState({
-    name: '',
-    type: 'facebook',
-    pixelId: '',
-    accessToken: '',
-    testEventCode: '',
-    clearToken: false,
-    events: DEFAULT_EVENTS,
-    isActive: true,
-  });
 
   const fetchPixels = useCallback(async () => {
     if (!storeId) { setPixels([]); setLoading(false); return; }
@@ -97,44 +89,6 @@ export const PixelManager = ({ storeId }) => {
     fetchPixels();
   }, [fetchPixels]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!editingPixel && !storeId) {
-      alert(t('noStore'));
-      return;
-    }
-
-    try {
-      const token = getAccessToken();
-      const url = editingPixel 
-        ? `${baseURL}/stores/pixels/${editingPixel.id}`
-        : `${baseURL}/stores/${storeId}/pixels`;
-      
-      const method = editingPixel ? 'patch' : 'post';
-      
-      // التوكن لا يُعاد من الخادم أبداً: يُرسل فقط إن كُتب جديد، أو "" لمسحه
-      const { accessToken, clearToken, testEventCode, ...rest } = formData;
-      const payload = { ...rest };
-      if (formData.type === 'facebook') {
-        if (accessToken.trim()) payload.accessToken = accessToken.trim();
-        else if (clearToken) payload.accessToken = '';
-        payload.testEventCode = testEventCode.trim();
-      }
-      await axios[method](url, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      setShowModal(false);
-      setEditingPixel(null);
-      resetForm();
-      fetchPixels();
-    } catch (error) {
-      console.error('Error saving pixel:', error);
-      alert(error.response?.data?.message || t('errors.saveFailed'));
-    }
-  };
-
   // إضافة سريعة من بطاقة المنصة: الاسم والمعرّف، ولفيسبوك رمز Conversions API (اختياري)
   const quickAdd = async (type) => {
     const { name = '', pixelId = '', token = '' } = q(type);
@@ -150,6 +104,27 @@ export const PixelManager = ({ storeId }) => {
       alert(error.response?.data?.message || t('errors.saveFailed'));
     } finally {
       setAdding(null);
+    }
+  };
+
+  const setI = (k) => (e) => setInline((x) => ({ ...x, [k]: e.target.value }));
+  const saveInline = async () => {
+    if (!inline?.pixelId?.trim()) return;
+    setSavingInline(true);
+    try {
+      const payload = { name: (inline.name || '').trim(), pixelId: inline.pixelId.trim() };
+      if (inline.type === 'facebook') {
+        if (inline.token?.trim()) payload.accessToken = inline.token.trim();
+        else if (inline.clearToken) payload.accessToken = '';
+        payload.testEventCode = ''; // وضع الاختبار أُزيل من الواجهة — لا يبقى رمز اختبار قديم يعطّل الأحداث
+      }
+      await axios.patch(`${baseURL}/stores/pixels/${inline.id}`, payload, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
+      setInline(null);
+      fetchPixels();
+    } catch (error) {
+      alert(error.response?.data?.message || t('errors.saveFailed'));
+    } finally {
+      setSavingInline(false);
     }
   };
 
@@ -180,34 +155,6 @@ export const PixelManager = ({ storeId }) => {
     } finally {
       setTogglingId(null);
     }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      type: 'facebook',
-      pixelId: '',
-      accessToken: '',
-      testEventCode: '',
-      clearToken: false,
-      events: DEFAULT_EVENTS,
-      isActive: true,
-    });
-  };
-
-  const openEdit = (pixel) => {
-    setEditingPixel(pixel);
-    setFormData({
-      name: pixel.name || '',
-      type: pixel.type,
-      pixelId: pixel.pixelId,
-      accessToken: '',
-      testEventCode: pixel.testEventCode || '',
-      clearToken: false,
-      events: DEFAULT_EVENTS,
-      isActive: pixel.isActive,
-    });
-    setShowModal(true);
   };
 
   const filteredPixels = pixels.filter(p => scopeFilter === 'all' || (p.scope || 'store') === scopeFilter);
@@ -288,7 +235,42 @@ export const PixelManager = ({ storeId }) => {
 
                   {list.length === 0 ? (
                     <p className="text-xs text-gray-400 px-1">{t('card.empty')}</p>
-                  ) : list.map((pixel) => (
+                  ) : list.map((pixel) => inline?.id === pixel.id ? (
+                    <form key={pixel.id} autoComplete="off" onSubmit={(e) => { e.preventDefault(); saveInline(); }}
+                      className={`grid gap-2 grid-cols-1 p-3 rounded-xl border-2 ${pixel.type === 'facebook' ? 'md:grid-cols-[1fr_1.2fr_1.4fr_auto]' : 'md:grid-cols-[1fr_1.4fr_auto]'}`}
+                      style={{ borderColor: type.color }}>
+                      <input type="text" autoComplete="off" data-1p-ignore data-lpignore="true" value={inline.name} onChange={setI('name')} placeholder={t('card.name')}
+                        className="min-w-0 px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-sm outline-none focus:border-indigo-400" />
+                      <input type="text" inputMode="numeric" autoComplete="off" data-1p-ignore data-lpignore="true" dir="ltr" value={inline.pixelId} onChange={setI('pixelId')} placeholder={t('card.placeholder')}
+                        className="min-w-0 px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg font-mono text-sm outline-none focus:border-indigo-400" />
+                      {pixel.type === 'facebook' && (
+                        <div className="min-w-0 space-y-1">
+                          <div className="relative">
+                            <input type="text" autoComplete="off" data-1p-ignore data-lpignore="true" spellCheck={false} dir="ltr" value={inline.token} onChange={(e) => setInline((x) => ({ ...x, token: e.target.value, clearToken: false }))}
+                              placeholder={inline.hasAccessToken && !inline.clearToken ? t('form.tokenSaved') : t('card.token')}
+                              style={inline.token ? { WebkitTextSecurity: 'disc' } : undefined}
+                              className="w-full pl-3 pr-9 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg font-mono text-sm outline-none focus:border-indigo-400" />
+                            <button type="button" onClick={() => setTokenHelp(true)} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-gray-400 hover:text-blue-600"><HelpCircle size={16} /></button>
+                          </div>
+                          {inline.hasAccessToken && !inline.token && (
+                            <button type="button" onClick={() => setInline((x) => ({ ...x, clearToken: !x.clearToken }))}
+                              className={`text-[11px] font-semibold ${inline.clearToken ? 'text-gray-500' : 'text-rose-500'}`}>
+                              {inline.clearToken ? t('form.keepToken') : t('form.removeToken')}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      <div className="flex gap-2 md:self-start">
+                        <button type="submit" disabled={savingInline || !inline.pixelId.trim()} title={t('form.saveChanges')}
+                          className="flex-1 md:flex-none inline-flex items-center justify-center px-3 py-2 rounded-lg text-white disabled:opacity-50"
+                          style={{ background: dark ? '#111' : type.id === 'google' ? '#4285F4' : type.color }}>
+                          {savingInline ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                        </button>
+                        <button type="button" onClick={() => setInline(null)} title={t('cancel')}
+                          className="flex-1 md:flex-none inline-flex items-center justify-center px-3 py-2 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300"><X size={16} /></button>
+                      </div>
+                    </form>
+                  ) : (
                     <div key={pixel.id} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border ${pixel.isActive
                       ? 'border-gray-200 dark:border-zinc-700'
                       : 'border-gray-100 dark:border-zinc-800 opacity-60'}`}>
@@ -300,7 +282,7 @@ export const PixelManager = ({ storeId }) => {
                             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">{t(`form.scope.${pixel.scope}`)}</span>
                           )}
                           {pixel.type === 'facebook' && (pixel.hasAccessToken
-                            ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-semibold">Conversions API ✓{pixel.testEventCode ? ` · ${t('form.testMode')}` : ''}</span>
+                            ? <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 font-semibold">Conversions API ✓</span>
                             : <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">{t('card.capiMissing')}</span>)}
                         </div>
                       </div>
@@ -309,7 +291,7 @@ export const PixelManager = ({ storeId }) => {
                         className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${pixel.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`}>
                         <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${pixel.isActive ? 'start-[1.125rem]' : 'start-0.5'}`} />
                       </button>
-                      <button type="button" onClick={() => openEdit(pixel)} title={t('card.advanced')}
+                      <button type="button" onClick={() => setInline({ id: pixel.id, type: pixel.type, name: pixel.name || '', pixelId: pixel.pixelId || '', token: '', clearToken: false, hasAccessToken: !!pixel.hasAccessToken })} title={t('actions.edit')}
                         className="p-2 text-gray-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10 rounded-lg shrink-0"><Edit2 size={16} /></button>
                       <button type="button" onClick={() => handleDelete(pixel.id)} title={t('actions.delete')}
                         className="p-2 text-white bg-rose-500 hover:bg-rose-600 rounded-full shrink-0"><Trash2 size={14} /></button>
@@ -357,81 +339,6 @@ export const PixelManager = ({ storeId }) => {
         </div>
       )}
 
-      {/* نافذة الإعدادات: خاصة بمنصة البيكسل (رأس بلونها، بلا اختيار نوع) — عريضة على عمودين بلا تمرير */}
-      {showModal && (() => {
-        const pt = PIXEL_TYPES.find(p => p.id === formData.type) || PIXEL_TYPES[0];
-        const Icon = pt.icon;
-        const light = pt.id === 'google';
-        const fb = pt.id === 'facebook';
-        const field = 'w-full px-4 py-2.5 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-indigo-400';
-        const label = 'block text-xs font-bold text-gray-600 dark:text-zinc-400 mb-1.5';
-        return (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4" onClick={(e) => { if (e.target === e.currentTarget) { setShowModal(false); resetForm(); } }}>
-            <div className={`bg-white dark:bg-zinc-900 rounded-2xl w-full ${fb ? 'max-w-3xl' : 'max-w-xl'} max-h-[95vh] overflow-y-auto overflow-hidden`} dir="auto">
-              <div className="flex items-center gap-2 px-6 py-4 font-bold" style={{ background: light ? '#F1F5FE' : pt.color, color: light ? '#111827' : '#fff' }}>
-                <Icon size={20} style={light ? undefined : { color: '#fff' }} />
-                {t(pt.labelKey)} — {editingPixel ? t('modal.editTitle') : t('modal.addTitle')}
-              </div>
-
-              <div className={`p-6 grid gap-5 ${fb ? 'md:grid-cols-2' : ''}`}>
-                <div className="space-y-4">
-                  <div>
-                    <label className={label}>{t('form.pixelIdLabel')} *</label>
-                    <input type="text" dir="ltr" required value={formData.pixelId}
-                      onChange={(e) => setFormData({ ...formData, pixelId: e.target.value })}
-                      placeholder={light ? t('form.pixelIdPlaceholderGoogle') : t('form.pixelIdPlaceholder')}
-                      className={`${field} font-mono`} />
-                  </div>
-                  <div>
-                    <label className={label}>{t('form.nameLabel')}</label>
-                    <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder={t('form.namePlaceholder')} className={field} />
-                  </div>
-                </div>
-
-                {fb && (
-                  <div className="rounded-xl border border-blue-100 dark:border-blue-500/20 bg-blue-50/40 dark:bg-blue-500/5 p-4 space-y-3">
-                    <div>
-                      <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">Conversions API</p>
-                      <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5 leading-relaxed">{t('form.capiHint')}</p>
-                    </div>
-                    <div>
-                      <label className={label}>{t('form.accessTokenLabel')}</label>
-                      <input type="password" autoComplete="off" dir="ltr" value={formData.accessToken}
-                        onChange={(e) => setFormData({ ...formData, accessToken: e.target.value, clearToken: false })}
-                        placeholder={editingPixel?.hasAccessToken && !formData.clearToken ? t('form.tokenSaved') : t('form.accessTokenPlaceholder')}
-                        className={`${field} bg-white font-mono`} />
-                      {editingPixel?.hasAccessToken && !formData.accessToken && (
-                        <button type="button" onClick={() => setFormData({ ...formData, clearToken: !formData.clearToken })}
-                          className={`mt-1.5 text-xs font-semibold ${formData.clearToken ? 'text-gray-500' : 'text-rose-500'}`}>
-                          {formData.clearToken ? t('form.keepToken') : t('form.removeToken')}
-                        </button>
-                      )}
-                    </div>
-                    <div>
-                      <label className={label}>{t('form.testEventCodeLabel')}</label>
-                      <input type="text" dir="ltr" value={formData.testEventCode}
-                        onChange={(e) => setFormData({ ...formData, testEventCode: e.target.value })}
-                        placeholder="TEST12345" className={`${field} bg-white font-mono`} />
-                      <p className="text-[11px] text-gray-400 mt-1">{t('form.testEventCodeHint')}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-3 px-6 pb-6">
-                <button type="button" onClick={() => { setShowModal(false); resetForm(); }}
-                  className="px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 rounded-xl font-semibold text-sm">{t('cancel')}</button>
-                <button type="button" onClick={handleSubmit}
-                  className="px-5 py-2.5 text-white rounded-xl font-semibold text-sm"
-                  style={{ background: pt.id === 'tiktok' ? '#111' : light ? '#4285F4' : pt.color }}>
-                  {editingPixel ? t('form.saveChanges') : t('form.addPixel')}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
     </div>
   );
 };
