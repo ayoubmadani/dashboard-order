@@ -2,7 +2,6 @@
   "common": {
     "cancel": "Annuler"
   },
-
   "no_store": {
     "title": "Aucune boutique sélectionnée",
     "subtitle": "Créez d'abord une boutique pour gérer les produits",
@@ -238,7 +237,9 @@
     "category_empty": "Aucune catégorie",
     "category_none": "Aucune catégorie",
     "category_products": "{{count}} produit(s)",
-    "category_sub": "({{count}} sous-cat.)"
+    "category_sub": "({{count}} sous-cat.)",
+    "sku_generate": "Générer un code",
+    "sku_generate_error": "Impossible de générer le code"
   },
   "attributes": {
     "section_title": "Attributs du produit",
@@ -379,8 +380,8 @@
       "status": "Statut"
     },
     "offers": {
-        "quantity": "Quantité",
-        "free_shipping": "Livraison gratuite",
+      "quantity": "Quantité",
+      "free_shipping": "Livraison gratuite",
       "title": "Offres les plus vendues",
       "subtitle": "Une offre désactivée est masquée de la boutique et des landing pages",
       "empty": "Ce produit n'a pas d'offres",
@@ -389,9 +390,9 @@
       "qty": "{{count}} pcs"
     },
     "variants": {
-        "price": "Prix",
-        "by_value_hint": "Désactivez une valeur entière (ex. la couleur rouge) pour la masquer avec toutes ses combinaisons",
-        "value_units": "{{count}} unités",
+      "price": "Prix",
+      "by_value_hint": "Désactivez une valeur entière (ex. la couleur rouge) pour la masquer avec toutes ses combinaisons",
+      "value_units": "{{count}} unités",
       "title": "Options les plus vendues",
       "subtitle": "Une option désactivée est masquée de la boutique et des landing pages",
       "empty": "Ce produit n'a pas d'options",
@@ -413,8 +414,8 @@
       }
     },
     "toast": {
-        "saved": "Enregistré",
-        "save_failed": "Échec de l'enregistrement",
+      "saved": "Enregistré",
+      "save_failed": "Échec de l'enregistrement",
       "enabled": "Activé",
       "disabled": "Désactivé",
       "toggle_failed": "Échec du changement de statut"

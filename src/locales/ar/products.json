@@ -2,7 +2,6 @@
   "common": {
     "cancel": "إلغاء"
   },
-
   "no_store": {
     "title": "لم يتم تحديد المتجر",
     "subtitle": "أنشئ متجراً أولاً لإدارة المنتجات",
@@ -42,8 +41,7 @@
       "status": "الحالة",
       "date": "تاريخ الإضافة",
       "actions": "إجراءات",
-      "show":"مشاهدات"
-
+      "show": "مشاهدات"
     },
     "status_badge": {
       "disabled": "معطل",
@@ -85,7 +83,6 @@
       "confirm": "تأكيد الحذف"
     }
   },
-
   "show": {
     "loading": "جاري تحميل تفاصيل المنتج...",
     "not_found": {
@@ -209,7 +206,6 @@
     "product_options": "خيارات المنتج",
     "qty_offers": "عروض الكميات المتاحة"
   },
-
   "form": {
     "basic_info": "المعلومات الأساسية",
     "product_name": "اسم المنتج",
@@ -241,9 +237,10 @@
     "category_empty": "لا توجد تصنيفات",
     "category_none": "بدون تصنيف",
     "category_products": "{{count}} منتج",
-    "category_sub": "({{count}} فرعي)"
+    "category_sub": "({{count}} فرعي)",
+    "sku_generate": "توليد رمز",
+    "sku_generate_error": "تعذّر توليد الرمز"
   },
-
   "attributes": {
     "section_title": "خصائص المنتج",
     "none_yet": "لم تُضف أي خصائص بعد",
@@ -269,7 +266,6 @@
     "one_variant_required": "أضف قيمة واحدة على الأقل",
     "variant_value_required": "قيمة المتغير مطلوبة"
   },
-
   "variants": {
     "section_title": "تفاصيل المتغيرات",
     "auto_generate": "توليد تلقائي",
@@ -284,7 +280,6 @@
     "attrs_no_variants": "بعض الخصائص لا تحتوي على قيم",
     "generated": "تم توليد {{count}} توليفة"
   },
-
   "offers": {
     "section_title": "العروض الخاصة",
     "none_yet": "لم تُضف أي عروض بعد",
@@ -299,7 +294,6 @@
     "shipping_free_label": "توصيل مجاني",
     "add_offer": "إضافة عرض جديد"
   },
-
   "images": {
     "section_title": "صور المنتج",
     "add_photo": "إضافة",
@@ -309,7 +303,6 @@
     "duplicate_error": "هذه الصورة مضافة مسبقاً",
     "max_images_error": "الحد الأقصى {{max}} صورة لكل منتج"
   },
-
   "create": {
     "title": "إضافة منتج جديد",
     "subtitle": "المعلومات الأساسية",
@@ -321,7 +314,6 @@
     "name_invalid": "يجب أن يحتوي اسم المنتج على نص",
     "price_invalid": "أدخل سعراً صحيحاً"
   },
-
   "edit": {
     "title": "تعديل المنتج",
     "save": "حفظ التعديلات",
@@ -388,8 +380,8 @@
       "status": "الحالة"
     },
     "offers": {
-        "quantity": "الكمية",
-        "free_shipping": "توصيل مجاني",
+      "quantity": "الكمية",
+      "free_shipping": "توصيل مجاني",
       "title": "العروض الأكثر مبيعاً",
       "subtitle": "العرض المعطّل يُخفى من المتجر وصفحات الهبوط",
       "empty": "لا توجد عروض لهذا المنتج",
@@ -398,9 +390,9 @@
       "qty": "{{count}} قطعة"
     },
     "variants": {
-        "price": "السعر",
-        "by_value_hint": "عطّل قيمة كاملة (مثلاً اللون الأحمر) لإخفائها مع كل تركيباتها من المتجر",
-        "value_units": "{{count}} وحدة",
+      "price": "السعر",
+      "by_value_hint": "عطّل قيمة كاملة (مثلاً اللون الأحمر) لإخفائها مع كل تركيباتها من المتجر",
+      "value_units": "{{count}} وحدة",
       "title": "الاختيارات الأكثر مبيعاً",
       "subtitle": "الاختيار المعطّل يُخفى من المتجر وصفحات الهبوط",
       "empty": "لا توجد اختيارات لهذا المنتج",
@@ -422,8 +414,8 @@
       }
     },
     "toast": {
-        "saved": "تم الحفظ",
-        "save_failed": "فشل الحفظ",
+      "saved": "تم الحفظ",
+      "save_failed": "فشل الحفظ",
       "enabled": "تم التفعيل",
       "disabled": "تم التعطيل",
       "toggle_failed": "فشل تغيير الحالة"

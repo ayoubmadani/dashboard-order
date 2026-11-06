@@ -9,7 +9,9 @@ import {
   Loader2, Sparkles, Package, Rocket, Ruler,
   Type as TypeIcon, Save, ArrowRight, Grid3x3,
   FolderTree, ChevronDown, X, Check, Truck, Download, MessageCircle,
+  Wand2,
 } from 'lucide-react';
+import { freshStoreCode } from '../../../utils/storeCode';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ModelImages from '../../../components/ModelImages';
@@ -124,6 +126,18 @@ export default function EditProduct() {
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [folder, setFolder] = useState()
   const [maxImages, setMaxImages] = useState(MAX_PRODUCT_IMAGES);
+
+  // «توليد رمز»: 4 خانات غير مستعملة في المتجر (البحث بالباركود/الرمز يرجع 404 = متاح)
+  const [generating, setGenerating] = useState(false);
+  const generateSku = async () => {
+    setGenerating(true);
+    try {
+      const storeId = localStorage.getItem('storeId');
+      const code = await freshStoreCode((c) => axios.get(`${baseURL}/stores/${storeId}/inventory/barcode/${encodeURIComponent(c)}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } }));
+      setFormData(p => ({ ...p, sku: code }));
+    } catch { showNotification('error', t('form.sku_generate_error')); }
+    finally { setGenerating(false); }
+  };
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -473,10 +487,17 @@ export default function EditProduct() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field label={t('form.sku')}>
-            <input type="text" dir="ltr" value={formData.sku}
-              onChange={e => setFormData(p => ({ ...p, sku: e.target.value }))}
-              placeholder={t('form.sku_placeholder')}
-              className={`${inputCls()} font-mono text-xs`} />
+            <div className="flex gap-2">
+              <input type="text" dir="ltr" value={formData.sku}
+                onChange={e => setFormData(p => ({ ...p, sku: e.target.value }))}
+                placeholder={t('form.sku_placeholder')}
+                className={`${inputCls()} font-mono text-xs flex-1 min-w-0`} />
+              {/* رمز قصير (4 خانات) غير مستعمل في المتجر — يُقرأ بماسح التطبيق */}
+              <button type="button" disabled={generating} onClick={generateSku} title={t('form.sku_generate')}
+                className="shrink-0 inline-flex items-center gap-1.5 px-3 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-200 text-xs font-bold disabled:opacity-50">
+                {generating ? <Loader2 size={14} className="animate-spin" /> : <Wand2 size={14} />} {t('form.sku_generate')}
+              </button>
+            </div>
           </Field>
           <Field label={t('form.stock')}>
             <input type="number" dir="ltr" value={formData.stock}

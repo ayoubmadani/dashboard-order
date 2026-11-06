@@ -2,7 +2,6 @@
   "common": {
     "cancel": "Cancel"
   },
-
   "no_store": {
     "title": "No store selected",
     "subtitle": "Create a store first to manage products",
@@ -42,7 +41,7 @@
       "status": "Status",
       "date": "Date Added",
       "actions": "Actions",
-      "show":"Show"
+      "show": "Show"
     },
     "status_badge": {
       "disabled": "Disabled",
@@ -84,7 +83,6 @@
       "confirm": "Confirm Delete"
     }
   },
-
   "show": {
     "loading": "Loading product details...",
     "not_found": {
@@ -208,7 +206,6 @@
     "product_options": "Product Options",
     "qty_offers": "Available Quantity Offers"
   },
-
   "form": {
     "basic_info": "Basic Information",
     "product_name": "Product Name",
@@ -240,9 +237,10 @@
     "category_empty": "No categories",
     "category_none": "No Category",
     "category_products": "{{count}} product",
-    "category_sub": "({{count}} sub)"
+    "category_sub": "({{count}} sub)",
+    "sku_generate": "Generate code",
+    "sku_generate_error": "Could not generate the code"
   },
-
   "attributes": {
     "section_title": "Product Attributes",
     "none_yet": "No attributes added yet",
@@ -268,7 +266,6 @@
     "one_variant_required": "Add at least one value",
     "variant_value_required": "Variant value is required"
   },
-
   "variants": {
     "section_title": "Variant Details",
     "auto_generate": "Auto Generate",
@@ -283,7 +280,6 @@
     "attrs_no_variants": "Some attributes have no values",
     "generated": "{{count}} combinations generated"
   },
-
   "offers": {
     "section_title": "Special Offers",
     "none_yet": "No offers added yet",
@@ -298,7 +294,6 @@
     "shipping_free_label": "Free Delivery",
     "add_offer": "Add New Offer"
   },
-
   "images": {
     "section_title": "Product Images",
     "add_photo": "Add",
@@ -308,7 +303,6 @@
     "duplicate_error": "This image is already added",
     "max_images_error": "Maximum {{max}} images per product"
   },
-
   "create": {
     "title": "Add New Product",
     "subtitle": "Basic Information",
@@ -320,7 +314,6 @@
     "name_invalid": "Product name must contain text",
     "price_invalid": "Enter a valid price"
   },
-
   "edit": {
     "title": "Edit Product",
     "save": "Save Changes",
@@ -387,8 +380,8 @@
       "status": "Status"
     },
     "offers": {
-        "quantity": "Quantity",
-        "free_shipping": "Free shipping",
+      "quantity": "Quantity",
+      "free_shipping": "Free shipping",
       "title": "Best-selling offers",
       "subtitle": "A disabled offer is hidden from the store and landing pages",
       "empty": "This product has no offers",
@@ -397,9 +390,9 @@
       "qty": "{{count}} pcs"
     },
     "variants": {
-        "price": "Price",
-        "by_value_hint": "Disable a whole value (e.g. the color red) to hide it and all its combinations from the store",
-        "value_units": "{{count}} units",
+      "price": "Price",
+      "by_value_hint": "Disable a whole value (e.g. the color red) to hide it and all its combinations from the store",
+      "value_units": "{{count}} units",
       "title": "Best-selling options",
       "subtitle": "A disabled option is hidden from the store and landing pages",
       "empty": "This product has no options",
@@ -421,8 +414,8 @@
       }
     },
     "toast": {
-        "saved": "Saved",
-        "save_failed": "Failed to save",
+      "saved": "Saved",
+      "save_failed": "Failed to save",
       "enabled": "Enabled",
       "disabled": "Disabled",
       "toggle_failed": "Failed to change status"
