@@ -714,7 +714,7 @@ function EditAccountModal({ storeId, headers, isRtl, account, onClose, onSaved }
   const { t } = useTranslation('translation', { keyPrefix: 'shipping' });
   const credentialKeys = (() => {
     if (['Yalidine', 'Yalitec'].includes(account.providerName)) return ['id', 'token'];
-    if (account.providerName === 'ZRExpress') return ['token', 'key'];
+    if (account.providerName === 'ZRExpress') return ['secretKey', 'tenantId']; // المنصة الجديدة api.zrexpress.app
     return ['token'];
   })();
 
@@ -788,10 +788,10 @@ function EditAccountModal({ storeId, headers, isRtl, account, onClose, onSaved }
             {credentialKeys.map(key => (
               <CredentialField
                 key={key}
-                label={key.toUpperCase()}
+                label={{ secretKey: 'SECRET KEY', tenantId: 'TENANT ID' }[key] ?? key.toUpperCase()}
                 value={credentials[key] ?? ''}
                 onChange={(v) => { setCredentials(p => ({ ...p, [key]: v })); setResult(null); }}
-                isPassword={key === 'token' || key === 'key'}
+                isPassword={['token', 'key', 'secretKey'].includes(key)}
               />
             ))}
           </div>

@@ -28,7 +28,7 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
     if (!selected) return [];
     const n = selected.name;
     if (['Yalidine', 'Yalitec'].includes(n)) return ['id', 'token'];
-    if (n === 'ZRExpress') return ['token', 'key'];
+    if (n === 'ZRExpress') return ['secretKey', 'tenantId']; // المنصة الجديدة api.zrexpress.app
     return ['token'];
   })();
 
@@ -170,11 +170,11 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
                   {credentialKeys.map(key => (
                     <CredentialField
                       key={key}
-                      label={key.toUpperCase()}
+                      label={{ secretKey: 'SECRET KEY', tenantId: 'TENANT ID' }[key] ?? key.toUpperCase()}
                       fieldKey={key}
                       value={credentials[key] ?? ''}
                       onChange={handleCredChange}
-                      isPassword={key === 'token' || key === 'key'}
+                      isPassword={['token', 'key', 'secretKey'].includes(key)}
                     />
                   ))}
                 </div>
