@@ -236,5 +236,12 @@
     "unknown": "Statut inconnu",
     "title": "Livreur",
     "call_hint": "Appelez le client maintenant, avant le retour du colis"
+  },
+  "labels": {
+    "print": "Imprimer l'étiquette",
+    "print_selected": "Imprimer les étiquettes ({{count}})",
+    "failed": "Étiquette impossible pour {{count}} commande(s) (non expédiée ou refusée)",
+    "more": "Autre fichier à imprimer",
+    "error": "Impossible d'imprimer l'étiquette"
   }
 }

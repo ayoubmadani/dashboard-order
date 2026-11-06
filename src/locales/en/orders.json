@@ -236,5 +236,12 @@
     "unknown": "Unknown status",
     "title": "Courier",
     "call_hint": "Call the customer now, before the parcel is returned"
+  },
+  "labels": {
+    "print": "Print label",
+    "print_selected": "Print labels ({{count}})",
+    "failed": "No label for {{count}} order(s) (not shipped or refused)",
+    "more": "Another file to print",
+    "error": "Could not print the label"
   }
 }

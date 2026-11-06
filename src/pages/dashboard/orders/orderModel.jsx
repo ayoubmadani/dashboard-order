@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { ShipStatusBadge } from '../../../utils/shippingStatus';
 import { shipStatusInfo } from '../../../utils/shippingStatusInfo';
 import { useNavigate } from 'react-router-dom';
-import { X, Loader2, Save, Package, CheckCircle2, MapPin, ExternalLink, Phone } from 'lucide-react';
+import { X, Loader2, Save, Package, CheckCircle2, MapPin, ExternalLink, Phone, Printer } from 'lucide-react';
+import { toast } from 'sonner';
+import { printLabels } from '../../../utils/printLabels';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -98,6 +100,15 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
   const [status, setStatus] = useState(cartData?.status || 'pending');
   const [loading, setLoading] = useState(false);
   const token = getAccessToken();
+  const [printing, setPrinting] = useState(false);
+  const printLabel = async () => {
+    setPrinting(true);
+    try {
+      const { links, failed } = await printLabels({ storeId: localStorage.getItem('storeId'), token, orderIds: [cartData.id] });
+      if (!links.length || failed.length) toast.error(t('labels.error'));
+    } catch { toast.error(t('labels.error')); }
+    finally { setPrinting(false); }
+  };
 
   useEffect(() => {
     if (isOpen && cartData) setStatus(cartData.status || 'pending');
@@ -166,6 +177,16 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
             </div>
             <button className="om-x" onClick={onClose}><X size={14} /></button>
           </div>
+
+          {/* ملصق الشحن (بوليصة بالباركود) — للطلب المرفوع لشركة التوصيل */}
+          {cartData.shippingTrackingId && (
+            <div className="px-5 pt-3">
+              <button type="button" onClick={printLabel} disabled={printing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-900 dark:bg-zinc-700 text-white text-xs font-bold disabled:opacity-50">
+                {printing ? <Loader2 size={13} className="animate-spin" /> : <Printer size={13} />} {t('labels.print')}
+              </button>
+            </div>
+          )}
 
           {/* حالة الطرد عند شركة التوصيل — «محاولة تسليم فاشلة» تطلب الاتصال بالزبون الآن */}
           {cartData.shippingTrackingId && shipStatusInfo(cartData) && (

@@ -9,8 +9,9 @@ import {
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
   Send, CheckSquare, Square, MinusSquare, ShieldAlert,
-  Phone, Copy, Check, Eye, Mail, MessageCircle, Clock, Plus, PhoneCall, Undo2,
+  Phone, Copy, Check, Eye, Mail, MessageCircle, Clock, Plus, PhoneCall, Undo2, Printer,
 } from 'lucide-react';
+import { printLabels } from '../../../utils/printLabels';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import OrderModal from './orderModel';
@@ -676,6 +677,7 @@ export default function Orders() {
   const { t: tc } = useTranslation('translation', { keyPrefix: 'confirmation' });
   const [sendIds, setSendIds] = useState(null);
   const [recalling, setRecalling] = useState(false);
+  const [printing, setPrinting] = useState(false);
   const [, setNowTick] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => setNowTick((n) => n + 1), 60000);
@@ -760,7 +762,8 @@ export default function Orders() {
   // كل ما يمكن تحديده: جاهز للشحن، ينتظر التأكيد (إرسال/استرجاع)، أو ألغته شركة التأكيد (استرجاع)
   const isSelectable = (c) => canManage && ((c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
     || ['pending', 'appl1', 'appl2', 'appl3', 'postponed'].includes(c.status)
-    || (c.status === 'cancelled' && !!c.confirmationCompanyId));
+    || (c.status === 'cancelled' && !!c.confirmationCompanyId)
+    || !!c.shippingTrackingId); // مرفوع لشركة التوصيل ← طباعة ملصقه
   const selectableOrders = orders.filter(isSelectable);
   const allConfirmedSelected = selectableOrders.length > 0 && selectableOrders.every(c => selectedIds.has(c.id));
   const someSelected = selectedIds.size > 0;
@@ -789,6 +792,18 @@ export default function Orders() {
   const sendSelected = selectedOrders.filter(o => QUEUE_STATUSES.includes(o.status) && !o.confirmationCompanyId && !o.isDigital);
   // استرجاع: قبل أن تؤكدها الشركة، أو إذا ألغتها — بعد التأكيد لا استرجاع
   const recallSelected = selectedOrders.filter(o => [...QUEUE_STATUSES, 'cancelled'].includes(o.status) && o.confirmationCompanyId);
+
+  // ملصقات الشحن (بوليصة بالباركود) للطلبات المرفوعة لشركة التوصيل
+  const labelSelected = selectedOrders.filter(o => o.shippingTrackingId);
+  const printSelectedLabels = async () => {
+    setPrinting(true);
+    try {
+      const { links, failed } = await printLabels({ storeId, token, orderIds: labelSelected.map(o => o.id) });
+      links.slice(1).forEach((href) => toast(t('labels.more'), { duration: 60000, action: { label: <Printer size={14} />, onClick: () => window.open(href, '_blank') } }));
+      if (failed.length) toast.warning(t('labels.failed', { count: failed.length }));
+    } catch { toast.error(t('labels.error')); }
+    finally { setPrinting(false); }
+  };
 
   const recallFromConfirmation = async () => {
     setRecalling(true);
@@ -1308,6 +1323,12 @@ export default function Orders() {
               <button onClick={recallFromConfirmation} disabled={recalling}
                 className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
                 {recalling ? <Loader2 size={14} className="animate-spin" /> : <Undo2 size={14} />} {tc('recall_button', { count: recallSelected.length })}
+              </button>
+            )}
+            {labelSelected.length > 0 && (
+              <button onClick={printSelectedLabels} disabled={printing}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
+                {printing ? <Loader2 size={14} className="animate-spin" /> : <Printer size={14} />} {t('labels.print_selected', { count: labelSelected.length })}
               </button>
             )}
             {shipSelected.length > 0 && (
