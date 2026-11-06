@@ -513,6 +513,17 @@ function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
   const [companies, setCompanies] = useState(null);
   const [companyId, setCompanyId] = useState('');
   const [sending, setSending] = useState(false);
+  // مؤكّدون بعينهم (اختياري): لهم الطلب وحدهم ساعتين — القائمة فارغة إن كانت الشركة لا تسمح
+  const [agents, setAgents] = useState([]);
+  const [agentIds, setAgentIds] = useState([]);
+  const toggleAgent = (id) => setAgentIds(x => (x.includes(id) ? x.filter(y => y !== id) : [...x, id]));
+  useEffect(() => {
+    setAgents([]); setAgentIds([]);
+    if (!companyId) return;
+    axios.get(`${baseURL}/stores/${storeId}/confirmation/companies/${companyId}/agents`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(({ data }) => setAgents(Array.isArray(data) ? data : []))
+      .catch(() => setAgents([]));
+  }, [companyId, storeId, token]);
 
   useEffect(() => {
     axios.get(`${baseURL}/stores/${storeId}/confirmation/saved`, { headers: { Authorization: `Bearer ${token}` } })
@@ -524,7 +535,7 @@ function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
     setSending(true);
     try {
       const { data } = await axios.post(`${baseURL}/stores/${storeId}/confirmation/send`,
-        { companyId, orderIds }, { headers: { Authorization: `Bearer ${token}` } });
+        { companyId, orderIds, ...(agentIds.length ? { agentIds } : {}) }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success(t('send_done', { count: data.sent }));
       const digital = data.skipped?.filter(x => x.reason === 'digital').length ?? 0;
       const other = (data.skipped?.length ?? 0) - digital;
@@ -564,7 +575,10 @@ function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
                   companyId === c.id ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
                   <span className="flex items-center gap-2 min-w-0">
                     <input type="radio" name="company" disabled={unavailable} checked={companyId === c.id} onChange={() => setCompanyId(c.id)} />
-                    <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{c.name}</span>
+                    <span className="min-w-0">
+                      <span className="block font-bold text-sm text-gray-900 dark:text-white truncate">{c.name}</span>
+                      {c.stats && <span className="block text-[11px] text-gray-500">{t('stats_line', c.stats)}</span>}
+                    </span>
                   </span>
                   {unavailable ? (
                     <span className="text-xs font-black text-amber-600 shrink-0">{c.blocked ? t('company_blocked') : t('company_paused')}</span>
@@ -575,6 +589,24 @@ function SendConfirmationModal({ orderIds, storeId, token, onClose, onDone }) {
                 );
               })}
             </div>
+            {agents.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-bold text-gray-500">{t('agent_pick')}</p>
+                <div className="space-y-1.5 max-h-48 overflow-auto">
+                  {agents.map(a => (
+                    <label key={a.id} className={`flex items-center justify-between gap-3 px-3 py-2 rounded-xl border-2 cursor-pointer ${
+                      agentIds.includes(a.id) ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
+                      <span className="flex items-center gap-2 min-w-0">
+                        <input type="checkbox" checked={agentIds.includes(a.id)} onChange={() => toggleAgent(a.id)} />
+                        <span className="font-bold text-sm text-gray-900 dark:text-white truncate">{a.name}</span>
+                      </span>
+                      <span className="text-[11px] font-semibold text-gray-500 shrink-0">{t('stats_line', a.stats || { confirmed: 0, delivered: 0 })}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-[11px] text-gray-500">{t('agent_hint')}</p>
+              </div>
+            )}
             <div className="flex gap-2">
               <button onClick={send} disabled={!companyId || sending}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50">

@@ -50,5 +50,8 @@
   "ship_account_hint": "Les commandes confirmées par cette société sont envoyées automatiquement au compte de livraison choisi.",
   "ship_account_none": "Ajoutez d'abord un compte de livraison dans les paramètres",
   "ship_account_go": "Paramètres",
-  "ship_account_saved": "Enregistré"
+  "ship_account_saved": "Enregistré",
+  "agent_pick": "Confirmateurs (optionnel)",
+  "agent_hint": "Les confirmateurs choisis ont la commande pour eux seuls pendant 2 heures, puis elle passe à toute l'équipe. Sans choix : n'importe quel confirmateur.",
+  "stats_line": "{{confirmed}} confirmées · {{delivered}} livrées"
 }
