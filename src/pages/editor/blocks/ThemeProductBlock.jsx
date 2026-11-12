@@ -18,6 +18,7 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
   const [subdomain, setSubdomain] = useState(null);
   const [height, setHeight] = useState(600);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (!productId) { setSubdomain(null); return; }
@@ -32,6 +33,7 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
       if (e.data?.type !== 'mds-embed-height' || e.data.productId !== productId) return;
       setHeight(Math.max(200, Math.ceil(e.data.height)));
       setReady(true);
+      setFailed(false);
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
@@ -51,8 +53,8 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
         <Store size={11} /> {t('editor.blocks.themeProduct.label')}
       </div>
       {!ready && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-          <Loader2 size={22} className="animate-spin" />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13, padding: 24, textAlign: 'center' }}>
+          {failed ? t('editor.blocks.themeProduct.previewFailed') : <Loader2 size={22} className="animate-spin" />}
         </div>
       )}
       {subdomain && (
@@ -62,7 +64,8 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
           src={embedUrl(subdomain, productId, referenceWidth, backgroundColor)}
           style={{ display: 'block', width: '100%', height, border: 0, pointerEvents: 'none', opacity: ready ? 1 : 0 }}
           tabIndex={-1}
-          loading="lazy"
+          // الصفحة حُمّلت ولم ترسل ارتفاعها (منتج غير موجود/معطّل) ← رسالة بدل الدوران
+          onLoad={() => setTimeout(() => setFailed(true), 4000)}
         />
       )}
     </div>

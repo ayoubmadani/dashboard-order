@@ -194,7 +194,8 @@
     "themeProduct": {
       "label": "Produit au thème de la boutique",
       "hint": "Affiché avec le thème de votre boutique et un formulaire de commande direct — suit le produit",
-      "noProduct": "Choisissez d'abord le produit de la page"
+      "noProduct": "Choisissez d'abord le produit de la page",
+      "previewFailed": "Aperçu indisponible — vérifiez que le produit est actif"
     }
   },
   "fields": {

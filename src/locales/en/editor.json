@@ -194,7 +194,8 @@
     "themeProduct": {
       "label": "Product in store theme",
       "hint": "Shown with your store theme and a direct order form — follows the product",
-      "noProduct": "Pick the page product first"
+      "noProduct": "Pick the page product first",
+      "previewFailed": "Preview unavailable — make sure the product is active"
     }
   },
   "fields": {
