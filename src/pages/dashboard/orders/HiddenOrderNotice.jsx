@@ -11,7 +11,7 @@ export default function HiddenOrderNotice({ orderId, fee, onRevealed }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const reveal = async () => {
-    if (!window.confirm(t('confirm_reveal', { count: 1, amount: Number(fee || 0), balance: '…' }))) return;
+    if (!window.confirm(t('confirm_reveal_one', { amount: Number(fee || 0) }))) return;
     setBusy(true); setErr('');
     try {
       await axios.post(`${baseURL}/subscription/my/order-quota/reveal/${orderId}`, {}, { headers: { Authorization: `Bearer ${getAccessToken()}` } });
