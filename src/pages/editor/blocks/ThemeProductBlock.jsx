@@ -52,9 +52,9 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
       <div style={{ position: 'absolute', top: 8, insetInlineStart: 8, zIndex: 2, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: '#10b981', color: '#fff', fontSize: 10, fontWeight: 700 }}>
         <Store size={11} /> {t('editor.blocks.themeProduct.label')}
       </div>
-      {!ready && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13, padding: 24, textAlign: 'center' }}>
-          {failed ? t('editor.blocks.themeProduct.previewFailed') : <Loader2 size={22} className="animate-spin" />}
+      {!ready && !failed && (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13, padding: 24, textAlign: 'center' }}>
+          <Loader2 size={22} className="animate-spin" />
         </div>
       )}
       {subdomain && (
@@ -62,10 +62,11 @@ export default function ThemeProductBlock({ productId, backgroundColor, referenc
           key={`${subdomain}-${productId}-${referenceWidth}-${backgroundColor}`}
           title={t('editor.blocks.themeProduct.label')}
           src={embedUrl(subdomain, productId, referenceWidth, backgroundColor)}
-          style={{ display: 'block', width: '100%', height, border: 0, pointerEvents: 'none', opacity: ready ? 1 : 0 }}
+          // ظاهر دائماً (الرسالة تضبط الارتفاع فقط) — لا نخفي صفحة سليمة إن تأخرت رسالتها
+          style={{ display: 'block', width: '100%', height, border: 0, pointerEvents: 'none' }}
           tabIndex={-1}
           // الصفحة حُمّلت ولم ترسل ارتفاعها (منتج غير موجود/معطّل) ← رسالة بدل الدوران
-          onLoad={() => setTimeout(() => setFailed(true), 4000)}
+          onLoad={() => setTimeout(() => setFailed(true), 10000)}
         />
       )}
     </div>
