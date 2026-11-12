@@ -684,10 +684,6 @@ export default function CreateProduct() {
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-all">
             <Palette size={13} />{t('attributes.add_color')}
           </button>
-          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.SIZE, t('attributes.size_label'))}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-600 bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 dark:hover:bg-blue-500/20 rounded-lg transition-all">
-            <Ruler size={13} />{t('attributes.add_size')}
-          </button>
           <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.TEXT, '')}
             className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg transition-all">
             <TypeIcon size={13} />{t('attributes.add_custom')}
