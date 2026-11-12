@@ -386,6 +386,12 @@
     "addLibrary": "Image library",
     "addProduct": "Product photos",
     "added": "Added",
-    "addN": "Add ({{count}})"
+    "addN": "Add ({{count}})",
+    "orderBlock": "Order section",
+    "orderBlockHint": "A new order form in the page design, or the product page in your store theme with the images around it",
+    "orderBlocks": {
+      "form": "New order form",
+      "theme": "Product in store theme"
+    }
   }
 }

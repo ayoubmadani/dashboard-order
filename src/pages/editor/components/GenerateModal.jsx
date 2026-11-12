@@ -127,11 +127,13 @@ function fetchProductPhotos(pageId, productId) {
 }
 
 // تُركَّب عند الفتح فقط: منتج الصفحة يُختار مسبقًا وتُجلب صوره
-export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage, pageId, pageProductId }) {
+export default function GenerateModal({ open, onClose, onSubmit, generating, isDemo, imagePage, pageId, pageProductId, hasThemeProduct }) {
   const { t, i18n } = useTranslation();
   // صفحة الصور هي الطريقة الوحيدة؛ «بلوكات» تبقى فقط للتجربة المجانية (demo) لأنها بلا صفحة حقيقية
   const kind = isDemo ? 'blocks' : 'images';
   const [mode, setMode] = useState('product'); // 'product' | 'manual'
+  // الطلب في الصفحة: نموذج طلب جديد، أو «المنتج بثيم المتجر» والصور حوله (يحتاج منتجاً)
+  const [orderBlock, setOrderBlock] = useState(hasThemeProduct ? 'theme' : 'form');
   const [description, setDescription] = useState('');
   const [productId, setProductId] = useState(pageProductId || null);
   const [language, setLanguage] = useState(['ar', 'fr', 'en'].includes(i18n.language) ? i18n.language : 'ar');
@@ -212,7 +214,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
     };
     const ok = await onSubmit(
       isImages
-        ? { ...base, files: photos.map((p) => p.blob), style: 'auto', primaryColor: primaryColor || undefined, price: mode === 'manual' && price !== '' ? Number(price) : undefined }
+        ? { ...base, orderBlock: mode === 'product' ? orderBlock : 'form', files: photos.map((p) => p.blob), style: 'auto', primaryColor: primaryColor || undefined, price: mode === 'manual' && price !== '' ? Number(price) : undefined }
         : base,
     );
     if (ok) onClose();
@@ -380,6 +382,20 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
             </button>
           ))}
         </div>
+
+        {isImages && mode === 'product' && (
+          <div className="mb-3">
+            <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 mb-0.5">{t('editor.imagePage.orderBlock')}</p>
+            <p className="text-[11px] text-gray-400 mb-2">{t('editor.imagePage.orderBlockHint')}</p>
+            <div className="flex gap-2">
+              {['form', 'theme'].map((o) => (
+                <button key={o} type="button" onClick={() => setOrderBlock(o)} disabled={busy} className={`flex-1 ${pill(orderBlock === o)}`}>
+                  {t(`editor.imagePage.orderBlocks.${o}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {isImages && (
           <div className="mb-3">

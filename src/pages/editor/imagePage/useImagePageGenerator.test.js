@@ -20,6 +20,15 @@ describe('buildImagePageTree', () => {
   });
 });
 
+describe('buildImagePageTree around the theme product', () => {
+  const form = { buttonText: 'اطلب', borderRadius: 12 };
+  it('the AI images surround the store-theme product instead of a new order form', () => {
+    const tree = buildImagePageTree(['u1', 'u2', 'u3'], { form, formAfter: 1, productId: 'p1', orderBlock: 'theme' });
+    expect(tree.map((b) => b.type)).toEqual(['image', 'image', 'themeProduct', 'image']);
+    expect(tree[2].props).toEqual({ productId: 'p1' });
+  });
+});
+
 describe('chunkBySize', () => {
   const b = (n) => ({ size: n });
   it('groups consecutive blobs under the limit, keeping order and start index', () => {

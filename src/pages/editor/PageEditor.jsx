@@ -378,6 +378,7 @@ export default function PageEditor() {
           imagePage={{ step: imagePage.step, usage: imagePage.usage }}
           pageId={id}
           pageProductId={productId}
+          hasThemeProduct={blocks.some((b) => b.type === 'themeProduct')}
         />
       )}
       {imagePage.canRetry && !imagePage.step && (

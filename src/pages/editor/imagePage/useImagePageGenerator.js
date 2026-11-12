@@ -56,7 +56,8 @@ function overlayElement(o, whatsapp, look) {
   };
 }
 
-export function buildImagePageTree(urls, { form, formAfter, productId, extras, whatsapp = '', rand = Math.random }) {
+// orderBlock: 'form' = نموذج طلب جديد، 'theme' = «المنتج بثيم المتجر» (صور الذكاء الاصطناعي حوله)
+export function buildImagePageTree(urls, { form, formAfter, productId, extras, whatsapp = '', rand = Math.random, orderBlock = 'form' }) {
   const look = {
     radius: Number.isFinite(Number(form?.borderRadius)) ? Number(form.borderRadius) : 12,
     animation: LIVELY[Math.min(LIVELY.length - 1, Math.floor(rand() * LIVELY.length))],
@@ -67,11 +68,9 @@ export function buildImagePageTree(urls, { form, formAfter, productId, extras, w
     type: 'image',
     props: { ...componentsMap.image.defaultProps, src, width: 100, elements: overlays.filter((o) => o.section === i).map((o) => overlayElement(o, whatsapp, look)) },
   }));
-  const formBlock = {
-    id: uuid(),
-    type: 'productForm',
-    props: { ...componentsMap.productForm.defaultProps, ...form, productId: productId || '' },
-  };
+  const formBlock = orderBlock === 'theme' && productId
+    ? { id: uuid(), type: 'themeProduct', props: { productId } }
+    : { id: uuid(), type: 'productForm', props: { ...componentsMap.productForm.defaultProps, ...form, productId: productId || '' } };
   const at = Math.min(Math.max(0, formAfter ?? images.length - 1), images.length - 1) + 1;
   const tree = [...images.slice(0, at), formBlock, ...images.slice(at)];
 
@@ -161,7 +160,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
     return true;
   }, [pageId, onTree, clearPreview, setStep]);
 
-  const run = useCallback(async ({ files, productId, description, price, language, style, primaryColor }) => {
+  const run = useCallback(async ({ files, productId, description, price, language, style, primaryColor, orderBlock }) => {
     setCanRetry(false);
     last.current = null;
     clearPreview();
@@ -198,6 +197,7 @@ export default function useImagePageGenerator(pageId, { onTree } = {}) {
       last.current = {
         ...res.data,
         productId,
+        orderBlock,
         whatsapp,
         images: {
           IMG: await Promise.all(cutouts.map(blobToDataUrl)),

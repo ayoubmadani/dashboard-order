@@ -386,6 +386,12 @@
     "addLibrary": "Bibliothèque",
     "addProduct": "Photos du produit",
     "added": "Ajoutée",
-    "addN": "Ajouter ({{count}})"
+    "addN": "Ajouter ({{count}})",
+    "orderBlock": "Commande",
+    "orderBlockHint": "Un nouveau formulaire au design de la page, ou la page produit au thème de la boutique entourée des images",
+    "orderBlocks": {
+      "form": "Nouveau formulaire",
+      "theme": "Produit au thème de la boutique"
+    }
   }
 }
