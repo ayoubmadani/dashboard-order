@@ -1,8 +1,9 @@
-import { Image as ImageIcon, SeparatorHorizontal, ClipboardList, Pin, Images } from 'lucide-react';
+import { Image as ImageIcon, SeparatorHorizontal, ClipboardList, Pin, Images, Store } from 'lucide-react';
 import ImageBlock from './ImageBlock';
 import SpacerBlock from './SpacerBlock';
 import ProductFormBlock from './ProductFormBlock';
 import ProductImagesBlock from './ProductImagesBlock';
+import ThemeProductBlock from './ThemeProductBlock';
 import FloatingButtonBlock from './FloatingButtonBlock';
 import { FLOATING_BUTTON_ICONS } from './floatingButtonIcons';
 import { BUTTON_ANIMATIONS } from './buttonAnimations';
@@ -179,6 +180,15 @@ export const componentsMap = {
         ],
       },
     ],
+  },
+  // صفحة المنتج كما يرسمها ثيم المتجر (منتج الصفحة)، بطلب مباشر — تضيف فوقها وتحتها أقسام المحرر
+  themeProduct: {
+    labelKey: 'editor.blocks.themeProduct.label',
+    icon: Store,
+    Component: ThemeProductBlock,
+    singleton: true,
+    defaultProps: { productId: '' },
+    fields: [],
   },
   productImages: {
     labelKey: 'editor.blocks.productImages.label',

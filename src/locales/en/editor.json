@@ -188,12 +188,21 @@
     },
     "floatingButton": {
       "label": "Floating button"
+    },
+    "themeProduct": {
+      "label": "Product in store theme",
+      "hint": "Shown with your store theme and a direct order form — follows the product",
+      "noProduct": "Pick the page product first"
     }
   },
   "fields": {
     "animation": "Animation",
     "marquee": "Scrolling text",
-    "marqueeOptions": { "none": "Static", "rtl": "Right to left", "ltr": "Left to right" },
+    "marqueeOptions": {
+      "none": "Static",
+      "rtl": "Right to left",
+      "ltr": "Left to right"
+    },
     "marqueeSpeed": "Speed (seconds per band width)",
     "marqueeRepeat": "Copies across the band",
     "animationOptions": {

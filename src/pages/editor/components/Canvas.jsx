@@ -132,6 +132,8 @@ function CanvasBlock({ block, index, isSelected, onSelect, onDelete, onDeleteAt,
   const componentProps =
     block.type === 'productForm'
       ? { ...def.defaultProps, ...block.props, productId: pageProductId || block.props.productId, language }
+      : block.type === 'themeProduct'
+      ? { ...def.defaultProps, ...block.props, productId: pageProductId || block.props.productId }
       : block.type === 'productImages'
       ? {
           ...def.defaultProps,

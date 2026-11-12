@@ -188,12 +188,21 @@
     },
     "floatingButton": {
       "label": "زر عائم"
+    },
+    "themeProduct": {
+      "label": "المنتج بثيم المتجر",
+      "hint": "يظهر بتصميم ثيم متجرك مع نموذج طلب مباشر — يتحدّث مع المنتج",
+      "noProduct": "اختر منتج الصفحة أولاً"
     }
   },
   "fields": {
     "animation": "الحركة",
     "marquee": "نص متحرك",
-    "marqueeOptions": { "none": "ثابت", "rtl": "من اليمين لليسار", "ltr": "من اليسار لليمين" },
+    "marqueeOptions": {
+      "none": "ثابت",
+      "rtl": "من اليمين لليسار",
+      "ltr": "من اليسار لليمين"
+    },
     "marqueeSpeed": "سرعة الحركة (ثوانٍ لعبور الشريط)",
     "marqueeRepeat": "عدد النسخ على عرض الشريط",
     "animationOptions": {
