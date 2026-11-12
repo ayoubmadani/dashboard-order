@@ -1166,14 +1166,16 @@ export default function Orders() {
                         {isSelected ? <CheckSquare size={15} className="text-cyan-500" /> : <Square size={15} className="text-gray-300" />}
                       </button>
                     )}
-                    <span className="font-bold text-gray-900 dark:text-white text-sm truncate">{cart.customerName || '—'}</span>
+                    <span className="font-bold text-gray-900 dark:text-white text-sm truncate">{cart.customerHidden ? t('list.customer_hidden') : (cart.customerName || '—')}</span>
                     {isSuspicious && (
                       <span title={t('list.suspicious', 'مشتبه')} className="shrink-0 inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[9px] font-bold border border-amber-200 dark:border-amber-500/30">
                         <ShieldAlert size={9} />
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-1">
+                  {cart.customerHidden ? (
+                    <p className="text-[11px] font-semibold text-rose-600">{t('list.customer_hidden_hint')}</p>
+                  ) : <div className="flex items-center gap-1">
                     <a
                       href={`tel:${cart.customerPhone}`}
                       onClick={e => e.stopPropagation()}
@@ -1196,7 +1198,7 @@ export default function Orders() {
                     >
                       <Search size={11} />
                     </button>
-                  </div>
+                  </div>}
                 </div>
 
                 {/* المنتجات */}

@@ -47,7 +47,9 @@
     "next_page": "Suivant",
     "edit": "Modifier",
     "delete": "Supprimer",
-    "digital_badge": "Numérique"
+    "digital_badge": "Numérique",
+    "customer_hidden": "Client masqué",
+    "customer_hidden_hint": "Quota épuisé et limite de dette atteinte — rechargez le portefeuille ou changez d'offre"
   },
   "edit": {
     "locked_title": "Cette commande est chez la société de confirmation {{name}}",

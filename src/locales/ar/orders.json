@@ -47,7 +47,9 @@
     "next_page": "التالي",
     "edit": "تعديل",
     "delete": "حذف",
-    "digital_badge": "رقمي"
+    "digital_badge": "رقمي",
+    "customer_hidden": "بيانات الزبون مخفية",
+    "customer_hidden_hint": "انتهت حصة طلباتك وتجاوزت حد الدين — اشحن المحفظة أو رقّ خطتك لإظهارها"
   },
   "edit": {
     "locked_title": "هذه الطلبية عند شركة التأكيد {{name}}",
