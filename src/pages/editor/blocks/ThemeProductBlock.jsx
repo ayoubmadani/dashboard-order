@@ -7,7 +7,7 @@ import { getAccessToken } from '../../../services/access-token';
 
 // «المنتج بثيم المتجر»: في المحرر معاينة مبسّطة (صورة، اسم، سعر)؛ في الصفحة المنشورة يرسمه ثيم المتجر نفسه
 // (صور، خيارات، نموذج طلب مباشر) — المنتج يبقى متصلاً، أي تعديل عليه يظهر في الصفحة
-export default function ThemeProductBlock({ productId }) {
+export default function ThemeProductBlock({ productId, backgroundColor }) {
   const { t } = useTranslation();
   const [product, setProduct] = useState(null);
 
@@ -21,7 +21,7 @@ export default function ThemeProductBlock({ productId }) {
 
   const image = product?.imagesProduct?.[0]?.imageUrl || product?.productImage;
   return (
-    <div style={{ padding: 16, background: '#f8fafc', border: '2px dashed #a7f3d0', borderRadius: 12 }}>
+    <div style={{ padding: 16, background: backgroundColor || 'transparent', border: '2px dashed #a7f3d0', borderRadius: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#059669', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
         <Store size={14} /> {t('editor.blocks.themeProduct.label')}
       </div>

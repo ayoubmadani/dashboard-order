@@ -187,8 +187,9 @@ export const componentsMap = {
     icon: Store,
     Component: ThemeProductBlock,
     singleton: true,
-    defaultProps: { productId: '' },
-    fields: [],
+    // فارغ = لون خلفية الصفحة
+    defaultProps: { productId: '', backgroundColor: '' },
+    fields: [{ key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' }],
   },
   productImages: {
     labelKey: 'editor.blocks.productImages.label',
