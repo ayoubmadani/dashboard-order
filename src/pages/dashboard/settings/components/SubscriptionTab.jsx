@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import OrderQuotaCard from './OrderQuotaCard';
 import { useTranslation } from 'react-i18next';
 import {
   Loader2, CheckCircle2, CalendarDays, Zap, ChevronRight, Gift,
@@ -135,6 +136,7 @@ export default function SubscriptionTab() {
           </button>
         )}
         {trialOpen && <TrialOffer data={trial} onClose={() => setTrialOpen(false)} />}
+        <OrderQuotaCard />
 
         {subLoading ? (
           <div className="flex items-center justify-center py-16 text-gray-400"><Loader2 size={24} className="animate-spin" /></div>
