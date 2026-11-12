@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
+import { OrderNotesPanel, ReasonModal } from './notes/OrderNotes';
+import { asksReason } from './notes/notes';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useLocation, useOutletContext } from 'react-router-dom';
 import { can } from '../../../services/storeAccess';
@@ -129,6 +131,8 @@ export default function OrderEditPage({ isNew = false }) {
 
   const [editedCart, setEditedCart] = useState(null);
   const [originalCart, setOriginalCart] = useState(null);
+  const [reasonFor, setReasonFor] = useState(null); // سبب اختياري بعد تغيير الحالة
+  const [notesKey, setNotesKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [wilayasData, setWilayaData] = useState([]);
@@ -492,6 +496,10 @@ export default function OrderEditPage({ isNew = false }) {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      // سبب اختياري إن تغيّرت الحالة إلى ملغى/مرتجع/مؤجل/لا يرد
+      if (originalCart && originalCart.status !== editedCart.status && asksReason(editedCart.status)) {
+        setReasonFor({ orderId: editedCart.id, from: originalCart.status, to: editedCart.status, name: editedCart.customerName });
+      }
       // تحديث الحالة المرجعية للمقارنة لاحقاً
       const newCartState = { ...editedCart, items: itemsToSave };
       setOriginalCart(JSON.parse(JSON.stringify(newCartState)));
@@ -719,6 +727,9 @@ export default function OrderEditPage({ isNew = false }) {
                   </div>}
                 </div>
               </div>
+
+              {/* سجل الطلب: ملاحظات المتجر والمؤكّدين */}
+              {!isNew && editedCart?.id && <OrderNotesPanel orderId={editedCart.id} reloadKey={notesKey} />}
 
               {/* المنتجات */}
               <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow">
@@ -1051,6 +1062,7 @@ export default function OrderEditPage({ isNew = false }) {
         </div>
       )}
 
+      <ReasonModal change={reasonFor} onClose={() => setReasonFor(null)} onSaved={() => setNotesKey((k) => k + 1)} />
     </div>
   );
 }

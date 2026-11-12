@@ -92,7 +92,7 @@ const S = `
   .dark .om-loading { background:rgba(24,24,27,0.9); }
 `;
 
-export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readOnly = false }) {
+export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readOnly = false, onStatusChanged }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'orders' });
   const isRtl = i18n.dir() === 'rtl';
   const navigate = useNavigate();
@@ -116,6 +116,8 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
     try {
       await axios.post(`${baseURL}/stores/${localStorage.getItem('storeId')}/shipping/handover`, { orderIds: [cartData.id] }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success(t('labels.handover_done', { count: 1 }));
+      // سبب اختياري بعد تغيير الحالة (تعرضه صفحة الطلبات)
+      if (status !== cartData.status) onStatusChanged?.({ orderId: cartData.id, from: cartData.status, to: status, name: cartData.customerName });
       onRefresh?.(); onClose();
     } catch { toast.error(t('labels.handover_error')); }
     finally { setHandingOver(false); }

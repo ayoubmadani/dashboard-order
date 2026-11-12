@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { ReasonModal } from './notes/OrderNotes';
+import { asksReason } from './notes/notes';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
@@ -739,6 +741,7 @@ export default function Orders() {
 
   const [openStatusId, setOpenStatusId] = useState(null);
   const [statusBusyId, setStatusBusyId] = useState(null);
+  const [reasonFor, setReasonFor] = useState(null); // نافذة «السبب» بعد تغيير الحالة
   const [copiedId, setCopiedId] = useState(null);
   const [toasts, setToasts] = useState([]);
 
@@ -894,6 +897,8 @@ export default function Orders() {
         headers: { Authorization: `Bearer ${token}` },
       });
       pushToast(`${cart.customerName || ''} → ${statusLabel(t, status, cart.isDigital)}`);
+      // سبب اختياري (ملغى، مرتجع، مؤجل، لا يرد…)
+      if (asksReason(status)) setReasonFor({ orderId: cart.id, from: prev, to: status, name: cart.customerName });
       /* الطلب خرج من الفلتر الحالي → نحيّدو من القائمة بلا reload */
       if (statusFilter && statusFilter !== status) {
         setTimeout(() => {
@@ -1399,7 +1404,8 @@ export default function Orders() {
         </div>
       )}
 
-      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} readOnly={!canManage} />
+      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} readOnly={!canManage}
+        onStatusChanged={(c) => asksReason(c.to) && setReasonFor(c)} />
 
       {sendIds && (
         <SendConfirmationModal
@@ -1408,6 +1414,7 @@ export default function Orders() {
           onDone={() => { setSendIds(null); clearSelection(); fetchOrders(); }}
         />
       )}
+      <ReasonModal change={reasonFor} onClose={() => setReasonFor(null)} />
       <Toaster position="top-center" richColors />
 
       <style>{`.scrollbar-none::-webkit-scrollbar{display:none}.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}`}</style>
