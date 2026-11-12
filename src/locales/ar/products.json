@@ -269,7 +269,14 @@
     "link_image": "ربط صورة",
     "pick_image": "الصورة التي تظهر عند اختيار هذا اللون",
     "unlink_image": "بدون صورة",
-    "no_product_images": "أضف صور المنتج أولاً"
+    "no_product_images": "أضف صور المنتج أولاً",
+    "mode_text": "نص",
+    "mode_color": "لون",
+    "mode_image": "صورة",
+    "new_name_ph": "اسم الخاصية (المقاس، اللون، الموديل…)",
+    "new_add": "إضافة",
+    "duplicate_value": "قيمة مكررة",
+    "value_name": "الاسم (اختياري)"
   },
   "variants": {
     "section_title": "تفاصيل المتغيرات",

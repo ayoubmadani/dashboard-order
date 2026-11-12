@@ -269,7 +269,14 @@
     "link_image": "Lier une image",
     "pick_image": "Image affichée quand cette couleur est choisie",
     "unlink_image": "Sans image",
-    "no_product_images": "Ajoutez d'abord les images du produit"
+    "no_product_images": "Ajoutez d'abord les images du produit",
+    "mode_text": "Texte",
+    "mode_color": "Couleur",
+    "mode_image": "Image",
+    "new_name_ph": "Nom de l'attribut (Taille, Couleur, Modèle…)",
+    "new_add": "Ajouter",
+    "duplicate_value": "Valeur en double",
+    "value_name": "Nom (optionnel)"
   },
   "variants": {
     "section_title": "Détails des variantes",

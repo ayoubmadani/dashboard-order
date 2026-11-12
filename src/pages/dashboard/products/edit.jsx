@@ -1,5 +1,6 @@
-import { ColorValueExtras } from './components/ColorValueExtras';
 import PagePixelsModal from '../../editor/components/PagePixelsModal';
+import AttributesEditor from './components/AttributesEditor';
+import { attributeErrors, cleanAttributes, setImage } from './components/attributeEditing';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
@@ -262,51 +263,6 @@ export default function EditProduct() {
   }, [id]);
 
   /* ── Attributes ── */
-  const addAttribute = (type, name = '') => {
-    const base = { id: `att-${Date.now()}`, type, name: name || (type === ATTRIBUTE_TYPES.COLOR ? t('attributes.colors_label') : type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_label') : '') };
-    const attr = type === ATTRIBUTE_TYPES.COLOR
-      ? { ...base, displayMode: 'color', variants: [] }
-      : type === ATTRIBUTE_TYPES.SIZE
-        ? { ...base, variants: DEFAULT_SIZES.map((s, i) => ({ id: `var-${Date.now()}-${i}`, name: s, value: s })) }
-        : { ...base, variants: [] };
-    setAttributes(prev => [...prev, attr]);
-   
-  };
-
-  const removeAttribute = (id) => { setAttributes(prev => prev.filter(a => a.id !== id)); };
-  const updateAttributeName = (id, name) => { setAttributes(prev => prev.map(a => a.id === id ? { ...a, name } : a)); };
-  const updateDisplayMode = (id, mode) => { setAttributes(prev => prev.map(a => a.id === id && a.type === ATTRIBUTE_TYPES.COLOR ? { ...a, displayMode: mode, variants: [] } : a)); };
-
-  const addVariant = (attrId) => {
-    setAttributes(prev => prev.map(a => a.id !== attrId ? a : { ...a, variants: [...a.variants, { id: `var-${Date.now()}`, name: '', value: '' }] }));
-  };
-
-  const updateVariantValue = (attrId, variantId, value, imgId = null) => {
-    setAttributes(prev => prev.map(a => {
-      if (a.id !== attrId) return a;
-      return {
-        ...a, variants: a.variants.map(v => {
-          if (v.id !== variantId) return v;
-          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: v.name && v.name !== v.value ? v.name : value, imageId: imgId };
-          // لون: يبقى الاسم الذي كتبه التاجر (أحمر) عند تغيير الرمز
-          if (a.type === ATTRIBUTE_TYPES.COLOR && v.name && v.name !== v.value) return { ...v, value };
-          return { ...v, value, name: value };
-        })
-      };
-    }));
-  };
-
-  // اسم اللون (فارغ = الرمز) والصورة المربوطة باللون
-  const updateVariantName = (attrId, variantId, name) => setAttributes(prev => prev.map(a => a.id !== attrId ? a : {
-    ...a, variants: a.variants.map(v => v.id !== variantId ? v : { ...v, name: name.trim() ? name : v.value }),
-  }));
-  const linkVariantImage = (attrId, variantId, url) => setAttributes(prev => prev.map(a => a.id !== attrId ? a : {
-    ...a, variants: a.variants.map(v => v.id !== variantId ? v : { ...v, imageUrl: url }),
-  }));
-
-  const removeVariant = (attrId, variantId) => {
-    setAttributes(prev => prev.map(a => a.id !== attrId ? a : { ...a, variants: a.variants.filter(v => v.id !== variantId) }));
-  };
 
 
   /* ── Offers ── */
@@ -318,7 +274,7 @@ export default function EditProduct() {
   const openImageSelectorForVariant = (attrId, variantId) => { setSelectingImageFor({ attrId, variantId }); setFolder('productVariant'); setIsOpenModelImage(true); };
   const handleImageSelect = (imageData) => {
     if (selectingImageFor) {
-      updateVariantValue(selectingImageFor.attrId, selectingImageFor.variantId, imageData.url, imageData.id);
+      setAttributes(prev => prev.map(a => a.id === selectingImageFor.attrId ? setImage(a, selectingImageFor.variantId, imageData.url, imageData.id) : a));
       setSelectingImageFor(null);
       showNotification('success', t('images.added_success'));
       return;
@@ -341,20 +297,8 @@ export default function EditProduct() {
     const hasText = /[a-zA-Z0-9\u0600-\u06FF]/.test(formData.name || '');
     if (!formData.name?.trim() || !hasText) e.name = t('edit.name_invalid');
     if (!formData.price || Number(formData.price) <= 0) e.price = t('edit.price_invalid');
-    // Two attributes sharing the same name (e.g. two "اللون" attributes, one
-    // color-swatch one image-swatch) can't both be selected on the storefront
-    // — the order form's selection state is keyed by attribute name, not id.
-    const nameCounts = {};
-    attributes.forEach(a => {
-      const key = a.name?.trim().toLowerCase();
-      if (key) nameCounts[key] = (nameCounts[key] || 0) + 1;
-    });
-    attributes.forEach(a => {
-      if (!a.name?.trim()) e[`attr_${a.id}`] = t('attributes.name_required');
-      else if (nameCounts[a.name.trim().toLowerCase()] > 1) e[`attr_${a.id}`] = t('attributes.name_duplicate');
-      if (!a.variants.length) e[`attr_empty_${a.id}`] = t('attributes.one_variant_required');
-      a.variants.forEach(v => { if (!v.name?.trim() && !v.value?.trim()) e[`variant_${v.id}`] = t('attributes.variant_value_required'); });
-    });
+    // نفس قواعد التطبيق: اسم مطلوب وغير مكرر، قيمة واحدة مكتوبة على الأقل، بلا قيم مكررة (الأسطر الفارغة تُتجاهل)
+    Object.assign(e, attributeErrors(attributes, t));
     setErrors(e);
     return !Object.keys(e).length;
   };
@@ -393,7 +337,7 @@ export default function EditProduct() {
         addons: addonsPayload(addons),
         priceOriginal: formData.originalPrice ? Number(formData.originalPrice) : null,
         categoryId: formData.categoryId || null,
-        attributes,
+        attributes: cleanAttributes(attributes),
         variantDetails: [], // تُولَّد في الخادم من الخصائص مع الحفاظ على إعدادات صفحة show
         offers: offers.map(o => ({ ...o, price: Number(o.price) || 0, quantity: Number(o.quantity) || 0 })),
         images
@@ -694,111 +638,8 @@ export default function EditProduct() {
 
       {/* ── SECTION 2: Attributes ── */}
       <Section icon={Palette} title={t('attributes.section_title')} color="purple">
-        {!attributes.length && <p className="text-center text-sm text-gray-400 py-4">{t('attributes.none_yet')}</p>}
-
-        {attributes.map((attr) => (
-          <div key={attr.id} className="border border-gray-100 dark:border-zinc-800 rounded-xl p-4 bg-gray-50 dark:bg-zinc-950 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className={`p-1.5 rounded-lg ${attr.type === ATTRIBUTE_TYPES.COLOR ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-500' : attr.type === ATTRIBUTE_TYPES.SIZE ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-500' : 'bg-gray-200 dark:bg-zinc-700 text-gray-500'}`}>
-                {attr.type === ATTRIBUTE_TYPES.COLOR ? <Palette size={14} /> : attr.type === ATTRIBUTE_TYPES.SIZE ? <Ruler size={14} /> : <TypeIcon size={14} />}
-              </div>
-              <input type="text" value={attr.name} onChange={e => updateAttributeName(attr.id, e.target.value)}
-                className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                  ${errors[`attr_${attr.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
-              <button type="button" onClick={() => removeAttribute(attr.id)}
-                className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
-                <Trash2 size={14} />
-              </button>
-            </div>
-            {errors[`attr_${attr.id}`] && (
-              <p className="flex items-center gap-1 text-xs text-rose-500 font-medium -mt-1">
-                <AlertCircle size={12} />{errors[`attr_${attr.id}`]}
-              </p>
-            )}
-
-            {attr.type === ATTRIBUTE_TYPES.COLOR && (
-              <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg w-fit">
-                {['color', 'image'].map(mode => (
-                  <button key={mode} type="button" onClick={() => updateDisplayMode(attr.id, mode)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${attr.displayMode === mode ? 'bg-white dark:bg-zinc-700 text-gray-800 dark:text-white shadow-sm' : 'text-gray-500'}`}>
-                    {mode === 'color' ? t('attributes.display_color') : t('attributes.display_image')}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              {attr.variants.map(variant => (
-                <div key={variant.id} className="flex items-center gap-2">
-                  {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? (
-                    <>
-                      <input type="color" value={variant.value || '#000000'}
-                        onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
-                        className="w-9 h-9 rounded-lg cursor-pointer border border-gray-200 dark:border-zinc-700 p-0.5 bg-white" />
-                      <input type="text" value={variant.value}
-                        onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
-                        placeholder="#FF0000"
-                        className={`w-28 shrink-0 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                          ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-purple-400'}`} />
-                      <ColorValueExtras variant={variant} images={images} t={t}
-                        onName={(n) => updateVariantName(attr.id, variant.id, n)} onImage={(u) => linkVariantImage(attr.id, variant.id, u)} />
-                    </>
-                  ) : attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? (
-                    variant.value ? (
-                      <div className="flex-1 flex items-center gap-3 px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg">
-                        <img src={variant.value} alt="" className="w-9 h-9 object-cover rounded-lg" />
-                        <ColorValueExtras variant={variant} images={images} t={t} withImage={false}
-                          onName={(n) => updateVariantName(attr.id, variant.id, n)} onImage={() => {}} />
-                        <button type="button" onClick={() => openImageSelectorForVariant(attr.id, variant.id)}
-                          className="text-xs font-semibold text-indigo-500 hover:text-indigo-600">{t('attributes.change_image')}</button>
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => openImageSelectorForVariant(attr.id, variant.id)}
-                        className="flex-1 py-2.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-gray-400 hover:border-indigo-400 hover:text-indigo-500 transition-all flex items-center justify-center gap-1">
-                        <ImageIcon size={14} />{t('attributes.select_image')}
-                      </button>
-                    )
-                  ) : (
-                    <input type="text" value={variant.name}
-                      onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
-                      placeholder={attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.size_placeholder') : t('attributes.value_placeholder')}
-                      className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
-                        ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-indigo-400'}`} />
-                  )}
-                  <button type="button" onClick={() => removeVariant(attr.id, variant.id)}
-                    className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-
-              {errors[`attr_empty_${attr.id}`] && (
-                <p className="text-xs text-rose-500 font-medium flex items-center gap-1">
-                  <AlertCircle size={11} />{t('attributes.one_variant_required')}
-                </p>
-              )}
-
-              <button type="button" onClick={() => addVariant(attr.id)}
-                className="w-full py-2 border border-dashed border-gray-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-gray-400 hover:text-indigo-500 hover:border-indigo-400 transition-all">
-                <Plus size={12} className="inline mr-1" />
-                {attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'color' ? t('attributes.add_color_value') :
-                  attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? t('attributes.add_image_value') :
-                    attr.type === ATTRIBUTE_TYPES.SIZE ? t('attributes.add_size_value') : t('attributes.add_value')}
-              </button>
-            </div>
-          </div>
-        ))}
-
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
-          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.COLOR, t('attributes.color_label'))}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-100 dark:hover:bg-purple-500/20 rounded-lg transition-all">
-            <Palette size={13} />{t('attributes.add_color')}
-          </button>
-          <button type="button" onClick={() => addAttribute(ATTRIBUTE_TYPES.TEXT, '')}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded-lg transition-all">
-            <TypeIcon size={13} />{t('attributes.add_custom')}
-          </button>
-        </div>
+        <AttributesEditor attributes={attributes} onChange={setAttributes} images={images} errors={errors} t={t}
+          onPickLibrary={openImageSelectorForVariant} />
       </Section>
 
 
