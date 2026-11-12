@@ -115,7 +115,7 @@ export default function TrialOffer({ data: preset = null, onClose = null }) {
                   </span>
                 )}
                 <p className="font-black text-lg text-gray-900 dark:text-white capitalize">{plan.name}</p>
-                <p className="mt-2 text-2xl font-black text-emerald-500">{t('trial_free_days', { days: offer.days })}</p>
+                <p className="mt-2 text-2xl font-black text-emerald-500">{t('trial_free_days', { days: plan.trialDays || offer.days })}</p>
                 <p className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
                   {t('trial_then', { price: perMonth(getPlanPrice(plan, billing), billing).toLocaleString(), currency: plan.currency || 'DZD', period })}
                 </p>
