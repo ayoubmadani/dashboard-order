@@ -49,7 +49,7 @@
     "delete": "Supprimer",
     "digital_badge": "Numérique",
     "customer_hidden": "Client masqué",
-    "customer_hidden_hint": "Quota épuisé et limite de dette atteinte — rechargez le portefeuille ou changez d'offre"
+    "customer_hidden_hint": "Hors quota et limite de dette — affichez la commande en la payant"
   },
   "edit": {
     "locked_title": "Cette commande est chez la société de confirmation {{name}}",

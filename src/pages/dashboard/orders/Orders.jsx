@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import OrderQuotaCard from '../settings/components/OrderQuotaCard';
 import { ReasonModal } from './notes/OrderNotes';
 import { asksReason } from './notes/notes';
 import { useTranslation } from 'react-i18next';
@@ -1084,6 +1085,8 @@ export default function Orders() {
 
       {/* ═══ الجدول ═══ */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4">
+        {/* حصة الخطة: دين أو طلبات مخفية — الدفع بموافقة التاجر */}
+        <div className="mb-4"><OrderQuotaCard compact onChanged={fetchOrders} /></div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-visible">
 
           {/* رأس الجدول */}

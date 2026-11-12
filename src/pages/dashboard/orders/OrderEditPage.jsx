@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import HiddenOrderNotice from './HiddenOrderNotice';
 import { OrderNotesPanel, ReasonModal } from './notes/OrderNotes';
 import { asksReason } from './notes/notes';
 import { useTranslation } from 'react-i18next';
@@ -727,6 +728,9 @@ export default function OrderEditPage({ isNew = false }) {
                   </div>}
                 </div>
               </div>
+
+              {/* حصة الخطة: طلب مخفي — يُكشف بدفع ثمنه (بموافقة التاجر) */}
+              {editedCart?.customerHidden && <HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} />}
 
               {/* سجل الطلب: ملاحظات المتجر والمؤكّدين */}
               {!isNew && editedCart?.id && <OrderNotesPanel orderId={editedCart.id} reloadKey={notesKey} />}
