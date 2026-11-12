@@ -1,43 +1,69 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Store } from 'lucide-react';
+import { Loader2, Store } from 'lucide-react';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
-// «المنتج بثيم المتجر»: في المحرر معاينة مبسّطة (صورة، اسم، سعر)؛ في الصفحة المنشورة يرسمه ثيم المتجر نفسه
-// (صور، خيارات، نموذج طلب مباشر) — المنتج يبقى متصلاً، أي تعديل عليه يظهر في الصفحة
-export default function ThemeProductBlock({ productId, backgroundColor }) {
+// «المنتج بثيم المتجر»: في المحرر معاينة حقيقية — صفحة المتجر /embed/<منتج> داخل إطار بعرض الصفحة،
+// يأخذ ارتفاعها كاملاً (رسالة من الإطار) — للعرض فقط: لا نقر ولا سحب عناصر إليها
+export const embedUrl = (subdomain, productId, width, bg) => {
+  const q = new URLSearchParams({ w: String(width || 720) });
+  if (bg && bg !== 'transparent') q.set('bg', bg);
+  return `https://${subdomain}.mdstore.top/embed/${productId}?${q}`;
+};
+
+export default function ThemeProductBlock({ productId, backgroundColor, referenceWidth }) {
   const { t } = useTranslation();
-  const [product, setProduct] = useState(null);
+  const [subdomain, setSubdomain] = useState(null);
+  const [height, setHeight] = useState(600);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!productId) { setProduct(null); return; }
+    if (!productId) { setSubdomain(null); return; }
     axios
       .get(`${baseURL}/builder-pages/product-info/${productId}`, { headers: { Authorization: `Bearer ${getAccessToken()}` } })
-      .then((res) => setProduct(res.data))
-      .catch(() => setProduct(null));
+      .then((res) => setSubdomain(res.data?.domain || null))
+      .catch(() => setSubdomain(null));
   }, [productId]);
 
-  const image = product?.imagesProduct?.[0]?.imageUrl || product?.productImage;
-  return (
-    <div style={{ padding: 16, background: backgroundColor || 'transparent', border: '2px dashed #a7f3d0', borderRadius: 12 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#059669', fontSize: 12, fontWeight: 700, marginBottom: 10 }}>
-        <Store size={14} /> {t('editor.blocks.themeProduct.label')}
+  useEffect(() => {
+    const onMessage = (e) => {
+      if (e.data?.type !== 'mds-embed-height' || e.data.productId !== productId) return;
+      setHeight(Math.max(200, Math.ceil(e.data.height)));
+      setReady(true);
+    };
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [productId]);
+
+  if (!productId) {
+    return (
+      <div style={{ padding: 24, border: '2px dashed #a7f3d0', borderRadius: 12, textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+        {t('editor.blocks.themeProduct.noProduct')}
       </div>
-      {!productId ? (
-        <p style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>{t('editor.blocks.themeProduct.noProduct')}</p>
-      ) : (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <div style={{ width: 96, height: 96, borderRadius: 10, background: '#e2e8f0', flexShrink: 0, overflow: 'hidden' }}>
-            {image && <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <p style={{ fontWeight: 700, fontSize: 15, color: '#18181b', margin: 0 }}>{product?.name || '…'}</p>
-            {product?.price != null && <p style={{ color: '#059669', fontWeight: 700, margin: '4px 0 0' }} dir="ltr">{Number(product.price).toLocaleString()} DZD</p>}
-            <p style={{ color: '#64748b', fontSize: 12, margin: '6px 0 0' }}>{t('editor.blocks.themeProduct.hint')}</p>
-          </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative', background: backgroundColor && backgroundColor !== 'transparent' ? backgroundColor : undefined }}>
+      <div style={{ position: 'absolute', top: 8, insetInlineStart: 8, zIndex: 2, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 6, background: '#10b981', color: '#fff', fontSize: 10, fontWeight: 700 }}>
+        <Store size={11} /> {t('editor.blocks.themeProduct.label')}
+      </div>
+      {!ready && (
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+          <Loader2 size={22} className="animate-spin" />
         </div>
+      )}
+      {subdomain && (
+        <iframe
+          key={`${subdomain}-${productId}-${referenceWidth}-${backgroundColor}`}
+          title={t('editor.blocks.themeProduct.label')}
+          src={embedUrl(subdomain, productId, referenceWidth, backgroundColor)}
+          style={{ display: 'block', width: '100%', height, border: 0, pointerEvents: 'none', opacity: ready ? 1 : 0 }}
+          tabIndex={-1}
+          loading="lazy"
+        />
       )}
     </div>
   );

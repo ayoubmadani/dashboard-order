@@ -62,7 +62,8 @@
     "elementsTitle": "Éléments flottants",
     "elementsDragHint": "Glissez sur n'importe quel bloc de la page pour l'y ajouter",
     "elementsNeedBlock": "Déposez cet élément sur un bloc existant de la page",
-    "conflictBlocked": "Impossible d'ajouter {{block}} avec {{other}} — un seul formulaire de commande par page"
+    "conflictBlocked": "Impossible d'ajouter {{block}} avec {{other}} — un seul formulaire de commande par page",
+    "noElementsHere": "Impossible d'ajouter des éléments sur « {{block}} » — ajoutez-les dans une autre section"
   },
   "generate": {
     "trigger": "Générer avec l'IA",

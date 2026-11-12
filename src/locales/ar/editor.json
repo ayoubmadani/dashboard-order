@@ -62,7 +62,8 @@
     "elementsTitle": "عناصر عائمة",
     "elementsDragHint": "اسحب فوق أي بلوك في الصفحة لإضافته إليه",
     "elementsNeedBlock": "أفلت هذا العنصر فوق بلوك موجود في الصفحة",
-    "conflictBlocked": "لا يمكن إضافة {{block}} مع {{other}} — {{other}} فيه نموذج الطلب"
+    "conflictBlocked": "لا يمكن إضافة {{block}} مع {{other}} — {{other}} فيه نموذج الطلب",
+    "noElementsHere": "لا يمكن إضافة عناصر فوق «{{block}}» — أضفها في قسم آخر"
   },
   "generate": {
     "trigger": "إنشاء بالذكاء الاصطناعي",

@@ -187,6 +187,7 @@ export const componentsMap = {
     icon: Store,
     Component: ThemeProductBlock,
     singleton: true,
+    noElements: true, // معاينة حقيقية للثيم: لا تُسحب إليها عناصر عائمة
     // فارغ = لون خلفية الصفحة
     defaultProps: { productId: '', backgroundColor: '' },
     fields: [{ key: 'backgroundColor', labelKey: 'editor.fields.backgroundColor', type: 'color' }],

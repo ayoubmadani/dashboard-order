@@ -151,6 +151,10 @@ export default function PageEditor() {
         toast.error(t('editor.sidebar.elementsNeedBlock'));
         return;
       }
+      if (componentsMap[targetBlock.type]?.noElements) {
+        toast.error(t('editor.sidebar.noElementsHere', { block: t(componentsMap[targetBlock.type].labelKey) }));
+        return;
+      }
 
       const activeRect = active.rect.current?.translated;
       let x = 50;
