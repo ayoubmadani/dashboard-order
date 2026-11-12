@@ -61,7 +61,8 @@
     "singletonBlocked": "Vous ne pouvez ajouter qu'un seul {{block}} par page",
     "elementsTitle": "Éléments flottants",
     "elementsDragHint": "Glissez sur n'importe quel bloc de la page pour l'y ajouter",
-    "elementsNeedBlock": "Déposez cet élément sur un bloc existant de la page"
+    "elementsNeedBlock": "Déposez cet élément sur un bloc existant de la page",
+    "conflictBlocked": "Impossible d'ajouter {{block}} avec {{other}} — un seul formulaire de commande par page"
   },
   "generate": {
     "trigger": "Générer avec l'IA",

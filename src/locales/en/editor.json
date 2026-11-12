@@ -61,7 +61,8 @@
     "singletonBlocked": "You can only add one {{block}} per page",
     "elementsTitle": "Floating elements",
     "elementsDragHint": "Drag onto any block on the page to add it there",
-    "elementsNeedBlock": "Drop this onto an existing block on the page"
+    "elementsNeedBlock": "Drop this onto an existing block on the page",
+    "conflictBlocked": "Can't add {{block}} with {{other}} — one order form per page"
   },
   "generate": {
     "trigger": "Generate with AI",

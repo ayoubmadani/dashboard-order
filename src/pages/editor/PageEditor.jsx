@@ -1,3 +1,4 @@
+import { blockConflict } from './blocks/blockRules';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -124,6 +125,11 @@ export default function PageEditor() {
       const def = componentsMap[activeData.blockType];
       if (def.singleton && blocks.some((b) => b.type === activeData.blockType)) {
         toast.error(t('editor.sidebar.singletonBlocked', { block: t(def.labelKey) }));
+        return;
+      }
+      const conflict = blockConflict(activeData.blockType, blocks.map((b) => b.type));
+      if (conflict) {
+        toast.error(t('editor.sidebar.conflictBlocked', { block: t(def.labelKey), other: t(componentsMap[conflict].labelKey) }));
         return;
       }
       const newBlock = { id: crypto.randomUUID(), type: activeData.blockType, props: {} };

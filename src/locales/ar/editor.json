@@ -61,7 +61,8 @@
     "singletonBlocked": "لا يمكن إضافة أكثر من {{block}} واحد في نفس الصفحة",
     "elementsTitle": "عناصر عائمة",
     "elementsDragHint": "اسحب فوق أي بلوك في الصفحة لإضافته إليه",
-    "elementsNeedBlock": "أفلت هذا العنصر فوق بلوك موجود في الصفحة"
+    "elementsNeedBlock": "أفلت هذا العنصر فوق بلوك موجود في الصفحة",
+    "conflictBlocked": "لا يمكن إضافة {{block}} مع {{other}} — {{other}} فيه نموذج الطلب"
   },
   "generate": {
     "trigger": "إنشاء بالذكاء الاصطناعي",

@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import { blockConflict } from '../blocks/blockRules';
 import { useTranslation } from 'react-i18next';
 import { Lock, Type, MousePointerClick, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { componentsMap, blockTypes } from '../blocks/componentsMap';
@@ -89,7 +90,7 @@ export default function Sidebar({ blocks, mobileOpen, onMobileClose, onOpenGener
           <PaletteItem
             key={blockType}
             blockType={blockType}
-            disabled={componentsMap[blockType].singleton && placedTypes.has(blockType)}
+            disabled={(componentsMap[blockType].singleton && placedTypes.has(blockType)) || !!blockConflict(blockType, placedTypes)}
           />
         ))}
       </div>
