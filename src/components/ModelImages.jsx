@@ -334,7 +334,7 @@ export default function ModelImages({ isOpen, close, onSelectImage, initialFolde
   useEffect(() => {
     if (!isOpen) return;
     getMyPlanFeatures().then(features => {
-      if (features?.totalImagesNumber) setTotalImagesLimit(features.totalImagesNumber);
+      if (features?.totalImagesNumber) setTotalImagesLimit(features.totalImagesNumber < 0 ? null : features.totalImagesNumber); // -1 = بلا حد
     });
   }, [isOpen]);
 

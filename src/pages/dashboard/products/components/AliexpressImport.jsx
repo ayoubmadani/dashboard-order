@@ -95,14 +95,14 @@ export default function AliexpressImport({ onImported, notify }) {
               placeholder="https://www.aliexpress.com/item/1005000000000000.html"
               className="flex-1 min-w-0 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-sm dark:text-white outline-none focus:border-orange-400"
             />
-            <button type="button" onClick={runImport} disabled={loading || !url.trim() || (status.daily && status.daily.used >= status.daily.limit)}
+            <button type="button" onClick={runImport} disabled={loading || !url.trim() || (status.daily && status.daily.limit >= 0 && status.daily.used >= status.daily.limit)}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF4747] hover:bg-[#e63c3c] text-white text-sm font-bold disabled:opacity-50">
               {loading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}{t('import_btn')}
             </button>
           </div>
           {status.daily && (
-            <p className={`text-[11px] font-semibold ${status.daily.used >= status.daily.limit ? 'text-rose-600' : 'text-gray-500 dark:text-zinc-400'}`}>
-              {status.daily.limit === 0 ? t('daily_off') : t('daily_left', { left: Math.max(0, status.daily.limit - status.daily.used), limit: status.daily.limit })}
+            <p className={`text-[11px] font-semibold ${status.daily.limit >= 0 && status.daily.used >= status.daily.limit ? 'text-rose-600' : 'text-gray-500 dark:text-zinc-400'}`}>
+              {status.daily.limit === 0 ? t('daily_off') : t('daily_left', { left: status.daily.limit < 0 ? '∞' : Math.max(0, status.daily.limit - status.daily.used), limit: status.daily.limit < 0 ? '∞' : status.daily.limit })}
             </p>
           )}
         </>

@@ -151,7 +151,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
   const isImages = kind === 'images';
   const busy = generating || !!imagePage?.step;
   const usage = imagePage?.usage || { used: 0, limit: 0 };
-  const limitReached = isImages && usage.used >= usage.limit;
+  const limitReached = isImages && usage.limit >= 0 && usage.used >= usage.limit; // -1 = بلا حد
 
   // روابط المعاينة تُحرَّر عند الاستبدال/الإغلاق
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
@@ -431,7 +431,7 @@ export default function GenerateModal({ open, onClose, onSubmit, generating, isD
               ? t('editor.imagePage.unavailable')
               : limitReached
                 ? t('editor.imagePage.upgrade')
-                : t('editor.imagePage.usage', { used: usage.used, limit: usage.limit })}
+                : t('editor.imagePage.usage', { used: usage.used, limit: usage.limit < 0 ? '∞' : usage.limit })}
           </p>
         )}
 

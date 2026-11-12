@@ -197,5 +197,7 @@
     "customer_hidden": "بيانات الزبون مخفية",
     "customer_hidden_hint": "فوق حصة خطتك وحد الدين — اكشف الطلب بدفع ثمنه",
     "confirm_reveal_one": "كشف هذا الطلب مقابل {{amount}} د.ج من المحفظة؟"
-  }
+  },
+  "feat_orders": "طلب / شهر",
+  "feat_extra_order": "د.ج لكل طلب زائد"
 }

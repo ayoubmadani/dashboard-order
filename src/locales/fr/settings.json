@@ -197,5 +197,7 @@
     "customer_hidden": "Client masqué",
     "customer_hidden_hint": "Hors quota et limite de dette — affichez la commande en la payant",
     "confirm_reveal_one": "Afficher cette commande pour {{amount}} DA du portefeuille ?"
-  }
+  },
+  "feat_orders": "commandes / mois",
+  "feat_extra_order": "DA par commande en plus"
 }

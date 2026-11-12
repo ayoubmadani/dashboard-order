@@ -17,14 +17,18 @@ export const getDiscountedPrice = (price, couponInfo) => {
   return Math.max(0, Number((price - Math.min(discount, price)).toFixed(2)));
 };
 
+// -1 = بلا حد
+const lim = (n) => (Number(n) < 0 ? '∞' : n);
+
 export const buildFeatureSummary = (features, t) => {
   if (!features) return [];
   const rows = [];
-  if (features.storeNumber) rows.push({ icon: Store, text: `${features.storeNumber} ${t('feat_stores')}` });
-  if (features.productNumber) rows.push({ icon: Package, text: `${features.productNumber} ${t('feat_products')}` });
-  if (features.landingPageNumber) rows.push({ icon: FileText, text: `${features.landingPageNumber} ${t('feat_pages')}` });
-  if (features.domainNumber) rows.push({ icon: Globe, text: `${features.domainNumber} ${t('feat_domains')}` });
-  if (Number(features.commission) > 0)
-    rows.push({ icon: TrendingUp, text: `${Number(features.commission).toFixed(1)}% ${t('feat_commission')}` });
+  if (features.storeNumber) rows.push({ icon: Store, text: `${lim(features.storeNumber)} ${t('feat_stores')}` });
+  if (features.productNumber) rows.push({ icon: Package, text: `${lim(features.productNumber)} ${t('feat_products')}` });
+  if (features.landingPageNumber) rows.push({ icon: FileText, text: `${lim(features.landingPageNumber)} ${t('feat_pages')}` });
+  if (features.domainNumber) rows.push({ icon: Globe, text: `${lim(features.domainNumber)} ${t('feat_domains')}` });
+  if (features.orderNumber != null) rows.push({ icon: Package, text: `${lim(features.orderNumber)} ${t('feat_orders')}` });
+  if (Number(features.orderNumber) >= 0 && Number(features.commission) > 0)
+    rows.push({ icon: TrendingUp, text: `${Number(features.commission)} ${t('feat_extra_order')}` });
   return rows;
 };

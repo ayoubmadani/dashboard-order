@@ -169,7 +169,7 @@ export default function CreateProduct() {
   /* ── Plan image limit ── */
   useEffect(() => {
     getMyPlanFeatures().then(features => {
-      if (features?.productImagesNumber) setMaxImages(features.productImagesNumber);
+      if (features?.productImagesNumber) setMaxImages(features.productImagesNumber < 0 ? Infinity : features.productImagesNumber); // -1 = بلا حد
     });
   }, []);
 
