@@ -54,7 +54,7 @@ function getVariantAttributeGroups(variants) {
         groups.push(index[key]);
       }
       if (!index[key].options.some(o => o.value === a.value)) {
-        index[key].options.push({ value: a.value });
+        index[key].options.push({ value: a.value, label: a.label || '' }); // label: اسم اللون
       }
     });
   });
@@ -842,7 +842,7 @@ export default function OrderEditPage({ isNew = false }) {
                                               key={o.value}
                                               type="button"
                                               disabled={!available}
-                                              title={available ? undefined : t('edit.option_unavailable')}
+                                              title={available ? (o.label || undefined) : t('edit.option_unavailable')}
                                               onClick={() => available && handleVariantAttrChange(item, group.key, o.value)}
                                               className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'} ${available ? '' : 'opacity-35 cursor-not-allowed'}`}
                                             >

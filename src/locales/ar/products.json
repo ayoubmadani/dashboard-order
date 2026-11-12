@@ -264,7 +264,12 @@
     "name_required": "اسم الخاصية مطلوب",
     "name_duplicate": "لا يمكن استخدام هذا الاسم لأكثر من خاصية واحدة",
     "one_variant_required": "أضف قيمة واحدة على الأقل",
-    "variant_value_required": "قيمة المتغير مطلوبة"
+    "variant_value_required": "قيمة المتغير مطلوبة",
+    "color_name": "اسم اللون (أحمر، أسود…)",
+    "link_image": "ربط صورة",
+    "pick_image": "الصورة التي تظهر عند اختيار هذا اللون",
+    "unlink_image": "بدون صورة",
+    "no_product_images": "أضف صور المنتج أولاً"
   },
   "variants": {
     "section_title": "تفاصيل المتغيرات",

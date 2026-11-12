@@ -1,3 +1,4 @@
+import { ColorValueExtras } from './components/ColorValueExtras';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
@@ -283,12 +284,22 @@ export default function EditProduct() {
       return {
         ...a, variants: a.variants.map(v => {
           if (v.id !== variantId) return v;
-          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: value, imageId: imgId };
+          if (a.type === ATTRIBUTE_TYPES.COLOR && a.displayMode === 'image') return { ...v, value, name: v.name && v.name !== v.value ? v.name : value, imageId: imgId };
+          // لون: يبقى الاسم الذي كتبه التاجر (أحمر) عند تغيير الرمز
+          if (a.type === ATTRIBUTE_TYPES.COLOR && v.name && v.name !== v.value) return { ...v, value };
           return { ...v, value, name: value };
         })
       };
     }));
   };
+
+  // اسم اللون (فارغ = الرمز) والصورة المربوطة باللون
+  const updateVariantName = (attrId, variantId, name) => setAttributes(prev => prev.map(a => a.id !== attrId ? a : {
+    ...a, variants: a.variants.map(v => v.id !== variantId ? v : { ...v, name: name.trim() ? name : v.value }),
+  }));
+  const linkVariantImage = (attrId, variantId, url) => setAttributes(prev => prev.map(a => a.id !== attrId ? a : {
+    ...a, variants: a.variants.map(v => v.id !== variantId ? v : { ...v, imageUrl: url }),
+  }));
 
   const removeVariant = (attrId, variantId) => {
     setAttributes(prev => prev.map(a => a.id !== attrId ? a : { ...a, variants: a.variants.filter(v => v.id !== variantId) }));
@@ -716,14 +727,17 @@ export default function EditProduct() {
                       <input type="text" value={variant.value}
                         onChange={e => updateVariantValue(attr.id, variant.id, e.target.value)}
                         placeholder="#FF0000"
-                        className={`flex-1 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
+                        className={`w-28 shrink-0 px-3 py-2 text-sm rounded-lg border bg-white dark:bg-zinc-900 outline-none
                           ${errors[`variant_${variant.id}`] ? 'border-rose-400' : 'border-gray-200 dark:border-zinc-700 focus:border-purple-400'}`} />
+                      <ColorValueExtras variant={variant} images={images} t={t}
+                        onName={(n) => updateVariantName(attr.id, variant.id, n)} onImage={(u) => linkVariantImage(attr.id, variant.id, u)} />
                     </>
                   ) : attr.type === ATTRIBUTE_TYPES.COLOR && attr.displayMode === 'image' ? (
                     variant.value ? (
                       <div className="flex-1 flex items-center gap-3 px-3 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg">
                         <img src={variant.value} alt="" className="w-9 h-9 object-cover rounded-lg" />
-                        <span className="flex-1 text-xs text-gray-400 truncate">{t('attributes.image_selected')}</span>
+                        <ColorValueExtras variant={variant} images={images} t={t} withImage={false}
+                          onName={(n) => updateVariantName(attr.id, variant.id, n)} onImage={() => {}} />
                         <button type="button" onClick={() => openImageSelectorForVariant(attr.id, variant.id)}
                           className="text-xs font-semibold text-indigo-500 hover:text-indigo-600">{t('attributes.change_image')}</button>
                       </div>

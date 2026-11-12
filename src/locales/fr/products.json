@@ -264,7 +264,12 @@
     "name_required": "Le nom de l'attribut est requis",
     "name_duplicate": "Ce nom ne peut pas être utilisé pour plus d'un attribut",
     "one_variant_required": "Ajoutez au moins une valeur",
-    "variant_value_required": "La valeur de la variante est requise"
+    "variant_value_required": "La valeur de la variante est requise",
+    "color_name": "Nom de la couleur (Rouge, Noir…)",
+    "link_image": "Lier une image",
+    "pick_image": "Image affichée quand cette couleur est choisie",
+    "unlink_image": "Sans image",
+    "no_product_images": "Ajoutez d'abord les images du produit"
   },
   "variants": {
     "section_title": "Détails des variantes",

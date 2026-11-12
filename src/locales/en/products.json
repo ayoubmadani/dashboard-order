@@ -264,7 +264,12 @@
     "name_required": "Attribute name is required",
     "name_duplicate": "This name can't be used for more than one attribute",
     "one_variant_required": "Add at least one value",
-    "variant_value_required": "Variant value is required"
+    "variant_value_required": "Variant value is required",
+    "color_name": "Colour name (Red, Black…)",
+    "link_image": "Link an image",
+    "pick_image": "Image shown when this colour is chosen",
+    "unlink_image": "No image",
+    "no_product_images": "Add product images first"
   },
   "variants": {
     "section_title": "Variant Details",
