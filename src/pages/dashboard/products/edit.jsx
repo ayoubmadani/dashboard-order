@@ -1,4 +1,6 @@
 import { ColorValueExtras } from './components/ColorValueExtras';
+import PageDomainModal from '../../editor/components/PageDomainModal';
+import PagePixelsModal from '../../editor/components/PagePixelsModal';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
@@ -11,6 +13,8 @@ import {
   Type as TypeIcon, Save, ArrowRight, Grid3x3,
   FolderTree, ChevronDown, X, Check, Truck, Download, MessageCircle,
   Wand2,
+  Globe,
+  Radar,
 } from 'lucide-react';
 import { freshStoreCode } from '../../../utils/storeCode';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -130,6 +134,7 @@ export default function EditProduct() {
 
   // «توليد رمز»: 4 خانات غير مستعملة في المتجر (البحث بالباركود/الرمز يرجع 404 = متاح)
   const [generating, setGenerating] = useState(false);
+  const [productModal, setProductModal] = useState(null); // 'domain' | 'pixels'
   const generateSku = async () => {
     setGenerating(true);
     try {
@@ -454,7 +459,20 @@ export default function EditProduct() {
             <p className="text-xs text-gray-400 font-mono"># {id}</p>
           </div>
         </div>
+        {/* صفحة المنتج وحدها على دومين خاص (حملة)، وبكسلات تعمل في صفحة هذا المنتج فقط */}
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => setProductModal('domain')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-bold text-gray-700 dark:text-zinc-200">
+            <Globe size={14} />{t('edit.product_domain')}
+          </button>
+          <button type="button" onClick={() => setProductModal('pixels')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-xs font-bold text-gray-700 dark:text-zinc-200">
+            <Radar size={14} />{t('edit.product_pixels')}
+          </button>
+        </div>
       </div>
+      <PageDomainModal open={productModal === 'domain'} onClose={() => setProductModal(null)} storeId={localStorage.getItem('storeId')} productId={id} />
+      <PagePixelsModal open={productModal === 'pixels'} onClose={() => setProductModal(null)} storeId={localStorage.getItem('storeId')} productId={id} />
 
       {/* ── SECTION 1: Basic Info ── */}
       <Section icon={Info} title={t('form.basic_info')} color="indigo">

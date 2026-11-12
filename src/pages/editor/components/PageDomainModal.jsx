@@ -15,7 +15,8 @@ const DNS_RECORD = { type: 'CNAME', host: '@', value: 'mdstore.top' };
 // idea as PagePixelsModal.jsx's per-page scoping, but the domain itself
 // isn't created here since it's a shared, globally-unique resource the
 // merchant manages in one place.
-export default function PageDomainModal({ open, onClose, storeId, pageId }) {
+// productId: نفس النافذة لدومين صفحة منتج واحد (scope: 'product')
+export default function PageDomainModal({ open, onClose, storeId, pageId, productId }) {
   const { t } = useTranslation('translation', { keyPrefix: 'editor.domain' });
   const [domains, setDomains] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +46,9 @@ export default function PageDomainModal({ open, onClose, storeId, pageId }) {
 
   if (!open) return null;
 
-  const assigned = domains.find((d) => d.scope === 'landing_page' && d.builderPageId === pageId);
+  const assigned = productId
+    ? domains.find((d) => d.scope === 'product' && d.productId === productId)
+    : domains.find((d) => d.scope === 'landing_page' && d.builderPageId === pageId);
   const available = domains.filter((d) => d.scope === 'store');
 
   const handleAssign = async () => {
@@ -53,8 +56,8 @@ export default function PageDomainModal({ open, onClose, storeId, pageId }) {
     setAssigning(true);
     try {
       const res = await axios.patch(
-        `${baseURL}/domain/${selected}/assign-page`,
-        { builderPageId: pageId, storeId },
+        productId ? `${baseURL}/domain/${selected}/assign-product` : `${baseURL}/domain/${selected}/assign-page`,
+        productId ? { productId, storeId } : { builderPageId: pageId, storeId },
         { headers: authHeaders() },
       );
       setDomains((prev) => prev.map((d) => (d.id === res.data.id ? res.data : d)));
@@ -72,7 +75,7 @@ export default function PageDomainModal({ open, onClose, storeId, pageId }) {
     setUnassigning(true);
     try {
       await axios.patch(`${baseURL}/domain/${assigned.id}/unassign-page`, { storeId }, { headers: authHeaders() });
-      setDomains((prev) => prev.map((d) => (d.id === assigned.id ? { ...d, scope: 'store', builderPageId: null } : d)));
+      setDomains((prev) => prev.map((d) => (d.id === assigned.id ? { ...d, scope: 'store', builderPageId: null, productId: null } : d)));
       toast.success(t('unassignSuccess'));
     } catch {
       toast.error(t('errors.unassignFailed'));

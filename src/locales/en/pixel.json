@@ -58,7 +58,8 @@
     "scopeLabel": "Where this pixel applies",
     "scope": {
       "store": "Store",
-      "landing_page": "Landing page"
+      "landing_page": "Landing page",
+      "product": "Product"
     },
     "saveChanges": "Save Changes",
     "addPixel": "Add Pixel",

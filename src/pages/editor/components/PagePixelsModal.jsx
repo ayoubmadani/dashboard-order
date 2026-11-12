@@ -20,7 +20,8 @@ const EMPTY_FORM = { type: 'facebook', pixelId: '', name: '' };
 // instead, which never sets a scope/builderPageId at all. Same pixelId can
 // exist in both places at once (see store.service.ts's addPixel), so a
 // merchant can reuse one tracking ID for both the store and one page.
-export default function PagePixelsModal({ open, onClose, storeId, pageId }) {
+// productId: نفس النافذة لبكسل خاص بمنتج (scope: 'product')
+export default function PagePixelsModal({ open, onClose, storeId, pageId, productId }) {
   const { t } = useTranslation('translation', { keyPrefix: 'editor.pixels' });
   const [pixels, setPixels] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,13 +39,13 @@ export default function PagePixelsModal({ open, onClose, storeId, pageId }) {
     try {
       const res = await axios.get(`${baseURL}/stores/${storeId}/pixels`, { headers: authHeaders() });
       const all = res.data?.data || res.data || [];
-      setPixels(all.filter((p) => p.scope === 'landing_page' && p.builderPageId === pageId));
+      setPixels(all.filter((p) => (productId ? p.scope === 'product' && p.productId === productId : p.scope === 'landing_page' && p.builderPageId === pageId)));
     } catch {
       toast.error(t('errors.fetchFailed'));
     } finally {
       setLoading(false);
     }
-  }, [storeId, pageId, t]);
+  }, [storeId, pageId, productId, t]);
 
   useEffect(() => {
     if (open) fetchPixels();
@@ -59,12 +60,12 @@ export default function PagePixelsModal({ open, onClose, storeId, pageId }) {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!storeId || !pageId || !form.pixelId.trim()) return;
+    if (!storeId || !(pageId || productId) || !form.pixelId.trim()) return;
     setSaving(true);
     try {
       await axios.post(
         `${baseURL}/stores/${storeId}/pixels`,
-        { type: form.type, pixelId: form.pixelId.trim(), name: form.name.trim() || undefined, scope: 'landing_page', builderPageId: pageId },
+        { type: form.type, pixelId: form.pixelId.trim(), name: form.name.trim() || undefined, ...(productId ? { scope: 'product', productId } : { scope: 'landing_page', builderPageId: pageId }) },
         { headers: authHeaders() },
       );
       toast.success(t('saveSuccess'));

@@ -329,7 +329,9 @@
     "error": "An error occurred while updating the product",
     "fix_errors": "Please fix errors first",
     "name_invalid": "Product name must contain text",
-    "price_invalid": "Enter a valid price"
+    "price_invalid": "Enter a valid price",
+    "product_domain": "Product domain",
+    "product_pixels": "Product pixels"
   },
   "insights": {
     "currency": "DA",

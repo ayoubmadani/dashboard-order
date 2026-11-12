@@ -58,7 +58,8 @@
     "scopeLabel": "أين يعمل هذا البكسل",
     "scope": {
       "store": "المتجر",
-      "landing_page": "صفحة هبوط"
+      "landing_page": "صفحة هبوط",
+      "product": "منتج"
     },
     "saveChanges": "حفظ التغييرات",
     "addPixel": "إضافة البكسل",

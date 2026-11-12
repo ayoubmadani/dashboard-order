@@ -329,7 +329,9 @@
     "error": "حدث خطأ أثناء تحديث المنتج",
     "fix_errors": "يرجى تصحيح الأخطاء أولاً",
     "name_invalid": "يجب أن يحتوي اسم المنتج على نص",
-    "price_invalid": "أدخل سعراً صحيحاً"
+    "price_invalid": "أدخل سعراً صحيحاً",
+    "product_domain": "دومين المنتج",
+    "product_pixels": "بيكسل المنتج"
   },
   "insights": {
     "currency": "د.ج",
