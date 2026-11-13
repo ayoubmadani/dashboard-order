@@ -50,7 +50,8 @@
     "digital_badge": "Numérique",
     "customer_hidden": "Client masqué",
     "customer_hidden_hint": "Hors quota et limite de dette — affichez la commande en la payant",
-    "test_order": "Test"
+    "test_order": "Test",
+    "test_order_hint": "Commande test — non comptée dans le quota"
   },
   "edit": {
     "locked_title": "Cette commande est chez la société de confirmation {{name}}",

@@ -730,6 +730,9 @@ export default function OrderEditPage({ isNew = false }) {
               </div>
 
               {/* حصة الخطة: طلب مخفي — يُكشف بدفع ثمنه (بموافقة التاجر) */}
+              {editedCart?.quotaState === 'test' && (
+                <div className="rounded-2xl border-2 border-gray-300 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800/60 px-5 py-3 text-sm font-bold text-gray-600 dark:text-zinc-300">🧪 {t('list.test_order_hint')}</div>
+              )}
               {editedCart?.customerHidden && <HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} />}
 
               {/* سجل الطلب: ملاحظات المتجر والمؤكّدين */}
