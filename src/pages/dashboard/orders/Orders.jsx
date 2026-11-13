@@ -1144,6 +1144,8 @@ export default function Orders() {
                 key={cart.id}
                 onDoubleClick={() => openModal(cart)}
                 className={`${GRID} px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
+                  /* طلب تجربة (mdStore + 0551525354): إطار رمادي، لا يُحسب في الحصة */
+                  cart.quotaState === 'test' ? 'outline outline-2 -outline-offset-2 outline-gray-300 dark:outline-zinc-600 rounded-xl bg-gray-50/80 dark:bg-zinc-800/40' : ''} ${
                   atConfirmation && !isSelected ? 'opacity-50 hover:opacity-80' : ''} ${
                   isSelected
                     ? 'bg-cyan-50/50 dark:bg-cyan-500/5'
@@ -1173,6 +1175,7 @@ export default function Orders() {
                       </button>
                     )}
                     <span className="font-bold text-gray-900 dark:text-white text-sm truncate">{cart.customerHidden ? t('list.customer_hidden') : (cart.customerName || '—')}</span>
+                    {cart.quotaState === 'test' && <span className="shrink-0 px-1.5 py-0.5 rounded bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 text-[9px] font-bold">{t('list.test_order')}</span>}
                     {isSuspicious && (
                       <span title={t('list.suspicious', 'مشتبه')} className="shrink-0 inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[9px] font-bold border border-amber-200 dark:border-amber-500/30">
                         <ShieldAlert size={9} />

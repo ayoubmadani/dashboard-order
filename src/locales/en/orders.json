@@ -49,7 +49,8 @@
     "delete": "Delete",
     "digital_badge": "Digital",
     "customer_hidden": "Customer hidden",
-    "customer_hidden_hint": "Over your plan quota and debt limit — show the order by paying for it"
+    "customer_hidden_hint": "Over your plan quota and debt limit — show the order by paying for it",
+    "test_order": "Test"
   },
   "edit": {
     "locked_title": "This order is at the confirmation company {{name}}",

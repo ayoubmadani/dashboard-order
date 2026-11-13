@@ -49,7 +49,8 @@
     "delete": "حذف",
     "digital_badge": "رقمي",
     "customer_hidden": "بيانات الزبون مخفية",
-    "customer_hidden_hint": "فوق حصة خطتك وحد الدين — اكشف الطلب بدفع ثمنه"
+    "customer_hidden_hint": "فوق حصة خطتك وحد الدين — اكشف الطلب بدفع ثمنه",
+    "test_order": "تجربة"
   },
   "edit": {
     "locked_title": "هذه الطلبية عند شركة التأكيد {{name}}",
