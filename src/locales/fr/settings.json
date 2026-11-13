@@ -196,7 +196,8 @@
     "error": "Paiement impossible",
     "customer_hidden": "Client masqué",
     "customer_hidden_hint": "Hors quota et limite de dette — affichez la commande en la payant",
-    "confirm_reveal_one": "Afficher cette commande pour {{amount}} DA du portefeuille ?"
+    "confirm_reveal_one": "Afficher cette commande pour {{amount}} DA du portefeuille ?",
+    "test_hint": "Pour tester une commande sans qu'elle compte : nom <b>mdStore</b> et numéro <b dir=\"ltr\">0551525354</b>"
   },
   "feat_orders": "commandes / mois",
   "feat_extra_order": "DA par commande en plus"

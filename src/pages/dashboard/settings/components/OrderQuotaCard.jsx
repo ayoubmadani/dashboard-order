@@ -79,6 +79,9 @@ export default function OrderQuotaCard({ compact = false, onChanged, reloadKey =
         </div>
       )}
       {hidden > 0 && <p className="text-[11px] text-gray-500">{t('balance', { balance: u.balance })}</p>}
+      {!unlimited && (
+        <p className="text-[11px] text-gray-500 border-t border-gray-100 dark:border-zinc-800 pt-2">🧪 <span dangerouslySetInnerHTML={{ __html: t('test_hint') }} /></p>
+      )}
       {err && <p className="text-xs font-semibold text-rose-600">{err}</p>}
     </div>
   );
