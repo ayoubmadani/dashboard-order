@@ -695,7 +695,7 @@ export default function ProductFormBlock({
                         <ChevronDown size={14} style={chevronInFieldStyle} />
                       </div>
                     </FieldWrapper>
-                    <FieldWrapper label={showLabels ? t.commune : undefined} labelColor={muted} plain>
+                    <FieldWrapper label={showLabels ? t.commune : undefined} labelColor={muted} plain required>
                       <div style={{ position: 'relative' }}>
                         <MapPin size={15} style={iconInFieldStyle} />
                         <select
