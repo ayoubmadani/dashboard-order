@@ -957,6 +957,7 @@ export default function Orders() {
       setOrders(prev => prev.filter(o => o.id !== deleteTarget.id));
       setTotal(x => Math.max(0, x - 1));
       setDeleteTarget(null);
+      setQuotaKey((k) => k + 1); // بطاقة «طلبات هذا الشهر» تتحدّث
       pushToast(t('delete_modal.done', 'تم حذف الطلب'));
     } catch (e) { console.error(e); pushToast(t('delete_modal.failed'), 'error'); }
     finally { setDeleting(false); }
