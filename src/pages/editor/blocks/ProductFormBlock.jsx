@@ -134,7 +134,6 @@ export default function ProductFormBlock({
     quantity: 1,
   });
   // منتج رقمي فقط — أي طريقة يستخدمها الزائر للتواصل بدل الشحن
-  const [contactMethod, setContactMethod] = useState('email');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(null);
@@ -287,13 +286,13 @@ export default function ProductFormBlock({
       setError(t.errorPhone);
       return;
     }
+    // المنتج الرقمي: البريد والواتساب اختياريان — يُفحص المكتوب فقط
     if (product.isDigital) {
-      if (contactMethod === 'email') {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail.trim())) {
-          setError(t.errorEmail);
-          return;
-        }
-      } else if (!/^(0|\+213)[5-7][0-9]{8}$/.test(form.customerWhatsapp.trim().replace(/\s/g, ''))) {
+      if (form.customerEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.customerEmail.trim())) {
+        setError(t.errorEmail);
+        return;
+      }
+      if (form.customerWhatsapp.trim() && !/^(0|\+213)[5-7][0-9]{8}$/.test(form.customerWhatsapp.trim().replace(/\s/g, ''))) {
         setError(t.errorWhatsapp);
         return;
       }
@@ -320,9 +319,10 @@ export default function ProductFormBlock({
           customerName: form.customerName,
           customerPhone: normalizedPhone,
           ...(product.isDigital
-            ? (contactMethod === 'email'
-                ? { customerEmail: form.customerEmail.trim() }
-                : { customerWhatsapp: form.customerWhatsapp.trim() })
+            ? {
+                ...(form.customerEmail.trim() ? { customerEmail: form.customerEmail.trim() } : {}),
+                ...(form.customerWhatsapp.trim() ? { customerWhatsapp: form.customerWhatsapp.trim() } : {}),
+              }
             : {
                 typeShip: form.typeShip,
                 priceShip,
@@ -601,42 +601,9 @@ export default function ProductFormBlock({
               </div>
 
               {product?.isDigital ? (
-                /* Email or WhatsApp — digital products need no shipping info */
+                /* البريد والواتساب معاً، كلاهما اختياري — المنتج الرقمي بلا توصيل */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: muted, opacity: 0.6, textTransform: 'uppercase', letterSpacing: 0.4 }}>{t.contactQuestion}</p>
-                  <div style={{ display: 'flex', borderRadius: sectionRadius, overflow: 'hidden', border: `1px solid ${inputBorderColor || inputStyle.borderColor}` }}>
-                    <button
-                      type="button"
-                      onClick={() => setContactMethod('email')}
-                      style={{
-                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                        backgroundColor: contactMethod === 'email' ? accentColor : inactiveBtnBg,
-                        color: contactMethod === 'email' ? activeBtnText : inactiveBtnText,
-                        opacity: contactMethod === 'email' ? 1 : 0.6,
-                      }}
-                    >
-                      <Mail size={14} />
-                      {t.contactViaEmail}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setContactMethod('whatsapp')}
-                      style={{
-                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        padding: '10px 0', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
-                        backgroundColor: contactMethod === 'whatsapp' ? accentColor : inactiveBtnBg,
-                        color: contactMethod === 'whatsapp' ? activeBtnText : inactiveBtnText,
-                        opacity: contactMethod === 'whatsapp' ? 1 : 0.6,
-                      }}
-                    >
-                      <MessageCircle size={14} />
-                      {t.contactViaWhatsapp}
-                    </button>
-                  </div>
-
-                  {contactMethod === 'email' ? (
-                    <FieldWrapper label={showLabels ? t.email : undefined} labelColor={muted} plain required>
+                    <FieldWrapper label={showLabels ? t.email : undefined} labelColor={muted} plain>
                       <div style={{ position: 'relative' }}>
                         <Mail size={15} style={iconInFieldStyle} />
                         <input
@@ -646,14 +613,12 @@ export default function ProductFormBlock({
                           aria-label={t.email}
                           value={form.customerEmail}
                           onChange={(e) => setForm((f) => ({ ...f, customerEmail: e.target.value }))}
-                          required
                           style={fieldStyle('customerEmail', { paddingInlineStart: 34, ...emptyLtrFieldStyle(form.customerEmail, false) })}
                           {...fieldHandlers('customerEmail')}
                         />
                       </div>
                     </FieldWrapper>
-                  ) : (
-                    <FieldWrapper label={showLabels ? t.whatsapp : undefined} labelColor={muted} plain required>
+                    <FieldWrapper label={showLabels ? t.whatsapp : undefined} labelColor={muted} plain>
                       <div style={{ position: 'relative' }}>
                         <MessageCircle size={15} style={iconInFieldStyle} />
                         <input
@@ -663,13 +628,11 @@ export default function ProductFormBlock({
                           aria-label={t.whatsapp}
                           value={form.customerWhatsapp}
                           onChange={(e) => setForm((f) => ({ ...f, customerWhatsapp: e.target.value }))}
-                          required
                           style={fieldStyle('customerWhatsapp', { paddingInlineStart: 34, ...emptyLtrFieldStyle(form.customerWhatsapp) })}
                           {...fieldHandlers('customerWhatsapp')}
                         />
                       </div>
                     </FieldWrapper>
-                  )}
                 </div>
               ) : (
                 <>
