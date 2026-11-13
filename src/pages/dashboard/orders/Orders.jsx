@@ -7,7 +7,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
-  Search, RefreshCw, Download, Trash2, Edit2,
+  Search, RefreshCw, Download, Trash2,
   Package, AlertTriangle, ChevronDown,
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
@@ -1142,8 +1142,13 @@ export default function Orders() {
             return (
               <div
                 key={cart.id}
-                onDoubleClick={() => openModal(cart)}
-                className={`${GRID} px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
+                onClick={e => {
+                  // الضغط على السطر يفتح صفحة التعديل؛ الأزرار والروابط داخله تعمل كعادتها
+                  if (e.target.closest('button, a, input, select, label, [role="menu"], [role="listbox"]')) return;
+                  if (canManage && !confirmationLock(cart)) navigate(`/dashboard/orders/${cart.id}`);
+                  else openModal(cart);
+                }}
+                className={`${GRID} cursor-pointer px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
                   /* طلب تجربة (mdStore + 0551525354): إطار رمادي، لا يُحسب في الحصة */
                   cart.quotaState === 'test' ? 'outline outline-2 -outline-offset-2 outline-gray-300 dark:outline-zinc-600 rounded-xl bg-gray-50/80 dark:bg-zinc-800/40' : ''} ${
                   atConfirmation && !isSelected ? 'opacity-50 hover:opacity-80' : ''} ${
@@ -1151,7 +1156,7 @@ export default function Orders() {
                     ? 'bg-cyan-50/50 dark:bg-cyan-500/5'
                     : isSuspicious
                       ? 'bg-amber-50/30 dark:bg-amber-500/5 hover:bg-amber-50/60'
-                      : 'hover:bg-gray-50/70 dark:hover:bg-zinc-800/40'
+                      : 'hover:bg-indigo-50/50 dark:hover:bg-zinc-800/60 ltr:hover:shadow-[inset_3px_0_0_0_rgb(99,102,241)] rtl:hover:shadow-[inset_-3px_0_0_0_rgb(99,102,241)]'
                 }`}
               >
                 {/* تحديد */}
@@ -1303,14 +1308,6 @@ export default function Orders() {
                     <Eye size={14} />
                   </button>
                   {canManage && <>
-                  <button
-                    onClick={() => navigate(`/dashboard/orders/${cart.id}`)}
-                    disabled={!!confirmationLock(cart)}
-                    title={confirmationLock(cart) ? t('list.locked_hint', 'عند شركة التأكيد — استرجعها لتعديلها') : t('list.edit')}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all disabled:opacity-30 disabled:pointer-events-none"
-                  >
-                    <Edit2 size={14} />
-                  </button>
                   {!cart.isDigital && (
                     <ShipButton order={cart} onResult={setShipResult} onShipped={() => fetchOrders()} t={t} />
                   )}
