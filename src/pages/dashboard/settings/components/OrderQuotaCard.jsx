@@ -9,8 +9,8 @@ const auth = () => ({ headers: { Authorization: `Bearer ${getAccessToken()}` } }
 const URL_Q = () => `${baseURL}/subscription/my/order-quota`;
 
 /**
- * حصة طلبات الخطة: العدّاد، الدين، والطلبات المخفية — الدفع بموافقة التاجر فقط (زر + تأكيد).
- * compact: شريط صغير لصفحة الطلبات (يظهر فقط إن وُجد دين أو مخفي)
+ * حصة طلبات الخطة: العدّاد والطلبات المخفية — الكشف بموافقة التاجر فقط (زر + تأكيد). لا دين.
+ * compact: شريط صغير لصفحة الطلبات 
  */
 // reloadKey: يتغير ← يُعاد التحميل (زر التحديث في صفحة الطلبات)
 export default function OrderQuotaCard({ compact = false, onChanged, reloadKey = 0 }) {
@@ -35,8 +35,8 @@ export default function OrderQuotaCard({ compact = false, onChanged, reloadKey =
   if (!u) return null;
   const unlimited = u.limit < 0;
   const hidden = (u.hidden?.current || 0) + (u.hidden?.old || 0);
-  // صفحة الطلبات: تظهر لكل خطة بحصة (لشرح طلب التجربة)، أو عند وجود دين/مخفي
-  if (compact && unlimited && !u.debt && !hidden) return null;
+  // صفحة الطلبات: تظهر لكل خطة بحصة (لشرح طلب التجربة)، أو عند وجود مخفي
+  if (compact && unlimited && !hidden) return null;
   const pct = unlimited ? 0 : Math.min(100, Math.round((u.used / Math.max(1, u.limit)) * 100));
   const btn = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold disabled:opacity-50';
 
@@ -55,15 +55,6 @@ export default function OrderQuotaCard({ compact = false, onChanged, reloadKey =
         </div>
       )}
 
-      {u.debt > 0 && (
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="flex-1 min-w-[12rem] text-xs font-semibold text-amber-700 dark:text-amber-300">
-            {t(u.oldDebt ? 'debt_old' : 'debt', { debt: u.debt, max: u.maxDebt })}
-          </p>
-          <button type="button" disabled={!!busy} onClick={() => act('debt', 'pay-debt', null, t('confirm_debt', { amount: u.debt, balance: u.balance }))}
-            className={`${btn} bg-amber-500 text-white`}>{busy === 'debt' && <Loader2 size={12} className="animate-spin" />}{t('pay_debt', { amount: u.debt })}</button>
-        </div>
-      )}
 
       {u.hidden?.current > 0 && (
         <div className="flex flex-wrap items-center gap-2">
