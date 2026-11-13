@@ -7,6 +7,8 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useNavigate, useOutletContext } from 'react-router-dom';
+import { CustomerSignalLine } from './CustomerSignal';
+import { signalFrame } from './customerSignalFrame';
 import {
   Search, RefreshCw, Download, Trash2, BarChart3,
   Package, AlertTriangle, ChevronDown,
@@ -1162,7 +1164,7 @@ export default function Orders() {
                 }}
                 className={`${GRID} cursor-pointer px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
                   /* طلب تجربة (mdStore + 0551525354): إطار رمادي، لا يُحسب في الحصة */
-                  cart.quotaState === 'test' ? 'outline outline-2 -outline-offset-2 outline-gray-300 dark:outline-zinc-600 rounded-xl bg-gray-50/80 dark:bg-zinc-800/40' : ''} ${
+                  cart.quotaState === 'test' ? 'outline outline-2 -outline-offset-2 outline-gray-300 dark:outline-zinc-600 rounded-xl bg-gray-50/80 dark:bg-zinc-800/40' : signalFrame(cart.customerSignal) /* نفس الزبون: إطار بلون التنبيه */} ${
                   atConfirmation && !isSelected ? 'opacity-50 hover:opacity-80' : ''} ${
                   isSelected
                     ? 'bg-cyan-50/50 dark:bg-cyan-500/5'
@@ -1200,6 +1202,7 @@ export default function Orders() {
                       </span>
                     )}
                   </div>
+                  <CustomerSignalLine signal={cart.customerSignal} />
                   {cart.customerHidden ? (
                     <p className="text-[11px] font-semibold text-rose-600">{t('list.customer_hidden_hint')}</p>
                   ) : <div className="flex items-center gap-1">

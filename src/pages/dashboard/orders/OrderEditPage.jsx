@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { SourceBadge } from './notes/OrderSources';
 import HiddenOrderNotice from './HiddenOrderNotice';
+import { CustomerSignalCard } from './CustomerSignal';
 import { OrderNotesPanel, ReasonModal } from './notes/OrderNotes';
 import { asksReason } from './notes/notes';
 import { useTranslation } from 'react-i18next';
@@ -656,6 +657,8 @@ export default function OrderEditPage({ isNew = false }) {
               </div>
             </div>
           )}
+          {/* نفس الزبون: طلبات سابقة/مكرر/نسبة إرجاع — للمعلومة فقط */}
+          {!isNew && editedCart?.customerSignal && <CustomerSignalCard signal={editedCart.customerSignal} />}
           {/* طلب مخفي (حصة الخطة): لا يُعدَّل شيء فيه حتى يُكشف بدفع ثمنه */}
           {!isNew && editedCart?.customerHidden && (
             <div className="mb-6"><HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} /></div>
