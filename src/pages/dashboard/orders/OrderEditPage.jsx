@@ -656,7 +656,11 @@ export default function OrderEditPage({ isNew = false }) {
               </div>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* طلب مخفي (حصة الخطة): لا يُعدَّل شيء فيه حتى يُكشف بدفع ثمنه */}
+          {!isNew && editedCart?.customerHidden && (
+            <div className="mb-6"><HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} /></div>
+          )}
+          <div inert={!isNew && !!editedCart?.customerHidden} className={`grid grid-cols-1 lg:grid-cols-3 gap-6 ${!isNew && editedCart?.customerHidden ? 'opacity-60 select-none' : ''}`}>
             <div className="lg:col-span-2 space-y-6">
               {/* بيانات الزبون */}
               <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-hidden">
@@ -730,11 +734,9 @@ export default function OrderEditPage({ isNew = false }) {
                 </div>
               </div>
 
-              {/* حصة الخطة: طلب مخفي — يُكشف بدفع ثمنه (بموافقة التاجر) */}
               {editedCart?.quotaState === 'test' && (
                 <div className="rounded-2xl border-2 border-gray-300 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800/60 px-5 py-3 text-sm font-bold text-gray-600 dark:text-zinc-300">🧪 {t('list.test_order_hint')}</div>
               )}
-              {editedCart?.customerHidden && <HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} />}
 
               {/* من أين جاء الزبون */}
               {!isNew && editedCart?.source?.channel && (

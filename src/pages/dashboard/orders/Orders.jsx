@@ -802,7 +802,8 @@ export default function Orders() {
   // منتج رقمي لا يُشحن — لا يدخل قائمة "الطلبات القابلة للشحن" إطلاقاً
   const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital);
   // كل ما يمكن تحديده: جاهز للشحن، ينتظر التأكيد (إرسال/استرجاع)، أو ألغته شركة التأكيد (استرجاع)
-  const isSelectable = (c) => canManage && ((c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
+  // طلب مخفي (حصة الخطة): لا يُحدَّد ولا تتغير حالته ولا يُشحن حتى يُكشف
+  const isSelectable = (c) => canManage && !c.customerHidden && ((c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
     || ['pending', 'appl1', 'appl2', 'appl3', 'postponed'].includes(c.status)
     || (c.status === 'cancelled' && !!c.confirmationCompanyId)
     || !!c.shippingTrackingId); // مرفوع لشركة التوصيل ← طباعة ملصقه
@@ -1294,7 +1295,7 @@ export default function Orders() {
                     statusKeys={statusKeys}
                     isRtl={isRtl}
                     t={t}
-                    readOnly={!canManage}
+                    readOnly={!canManage || cart.customerHidden}
                   />
                   {cart.status === 'shipping' && <ShipStatusBadge order={cart} t={t} className="max-w-[160px] truncate" />}
                   {cart.status === 'confirmed' && cart.shippingTrackingId && (
@@ -1320,7 +1321,7 @@ export default function Orders() {
                     <Eye size={14} />
                   </button>
                   {canManage && <>
-                  {!cart.isDigital && (
+                  {!cart.isDigital && !cart.customerHidden && (
                     <ShipButton order={cart} onResult={setShipResult} onShipped={() => fetchOrders()} t={t} />
                   )}
                   <button
@@ -1424,7 +1425,7 @@ export default function Orders() {
         </div>
       )}
 
-      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} readOnly={!canManage}
+      <OrderModal isOpen={isOpen} onClose={closeModal} cartData={selectedCart} onRefresh={fetchOrders} readOnly={!canManage || !!selectedCart?.customerHidden}
         onStatusChanged={(c) => asksReason(c.to) && setReasonFor(c)} />
 
       {sendIds && (
