@@ -12,7 +12,8 @@ const URL_Q = () => `${baseURL}/subscription/my/order-quota`;
  * حصة طلبات الخطة: العدّاد، الدين، والطلبات المخفية — الدفع بموافقة التاجر فقط (زر + تأكيد).
  * compact: شريط صغير لصفحة الطلبات (يظهر فقط إن وُجد دين أو مخفي)
  */
-export default function OrderQuotaCard({ compact = false, onChanged }) {
+// reloadKey: يتغير ← يُعاد التحميل (زر التحديث في صفحة الطلبات)
+export default function OrderQuotaCard({ compact = false, onChanged, reloadKey = 0 }) {
   const { t } = useTranslation('translation', { keyPrefix: 'settings.quota' });
   const [u, setU] = useState(null);
   const [busy, setBusy] = useState(null);
@@ -21,7 +22,7 @@ export default function OrderQuotaCard({ compact = false, onChanged }) {
   const load = useCallback(() => {
     axios.get(URL_Q(), auth()).then((r) => setU(r.data)).catch(() => setU(null));
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, reloadKey]);
 
   const act = async (key, path, body, confirmText) => {
     if (!window.confirm(confirmText)) return;

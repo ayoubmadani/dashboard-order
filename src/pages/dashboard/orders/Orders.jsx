@@ -765,7 +765,10 @@ export default function Orders() {
 
   useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()); }, [query, statusFilter, typeFilter]);
 
+  // زر التحديث وكل إعادة تحميل للطلبات تحدّث بطاقة حصة الخطة أيضاً
+  const [quotaKey, setQuotaKey] = useState(0);
   const fetchOrders = useCallback(async () => {
+    setQuotaKey((k) => k + 1);
     if (!storeId) {
       setOrders([]); setTotal(0);
       setError(t('ship.no_store'));
@@ -1086,7 +1089,7 @@ export default function Orders() {
       {/* ═══ الجدول ═══ */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-4">
         {/* حصة الخطة: دين أو طلبات مخفية — الدفع بموافقة التاجر */}
-        <div className="mb-4"><OrderQuotaCard compact onChanged={fetchOrders} /></div>
+        <div className="mb-4"><OrderQuotaCard compact onChanged={fetchOrders} reloadKey={quotaKey} /></div>
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-zinc-800 overflow-visible">
 
           {/* رأس الجدول */}
