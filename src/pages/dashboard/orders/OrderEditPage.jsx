@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { SourceBadge } from './notes/OrderSources';
 import HiddenOrderNotice from './HiddenOrderNotice';
 import { OrderNotesPanel, ReasonModal } from './notes/OrderNotes';
 import { asksReason } from './notes/notes';
@@ -734,6 +735,15 @@ export default function OrderEditPage({ isNew = false }) {
                 <div className="rounded-2xl border-2 border-gray-300 dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800/60 px-5 py-3 text-sm font-bold text-gray-600 dark:text-zinc-300">🧪 {t('list.test_order_hint')}</div>
               )}
               {editedCart?.customerHidden && <HiddenOrderNotice orderId={editedCart.id} fee={editedCart.quotaFee} onRevealed={() => window.location.reload()} />}
+
+              {/* من أين جاء الزبون */}
+              {!isNew && editedCart?.source?.channel && (
+                <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-5 py-3 text-sm">
+                  <span className="text-xs font-semibold text-gray-500">{t('sources.h_source')}:</span>
+                  <SourceBadge source={editedCart.source} />
+                  {[editedCart.source.campaign, editedCart.source.content, editedCart.source.ref].filter(Boolean).map((x) => <span key={x} className="text-xs font-semibold text-gray-700 dark:text-zinc-300">{x}</span>)}
+                </div>
+              )}
 
               {/* سجل الطلب: ملاحظات المتجر والمؤكّدين */}
               {!isNew && editedCart?.id && <OrderNotesPanel orderId={editedCart.id} reloadKey={notesKey} />}

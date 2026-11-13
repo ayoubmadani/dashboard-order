@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { SourceBadge, SourceSelect, SourcesModal } from './notes/OrderSources';
 import OrderQuotaCard from '../settings/components/OrderQuotaCard';
 import { ReasonModal } from './notes/OrderNotes';
 import { asksReason } from './notes/notes';
@@ -7,7 +8,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useNavigate, useOutletContext } from 'react-router-dom';
 import {
-  Search, RefreshCw, Download, Trash2,
+  Search, RefreshCw, Download, Trash2, BarChart3,
   Package, AlertTriangle, ChevronDown,
   ArrowLeft, ArrowRight,
   Loader2, X, ShoppingBag, Truck, CheckCircle2, XCircle,
@@ -726,6 +727,8 @@ export default function Orders() {
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [typeFilter, setTypeFilter] = useState(''); // '' | 'digital' | 'physical'
+  const [srcFilter, setSrcFilter] = useState(''); // مصدر الزبون: facebook | tiktok | … | unknown
+  const [showSources, setShowSources] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCart, setSelectedCart] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -763,7 +766,7 @@ export default function Orders() {
     return () => clearTimeout(id);
   }, [searchTerm]);
 
-  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()); }, [query, statusFilter, typeFilter]);
+  useEffect(() => { setCurrentPage(1); setSelectedIds(new Set()); }, [query, statusFilter, typeFilter, srcFilter]);
 
   // زر التحديث وكل إعادة تحميل للطلبات تحدّث بطاقة حصة الخطة أيضاً
   const [quotaKey, setQuotaKey] = useState(0);
@@ -780,11 +783,11 @@ export default function Orders() {
       const isDigital = typeFilter === 'digital' ? true : typeFilter === 'physical' ? false : undefined;
       const [{ data }, resCount] = await Promise.all([
         axios.get(`${baseURL}/orders/${storeId}`, {
-          params: { status: statusFilter, query, page: currentPage, isDigital },
+          params: { status: statusFilter, query, page: currentPage, isDigital, src: srcFilter || undefined },
           headers: { Authorization: `Bearer ${token}` },
         }),
         axios.get(`${baseURL}/orders/count/${storeId}`, {
-          params: { status: statusFilter, query, isDigital },
+          params: { status: statusFilter, query, isDigital, src: srcFilter || undefined },
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -792,7 +795,7 @@ export default function Orders() {
       setTotal(Number(resCount.data) || 0);
     } catch (e) { console.error(e); setError(t('list.error')); }
     finally { setLoading(false); }
-  }, [token, query, statusFilter, typeFilter, currentPage, storeId, t]);
+  }, [token, query, statusFilter, typeFilter, srcFilter, currentPage, storeId, t]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -1036,6 +1039,10 @@ export default function Orders() {
               className="w-10 h-10 shrink-0 flex items-center justify-center bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 rounded-xl hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-40">
               <Download size={16} />
             </button>
+            <button onClick={() => setShowSources(true)} title={t('sources.title')}
+              className="h-10 shrink-0 px-3 flex items-center gap-1.5 bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-300 border border-gray-200 dark:border-zinc-700 rounded-xl text-xs font-bold hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all">
+              <BarChart3 size={15} /> {t('sources.button')}
+            </button>
             <button onClick={fetchOrders} title={t('list.retry')}
               className="w-10 h-10 shrink-0 flex items-center justify-center bg-gray-50 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 border border-gray-200 dark:border-zinc-700 rounded-xl hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900 transition-all">
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -1064,7 +1071,8 @@ export default function Orders() {
             })}
           </div>
 
-          {/* صف 3: فصل الطلبات الرقمية عن العادية */}
+          {/* صف 3: فصل الطلبات الرقمية عن العادية، ومصدر الزبون */}
+          <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl w-fit">
             {[
               { key: '', label: t('list.type_all', 'الكل') },
@@ -1082,6 +1090,8 @@ export default function Orders() {
                 {tab.label}
               </button>
             ))}
+          </div>
+          <SourceSelect value={srcFilter} onChange={setSrcFilter} />
           </div>
         </div>
       </div>
@@ -1125,7 +1135,7 @@ export default function Orders() {
               <Package size={36} className="mx-auto text-gray-300 dark:text-zinc-600 mb-3" />
               <p className="text-sm font-semibold text-gray-400 dark:text-zinc-500">{t('list.no_orders')}</p>
               {(query || statusFilter || typeFilter) && (
-                <button onClick={() => { setSearchTerm(''); setQuery(''); setStatusFilter(''); setTypeFilter(''); }}
+                <button onClick={() => { setSearchTerm(''); setQuery(''); setStatusFilter(''); setTypeFilter(''); setSrcFilter(''); }}
                   className="mt-3 px-4 py-1.5 rounded-lg text-xs font-bold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700">
                   {t('list.clear_filters', 'مسح الفلاتر')}
                 </button>
@@ -1180,6 +1190,7 @@ export default function Orders() {
                       </button>
                     )}
                     <span className="font-bold text-gray-900 dark:text-white text-sm truncate">{cart.customerHidden ? t('list.customer_hidden') : (cart.customerName || '—')}</span>
+                    <SourceBadge source={cart.source} />
                     {cart.quotaState === 'test' && <span className="shrink-0 px-1.5 py-0.5 rounded bg-gray-200 dark:bg-zinc-700 text-gray-600 dark:text-zinc-300 text-[9px] font-bold">{t('list.test_order')}</span>}
                     {isSuspicious && (
                       <span title={t('list.suspicious', 'مشتبه')} className="shrink-0 inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[9px] font-bold border border-amber-200 dark:border-amber-500/30">
@@ -1423,6 +1434,7 @@ export default function Orders() {
         />
       )}
       <ReasonModal change={reasonFor} onClose={() => setReasonFor(null)} />
+      {showSources && <SourcesModal storeId={storeId} onClose={() => setShowSources(false)} onPick={(k) => { setSrcFilter(k); setShowSources(false); }} />}
       <Toaster position="top-center" richColors />
 
       <style>{`.scrollbar-none::-webkit-scrollbar{display:none}.scrollbar-none{-ms-overflow-style:none;scrollbar-width:none}`}</style>

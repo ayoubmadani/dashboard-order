@@ -276,5 +276,23 @@
       "duplicate": "Commande en double",
       "other": "Autre raison"
     }
+  },
+  "sources": {
+    "title": "Sources des commandes",
+    "hint": "D'où vient le client : Facebook, TikTok, Google…",
+    "days": "{{n}} jours",
+    "empty": "Aucune commande avec source sur cette période",
+    "all": "Toutes les sources",
+    "direct": "Direct",
+    "other": "Autre",
+    "unknown": "Inconnue",
+    "h_source": "Source",
+    "h_orders": "Commandes",
+    "h_confirmed": "Confirmées",
+    "h_delivered": "Livrées",
+    "h_returned": "Retournées",
+    "h_cancelled": "Annulées",
+    "button": "Sources",
+    "utm_tip": "Pour la campagne et la pub : ajoutez {{code}} dans les paramètres d'URL Facebook — cliquez une source pour voir ses commandes."
   }
 }

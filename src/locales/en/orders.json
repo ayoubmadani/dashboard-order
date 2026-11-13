@@ -276,5 +276,23 @@
       "duplicate": "Duplicate order",
       "other": "Other reason"
     }
+  },
+  "sources": {
+    "title": "Order sources",
+    "hint": "Where the customer came from: Facebook, TikTok, Google…",
+    "days": "{{n}} days",
+    "empty": "No orders with a source in this period",
+    "all": "All sources",
+    "direct": "Direct",
+    "other": "Other",
+    "unknown": "Unknown",
+    "h_source": "Source",
+    "h_orders": "Orders",
+    "h_confirmed": "Confirmed",
+    "h_delivered": "Delivered",
+    "h_returned": "Returned",
+    "h_cancelled": "Cancelled",
+    "button": "Sources",
+    "utm_tip": "For campaign and ad names: add {{code}} to your Facebook ad URL parameters — click a source to see its orders."
   }
 }
