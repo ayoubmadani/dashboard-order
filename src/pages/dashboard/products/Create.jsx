@@ -15,6 +15,7 @@ import {
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import ModelImages from '../../../components/ModelImages';
+import { imageSlotClass, MAIN_IMAGE_CLASS } from '../../../utils/imageSlots';
 import axios from 'axios';
 import { baseURL, MAX_PRODUCT_IMAGES } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -592,7 +593,7 @@ export default function CreateProduct() {
         <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 gap-3">
           {images.length < maxImages && (
             <button type="button" onClick={() => { setFolder('products'); setIsOpenModelImage(true); }}
-              className="aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
+              className="col-start-1 row-start-1 aspect-square flex flex-col items-center justify-center gap-1.5 border-2 border-dashed border-gray-200 dark:border-zinc-700 rounded-xl hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group">
               <Plus size={20} className="text-gray-300 group-hover:text-blue-400 transition-colors" />
               <span className="text-[9px] font-bold text-gray-300 group-hover:text-blue-400 uppercase tracking-widest">{t('images.add_photo')}</span>
             </button>
@@ -614,7 +615,7 @@ export default function CreateProduct() {
                 setDragImageIndex(null);
               }}
               onDragEnd={() => setDragImageIndex(null)}
-              className={`group relative aspect-square rounded-xl overflow-hidden border bg-gray-100 dark:bg-zinc-800 cursor-grab active:cursor-grabbing transition-opacity ${i === 0 ? 'col-span-2 row-span-2 border-blue-300 dark:border-blue-500/50' : 'border-gray-100 dark:border-zinc-800'} ${dragImageIndex === i ? 'opacity-40' : ''}`}
+              className={`group relative aspect-square rounded-xl overflow-hidden border bg-gray-100 dark:bg-zinc-800 cursor-grab active:cursor-grabbing transition-opacity ${i === 0 ? `${MAIN_IMAGE_CLASS} border-blue-300 dark:border-blue-500/50` : `${imageSlotClass(i - 1 + (images.length < maxImages ? 1 : 0))} border-gray-100 dark:border-zinc-800`} ${dragImageIndex === i ? 'opacity-40' : ''}`}
             >
               <img src={img} alt="" draggable={false} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
