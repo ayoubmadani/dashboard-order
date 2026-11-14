@@ -13,8 +13,8 @@ const errMsg = (err, fallback) => {
   return (Array.isArray(m) ? m[0] : m) || fallback;
 };
 
-// دعوات المستخدم للانضمام لمتاجر غيره
-export default function Invitations() {
+// دعوات المستخدم للانضمام لمتاجر غيره — تبويب داخل «الفريق» (embedded: بلا عنوان ولا Toaster خاص)
+export default function Invitations({ embedded = false }) {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'team' });
   const isRtl = i18n.dir() === 'rtl';
   const { fetchStores, refreshInvitations } = useOutletContext();
@@ -39,12 +39,14 @@ export default function Invitations() {
   };
 
   return (
-    <div dir={isRtl ? 'rtl' : 'ltr'} className="max-w-3xl mx-auto space-y-5">
-      <Toaster position="top-center" richColors />
-      <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
-        <span className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl"><Mail size={22} /></span>
-        {t('invitations_title')}
-      </h1>
+    <div dir={isRtl ? 'rtl' : 'ltr'} className={embedded ? 'space-y-5' : 'max-w-3xl mx-auto space-y-5'}>
+      {!embedded && <Toaster position="top-center" richColors />}
+      {!embedded && (
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+          <span className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl"><Mail size={22} /></span>
+          {t('invitations_title')}
+        </h1>
+      )}
 
       {items === null ? (
         <div className="flex justify-center py-16"><Loader2 className="animate-spin text-indigo-600" /></div>

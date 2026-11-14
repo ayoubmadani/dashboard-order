@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
     Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
-    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail, Boxes,
+    LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Boxes,
   ShoppingBasket,
   Megaphone,
   Puzzle,
@@ -15,6 +15,7 @@ import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
 import TrialOffer from '../components/TrialOffer';
 import { can, isOwner, ACCESS_LOSS_CODES } from '../services/storeAccess';
+import { showTeamInNav } from '../utils/teamTabs';
 import { saveSelectedStore } from '../services/selectedStore';
 import { FEATURES } from '../utils/features';
 
@@ -226,7 +227,8 @@ export default function LayoutDashboard() {
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
                 { name: t('nav.inventory', 'المخزون'), href: '/dashboard/inventory', icon: Boxes, perm: 'product.crud' },
                 { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate, owner: true },
-                { name: t('nav.team', 'الفريق'), href: '/dashboard/team', icon: Users, owner: true },
+                // «الدعوات» تبويب داخل الفريق: يظهر لغير المالك ما دامت عنده دعوة معلّقة
+                { name: t('nav.team', 'الفريق'), href: '/dashboard/team', icon: Users, show: showTeamInNav({ owner: isOwner(selectedProject), invitations: invitationsCount }), badge: invitationsCount },
             ],
         },
         {
@@ -251,13 +253,12 @@ export default function LayoutDashboard() {
         {
             title: t('nav.group_system', 'النظام'),
             items: [
-                { name: t('nav.invitations', 'الدعوات'), href: '/dashboard/invitations', icon: Mail, badge: invitationsCount },
                 { name: t('nav.settings', 'الإعدادات'), href: '/dashboard/settings', icon: Settings },
             ],
         },
     ]
         // عضو في متجر غيره: يرى فقط ما تسمح به مجموعته
-        .map((g) => ({ ...g, items: g.items.filter((i) => (i.owner ? isOwner(selectedProject) : i.perm ? can(selectedProject, i.perm) : true)) }))
+        .map((g) => ({ ...g, items: g.items.filter((i) => (i.show !== undefined ? i.show : i.owner ? isOwner(selectedProject) : i.perm ? can(selectedProject, i.perm) : true)) }))
         .filter((g) => g.items.length > 0);
 
     const pageTitle =
@@ -438,7 +439,7 @@ export default function LayoutDashboard() {
 
                 <main className="flex-1 p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto">
-                        <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user, refreshInvitations }} />
+                        <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user, refreshInvitations, invitationsCount }} />
                         <TrialOffer />
                     </div>
                 </main>

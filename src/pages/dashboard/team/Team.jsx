@@ -1,16 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOutletContext } from 'react-router-dom';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
   Users, UserPlus, Shield, History, Search, Loader2, Plus, Pencil, Trash2, Power, Download, X, RotateCcw, ChevronDown,
-  UserMinus, PauseCircle, PlayCircle, Check,
+  UserMinus, PauseCircle, PlayCircle, Check, Mail,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { PERMISSIONS, isOwner } from '../../../services/storeAccess';
-import NoStoreState from '../../../components/NoStoreState';
+import { teamTabs, initialTeamTab } from '../../../utils/teamTabs';
+import Invitations from './Invitations';
 
 const auth = () => ({ headers: { Authorization: `Bearer ${getAccessToken()}` } });
 const errMsg = (err, fallback) => {
@@ -26,9 +27,13 @@ const btn = 'inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded
 export default function Team() {
   const { t, i18n } = useTranslation('translation', { keyPrefix: 'team' });
   const isRtl = i18n.dir() === 'rtl';
-  const { selectedProject, myStores } = useOutletContext();
+  const { selectedProject, myStores, invitationsCount = 0 } = useOutletContext();
+  const location = useLocation();
   const storeId = localStorage.getItem('storeId');
-  const [tab, setTab] = useState('members');
+  // عضو في متجر غيره أو بلا متجر: تبويب الدعوات وحده
+  const tabKeys = teamTabs({ owner: !selectedProject || isOwner(selectedProject), hasStore: !!storeId });
+  const [tab, setTab] = useState(() => initialTeamTab(location.search, tabKeys));
+  const active = tabKeys.includes(tab) ? tab : tabKeys[0];
   const [groups, setGroups] = useState([]);
 
   const loadGroups = useCallback(async () => {
@@ -37,12 +42,26 @@ export default function Team() {
   }, [storeId]);
   useEffect(() => { loadGroups(); }, [loadGroups]);
 
-  if (!storeId) return <NoStoreState title={t('title')} subtitle="" cta="" isRtl={isRtl} />;
-  if (selectedProject && !isOwner(selectedProject)) {
-    return <div className={`${card} p-10 text-center text-sm text-gray-500`}>{t('owner_only_note')}</div>;
+  if (tabKeys.length === 1) {
+    return (
+      <div dir={isRtl ? 'rtl' : 'ltr'} className="max-w-3xl mx-auto space-y-5">
+        <Toaster position="top-center" richColors />
+        <h1 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3">
+          <span className="p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 rounded-2xl"><Mail size={22} /></span>
+          {t('invitations_title')}
+        </h1>
+        <Invitations embedded />
+      </div>
+    );
   }
 
-  const tabs = [['members', t('tab_members'), Users], ['groups', t('tab_groups'), Shield], ['activity', t('tab_activity'), History]];
+  const labels = {
+    members: [t('tab_members'), Users],
+    groups: [t('tab_groups'), Shield],
+    activity: [t('tab_activity'), History],
+    invitations: [t('invitations'), Mail],
+  };
+  const tabs = tabKeys.map((key) => [key, ...labels[key]]);
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="max-w-5xl mx-auto space-y-5">
       <Toaster position="top-center" richColors />
@@ -59,13 +78,17 @@ export default function Team() {
           <button key={key} onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold transition ${tab === key ? 'bg-white dark:bg-zinc-900 text-indigo-600 shadow-sm' : 'text-gray-500'}`}>
             {React.createElement(icon, { size: 15 })} {label}
+            {key === 'invitations' && invitationsCount > 0 && (
+              <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">{invitationsCount}</span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === 'members' && <MembersTab t={t} i18n={i18n} storeId={storeId} />}
-      {tab === 'groups' && <GroupsTab t={t} storeId={storeId} groups={groups} reload={loadGroups} myStores={myStores} />}
-      {tab === 'activity' && <ActivityTab t={t} i18n={i18n} storeId={storeId} />}
+      {active === 'members' && <MembersTab t={t} i18n={i18n} storeId={storeId} />}
+      {active === 'groups' && <GroupsTab t={t} storeId={storeId} groups={groups} reload={loadGroups} myStores={myStores} />}
+      {active === 'activity' && <ActivityTab t={t} i18n={i18n} storeId={storeId} />}
+      {active === 'invitations' && <Invitations embedded />}
     </div>
   );
 }

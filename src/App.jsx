@@ -15,7 +15,6 @@ import Analytics from './pages/dashboard/analytics/Analytics';
 import Seo from './pages/dashboard/seo/Seo';
 import SplitTests from './pages/editor/SplitTests';
 import Team from './pages/dashboard/team/Team';
-import Invitations from './pages/dashboard/team/Invitations';
 import CreateStore from './pages/dashboard/stores/Create'; // <-- استيراد صفحة الإنشاء الجديدة
 import Shipping from './pages/dashboard/shipping/Shipping';
 import Update from './pages/dashboard/stores/edit';
@@ -141,7 +140,8 @@ const App = () => {
             <Route path="analytics" element={<Analytics />} />
             <Route path="seo" element={<Seo />} />
             <Route path="team" element={<Team />} />
-            <Route path="invitations" element={<Invitations />} />
+            {/* الدعوات صارت تبويباً داخل «الفريق» — الرابط القديم يبقى صالحاً */}
+            <Route path="invitations" element={<Navigate to="/dashboard/team?tab=invitations" replace />} />
             <Route path="settings">
               <Route index element={<Navigate to="profile" replace />} />
               <Route path="stores/create" element={<CreateStore />} /> {/* <-- المسار: /dashboard/settings/stores/create */}
