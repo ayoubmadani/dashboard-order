@@ -455,6 +455,21 @@ export default function OrderEditPage({ isNew = false }) {
     }
   };
 
+  // منتج جديد في الطلب وله عروض: يأخذ شكل بطاقة العرض بأول عرض (إلا إن اختار التاجر «بدون عرض»)
+  useEffect(() => {
+    if (!editedCart?.items?.length) return;
+    const pending = editedCart.items.filter((it) => String(it.id).startsWith('new-') && !it.offerId && !it.noOffer && productOptions[it.productId]?.offers?.length);
+    if (!pending.length) return;
+    setEditedCart((prev) => ({
+      ...prev,
+      items: prev.items.flatMap((it) => {
+        if (!pending.some((x) => x.id === it.id)) return [it];
+        const o = productOptions[it.productId].offers[0];
+        return offerLines(resizePieces(expandPieces([it]), 1, Number(o.quantity) || 1), o);
+      }),
+    }));
+  }, [editedCart?.items, productOptions]);
+
   // ── بطاقة العرض في تعديل الطلب: العرض والكمية (عدد العروض) في رأسها، وقسم خيارات لكل عرض ──
   const updateGroup = (g, lines) => setEditedCart((prev) => {
     const ids = new Set(g.items.map((it) => it.id));
@@ -477,7 +492,7 @@ export default function OrderEditPage({ isNew = false }) {
       // بدون عرض: كل قطعة سطر بسعر نسختها أو سعر المنتج
       updateGroup(g, pieces.map((p, k) => {
         const price = parseFloat(p.variantDetail?.price > -1 ? p.variantDetail.price : p.product?.price || 0);
-        return { ...p, id: k === 0 ? p.id : `new-${Date.now()}-${k}`, offerId: null, offer: null, quantity: 1, finalPrice: price, itemTotal: price };
+        return { ...p, id: k === 0 ? p.id : `new-${Date.now()}-${k}`, offerId: null, offer: null, noOffer: true, quantity: 1, finalPrice: price, itemTotal: price };
       }));
     };
     const setPieceAttr = (k, key, value) => {
@@ -506,7 +521,7 @@ export default function OrderEditPage({ isNew = false }) {
           <span className="text-base font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.total).toLocaleString()} DA</span>
         </div>
         {Array.from({ length: count }, (_, b) => (
-          <div key={b} className="px-4 py-3 border-t border-orange-100 dark:border-orange-500/20">
+          <div key={b} className="mx-3 my-3 px-4 py-3 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-white dark:bg-zinc-900">
             <p className="text-xs font-black text-orange-700 dark:text-orange-300 mb-2">{g.offer.name} ({b + 1})</p>
             <div className="space-y-2">
               {pieces.slice(b * per, b * per + per).map((p, i) => {
