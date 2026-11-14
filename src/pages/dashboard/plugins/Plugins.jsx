@@ -6,6 +6,7 @@ import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 import { pluginCards } from '../../../utils/pluginCards';
 import AddAccountModal from '../settings/components/AddAccountModal';
+import ProviderLogo from '../settings/components/ProviderLogo';
 
 /** «الإضافات»: شركات التوصيل كبطاقات، وزر «إضافة» يفتح نموذج الربط على الشركة المختارة */
 export default function Plugins() {
@@ -136,18 +137,7 @@ export default function Plugins() {
               }`}
             >
               <div className="flex items-start gap-3">
-                {provider.logo && provider.logo !== '#' ? (
-                  <img
-                    src={provider.logo}
-                    alt=""
-                    loading="lazy"
-                    className="w-12 h-12 rounded-xl object-contain bg-white p-1.5 border border-gray-100 dark:border-zinc-700 shrink-0"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
-                    <Truck className="w-5 h-5 text-indigo-400" />
-                  </div>
-                )}
+                <ProviderLogo logo={provider.logo} box="w-12 h-12 rounded-xl" />
                 <div className="flex-1 min-w-0">
                   <h2 className="text-sm font-black text-gray-900 dark:text-white truncate">{provider.title || provider.name}</h2>
                   {connected && (

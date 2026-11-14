@@ -1,5 +1,6 @@
 import React from 'react';
-import { CheckCircle2, Truck } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
+import ProviderLogo from './ProviderLogo';
 
 export default function ProviderCard({ provider, isSelected, onSelect }) {
   return (
@@ -11,13 +12,7 @@ export default function ProviderCard({ provider, isSelected, onSelect }) {
           : 'border-gray-100 dark:border-zinc-700 hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-gray-50 dark:hover:bg-zinc-800/60'
       }`}
     >
-      {provider.logo && provider.logo !== '#' ? (
-        <img src={provider.logo} alt={provider.title} className="w-8 h-8 rounded-lg object-contain bg-white p-1 border border-gray-100 dark:border-zinc-700 shrink-0" />
-      ) : (
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center shrink-0">
-          <Truck className="w-4 h-4 text-indigo-400" />
-        </div>
-      )}
+      <ProviderLogo logo={provider.logo} box="w-8 h-8 rounded-lg" iconClass="w-4 h-4" />
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{provider.title}</p>
         <p className="text-[11px] text-gray-400 dark:text-zinc-500 truncate">{provider.description?.slice(0, 40)}...</p>

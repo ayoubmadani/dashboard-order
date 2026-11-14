@@ -3,6 +3,7 @@ import { Plus, X, Search, Truck, Shield, ShieldCheck, ShieldX, Loader2, Save } f
 import axios from 'axios';
 import { baseURL } from '../../../../constents/const.';
 import ProviderCard from './ProviderCard';
+import ProviderLogo from './ProviderLogo';
 import CredentialField from './CredentialField';
 
 /** Modal for adding a new shipping account */
@@ -71,6 +72,9 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
     finally { setIsSaving(false); }
   };
 
+  // من بطاقة في «الإضافات»: الشركة معروفة، فلا قائمة شركات (إلا إن لم توجد الشركة في القائمة)
+  const singleProvider = !!initialProvider && (isLoading || providers.some(p => p.name === initialProvider));
+
   const filtered = providers.filter(p =>
     p.title.toLowerCase().includes(search.toLowerCase()) ||
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -81,7 +85,7 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         dir={isRtl ? 'rtl' : 'ltr'}
-        className="relative z-10 w-full max-w-2xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[90vh] flex flex-col"
+        className={`relative z-10 w-full ${singleProvider ? 'max-w-md' : 'max-w-2xl'} bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden max-h-[90vh] flex flex-col`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 shrink-0">
@@ -101,6 +105,7 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
 
         <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Provider list */}
+          {!singleProvider && (
           <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-100 dark:border-zinc-800 flex flex-col shrink-0">
             <div className="px-3 py-3 border-b border-gray-100 dark:border-zinc-800">
               <div className="relative">
@@ -128,10 +133,15 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
               ))}
             </div>
           </div>
+          )}
 
           {/* Right: credentials */}
           <div className="flex-1 flex flex-col overflow-y-auto">
-            {!selected ? (
+            {singleProvider && !selected ? (
+              <div className="flex-1 flex items-center justify-center py-16">
+                <Loader2 className="w-5 h-5 animate-spin text-indigo-400" />
+              </div>
+            ) : !selected ? (
               <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
                 <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center">
                   <Truck className="w-7 h-7 text-gray-300 dark:text-zinc-600" />
@@ -142,13 +152,7 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
               <div className="p-5 flex flex-col gap-4">
                 {/* Provider info */}
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60">
-                  {selected.logo && selected.logo !== '#' ? (
-                    <img src={selected.logo} alt={selected.title} className="w-10 h-10 rounded-xl object-contain bg-white p-1 border border-gray-100 dark:border-zinc-700" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center">
-                      <Truck className="w-5 h-5 text-indigo-400" />
-                    </div>
-                  )}
+                  <ProviderLogo key={selected.name} logo={selected.logo} box="w-10 h-10 rounded-xl" />
                   <div>
                     <p className="text-sm font-black text-gray-800 dark:text-white">{selected.title}</p>
                     <a href={selected.website} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline">{selected.website}</a>
