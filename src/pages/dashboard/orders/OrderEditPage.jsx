@@ -486,14 +486,20 @@ export default function OrderEditPage({ isNew = false }) {
     const pieces = expandPieces(g.items);
     const count = Math.max(1, Math.ceil(pieces.length / per));
     const setCount = (n) => updateGroup(g, offerLines(resizePieces(pieces, n, per), g.offer));
-    const setOffer = (offerId) => {
+    // كل عرض مستقل: تغيير عرض البطاقة b وحدها (مثلاً tow الثانية ← one)، والبقية كما هي
+    const setUnitOffer = (b, offerId) => {
+      const seen = new Set();
+      const before = offerLines(pieces.slice(0, b * per), g.offer, seen);
+      const after = offerLines(pieces.slice(b * per + per), g.offer, seen);
+      const unit = pieces.slice(b * per, b * per + per);
       const o = pOpts.offers.find((x) => String(x.id) === String(offerId));
-      if (o) return updateGroup(g, offerLines(resizePieces(pieces, count, Number(o.quantity) || 1), o));
-      // بدون عرض: كل قطعة سطر بسعر نسختها أو سعر المنتج
-      updateGroup(g, pieces.map((p, k) => {
-        const price = parseFloat(p.variantDetail?.price > -1 ? p.variantDetail.price : p.product?.price || 0);
-        return { ...p, id: k === 0 ? p.id : `new-${Date.now()}-${k}`, offerId: null, offer: null, noOffer: true, quantity: 1, finalPrice: price, itemTotal: price };
-      }));
+      const mid = o
+        ? offerLines(resizePieces(unit, 1, Number(o.quantity) || 1), o, seen)
+        : unit.slice(0, 1).map((p) => {
+          const price = parseFloat(p.variantDetail?.price > -1 ? p.variantDetail.price : p.product?.price || 0);
+          return { ...p, id: `new-${Date.now()}-n${b}`, offerId: null, offer: null, noOffer: true, quantity: 1, finalPrice: price, itemTotal: price };
+        });
+      updateGroup(g, [...before, ...mid, ...after]);
     };
     const setPieceAttr = (k, key, value) => {
       const cur = Array.isArray(pieces[k].variantDetail?.name) ? pieces[k].variantDetail.name : [];
@@ -508,11 +514,6 @@ export default function OrderEditPage({ isNew = false }) {
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
           <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-11 h-11 rounded-lg object-cover bg-gray-100 shrink-0" />
           <p className="flex-1 min-w-[8rem] text-sm font-bold text-gray-900 dark:text-white line-clamp-2">{g.product?.name}</p>
-          <select value={g.offer.id} onChange={(e) => setOffer(e.target.value)} aria-label={t('edit.offer_label')}
-            className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg px-2 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 dark:[color-scheme:dark]">
-            <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
-            {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
-          </select>
           <div className="inline-flex items-center rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden" dir="ltr">
             <button type="button" onClick={() => setCount(count - 1)} disabled={count <= 1} className="w-8 h-8 font-black text-gray-600 disabled:opacity-30">−</button>
             <span className="w-8 text-center text-sm font-black text-gray-900 dark:text-white">{count}</span>
@@ -522,7 +523,16 @@ export default function OrderEditPage({ isNew = false }) {
         </div>
         {Array.from({ length: count }, (_, b) => (
           <div key={b} className="mx-3 my-3 px-4 py-3 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-white dark:bg-zinc-900">
-            <p className="text-xs font-black text-orange-700 dark:text-orange-300 mb-2">{g.offer.name} ({b + 1})</p>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-9 h-9 rounded-lg object-cover bg-gray-100 shrink-0" />
+              <p className="flex-1 min-w-[7rem] text-xs font-bold text-gray-800 dark:text-zinc-200 line-clamp-2">{g.product?.name}</p>
+              <select value={g.offer.id} onChange={(e) => setUnitOffer(b, e.target.value)} aria-label={t('edit.offer_label')}
+                className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg px-2 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 dark:[color-scheme:dark]">
+                <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
+                {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
+              </select>
+              <span className="text-sm font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.offer.price).toLocaleString()} DA</span>
+            </div>
             <div className="space-y-2">
               {pieces.slice(b * per, b * per + per).map((p, i) => {
                 const k = b * per + i;

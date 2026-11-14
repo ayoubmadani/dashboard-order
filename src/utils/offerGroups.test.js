@@ -69,3 +69,15 @@ describe('editable offer card', () => {
     expect(new Set(two.map((l) => l.id)).size).toBe(4);
   });
 });
+
+describe('one offer card changed alone', () => {
+  it('ids stay unique across cards built separately (shared seen)', () => {
+    const p = [{ id: 'a' }, { id: 'a' }, { id: 'a' }, { id: 'a' }];
+    const seen = new Set();
+    const first = offerLines(p.slice(0, 2), { id: 'o2', quantity: 2, price: 4500 }, seen);
+    const second = offerLines(p.slice(2, 3), { id: 'o1', quantity: 1, price: 2500 }, seen);
+    const ids = [...first, ...second].map((l) => l.id);
+    expect(new Set(ids).size).toBe(3);
+    expect(second[0]).toMatchObject({ offerId: 'o1', finalPrice: 2500 });
+  });
+});

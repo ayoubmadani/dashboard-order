@@ -57,10 +57,9 @@ const split = (total, n) => {
 const perPieceAddons = (it) => (it.addons || []).reduce((s, a) => s + (a.separate ? 0 : Number(a.price || 0) * Number(a.qty || 1)), 0);
 
 /** قطع ← سطور: سطر لكل قطعة بكمية 1، وسعرها نصيبها من سعر العرض (+ إضافاتها لكل قطعة) */
-export function offerLines(pieces, offer) {
+export function offerLines(pieces, offer, seen = new Set()) {
   const per = Math.max(1, Number(offer?.quantity) || 1);
   const shares = split(Number(offer?.price) || 0, per);
-  const seen = new Set();
   return pieces.map((p, i) => {
     const id = !seen.has(p.id) && p.id ? p.id : `new-${Date.now()}-${i}`;
     seen.add(id);
