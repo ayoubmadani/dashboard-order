@@ -614,7 +614,7 @@ export default function CreateProduct() {
                 setDragImageIndex(null);
               }}
               onDragEnd={() => setDragImageIndex(null)}
-              className={`group relative aspect-square rounded-xl overflow-hidden border border-gray-100 dark:border-zinc-800 bg-gray-100 dark:bg-zinc-800 cursor-grab active:cursor-grabbing transition-opacity ${dragImageIndex === i ? 'opacity-40' : ''}`}
+              className={`group relative aspect-square rounded-xl overflow-hidden border bg-gray-100 dark:bg-zinc-800 cursor-grab active:cursor-grabbing transition-opacity ${i === 0 ? 'col-span-2 row-span-2 border-blue-300 dark:border-blue-500/50' : 'border-gray-100 dark:border-zinc-800'} ${dragImageIndex === i ? 'opacity-40' : ''}`}
             >
               <img src={img} alt="" draggable={false} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
