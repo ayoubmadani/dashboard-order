@@ -1162,7 +1162,7 @@ export default function Orders() {
                   if (canManage && !confirmationLock(cart)) navigate(`/dashboard/orders/${cart.id}`);
                   else openModal(cart);
                 }}
-                className={`${GRID} cursor-pointer px-4 py-3 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
+                className={`${GRID} cursor-pointer px-4 py-3 my-2 border-b border-gray-50 dark:border-zinc-800/60 last:border-b-0 transition-all flex flex-col gap-3 md:gap-3 ${
                   /* طلب تجربة (mdStore + 0551525354): إطار رمادي، لا يُحسب في الحصة */
                   cart.quotaState === 'test' ? 'outline outline-2 -outline-offset-2 outline-gray-300 dark:outline-zinc-600 rounded-xl bg-gray-50/80 dark:bg-zinc-800/40' : signalFrame(cart.customerSignal) /* نفس الزبون: إطار بلون التنبيه */} ${
                   atConfirmation && !isSelected ? 'opacity-50 hover:opacity-80' : ''} ${
@@ -1173,6 +1173,8 @@ export default function Orders() {
                       : 'hover:bg-indigo-50/50 dark:hover:bg-zinc-800/60 ltr:hover:shadow-[inset_3px_0_0_0_rgb(99,102,241)] rtl:hover:shadow-[inset_-3px_0_0_0_rgb(99,102,241)]'
                 }`}
               >
+                {/* تنبيه نفس الزبون: سطر واحد فوق الطلب بعرضه كاملاً */}
+                <CustomerSignalLine signal={cart.customerSignal} />
                 {/* تحديد */}
                 <div className="hidden md:flex items-center justify-center">
                   {selectable ? (
@@ -1202,7 +1204,6 @@ export default function Orders() {
                       </span>
                     )}
                   </div>
-                  <CustomerSignalLine signal={cart.customerSignal} />
                   {cart.customerHidden ? (
                     <p className="text-[11px] font-semibold text-rose-600">{t('list.customer_hidden_hint')}</p>
                   ) : <div className="flex items-center gap-1">

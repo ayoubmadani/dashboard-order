@@ -331,6 +331,14 @@
     "age_short_zero": "منذ {{count}} يوماً",
     "age_short_two": "منذ {{count}} يوماً",
     "age_short_few": "منذ {{count}} يوماً",
-    "age_short_many": "منذ {{count}} يوماً"
+    "age_short_many": "منذ {{count}} يوماً",
+    "other_open": "طلب آخر مفتوح #{{ref}} بمنتج مختلف",
+    "device": "نفس الجهاز: #{{ref}} برقم {{phone}}",
+    "same_device_mark": " (نفس الجهاز)",
+    "same_device": "نفس الجهاز",
+    "title_device": "📱 طلبات من نفس الجهاز برقم آخر",
+    "group_dup": "الطلبات المكررة (نفس الهاتف ونفس المنتج)",
+    "group_other_open": "طلبات أخرى مفتوحة لنفس الهاتف (منتج مختلف — ليست مكررة)",
+    "group_device": "نفس الجهاز برقم هاتف آخر (للمعلومة فقط)"
   }
 }

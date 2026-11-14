@@ -323,6 +323,14 @@
     "title_trusted": "✅ Trusted customer",
     "title_previous": "ℹ️ Previous customer",
     "age": " · {{count}} days ago",
-    "age_short": "{{count}} days ago"
+    "age_short": "{{count}} days ago",
+    "other_open": "Another open order #{{ref}} (different product)",
+    "device": "Same device: #{{ref}} with phone {{phone}}",
+    "same_device_mark": " (same device)",
+    "same_device": "Same device",
+    "title_device": "📱 Orders from the same device with another phone",
+    "group_dup": "Duplicates (same phone and same product)",
+    "group_other_open": "Other open orders from this phone (different product — not duplicates)",
+    "group_device": "Same device, another phone (for information)"
   }
 }

@@ -38,7 +38,8 @@ function useSignalText() {
     const key = ['confirmed', 'shipping'].includes(d.status) ? 'signal.dup_progress' : 'signal.dup_open';
     const age = d.ageDays > 0 ? t('signal.age', { count: d.ageDays }) : '';
     const more = s.dup.length > 1 ? t('signal.dup_more', { count: s.dup.length + 1 }) : '';
-    return `🔁 ${t(key, { ref: d.ref, status: status(d.status) })}${store}${age}${more}`;
+    const device = d.sameDevice ? t('signal.same_device_mark') : '';
+    return `🔁 ${t(key, { ref: d.ref, status: status(d.status) })}${device}${store}${age}${more}`;
   };
   const historyText = (s) => {
     const { delivered, returned, cancelled, rate } = s.stats || {};
@@ -56,13 +57,16 @@ function useSignalText() {
   const line = (s) => {
     if (!s?.level || !LEVELS.has(s.level)) return null;
     if (s.hidden) return s.level === 'new' ? `🆕 ${t('signal.new')}` : `${ICON[s.level]} ${t('signal.hidden')}`;
-    if (s.level === 'new') return `🆕 ${t('signal.new')}`;
+    // معلومات بلا لون: طلب آخر لنفس الهاتف بمنتج مختلف، ونفس الجهاز برقم آخر
+    const other = s.otherOpen?.length ? `➕ ${t('signal.other_open', { ref: s.otherOpen[0].ref, count: s.otherOpen.length })}` : null;
+    const dev = s.device?.length ? `📱 ${t('signal.device', { ref: s.device[0].ref, phone: s.device[0].phone || '—', count: s.device.length })}` : null;
+    if (s.level === 'new') return [`🆕 ${t('signal.new')}`, dev].filter(Boolean).join(' · ');
     const later = s.later?.length ? `🔁 ${t('signal.later', { ref: s.later[0].ref })}` : null;
     const dup = dupText(s);
     const hist = historyText(s);
     // الأهم أولاً: لون الإطار يحدد ما يُكتب أولاً
     const parts = s.level === 'risk' ? [hist, dup || later] : (s.level === 'dup_open' || s.level === 'dup_progress') ? [dup || later, hist] : [hist, dup || later];
-    return parts.filter(Boolean).join(' · ');
+    return [...parts, other, dev].filter(Boolean).join(' · ');
   };
   return { t, line, status };
 }
@@ -72,7 +76,8 @@ export function CustomerSignalLine({ signal }) {
   const { line } = useSignalText();
   const text = line(signal);
   if (!text) return null;
-  return <p className={`text-[11px] font-semibold leading-snug ${TEXT[signal.level]}`}>{text}</p>;
+  // سطر واحد بعرض الطلب كاملاً؛ النص الكامل عند الوقوف عليه وفي صفحة التعديل
+  return <p title={text} className={`col-span-full min-w-0 truncate text-[11px] font-semibold leading-snug ${TEXT[signal.level]}`}>{text}</p>;
 }
 
 const fmtDate = (d) => { try { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }); } catch { return ''; } };
@@ -81,12 +86,17 @@ const fmtDate = (d) => { try { return new Date(d).toLocaleDateString('en-GB', { 
 export function CustomerSignalCard({ signal }) {
   const { t, line, status } = useSignalText();
   const text = line(signal);
-  if (!text || signal.level === 'new') return null;
+  const info = (signal?.otherOpen?.length || 0) + (signal?.device?.length || 0);
+  if (!text || (signal.level === 'new' && !info)) return null;
   const s = signal.stats || {};
-  const rows = [...(signal.dup || []), ...(signal.later || [])];
+  const groups = [
+    ['dup', [...(signal.dup || []), ...(signal.later || [])]],
+    ['other_open', signal.otherOpen || []],
+    ['device', signal.device || []],
+  ].filter(([, list]) => list.length);
   return (
     <div className={`mb-6 rounded-2xl border p-4 text-sm ${CARD[signal.level]}`}>
-      <p className={`font-bold ${TEXT[signal.level]}`}>{t(`signal.title_${signal.level}`)}</p>
+      <p className={`font-bold ${TEXT[signal.level]}`}>{t(signal.level === 'new' ? 'signal.title_device' : `signal.title_${signal.level}`)}</p>
       <p className="mt-1 text-gray-700 dark:text-zinc-300">{text}</p>
       {!signal.hidden && (
         <>
@@ -94,21 +104,26 @@ export function CustomerSignalCard({ signal }) {
             {t('signal.summary', { delivered: s.delivered || 0, returned: s.returned || 0, cancelled: s.cancelled || 0, rate: s.rate || 0 })}
           </p>
           {signal.nameDiffers && <p className="mt-1 text-xs font-semibold text-gray-700 dark:text-zinc-300">✎ {t('signal.name_differs')}</p>}
-          {rows.length > 0 && (
-            <ul className="mt-3 divide-y divide-black/5 dark:divide-white/10 rounded-xl bg-white/70 dark:bg-zinc-900/40">
-              {rows.map((r) => (
-                <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs">
-                  <Link to={`/dashboard/orders/${r.id}`} className="font-mono font-bold text-indigo-700 dark:text-indigo-400 hover:underline">#{r.ref}</Link>
-                  <span className="text-gray-500 dark:text-zinc-400">{fmtDate(r.createdAt)}</span>
-                  {r.storeName && <span className="text-gray-600 dark:text-zinc-300">{r.storeName}</span>}
-                  {r.customerName && <span className="text-gray-600 dark:text-zinc-300">{r.customerName}</span>}
-                  <span className="font-semibold text-gray-800 dark:text-zinc-200">{status(r.status)}</span>
-                  {r.ageDays > 0 && <span className="text-gray-500 dark:text-zinc-400">{t('signal.age_short', { count: r.ageDays })}</span>}
-                  {r.sameProduct && <span className="rounded bg-black/5 dark:bg-white/10 px-1.5 py-0.5 font-semibold">{t('signal.same_product')}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
+          {groups.map(([g, list]) => (
+            <div key={g} className="mt-3">
+              <p className="mb-1 text-xs font-bold text-gray-700 dark:text-zinc-300">{t(`signal.group_${g}`)}</p>
+              <ul className="divide-y divide-black/5 dark:divide-white/10 rounded-xl bg-white/70 dark:bg-zinc-900/40">
+                {list.map((r) => (
+                  <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-xs">
+                    <Link to={`/dashboard/orders/${r.id}`} className="font-mono font-bold text-indigo-700 dark:text-indigo-400 hover:underline">#{r.ref}</Link>
+                    <span className="text-gray-500 dark:text-zinc-400">{fmtDate(r.createdAt)}</span>
+                    {r.storeName && <span className="text-gray-600 dark:text-zinc-300">{r.storeName}</span>}
+                    {r.customerName && <span className="text-gray-600 dark:text-zinc-300">{r.customerName}</span>}
+                    {r.phone && <span dir="ltr" className="tabular-nums text-gray-600 dark:text-zinc-300">{r.phone}</span>}
+                    <span className="font-semibold text-gray-800 dark:text-zinc-200">{status(r.status)}</span>
+                    {r.ageDays > 0 && <span className="text-gray-500 dark:text-zinc-400">{t('signal.age_short', { count: r.ageDays })}</span>}
+                    {r.sameProduct && <span className="rounded bg-black/5 dark:bg-white/10 px-1.5 py-0.5 font-semibold">{t('signal.same_product')}</span>}
+                    {r.sameDevice && g !== 'device' && <span className="rounded bg-black/5 dark:bg-white/10 px-1.5 py-0.5 font-semibold">📱 {t('signal.same_device')}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </>
       )}
     </div>

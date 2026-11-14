@@ -323,6 +323,14 @@
     "title_trusted": "✅ Client fiable",
     "title_previous": "ℹ️ Client précédent",
     "age": " · il y a {{count}} jours",
-    "age_short": "il y a {{count}} jours"
+    "age_short": "il y a {{count}} jours",
+    "other_open": "Autre commande ouverte #{{ref}} (produit différent)",
+    "device": "Même appareil : #{{ref}} avec le numéro {{phone}}",
+    "same_device_mark": " (même appareil)",
+    "same_device": "Même appareil",
+    "title_device": "📱 Commandes du même appareil avec un autre numéro",
+    "group_dup": "Doublons (même téléphone et même produit)",
+    "group_other_open": "Autres commandes ouvertes de ce numéro (produit différent — pas des doublons)",
+    "group_device": "Même appareil, autre numéro (pour information)"
   }
 }
