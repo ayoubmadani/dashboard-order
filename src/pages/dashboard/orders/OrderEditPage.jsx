@@ -11,7 +11,7 @@ import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
   ShoppingBag, Trash2, CheckCircle2, Calendar, Check
 } from 'lucide-react';
-import { groupOfferItems, partsLabel } from '../../../utils/offerGroups';
+import { groupOfferItems, expandPieces, resizePieces, offerLines } from '../../../utils/offerGroups';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -453,6 +453,89 @@ export default function OrderEditPage({ isNew = false }) {
       // 3. إرسال القائمة الجديدة فوراً للباك إند
       handleSave(true, updatedItems);
     }
+  };
+
+  // ── بطاقة العرض في تعديل الطلب: العرض والكمية (عدد العروض) في رأسها، وقسم خيارات لكل عرض ──
+  const updateGroup = (g, lines) => setEditedCart((prev) => {
+    const ids = new Set(g.items.map((it) => it.id));
+    const at = prev.items.findIndex((it) => ids.has(it.id));
+    const rest = prev.items.filter((it) => !ids.has(it.id));
+    rest.splice(at < 0 ? rest.length : at, 0, ...lines);
+    return { ...prev, items: rest };
+  });
+
+  const renderOfferCard = (g) => {
+    const pOpts = productOptions[g.items[0].productId] || { variants: [], offers: [] };
+    const groups = getVariantAttributeGroups(pOpts.variants);
+    const per = Math.max(1, Number(g.offer.quantity) || 1);
+    const pieces = expandPieces(g.items);
+    const count = Math.max(1, Math.ceil(pieces.length / per));
+    const setCount = (n) => updateGroup(g, offerLines(resizePieces(pieces, n, per), g.offer));
+    const setOffer = (offerId) => {
+      const o = pOpts.offers.find((x) => String(x.id) === String(offerId));
+      if (o) return updateGroup(g, offerLines(resizePieces(pieces, count, Number(o.quantity) || 1), o));
+      // بدون عرض: كل قطعة سطر بسعر نسختها أو سعر المنتج
+      updateGroup(g, pieces.map((p, k) => {
+        const price = parseFloat(p.variantDetail?.price > -1 ? p.variantDetail.price : p.product?.price || 0);
+        return { ...p, id: k === 0 ? p.id : `new-${Date.now()}-${k}`, offerId: null, offer: null, quantity: 1, finalPrice: price, itemTotal: price };
+      }));
+    };
+    const setPieceAttr = (k, key, value) => {
+      const cur = Array.isArray(pieces[k].variantDetail?.name) ? pieces[k].variantDetail.name : [];
+      const v = findVariantForAttrSelection(pOpts.variants, cur, key, value);
+      if (!v) return;
+      const next = pieces.map((p, x) => (x === k ? { ...p, variantDetailId: v.id, variantDetail: v } : p));
+      updateGroup(g, offerLines(next, g.offer));
+    };
+    const sel = 'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-900 dark:text-white dark:[color-scheme:dark]';
+    return (
+      <div key={g.key} className="rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
+          <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-11 h-11 rounded-lg object-cover bg-gray-100 shrink-0" />
+          <p className="flex-1 min-w-[8rem] text-sm font-bold text-gray-900 dark:text-white line-clamp-2">{g.product?.name}</p>
+          <select value={g.offer.id} onChange={(e) => setOffer(e.target.value)} aria-label={t('edit.offer_label')}
+            className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg px-2 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 dark:[color-scheme:dark]">
+            <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
+            {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
+          </select>
+          <div className="inline-flex items-center rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden" dir="ltr">
+            <button type="button" onClick={() => setCount(count - 1)} disabled={count <= 1} className="w-8 h-8 font-black text-gray-600 disabled:opacity-30">−</button>
+            <span className="w-8 text-center text-sm font-black text-gray-900 dark:text-white">{count}</span>
+            <button type="button" onClick={() => setCount(count + 1)} className="w-8 h-8 font-black text-gray-600">+</button>
+          </div>
+          <span className="text-base font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.total).toLocaleString()} DA</span>
+        </div>
+        {Array.from({ length: count }, (_, b) => (
+          <div key={b} className="px-4 py-3 border-t border-orange-100 dark:border-orange-500/20">
+            <p className="text-xs font-black text-orange-700 dark:text-orange-300 mb-2">{g.offer.name} ({b + 1})</p>
+            <div className="space-y-2">
+              {pieces.slice(b * per, b * per + per).map((p, i) => {
+                const k = b * per + i;
+                const cur = Array.isArray(p.variantDetail?.name) ? p.variantDetail.name : [];
+                return (
+                  <div key={k} className="flex flex-wrap items-center gap-2">
+                    {per > 1 && <span className="text-[11px] font-bold text-gray-500 dark:text-zinc-400 w-14 shrink-0">{t('edit.piece', 'القطعة')} {i + 1}</span>}
+                    {groups.map((gr) => {
+                      const value = cur.find((a) => attrKey(a) === gr.key)?.value ?? '';
+                      return (
+                        <label key={gr.key} className="inline-flex items-center gap-1 text-[11px] text-gray-500 dark:text-zinc-400">
+                          {gr.attrName}
+                          <select value={value} onChange={(e) => setPieceAttr(k, gr.key, e.target.value)} className={sel}>
+                            {!value && <option value="">—</option>}
+                            {gr.options.map((o) => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label || o.value}</option>)}
+                          </select>
+                        </label>
+                      );
+                    })}
+                    {p.addons?.length > 0 && <span className="text-[11px] font-semibold text-orange-600 dark:text-orange-400">+ {p.addons.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const calculateTotals = () => {
@@ -924,20 +1007,7 @@ export default function OrderEditPage({ isNew = false }) {
                         </div>
                       );
                     };
-                    return groupOfferItems(editedCart.items).map((g, gi) => g.type === 'item' ? renderItem(g.item, gi) : (
-                      <div key={g.key} className="rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden">
-                        <div className="flex items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
-                          <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-black text-orange-700 dark:text-orange-300 truncate">{g.offer.name}{g.boxes > 1 && <span dir="ltr"> ×{g.boxes}</span>}</p>
-                            <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">{g.product?.name}</p>
-                            <p className="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">{g.items.map((it) => `${partsLabel(it.variantDetail?.name) || '—'} ×${it.quantity}`).join('، ')}</p>
-                          </div>
-                          <span className="text-base font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.total).toLocaleString()} DA</span>
-                        </div>
-                        <div className="p-3 space-y-3">{g.items.map((it, i) => renderItem(it, i))}</div>
-                      </div>
-                    ));
+                    return groupOfferItems(editedCart.items).map((g, gi) => g.type === 'item' ? renderItem(g.item, gi) : renderOfferCard(g));
                   })()}
 
                   {!editedCart.isDigital && (
