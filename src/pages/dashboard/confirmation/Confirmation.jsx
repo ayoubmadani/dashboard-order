@@ -52,7 +52,7 @@ export default function Confirmation() {
   const [wilayaId, setWilayaId] = useState('');
   const [wilayas, setWilayas] = useState([]);
   const [busyId, setBusyId] = useState(null);
-  const [auto, setAuto] = useState({ enabled: false, companyId: null, agentIds: [] });
+  const [auto, setAuto] = useState({ enabled: false, companyId: null, agentIds: [], hold: ['dup_open', 'dup_progress'] });
   // مؤكّدو شركة الإرسال التلقائي (فارغ إن كانت الشركة لا تسمح بالاختيار)
   const [autoAgents, setAutoAgents] = useState([]);
   // حسابات التوصيل: كل شركة محفوظة مرتبطة بحساب تُرفع به طلباتها المؤكدة
@@ -120,6 +120,11 @@ export default function Confirmation() {
   const toggleAutoAgent = (id) => {
     const cur = auto.agentIds || [];
     updateAuto({ enabled: auto.enabled, companyId: auto.companyId, agentIds: cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id] });
+  };
+  // فلتر «لا تُرسل تلقائياً» (الافتراضي: المكرر فقط)
+  const toggleHold = (key) => {
+    const cur = auto.hold || [];
+    updateAuto({ enabled: auto.enabled, companyId: auto.companyId || undefined, hold: cur.includes(key) ? cur.filter((x) => x !== key) : [...cur, key] });
   };
   useEffect(() => {
     if (!storeId) return;
@@ -300,6 +305,27 @@ export default function Confirmation() {
                   })}
                 </div>
                 <p className="text-[11px] text-gray-500">{t('auto_agents_hint')}</p>
+              </div>
+            )}
+            {auto.companyId && (
+              <div className="-mt-2 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 shadow-sm space-y-2">
+                <p className="text-xs font-bold text-gray-500">{t('hold_title')}</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[['dup_open', '🟠'], ['dup_progress', '🟣'], ['risk', '🔴'], ['caution', '🟡']].map(([key, dot]) => {
+                    const on = (auto.hold || []).includes(key);
+                    return (
+                      <button key={key} type="button" role="checkbox" aria-checked={on} disabled={autoBusy} onClick={() => toggleHold(key)}
+                        className={`flex items-start gap-2 px-3 py-2 rounded-xl border-2 text-start disabled:opacity-50 ${on ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10' : 'border-gray-100 dark:border-zinc-800'}`}>
+                        <span className={`mt-0.5 w-4 h-4 rounded border-2 shrink-0 ${on ? 'bg-indigo-600 border-indigo-600' : 'border-gray-300 dark:border-zinc-600'}`} />
+                        <span>
+                          <span className="block text-sm font-bold text-gray-900 dark:text-white">{dot} {t(`hold_${key}`)}</span>
+                          <span className="block text-[11px] text-gray-500">{t(`hold_${key}_hint`)}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-gray-500">{t('hold_hint')}</p>
               </div>
             )}
 

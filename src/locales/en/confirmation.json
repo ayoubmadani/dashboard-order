@@ -55,5 +55,15 @@
   "agent_hint": "The chosen confirmers get the order alone for 2 hours, then it goes to the whole team. No choice: any confirmer.",
   "stats_line": "{{confirmed}} confirmed · {{delivered}} delivered",
   "auto_agents": "Preferred confirmers (optional)",
-  "auto_agents_hint": "Each new order goes to the chosen ones alone for 2 hours, then to the whole team. No choice: any confirmer."
+  "auto_agents_hint": "Each new order goes to the chosen ones alone for 2 hours, then to the whole team. No choice: any confirmer.",
+  "hold_title": "Don't send automatically",
+  "hold_dup_open": "Duplicate — first order not handled",
+  "hold_dup_open_hint": "Same phone and same product, the first order is still waiting",
+  "hold_dup_progress": "Duplicate — first order confirmed or shipping",
+  "hold_dup_progress_hint": "Same phone and same product, the first order is in progress",
+  "hold_risk": "Customer who often returns",
+  "hold_risk_hint": "Returned 50% or more (at least 2 finished orders)",
+  "hold_caution": "Heads-up",
+  "hold_caution_hint": "Refused a delivery once, 30–49% returns, or 3 cancellations with nothing received",
+  "hold_hint": "A held order stays with you with a note giving the reason; send it manually if you want."
 }
