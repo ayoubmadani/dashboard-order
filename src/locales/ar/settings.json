@@ -196,5 +196,16 @@
     "test_hint": "لتجربة طلب دون أن يُحسب: اكتب الاسم <b>mdStore</b> والرقم <b dir=\"ltr\">0551525354</b>"
   },
   "feat_orders": "طلب / شهر",
-  "feat_extra_order": "د.ج لكل طلب زائد"
+  "feat_extra_order": "د.ج لكل طلب زائد",
+  "plugins_title": "الإضافات",
+  "plugins_subtitle": "اربط شركات التوصيل بمتجرك لترفع الطلبات وتتبعها من اللوحة.",
+  "plugins_filter_all": "الكل",
+  "plugins_filter_connected": "المربوطة",
+  "plugins_connected": "مربوطة",
+  "plugins_add": "إضافة",
+  "plugins_add_another": "إضافة حساب آخر",
+  "plugins_empty": "لا توجد شركة بهذا الاسم.",
+  "plugins_empty_connected": "لم تربط أي شركة توصيل بعد.",
+  "plugins_load_error": "تعذّر تحميل الشركات. أعد المحاولة.",
+  "plugins_retry": "إعادة المحاولة"
 }

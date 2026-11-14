@@ -196,5 +196,16 @@
     "test_hint": "To test an order without it counting: name <b>mdStore</b> and number <b dir=\"ltr\">0551525354</b>"
   },
   "feat_orders": "orders / month",
-  "feat_extra_order": "DA per extra order"
+  "feat_extra_order": "DA per extra order",
+  "plugins_title": "Plugins",
+  "plugins_subtitle": "Connect delivery companies to your store to send and track orders from the dashboard.",
+  "plugins_filter_all": "All",
+  "plugins_filter_connected": "Connected",
+  "plugins_connected": "Connected",
+  "plugins_add": "Add",
+  "plugins_add_another": "Add another account",
+  "plugins_empty": "No company with this name.",
+  "plugins_empty_connected": "No delivery company connected yet.",
+  "plugins_load_error": "Couldn't load the companies. Try again.",
+  "plugins_retry": "Try again"
 }

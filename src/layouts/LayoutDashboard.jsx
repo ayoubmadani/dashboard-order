@@ -7,6 +7,7 @@ import {
     LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Mail, Boxes,
   ShoppingBasket,
   Megaphone,
+  Puzzle,
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken } from '../services/access-token';
@@ -232,6 +233,7 @@ export default function LayoutDashboard() {
             title: t('nav.group_sales', 'المبيعات'),
             items: [
                 { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, perm: 'order.view' },
+                { name: t('nav.plugins', 'الإضافات'), href: '/dashboard/plugins', icon: Puzzle, owner: true },
                 { name: t('nav.abandoned', 'طلبات متروكة'), href: '/dashboard/orders/abandoned', icon: ShoppingBasket, perm: 'order.view' },
                 { name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall, owner: true },
                 { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, owner: true },

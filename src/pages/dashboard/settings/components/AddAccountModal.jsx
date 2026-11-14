@@ -6,7 +6,7 @@ import ProviderCard from './ProviderCard';
 import CredentialField from './CredentialField';
 
 /** Modal for adding a new shipping account */
-export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSaved, t }) {
+export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSaved, t, initialProvider }) {
   const [providers, setProviders] = useState([]);
   const [selected, setSelected] = useState(null);
   const [credentials, setCredentials] = useState({});
@@ -19,7 +19,12 @@ export default function AddAccountModal({ storeId, headers, isRtl, onClose, onSa
 
   useEffect(() => {
     axios.get(`${baseURL}/stores/${storeId}/shipping/providers`, headers)
-      .then(r => setProviders(r.data))
+      .then(r => {
+        setProviders(r.data);
+        // من صفحة «الإضافات»: الشركة مختارة مسبقاً
+        const pre = initialProvider && r.data.find(p => p.name === initialProvider);
+        if (pre) { setSelected(pre); setAccountName(pre.title); }
+      })
       .catch(console.error)
       .finally(() => setIsLoading(false));
   }, [storeId]);

@@ -40,6 +40,7 @@ import Domain from './pages/dashboard/domain/domain';
 import Title from './halper/title';
 import OrderEditPage from './pages/dashboard/orders/OrderEditPage';
 import Confirmation from './pages/dashboard/confirmation/Confirmation';
+import Plugins from './pages/dashboard/plugins/Plugins';
 import Messages from './pages/dashboard/messages/messages';
 import PagesList from './pages/editor/PagesList';
 import PageEditor from './pages/editor/PageEditor';
@@ -132,6 +133,8 @@ const App = () => {
               <Route path='abandoned' element={<Abandoned />} />
               <Route path=':id'  element={<OrderEditPage />} />
             </Route>
+
+            <Route path="plugins" element={<Plugins />} />
 
             <Route path="messages" element={<Messages />} />
 

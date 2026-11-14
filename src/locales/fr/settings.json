@@ -196,5 +196,16 @@
     "test_hint": "Pour tester une commande sans qu'elle compte : nom <b>mdStore</b> et numéro <b dir=\"ltr\">0551525354</b>"
   },
   "feat_orders": "commandes / mois",
-  "feat_extra_order": "DA par commande en plus"
+  "feat_extra_order": "DA par commande en plus",
+  "plugins_title": "Extensions",
+  "plugins_subtitle": "Connectez des sociétés de livraison à votre boutique pour envoyer et suivre les commandes depuis le tableau de bord.",
+  "plugins_filter_all": "Toutes",
+  "plugins_filter_connected": "Connectées",
+  "plugins_connected": "Connectée",
+  "plugins_add": "Ajouter",
+  "plugins_add_another": "Ajouter un autre compte",
+  "plugins_empty": "Aucune société avec ce nom.",
+  "plugins_empty_connected": "Aucune société de livraison connectée pour l'instant.",
+  "plugins_load_error": "Impossible de charger les sociétés. Réessayez.",
+  "plugins_retry": "Réessayer"
 }
