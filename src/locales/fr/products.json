@@ -464,6 +464,10 @@
     "max_qty_hint": "Quantité max par pièce : avec 2 pièces la limite double (vide = 1)",
     "remove": "Supprimer",
     "enable": "Activer",
-    "disable": "Masquer"
+    "disable": "Masquer",
+    "name": "Nom de l'option",
+    "price": "Prix (DA)",
+    "price_hint": "(vide = gratuit)",
+    "max_qty_empty": "(vide = 1)"
   }
 }

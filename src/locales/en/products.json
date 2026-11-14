@@ -464,6 +464,10 @@
     "max_qty_hint": "Max per piece: with 2 pieces the limit doubles (empty = 1)",
     "remove": "Remove",
     "enable": "Enable",
-    "disable": "Hide"
+    "disable": "Hide",
+    "name": "Add-on name",
+    "price": "Price (DA)",
+    "price_hint": "(empty = free)",
+    "max_qty_empty": "(empty = 1)"
   }
 }

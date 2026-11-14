@@ -18,47 +18,52 @@ export default function ProductAddonsEditor({ value = [], onChange, isRtl }) {
       </p>
 
       {value.length > 0 && (
-        <div className="space-y-2 mb-3">
+        <div className="space-y-3 mb-3">
           {value.map((a) => (
-            <div key={a.id} className="flex items-center gap-2">
-              <input
-                value={a.name}
-                onChange={(e) => update(a.id, 'name', e.target.value)}
-                placeholder={t('name_placeholder')}
-                maxLength={100}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
-              />
-              <div className="relative w-28 shrink-0" dir="ltr">
-                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">+</span>
+            // كل إضافة في إطارها: الاسم في الأعلى، ثم السعر والكمية بعنوان واضح (فارغ = 0 / فارغ = 1)
+            <div key={a.id} className={`rounded-xl border border-orange-200 dark:border-orange-900/50 bg-white dark:bg-zinc-900 p-3 space-y-3 ${a.isActive === false ? 'opacity-60' : ''}`}>
+              <div className="flex items-center gap-2">
                 <input
-                  type="number" min="0"
-                  value={a.price}
-                  onChange={(e) => update(a.id, 'price', e.target.value)}
-                  placeholder="0"
-                  className="w-full pl-6 pr-2 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  value={a.name}
+                  onChange={(e) => update(a.id, 'name', e.target.value)}
+                  placeholder={t('name_placeholder')}
+                  aria-label={t('name')}
+                  maxLength={100}
+                  className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
                 />
+                <button type="button" title={a.isActive === false ? t('enable') : t('disable')} aria-label={a.isActive === false ? t('enable') : t('disable')}
+                  onClick={() => update(a.id, 'isActive', a.isActive === false)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${a.isActive === false ? 'bg-gray-300 dark:bg-zinc-700' : 'bg-orange-500'}`}>
+                  <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${a.isActive === false ? (isRtl ? '-translate-x-1' : 'translate-x-1') : (isRtl ? '-translate-x-[18px]' : 'translate-x-[18px]')}`} />
+                </button>
+                <button type="button" onClick={() => remove(a.id)} title={t('remove')} aria-label={t('remove')}
+                  className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 shrink-0">
+                  <Trash2 size={14} />
+                </button>
               </div>
-              {/* أقصى كمية يختارها الزبون (فارغ أو 1 = اختيار بسيط) */}
-              <div className="relative w-16 shrink-0" dir="ltr" title={t('max_qty_hint')}>
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">×</span>
-                <input
-                  type="number" min="1" max="99" step="1"
-                  value={a.maxQty ?? ''}
-                  onChange={(e) => update(a.id, 'maxQty', e.target.value)}
-                  placeholder="1"
-                  aria-label={t('max_qty')}
-                  className="w-full pl-5 pr-1 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block space-y-1">
+                  <span className="block text-xs font-bold text-gray-600 dark:text-zinc-300">{t('price')} <span className="font-normal text-gray-400">{t('price_hint')}</span></span>
+                  <input
+                    type="number" min="0" dir="ltr"
+                    value={a.price}
+                    onChange={(e) => update(a.id, 'price', e.target.value)}
+                    placeholder="0"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </label>
+                {/* أقصى كمية يختارها الزبون لكل قطعة (فارغ = 1 = اختيار بسيط بلا − +) */}
+                <label className="block space-y-1" title={t('max_qty_hint')}>
+                  <span className="block text-xs font-bold text-gray-600 dark:text-zinc-300">{t('max_qty')} <span className="font-normal text-gray-400">{t('max_qty_empty')}</span></span>
+                  <input
+                    type="number" min="1" max="99" step="1" dir="ltr"
+                    value={a.maxQty ?? ''}
+                    onChange={(e) => update(a.id, 'maxQty', e.target.value)}
+                    placeholder="1"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm font-bold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30"
+                  />
+                </label>
               </div>
-              <button type="button" title={a.isActive === false ? t('enable') : t('disable')}
-                onClick={() => update(a.id, 'isActive', a.isActive === false)}
-                className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${a.isActive === false ? 'bg-gray-300 dark:bg-zinc-700' : 'bg-orange-500'}`}>
-                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${a.isActive === false ? (isRtl ? '-translate-x-1' : 'translate-x-1') : (isRtl ? '-translate-x-[18px]' : 'translate-x-[18px]')}`} />
-              </button>
-              <button type="button" onClick={() => remove(a.id)} title={t('remove')}
-                className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 shrink-0">
-                <Trash2 size={14} />
-              </button>
             </div>
           ))}
         </div>
