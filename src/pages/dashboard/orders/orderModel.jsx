@@ -1,3 +1,4 @@
+import { groupOfferItems, partsLabel } from '../../../utils/offerGroups';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShipStatusBadge } from '../../../utils/shippingStatus';
@@ -272,7 +273,9 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
                   {items.length}
                 </span>
               </div>
-              {items.map(item => (
+              {/* سطور العرض الواحد في صندوق: اسم العرض وسعره والمنتج وخيارات القطع */}
+              {groupOfferItems(items).map((g) => {
+                const line = (item) => (
                 <div key={item.id} className="om-item-line">
                   <span className="om-item-line-name">
                     {item.quantity}× {item.product?.name || item.title || item.productName || t('modal.product_unknown')}
@@ -284,7 +287,33 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
                   </span>
                   <span className="om-item-line-meta">{parseFloat(item.finalPrice || 0).toLocaleString()} DA</span>
                 </div>
-              ))}
+                );
+                if (g.type === 'item') return line(g.item);
+                return (
+                  <div key={g.key} style={{ border: '1.5px solid #fed7aa', borderRadius: 12, margin: '6px 0', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'rgba(249,115,22,0.08)' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 800, color: '#c2410c', fontSize: 13 }}>{g.offer.name}{g.boxes > 1 && <span dir="ltr"> ×{g.boxes}</span>}</div>
+                        <div style={{ fontSize: 11, opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{g.product?.name}</div>
+                      </div>
+                      <span dir="ltr" style={{ fontWeight: 800, color: '#c2410c', fontSize: 13 }}>{Number(g.total).toLocaleString()} DA</span>
+                    </div>
+                    {g.items.map((item) => (
+                      <div key={item.id} className="om-item-line" style={{ paddingInline: 10 }}>
+                        <span className="om-item-line-name">
+                          {partsLabel(item.variantDetail?.name) || '—'}
+                          {item.addons?.length > 0 && (
+                            <span style={{ display: 'block', fontSize: '0.75em', opacity: 0.7 }}>
+                              + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}
+                            </span>
+                          )}
+                        </span>
+                        <span className="om-item-line-meta" dir="ltr">× {item.quantity}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
               <div className="om-totals">
                 <span className="om-tot-label">{t('modal.price_total')}</span>
                 <span className="om-tot-val">{parseFloat(cartData.allPrice ?? (Number(cartData.totalPrice || 0) + Number(cartData.priceShip || 0))).toLocaleString()} DA</span>

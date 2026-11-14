@@ -1,7 +1,7 @@
 import PagePixelsModal from '../../editor/components/PagePixelsModal';
 import AttributesEditor from './components/AttributesEditor';
 import { attributeErrors, cleanAttributes, setImage } from './components/attributeEditing';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ProductAddonsEditor from '../../../components/ProductAddonsEditor';
 import { addonsPayload } from '../../../utils/productAddons';
@@ -18,6 +18,7 @@ import {
 import { freshStoreCode } from '../../../utils/storeCode';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { stockPatch } from '../../../utils/stockField';
 import ModelImages from '../../../components/ModelImages';
 import { imageSlotClass, MAIN_IMAGE_CLASS } from '../../../utils/imageSlots';
 import axios from 'axios';
@@ -115,6 +116,8 @@ export default function EditProduct() {
   });
   const [attributes, setAttributes] = useState([]);
   const [offers, setOffers] = useState([]);
+  // المخزون كما حُمّل: يُرسل عند الحفظ فقط إن تغيّر (stockPatch)
+  const initialStock = useRef(null);
   const [addons, setAddons] = useState([]);
   const [images, setImages] = useState([]);
   const [dragImageIndex, setDragImageIndex] = useState(null);
@@ -212,6 +215,7 @@ export default function EditProduct() {
 
         const product = res.data?.data || res.data;
         if (!product) { navigate('/dashboard/products'); return; }
+        initialStock.current = product.stock;
 
         setFormData({
           name: product.name || '',
@@ -329,7 +333,7 @@ export default function EditProduct() {
         price: Number(formData.price),
         desc: formData.desc,
         sku: formData.sku,
-        stock: Number(formData.stock) || 0,
+        ...stockPatch(formData.stock, initialStock.current),
         isActive: formData.status === 'active',
         shippingFree: formData.shippingFree,
         isDigital: formData.isDigital,

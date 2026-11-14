@@ -11,6 +11,7 @@ import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
   ShoppingBag, Trash2, CheckCircle2, Calendar, Check
 } from 'lucide-react';
+import { groupOfferItems, partsLabel } from '../../../utils/offerGroups';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -763,164 +764,181 @@ export default function OrderEditPage({ isNew = false }) {
                   </div>
                 </div>
                 <div className="p-6 space-y-4">
-                  {editedCart.items.map((item, idx) => {
-                    const pOpts = productOptions[item.productId] || { variants: [], offers: [] };
-                    const attributeGroups = getVariantAttributeGroups(pOpts.variants);
-                    const currentAttrs = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name : [];
-
-                    return (
-                      <div key={item.id} className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-300">
-
-                        {/* الجزء العلوي: الصورة، الاسم وزر الحذف */}
-                        <div className="flex gap-4 mb-5">
-                          <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
-                            <img
-                              src={item.product?.imagesProduct?.[0]?.imageUrl}
-                              alt=""
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                          </div>
-
-                          <div className="flex-1 flex flex-col justify-between py-0.5">
-                            <div className="flex justify-between items-center">
-                              <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
-                                {item.product?.name || item.title || item.productName || t('edit.product_unknown')}
-                                {item.addons?.length > 0 && (
-                                  <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
-                                    + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                  {/* سطور العرض الواحد في صندوق: اسم العرض وسعره والمنتج، وتحته بطاقة كل سطر للتعديل */}
+                  {(() => {
+                    const renderItem = (item, idx) => {
+                      const pOpts = productOptions[item.productId] || { variants: [], offers: [] };
+                      const attributeGroups = getVariantAttributeGroups(pOpts.variants);
+                      const currentAttrs = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name : [];
+  
+                      return (
+                        <div key={item.id} className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-300">
+  
+                          {/* الجزء العلوي: الصورة، الاسم وزر الحذف */}
+                          <div className="flex gap-4 mb-5">
+                            <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
+                              <img
+                                src={item.product?.imagesProduct?.[0]?.imageUrl}
+                                alt=""
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              />
+                            </div>
+  
+                            <div className="flex-1 flex flex-col justify-between py-0.5">
+                              <div className="flex justify-between items-center">
+                                <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
+                                  {item.product?.name || item.title || item.productName || t('edit.product_unknown')}
+                                  {item.addons?.length > 0 && (
+                                    <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
+                                      + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
+                                    </span>
+                                  )}
+                                </h3>
+                                <button
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+  
+                              <div className="flex items-center flex-wrap gap-2">
+                                <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                                  {parseFloat(item.finalPrice || 0).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
+                                </span>
+                                {item.quantity > 1 && (
+                                  <span className="text-xs text-gray-400 line-through">
+                                    {parseFloat(item.itemTotal || 0).toLocaleString()} DA
                                   </span>
                                 )}
-                              </h3>
-                              <button
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-
-                            <div className="flex items-center flex-wrap gap-2">
-                              <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                                {parseFloat(item.finalPrice || 0).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
-                              </span>
-                              {item.quantity > 1 && (
-                                <span className="text-xs text-gray-400 line-through">
-                                  {parseFloat(item.itemTotal || 0).toLocaleString()} DA
-                                </span>
-                              )}
-                              {isItemFreeShipping(item) && (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
-                                  🚚 {t('edit.free_shipping_badge')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* أدوات التحكم: الكمية، العرض، والمتغير */}
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-3">
-                            {/* حقل الكمية بتصميم أنظف */}
-                            <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.quantity')}</label>
-                              <div className="relative">
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={item.quantity || 1}
-                                  onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
-                                  className="w-full bg-gray-50 dark:bg-zinc-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                                />
+                                {isItemFreeShipping(item) && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+                                    🚚 {t('edit.free_shipping_badge')}
+                                  </span>
+                                )}
                               </div>
                             </div>
-
-                            {/* اختيار العرض */}
-                            {pOpts.offers.length > 0 && (
+                          </div>
+  
+                          {/* أدوات التحكم: الكمية، العرض، والمتغير */}
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-3">
+                              {/* حقل الكمية بتصميم أنظف */}
                               <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.offer_label')}</label>
-                                <select
-                                  value={item.offerId || ''}
-                                  onChange={e => handleItemChange(item.id, 'offerId', e.target.value)}
-                                  className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-2 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 focus:ring-2 focus:ring-amber-500/20 outline-none appearance-none dark:[color-scheme:dark]"
-                                >
-                                  <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
-                                  {pOpts.offers.map(o => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
-                                </select>
+                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.quantity')}</label>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min="1"
+                                    value={item.quantity || 1}
+                                    onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                    className="w-full bg-gray-50 dark:bg-zinc-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                                  />
+                                </div>
+                              </div>
+  
+                              {/* اختيار العرض */}
+                              {pOpts.offers.length > 0 && (
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.offer_label')}</label>
+                                  <select
+                                    value={item.offerId || ''}
+                                    onChange={e => handleItemChange(item.id, 'offerId', e.target.value)}
+                                    className="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-2 py-2.5 text-[11px] font-bold text-amber-700 dark:text-amber-400 focus:ring-2 focus:ring-amber-500/20 outline-none appearance-none dark:[color-scheme:dark]"
+                                  >
+                                    <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
+                                    {pOpts.offers.map(o => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
+                                  </select>
+                                </div>
+                              )}
+                            </div>
+  
+                            {/* اختيار المتغير (Variant) — سطر منفصل لكل خاصية */}
+                            {attributeGroups.length > 0 && (
+                              <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/30 p-3.5 space-y-3">
+                                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.variant_selected')}</div>
+                                {attributeGroups.map(group => {
+                                  const selectedAttr = currentAttrs.find(a => attrKey(a) === group.key);
+                                  const selectedValue = selectedAttr?.value ?? '';
+                                  const isSwatch = group.displayMode === 'color' || group.displayMode === 'image';
+                                  const attrLabel = group.attrName || t('edit.attribute_fallback');
+                                  return (
+                                    <div key={group.key} className="flex items-center justify-between gap-3">
+                                      <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300 shrink-0">
+                                        {attrLabel}
+                                      </span>
+                                      {isSwatch ? (
+                                        <div className="flex flex-wrap justify-end gap-2.5">
+                                          {group.options.map(o => {
+                                            const isSel = selectedValue === o.value;
+                                            // غير متوفر مع الخيارات الأخرى = لا يمكن اختياره (المختار حالياً يبقى ظاهراً)
+                                            const available = isSel || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
+                                            return (
+                                              <button
+                                                key={o.value}
+                                                type="button"
+                                                disabled={!available}
+                                                title={available ? (o.label || undefined) : t('edit.option_unavailable')}
+                                                onClick={() => available && handleVariantAttrChange(item, group.key, o.value)}
+                                                className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'} ${available ? '' : 'opacity-35 cursor-not-allowed'}`}
+                                              >
+                                                {!available && <span className="absolute inset-0 z-10 m-auto h-0.5 w-[140%] -ms-[20%] bg-rose-500 rotate-45" />}
+                                                {group.displayMode === 'color'
+                                                  ? <span className="w-full h-full block" style={{ background: o.value }} />
+                                                  : <img src={o.value} className="w-full h-full object-cover" alt="" />
+                                                }
+                                                {isSel && (
+                                                  <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                    <CheckCircle2 size={16} className="text-white" strokeWidth={2.5} />
+                                                  </span>
+                                                )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      ) : (
+                                        <select
+                                          value={selectedValue}
+                                          onChange={e => handleVariantAttrChange(item, group.key, e.target.value)}
+                                          className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:[color-scheme:dark]"
+                                        >
+                                          {!selectedValue && <option value="" disabled className={OPTION_CLS}>{t('edit.choose_attr', { attr: attrLabel })}</option>}
+                                          {group.options.map(o => {
+                                            const available = selectedValue === o.value || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
+                                            return (
+                                              <option key={o.value} value={o.value} disabled={!available} className={OPTION_CLS}>
+                                                {o.value}{available ? '' : ` — ${t('edit.option_unavailable')}`}
+                                              </option>
+                                            );
+                                          })}
+                                        </select>
+                                      )}
+                                    </div>
+                                  );
+                                })}
                               </div>
                             )}
+  
                           </div>
-
-                          {/* اختيار المتغير (Variant) — سطر منفصل لكل خاصية */}
-                          {attributeGroups.length > 0 && (
-                            <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/30 p-3.5 space-y-3">
-                              <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{t('edit.variant_selected')}</div>
-                              {attributeGroups.map(group => {
-                                const selectedAttr = currentAttrs.find(a => attrKey(a) === group.key);
-                                const selectedValue = selectedAttr?.value ?? '';
-                                const isSwatch = group.displayMode === 'color' || group.displayMode === 'image';
-                                const attrLabel = group.attrName || t('edit.attribute_fallback');
-                                return (
-                                  <div key={group.key} className="flex items-center justify-between gap-3">
-                                    <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300 shrink-0">
-                                      {attrLabel}
-                                    </span>
-                                    {isSwatch ? (
-                                      <div className="flex flex-wrap justify-end gap-2.5">
-                                        {group.options.map(o => {
-                                          const isSel = selectedValue === o.value;
-                                          // غير متوفر مع الخيارات الأخرى = لا يمكن اختياره (المختار حالياً يبقى ظاهراً)
-                                          const available = isSel || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
-                                          return (
-                                            <button
-                                              key={o.value}
-                                              type="button"
-                                              disabled={!available}
-                                              title={available ? (o.label || undefined) : t('edit.option_unavailable')}
-                                              onClick={() => available && handleVariantAttrChange(item, group.key, o.value)}
-                                              className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'} ${available ? '' : 'opacity-35 cursor-not-allowed'}`}
-                                            >
-                                              {!available && <span className="absolute inset-0 z-10 m-auto h-0.5 w-[140%] -ms-[20%] bg-rose-500 rotate-45" />}
-                                              {group.displayMode === 'color'
-                                                ? <span className="w-full h-full block" style={{ background: o.value }} />
-                                                : <img src={o.value} className="w-full h-full object-cover" alt="" />
-                                              }
-                                              {isSel && (
-                                                <span className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                  <CheckCircle2 size={16} className="text-white" strokeWidth={2.5} />
-                                                </span>
-                                              )}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    ) : (
-                                      <select
-                                        value={selectedValue}
-                                        onChange={e => handleVariantAttrChange(item, group.key, e.target.value)}
-                                        className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:[color-scheme:dark]"
-                                      >
-                                        {!selectedValue && <option value="" disabled className={OPTION_CLS}>{t('edit.choose_attr', { attr: attrLabel })}</option>}
-                                        {group.options.map(o => {
-                                          const available = selectedValue === o.value || !!findVariantForAttrSelection(pOpts.variants, currentAttrs, group.key, o.value);
-                                          return (
-                                            <option key={o.value} value={o.value} disabled={!available} className={OPTION_CLS}>
-                                              {o.value}{available ? '' : ` — ${t('edit.option_unavailable')}`}
-                                            </option>
-                                          );
-                                        })}
-                                      </select>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
+  
                         </div>
-
+                      );
+                    };
+                    return groupOfferItems(editedCart.items).map((g, gi) => g.type === 'item' ? renderItem(g.item, gi) : (
+                      <div key={g.key} className="rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden">
+                        <div className="flex items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
+                          <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-black text-orange-700 dark:text-orange-300 truncate">{g.offer.name}{g.boxes > 1 && <span dir="ltr"> ×{g.boxes}</span>}</p>
+                            <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">{g.product?.name}</p>
+                            <p className="text-[11px] text-gray-500 dark:text-zinc-400 mt-0.5">{g.items.map((it) => `${partsLabel(it.variantDetail?.name) || '—'} ×${it.quantity}`).join('، ')}</p>
+                          </div>
+                          <span className="text-base font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.total).toLocaleString()} DA</span>
+                        </div>
+                        <div className="p-3 space-y-3">{g.items.map((it, i) => renderItem(it, i))}</div>
                       </div>
-                    );
-                  })}
+                    ));
+                  })()}
 
                   {!editedCart.isDigital && (
                     <button
