@@ -538,7 +538,12 @@ export default function OrderEditPage({ isNew = false }) {
     const per = Math.max(1, Number(g.offer.quantity) || 1);
     const pieces = expandPieces(g.items);
     const count = Math.max(1, Math.ceil(pieces.length / per));
-    const setCount = (n) => updateGroup(g, offerLines(resizePieces(pieces, n, per), g.offer));
+    // حذف بطاقة عرض واحدة (لا يُحذف آخر منتج في الطلب)
+    const removeUnit = (b) => {
+      if (!isNew && editedCart.items.length - g.items.length + Math.max(0, pieces.length - per) <= 0) { alert(t('edit.cannot_delete_last_item')); return; }
+      const rest = [...pieces.slice(0, b * per), ...pieces.slice(b * per + per)];
+      updateGroup(g, offerLines(rest, g.offer));
+    };
     // كل عرض مستقل: تغيير عرض البطاقة b وحدها (مثلاً tow الثانية ← one)، والبقية كما هي
     const setUnitOffer = (b, offerId) => {
       const seen = new Set();
@@ -562,28 +567,29 @@ export default function OrderEditPage({ isNew = false }) {
       updateGroup(g, offerLines(next, g.offer));
     };
     return (
-      <div key={g.key} className="rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden">
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
-          <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-11 h-11 rounded-lg object-cover bg-gray-100 shrink-0" />
-          <p className="flex-1 min-w-[8rem] text-sm font-bold text-gray-900 dark:text-white line-clamp-2">{g.product?.name}</p>
-          <div className="inline-flex items-center rounded-lg border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden" dir="ltr">
-            <button type="button" onClick={() => setCount(count - 1)} disabled={count <= 1} className="w-8 h-8 font-black text-gray-600 disabled:opacity-30">−</button>
-            <span className="w-8 text-center text-sm font-black text-gray-900 dark:text-white">{count}</span>
-            <button type="button" onClick={() => setCount(count + 1)} className="w-8 h-8 font-black text-gray-600">+</button>
-          </div>
-          <span className="text-base font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.total).toLocaleString()} DA</span>
-        </div>
+      <React.Fragment key={g.key}>
         {Array.from({ length: count }, (_, b) => (
-          <div key={b} className="mx-3 my-3 px-4 py-3 rounded-xl border border-orange-200 dark:border-orange-500/30 bg-white dark:bg-zinc-900">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-9 h-9 rounded-lg object-cover bg-gray-100 shrink-0" />
-              <p className="flex-1 min-w-[7rem] text-xs font-bold text-gray-800 dark:text-zinc-200 line-clamp-2">{g.product?.name}</p>
+          <div key={b} className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+            {/* نفس رأس بطاقة المنتج العادية: الصورة، الاسم والسعر، ثم العرض، ثم زر الحذف */}
+            <div className="flex gap-4 mb-5">
+              <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
+                <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">{g.product?.name}</h3>
+                <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                  {Number(g.offer.price).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
+                </span>
+              </div>
               <select value={g.offer.id} onChange={(e) => setUnitOffer(b, e.target.value)} aria-label={t('edit.offer_label')}
-                className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-lg px-2 py-1.5 text-xs font-bold text-amber-700 dark:text-amber-400 dark:[color-scheme:dark]">
+                className="self-center bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-3 py-2.5 text-xs font-bold text-amber-700 dark:text-amber-400 outline-none dark:[color-scheme:dark]">
                 <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
                 {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
               </select>
-              <span className="text-sm font-black text-orange-700 dark:text-orange-300 shrink-0" dir="ltr">{Number(g.offer.price).toLocaleString()} DA</span>
+              <button type="button" onClick={() => removeUnit(b)} aria-label={t('edit.delete_item', 'حذف')}
+                className="self-start p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all">
+                <Trash2 size={16} />
+              </button>
             </div>
             <div className="space-y-2">
               {pieces.slice(b * per, b * per + per).map((p, i) => {
@@ -600,7 +606,7 @@ export default function OrderEditPage({ isNew = false }) {
             </div>
           </div>
         ))}
-      </div>
+      </React.Fragment>
     );
   };
 
