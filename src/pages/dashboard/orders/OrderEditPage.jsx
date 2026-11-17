@@ -9,7 +9,7 @@ import { useParams, useNavigate, useLocation, useOutletContext } from 'react-rou
 import { can } from '../../../services/storeAccess';
 import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
-  ShoppingBag, Trash2, CheckCircle2, Calendar, Check
+  ShoppingBag, Trash2, CheckCircle2, Calendar, Check, Pencil
 } from 'lucide-react';
 import { groupOfferItems, expandPieces, resizePieces, offerLines, splitIntoPieces } from '../../../utils/offerGroups';
 import axios from 'axios';
@@ -151,6 +151,8 @@ export default function OrderEditPage({ isNew = false }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  // القطعة المفتوحة للتعديل («بطاقة-قطعة»): سطر ملخص لكل قطعة، و«تعديل» يفتح خياراتها وحدها
+  const [openPiece, setOpenPiece] = useState('');
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -545,6 +547,113 @@ export default function OrderEditPage({ isNew = false }) {
     );
   };
 
+  // سطر القطعة: ملخص خياراتها وإضافاتها، وزر «تعديل» يفتح لوحة خياراتها وإضافاتها فقط
+  const perPieceAddonsPrice = (addons) => (addons || []).reduce((s, a) => s + (a.separate ? 0 : Number(a.price || 0) * Number(a.qty || 1)), 0);
+  const renderPieceRow = ({ rowKey, label, variants, cur, onPick, addonsList, pieceAddons, onAddon }) => {
+    const isOpen = openPiece === rowKey;
+    const groups = getVariantAttributeGroups(variants);
+    const missing = groups.some((g) => !cur.find((a) => attrKey(a) === g.key));
+    const colorPart = cur.find((a) => a.displayMode === 'color');
+    const text = cur.map((a) => (a.displayMode === 'color' ? (a.label || '') : a.value)).filter(Boolean).join(' · ');
+    const added = (pieceAddons || []).filter((a) => !a.separate);
+    return (
+      <div key={rowKey} className="border-t border-gray-100 dark:border-zinc-800">
+        <div className="flex items-center gap-3 py-2.5">
+          <span className="w-16 shrink-0 text-xs font-bold text-gray-500 dark:text-zinc-400">{label}</span>
+          <div className="flex-1 min-w-0 flex flex-wrap items-center gap-2 text-sm">
+            {missing && <span className="font-bold text-amber-600 dark:text-amber-400">⚠ {t('edit.choose_options', 'اختر الخيارات')}</span>}
+            {colorPart && <span className="w-3 h-3 rounded-full border border-gray-300 dark:border-zinc-600" style={{ background: colorPart.value }} />}
+            {text && <span className="font-semibold text-gray-900 dark:text-white">{text}</span>}
+            {added.length > 0 && <span className="px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 text-[11px] font-bold">+ {added.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</span>}
+          </div>
+          <button type="button" onClick={() => setOpenPiece(isOpen ? '' : rowKey)} aria-expanded={isOpen}
+            className={`shrink-0 inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-bold transition-all ${isOpen ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-200 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}>
+            <Pencil size={13} /> {t('edit.edit', 'تعديل')}
+          </button>
+        </div>
+        {isOpen && (
+          <div className="mb-3 space-y-3">
+            {renderVariantPanel(variants, cur, onPick, t('edit.variant_selected'))}
+            {addonsList.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 px-1">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('edit.addons', 'الإضافات')}</span>
+                {addonsList.map((ad) => {
+                  const found = (pieceAddons || []).find((x) => x.id === ad.id);
+                  const n = found ? Number(found.qty) || 1 : 0;
+                  const max = Math.max(1, Math.floor(Number(ad.maxQty) || 1));
+                  return (
+                    <span key={ad.id} className="inline-flex items-center gap-1">
+                      <button type="button" onClick={() => onAddon(ad, n ? 0 : 1)} aria-pressed={n > 0}
+                        className={`px-2.5 py-1 rounded-full border text-[11px] font-bold transition-all ${n ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300'}`}>
+                        {n ? '✓ ' : '+ '}{ad.name}{Number(ad.price) ? ` (${Number(ad.price).toLocaleString()} DA)` : ''}
+                      </button>
+                      {n > 0 && max > 1 && (
+                        <span className="inline-flex items-center rounded-full border border-orange-300 dark:border-orange-700/60 overflow-hidden" dir="ltr">
+                          <button type="button" onClick={() => onAddon(ad, n - 1)} className="w-6 h-6 text-xs font-black text-orange-600">−</button>
+                          <span className="w-5 text-center text-[11px] font-black">{n}</span>
+                          <button type="button" disabled={n >= max} onClick={() => onAddon(ad, n + 1)} className="w-6 h-6 text-xs font-black text-orange-600 disabled:opacity-30">+</button>
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <button type="button" onClick={() => setOpenPiece('')} className="h-9 px-4 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold">{t('edit.done', 'تم')}</button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // منتج بدون عرض وله خيارات: نفس البطاقة (صورة، اسم، سعر، حذف) وسطر للقطعة، و«+ قطعة أخرى»
+  const renderPlainCard = (item) => {
+    const pOpts = productOptions[item.productId] || { variants: [], offers: [] };
+    const cur = Array.isArray(item.variantDetail?.name) ? item.variantDetail.name : [];
+    const addonsList = (item.product?.addons || []).filter((a) => a && a.isActive !== false && a.name);
+    const baseOf = (v) => parseFloat(v && v.price > -1 ? v.price : item.product?.price || 0);
+    const replaceItem = (patch) => setEditedCart((prev) => ({ ...prev, items: prev.items.map((it) => (it.id === item.id ? { ...it, ...patch, itemTotal: Number(patch.finalPrice ?? it.finalPrice) * (it.quantity || 1) } : it)) }));
+    const onPick = (key, value) => {
+      const v = findVariantForAttrSelection(pOpts.variants, cur, key, value);
+      if (!v) return;
+      replaceItem({ variantDetailId: v.id, variantDetail: v, finalPrice: baseOf(v) + perPieceAddonsPrice(item.addons) });
+    };
+    const onAddon = (ad, qty) => {
+      const max = Math.max(1, Math.floor(Number(ad.maxQty) || 1));
+      const q = Math.max(0, Math.min(max, qty));
+      const rest = (item.addons || []).filter((x) => !x.separate && x.id !== ad.id);
+      const next = q > 0 ? [...rest, { id: ad.id, name: ad.name, price: Number(ad.price) || 0, ...(q > 1 ? { qty: q } : {}) }] : rest;
+      replaceItem({ addons: next.length ? next : null, finalPrice: baseOf(item.variantDetail) + perPieceAddonsPrice(next) });
+    };
+    const addPiece = () => setEditedCart((prev) => {
+      const at = prev.items.findIndex((it) => it.id === item.id);
+      const items = [...prev.items];
+      items.splice(at + 1, 0, { ...item, id: `new-${Date.now()}`, quantity: 1 });
+      return { ...prev, items };
+    });
+    return (
+      <div key={item.id} className="bg-white dark:bg-zinc-900 rounded-2xl px-5 pt-5 pb-2 border border-gray-100 dark:border-zinc-800 shadow-sm">
+        <div className="flex gap-4 mb-3">
+          <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
+            <img src={item.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+            <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">{item.product?.name || item.title || t('edit.product_unknown')}</h3>
+            <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{Number(item.finalPrice || 0).toLocaleString()} <small className="text-[10px] font-bold">DA</small></span>
+          </div>
+          <button type="button" onClick={() => handleDeleteItem(item.id)} aria-label={t('edit.delete_item', 'حذف')}
+            className="self-start p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all">
+            <Trash2 size={16} />
+          </button>
+        </div>
+        {renderPieceRow({ rowKey: `p-${item.id}`, label: t('edit.options', 'الخيارات'), variants: pOpts.variants, cur, onPick, addonsList, pieceAddons: item.addons, onAddon })}
+        <div className="border-t border-gray-100 dark:border-zinc-800 py-1.5">
+          <button type="button" onClick={addPiece} className="h-9 px-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">+ {t('edit.add_piece', 'قطعة أخرى من نفس المنتج')}</button>
+        </div>
+      </div>
+    );
+  };
+
   const renderOfferCard = (g) => {
     const pOpts = productOptions[g.items[0].productId] || { variants: [], offers: [] };
     const per = Math.max(1, Number(g.offer.quantity) || 1);
@@ -590,9 +699,9 @@ export default function OrderEditPage({ isNew = false }) {
     return (
       <Fragment key={g.key}>
         {Array.from({ length: count }, (_, b) => (
-          <div key={b} className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
+          <div key={b} className="bg-white dark:bg-zinc-900 rounded-2xl px-5 pt-5 pb-2 border border-gray-100 dark:border-zinc-800 shadow-sm">
             {/* نفس رأس بطاقة المنتج العادية: الصورة، الاسم والسعر، ثم العرض، ثم زر الحذف */}
-            <div className="flex gap-4 mb-5">
+            <div className="flex gap-4 mb-3">
               <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
                 <img src={g.product?.imagesProduct?.[0]?.imageUrl} alt="" className="w-full h-full object-cover" />
               </div>
@@ -618,42 +727,19 @@ export default function OrderEditPage({ isNew = false }) {
                 <Trash2 size={16} />
               </button>
             </div>
-            <div className="space-y-2">
-              {pieces.slice(b * per, b * per + per).map((p, i) => {
-                const k = b * per + i;
-                const cur = Array.isArray(p.variantDetail?.name) ? p.variantDetail.name : [];
-                return (
-                  <div key={k}>
-                    {renderVariantPanel(pOpts.variants, cur, (key, value) => setPieceAttr(k, key, value),
-                      per > 1 ? `${t('edit.piece', 'القطعة')} ${i + 1}` : t('edit.variant_selected'))}
-                    {productAddons.length > 0 && (
-                      <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('edit.addons', 'الإضافات')}</span>
-                        {productAddons.map((ad) => {
-                          const n = Number((p.addons || []).find((x) => x.id === ad.id)?.qty ?? ((p.addons || []).some((x) => x.id === ad.id) ? 1 : 0));
-                          const max = Math.max(1, Math.floor(Number(ad.maxQty) || 1));
-                          return (
-                            <span key={ad.id} className="inline-flex items-center gap-1">
-                              <button type="button" onClick={() => setPieceAddon(k, ad, n ? 0 : 1)} aria-pressed={n > 0}
-                                className={`px-2.5 py-1 rounded-full border text-[11px] font-bold transition-all ${n ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300'}`}>
-                                {n ? '✓ ' : '+ '}{ad.name}{Number(ad.price) ? ` (${Number(ad.price).toLocaleString()} DA)` : ''}
-                              </button>
-                              {n > 0 && max > 1 && (
-                                <span className="inline-flex items-center rounded-full border border-orange-300 dark:border-orange-700/60 overflow-hidden" dir="ltr">
-                                  <button type="button" onClick={() => setPieceAddon(k, ad, n - 1)} className="w-6 h-6 text-xs font-black text-orange-600">−</button>
-                                  <span className="w-5 text-center text-[11px] font-black">{n}</span>
-                                  <button type="button" disabled={n >= max} onClick={() => setPieceAddon(k, ad, n + 1)} className="w-6 h-6 text-xs font-black text-orange-600 disabled:opacity-30">+</button>
-                                </span>
-                              )}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {pieces.slice(b * per, b * per + per).map((p, i) => {
+              const k = b * per + i;
+              return renderPieceRow({
+                rowKey: `${g.key}-${k}`,
+                label: per > 1 ? `${t('edit.piece', 'القطعة')} ${i + 1}` : t('edit.options', 'الخيارات'),
+                variants: pOpts.variants,
+                cur: Array.isArray(p.variantDetail?.name) ? p.variantDetail.name : [],
+                onPick: (key, value) => setPieceAttr(k, key, value),
+                addonsList: productAddons,
+                pieceAddons: p.addons,
+                onAddon: (ad, q) => setPieceAddon(k, ad, q),
+              });
+            })}
           </div>
         ))}
       </Fragment>
@@ -700,7 +786,7 @@ export default function OrderEditPage({ isNew = false }) {
         offerId: item.offerId || null,
         finalPrice: item.finalPrice,
         // سطور العرض: إضافات كل قطعة (تكرار المعرّف = الكمية) — وإلا ينسخ الخادم إضافات أول سطر للمنتج
-        ...(item.offerId && !(item.addons || []).some((a) => a.separate)
+        ...(!(item.addons || []).some((a) => a.separate)
           ? { addonIds: (item.addons || []).flatMap((a) => Array(Math.max(1, Number(a.qty) || 1)).fill(a.id)) }
           : {}),
       }));
@@ -1133,7 +1219,9 @@ export default function OrderEditPage({ isNew = false }) {
                         </div>
                       );
                     };
-                    return groupOfferItems(editedCart.items).map((g, gi) => g.type === 'item' ? renderItem(g.item, gi) : renderOfferCard(g));
+                    // منتج له خيارات (بلا عرض): البطاقة المختصرة؛ بلا خيارات: البطاقة السابقة بكميتها
+                    const hasOptions = (it) => !it.offerId && (productOptions[it.productId]?.variants || []).length > 0;
+                    return groupOfferItems(editedCart.items).map((g, gi) => g.type !== 'item' ? renderOfferCard(g) : hasOptions(g.item) ? renderPlainCard(g.item) : renderItem(g.item, gi));
                   })()}
 
                   {!editedCart.isDigital && (
