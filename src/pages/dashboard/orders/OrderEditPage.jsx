@@ -479,9 +479,62 @@ export default function OrderEditPage({ isNew = false }) {
     return { ...prev, items: rest };
   });
 
+  // لوحة الخيارات بنفس تصميم بطاقة المنتج العادية (دوائر اللون/الصورة، قائمة للنص)
+  const renderVariantPanel = (variants, currentAttrs, onPick, title) => {
+    const groups = getVariantAttributeGroups(variants);
+    if (!groups.length) return null;
+    return (
+      <div className="rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50/60 dark:bg-zinc-800/30 p-3.5 space-y-3">
+        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-1">{title}</div>
+        {groups.map(group => {
+          const selectedValue = currentAttrs.find(a => attrKey(a) === group.key)?.value ?? '';
+          const isSwatch = group.displayMode === 'color' || group.displayMode === 'image';
+          const attrLabel = group.attrName || t('edit.attribute_fallback');
+          return (
+            <div key={group.key} className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300 shrink-0">{attrLabel}</span>
+              {isSwatch ? (
+                <div className="flex flex-wrap justify-end gap-2.5">
+                  {group.options.map(o => {
+                    const isSel = selectedValue === o.value;
+                    const available = isSel || !!findVariantForAttrSelection(variants, currentAttrs, group.key, o.value);
+                    return (
+                      <button key={o.value} type="button" disabled={!available}
+                        title={available ? (o.label || undefined) : t('edit.option_unavailable')}
+                        onClick={() => available && onPick(group.key, o.value)}
+                        className={`relative w-9 h-9 rounded-full overflow-hidden ring-2 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900 transition-all ${isSel ? 'ring-indigo-500' : 'ring-gray-200 dark:ring-zinc-700 hover:ring-gray-300'} ${available ? '' : 'opacity-35 cursor-not-allowed'}`}>
+                        {!available && <span className="absolute inset-0 z-10 m-auto h-0.5 w-[140%] -ms-[20%] bg-rose-500 rotate-45" />}
+                        {group.displayMode === 'color'
+                          ? <span className="w-full h-full block" style={{ background: o.value }} />
+                          : <img src={o.value} className="w-full h-full object-cover" alt="" />}
+                        {isSel && (
+                          <span className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <CheckCircle2 size={16} className="text-white" strokeWidth={2.5} />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <select value={selectedValue} onChange={e => onPick(group.key, e.target.value)}
+                  className="max-w-[55%] bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all dark:[color-scheme:dark]">
+                  {!selectedValue && <option value="" disabled className={OPTION_CLS}>{t('edit.choose_attr', { attr: attrLabel })}</option>}
+                  {group.options.map(o => {
+                    const available = selectedValue === o.value || !!findVariantForAttrSelection(variants, currentAttrs, group.key, o.value);
+                    return <option key={o.value} value={o.value} disabled={!available} className={OPTION_CLS}>{o.value}{available ? '' : ` — ${t('edit.option_unavailable')}`}</option>;
+                  })}
+                </select>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderOfferCard = (g) => {
     const pOpts = productOptions[g.items[0].productId] || { variants: [], offers: [] };
-    const groups = getVariantAttributeGroups(pOpts.variants);
     const per = Math.max(1, Number(g.offer.quantity) || 1);
     const pieces = expandPieces(g.items);
     const count = Math.max(1, Math.ceil(pieces.length / per));
@@ -508,7 +561,6 @@ export default function OrderEditPage({ isNew = false }) {
       const next = pieces.map((p, x) => (x === k ? { ...p, variantDetailId: v.id, variantDetail: v } : p));
       updateGroup(g, offerLines(next, g.offer));
     };
-    const sel = 'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1.5 text-xs font-bold text-gray-900 dark:text-white dark:[color-scheme:dark]';
     return (
       <div key={g.key} className="rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden">
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-orange-50 dark:bg-orange-500/10">
@@ -538,21 +590,10 @@ export default function OrderEditPage({ isNew = false }) {
                 const k = b * per + i;
                 const cur = Array.isArray(p.variantDetail?.name) ? p.variantDetail.name : [];
                 return (
-                  <div key={k} className="flex flex-wrap items-center gap-2">
-                    {per > 1 && <span className="text-[11px] font-bold text-gray-500 dark:text-zinc-400 w-14 shrink-0">{t('edit.piece', 'القطعة')} {i + 1}</span>}
-                    {groups.map((gr) => {
-                      const value = cur.find((a) => attrKey(a) === gr.key)?.value ?? '';
-                      return (
-                        <label key={gr.key} className="inline-flex items-center gap-1 text-[11px] text-gray-500 dark:text-zinc-400">
-                          {gr.attrName}
-                          <select value={value} onChange={(e) => setPieceAttr(k, gr.key, e.target.value)} className={sel}>
-                            {!value && <option value="">—</option>}
-                            {gr.options.map((o) => <option key={o.value} value={o.value} className={OPTION_CLS}>{o.label || o.value}</option>)}
-                          </select>
-                        </label>
-                      );
-                    })}
-                    {p.addons?.length > 0 && <span className="text-[11px] font-semibold text-orange-600 dark:text-orange-400">+ {p.addons.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</span>}
+                  <div key={k}>
+                    {renderVariantPanel(pOpts.variants, cur, (key, value) => setPieceAttr(k, key, value),
+                      per > 1 ? `${t('edit.piece', 'القطعة')} ${i + 1}` : t('edit.variant_selected'))}
+                    {p.addons?.length > 0 && <p className="mt-1 px-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400">+ {p.addons.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</p>}
                   </div>
                 );
               })}
