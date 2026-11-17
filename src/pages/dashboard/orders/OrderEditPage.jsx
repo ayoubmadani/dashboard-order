@@ -559,6 +559,15 @@ export default function OrderEditPage({ isNew = false }) {
         });
       updateGroup(g, [...before, ...mid, ...after]);
     };
+    // إضافات القطعة: تشغيل/إيقاف وكمية (حتى حد التاجر)، وسعرها لكل قطعة داخل سعر السطر
+    const productAddons = (g.product?.addons || []).filter((a) => a && a.isActive !== false && a.name);
+    const setPieceAddon = (k, addon, qty) => {
+      const cur = (pieces[k].addons || []).filter((a) => !a.separate && a.id !== addon.id);
+      const max = Math.max(1, Math.floor(Number(addon.maxQty) || 1));
+      const q = Math.max(0, Math.min(max, qty));
+      const next = q > 0 ? [...cur, { id: addon.id, name: addon.name, price: Number(addon.price) || 0, ...(q > 1 ? { qty: q } : {}) }] : cur;
+      updateGroup(g, offerLines(pieces.map((p, x) => (x === k ? { ...p, addons: next.length ? next : null } : p)), g.offer));
+    };
     const setPieceAttr = (k, key, value) => {
       const cur = Array.isArray(pieces[k].variantDetail?.name) ? pieces[k].variantDetail.name : [];
       const v = findVariantForAttrSelection(pOpts.variants, cur, key, value);
@@ -577,15 +586,21 @@ export default function OrderEditPage({ isNew = false }) {
               </div>
               <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                 <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">{g.product?.name}</h3>
-                <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
-                  {Number(g.offer.price).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                    {Number(g.offer.price).toLocaleString()} <small className="text-[10px] font-bold">DA</small>
+                  </span>
+                  {/* العرض: شارة صغيرة بجانب السعر، والضغط يفتح قائمة العروض */}
+                  <span className="relative inline-flex items-center">
+                    <select value={g.offer.id} onChange={(e) => setUnitOffer(b, e.target.value)} aria-label={t('edit.offer_label')}
+                      className="appearance-none cursor-pointer rounded-full border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-900/20 ps-2.5 pe-6 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300 outline-none dark:[color-scheme:dark]">
+                      <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
+                      {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
+                    </select>
+                    <span aria-hidden="true" className="pointer-events-none absolute end-2 text-[9px] text-amber-600 dark:text-amber-400">▾</span>
+                  </span>
+                </div>
               </div>
-              <select value={g.offer.id} onChange={(e) => setUnitOffer(b, e.target.value)} aria-label={t('edit.offer_label')}
-                className="self-center bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-xl px-3 py-2.5 text-xs font-bold text-amber-700 dark:text-amber-400 outline-none dark:[color-scheme:dark]">
-                <option value="" className={OPTION_CLS}>{t('edit.offer_none')}</option>
-                {pOpts.offers.map((o) => <option key={o.id} value={o.id} className={OPTION_CLS}>{o.name}</option>)}
-              </select>
               <button type="button" onClick={() => removeUnit(b)} aria-label={t('edit.delete_item', 'حذف')}
                 className="self-start p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all">
                 <Trash2 size={16} />
@@ -599,7 +614,30 @@ export default function OrderEditPage({ isNew = false }) {
                   <div key={k}>
                     {renderVariantPanel(pOpts.variants, cur, (key, value) => setPieceAttr(k, key, value),
                       per > 1 ? `${t('edit.piece', 'القطعة')} ${i + 1}` : t('edit.variant_selected'))}
-                    {p.addons?.length > 0 && <p className="mt-1 px-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400">+ {p.addons.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</p>}
+                    {productAddons.length > 0 && (
+                      <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{t('edit.addons', 'الإضافات')}</span>
+                        {productAddons.map((ad) => {
+                          const n = Number((p.addons || []).find((x) => x.id === ad.id)?.qty ?? ((p.addons || []).some((x) => x.id === ad.id) ? 1 : 0));
+                          const max = Math.max(1, Math.floor(Number(ad.maxQty) || 1));
+                          return (
+                            <span key={ad.id} className="inline-flex items-center gap-1">
+                              <button type="button" onClick={() => setPieceAddon(k, ad, n ? 0 : 1)} aria-pressed={n > 0}
+                                className={`px-2.5 py-1 rounded-full border text-[11px] font-bold transition-all ${n ? 'bg-orange-500 border-orange-500 text-white' : 'bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300'}`}>
+                                {n ? '✓ ' : '+ '}{ad.name}{Number(ad.price) ? ` (${Number(ad.price).toLocaleString()} DA)` : ''}
+                              </button>
+                              {n > 0 && max > 1 && (
+                                <span className="inline-flex items-center rounded-full border border-orange-300 dark:border-orange-700/60 overflow-hidden" dir="ltr">
+                                  <button type="button" onClick={() => setPieceAddon(k, ad, n - 1)} className="w-6 h-6 text-xs font-black text-orange-600">−</button>
+                                  <span className="w-5 text-center text-[11px] font-black">{n}</span>
+                                  <button type="button" disabled={n >= max} onClick={() => setPieceAddon(k, ad, n + 1)} className="w-6 h-6 text-xs font-black text-orange-600 disabled:opacity-30">+</button>
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -649,6 +687,10 @@ export default function OrderEditPage({ isNew = false }) {
         variantDetailId: item.variantDetailId || null,
         offerId: item.offerId || null,
         finalPrice: item.finalPrice,
+        // سطور العرض: إضافات كل قطعة (تكرار المعرّف = الكمية) — وإلا ينسخ الخادم إضافات أول سطر للمنتج
+        ...(item.offerId && !(item.addons || []).some((a) => a.separate)
+          ? { addonIds: (item.addons || []).flatMap((a) => Array(Math.max(1, Number(a.qty) || 1)).fill(a.id)) }
+          : {}),
       }));
 
       await axios.patch(`${baseURL}/orders/${editedCart.id}`, dtos, {
