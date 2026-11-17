@@ -67,3 +67,10 @@ export function offerLines(pieces, offer, seen = new Set()) {
     return { ...p, id, quantity: 1, offerId: offer?.id, offer, finalPrice, itemTotal: finalPrice };
   });
 }
+
+/** منتج بدون عرض وله خيارات: الكمية n = n سطر بكمية 1 (بطاقة لكل قطعة بخياراتها)؛ الأول يحتفظ بمعرّفه */
+export function splitIntoPieces(item, n) {
+  const k = Math.max(1, Math.floor(Number(n)) || 1);
+  const price = Number(item.finalPrice || 0);
+  return Array.from({ length: k }, (_, i) => ({ ...item, id: i === 0 ? item.id : `new-${Date.now()}-${i}`, quantity: 1, itemTotal: price }));
+}

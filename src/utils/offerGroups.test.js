@@ -81,3 +81,19 @@ describe('one offer card changed alone', () => {
     expect(second[0]).toMatchObject({ offerId: 'o1', finalPrice: 2500 });
   });
 });
+
+import { splitIntoPieces } from './offerGroups';
+
+// منتج بدون عرض وله خيارات: الكمية 2 = بطاقتان (قطعة لكل بطاقة بخياراتها)
+describe('splitIntoPieces', () => {
+  it('a line becomes n lines of quantity 1, the first keeps its id', () => {
+    const lines = splitIntoPieces({ id: 'a', productId: 'p', quantity: 1, finalPrice: 2500, variantDetailId: 'v1' }, 3);
+    expect(lines.map((l) => l.quantity)).toEqual([1, 1, 1]);
+    expect(lines[0].id).toBe('a');
+    expect(new Set(lines.map((l) => l.id)).size).toBe(3);
+    expect(lines.every((l) => l.variantDetailId === 'v1' && l.itemTotal === 2500)).toBe(true);
+  });
+  it('n = 1 (or less) keeps one line', () => {
+    expect(splitIntoPieces({ id: 'a', quantity: 2, finalPrice: 10 }, 0)).toHaveLength(1);
+  });
+});

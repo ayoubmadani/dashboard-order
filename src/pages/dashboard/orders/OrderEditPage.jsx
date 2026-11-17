@@ -11,7 +11,7 @@ import {
   ArrowLeft, Loader2, MapPin, AlertCircle, Save, Package,
   ShoppingBag, Trash2, CheckCircle2, Calendar, Check
 } from 'lucide-react';
-import { groupOfferItems, expandPieces, resizePieces, offerLines } from '../../../utils/offerGroups';
+import { groupOfferItems, expandPieces, resizePieces, offerLines, splitIntoPieces } from '../../../utils/offerGroups';
 import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -480,6 +480,18 @@ export default function OrderEditPage({ isNew = false }) {
   });
 
   // لوحة الخيارات بنفس تصميم بطاقة المنتج العادية (دوائر اللون/الصورة، قائمة للنص)
+  // منتج بدون عرض وله خيارات: رفع الكمية يضيف بطاقة لكل قطعة (خياراتها مستقلة)؛ بدون خيارات: الكمية كما كانت
+  const setPlainQuantity = (item, qty) => {
+    const hasVariants = (productOptions[item.productId]?.variants || []).length > 0;
+    if (!hasVariants || item.offerId || qty <= 1) return handleItemChange(item.id, 'quantity', qty);
+    setEditedCart((prev) => {
+      const at = prev.items.findIndex((it) => it.id === item.id);
+      const rest = prev.items.filter((it) => it.id !== item.id);
+      rest.splice(at < 0 ? rest.length : at, 0, ...splitIntoPieces(item, qty));
+      return { ...prev, items: rest };
+    });
+  };
+
   const renderVariantPanel = (variants, currentAttrs, onPick, title) => {
     const groups = getVariantAttributeGroups(variants);
     if (!groups.length) return null;
@@ -1028,7 +1040,7 @@ export default function OrderEditPage({ isNew = false }) {
                                     type="number"
                                     min="1"
                                     value={item.quantity || 1}
-                                    onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value) || 1)}
+                                    onChange={e => setPlainQuantity(item, parseInt(e.target.value) || 1)}
                                     className="w-full bg-gray-50 dark:bg-zinc-800/50 border-none rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500/20 transition-all"
                                   />
                                 </div>
