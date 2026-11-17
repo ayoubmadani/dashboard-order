@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback } from 'react';
 import { SourceBadge } from './notes/OrderSources';
 import HiddenOrderNotice from './HiddenOrderNotice';
 import { CustomerSignalCard } from './CustomerSignal';
@@ -567,7 +567,7 @@ export default function OrderEditPage({ isNew = false }) {
       updateGroup(g, offerLines(next, g.offer));
     };
     return (
-      <React.Fragment key={g.key}>
+      <Fragment key={g.key}>
         {Array.from({ length: count }, (_, b) => (
           <div key={b} className="bg-white dark:bg-zinc-900 rounded-2xl p-5 border border-gray-100 dark:border-zinc-800 shadow-sm">
             {/* نفس رأس بطاقة المنتج العادية: الصورة، الاسم والسعر، ثم العرض، ثم زر الحذف */}
@@ -606,7 +606,7 @@ export default function OrderEditPage({ isNew = false }) {
             </div>
           </div>
         ))}
-      </React.Fragment>
+      </Fragment>
     );
   };
 
