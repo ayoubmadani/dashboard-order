@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast, Toaster } from 'sonner';
+import ActiveThemePanel from './ActiveThemePanel';
 import {
   Loader2, Palette, LayoutGrid,
   ExternalLink, Download, CheckCircle2,
@@ -304,6 +305,7 @@ export default function Theme() {
   const [installingId, setInstallingId] = useState(null);
   const [activatingId, setActivatingId] = useState(null);
   const [idActive,     setIdActive]     = useState('');
+  const [storeData,    setStoreData]    = useState(null); // ألوان المتجر وشعاره وغلافه ← إطار الثيم المفعّل
   const [currentPage,  setCurrentPage]  = useState(1);
   const [activeTab,    setActiveTab]    = useState('my');
 
@@ -328,6 +330,7 @@ export default function Theme() {
       setMyTheme(myThemeRes.data ?? []);
       setPlanTheme(planThemeRes.data ?? []);
       setIdActive(storeRes.data?.data?.themeId ?? '');
+      setStoreData(storeRes.data?.data ?? null);
       const sn = storeRes.data?.data?.niche?.id ?? '';
       setStoreNiche(sn);
       if (sn) setSelectedType(sn); // الفلتر يبدأ بمجال المتجر
@@ -443,6 +446,15 @@ export default function Theme() {
   return (
     <div dir={isRtl ? 'rtl' : 'ltr'} className="space-y-5 font-sans animate-in fade-in duration-500">
       <Toaster position="top-center" richColors />
+
+      {/* ── الثيم المفعّل: ألوان المتجر (إن كان يتبعها) + ملاحظات ── */}
+      {(() => {
+        const active = idActive && [...myTheme, ...planTheme, ...themes].find((x) => x?.id === idActive);
+        return active && storeData ? (
+          <ActiveThemePanel theme={active} themeName={getLocalizedThemeText(active, 'name', i18n.language)}
+            store={storeData} storeId={storeId} headers={headers} onStoreChange={setStoreData} />
+        ) : null;
+      })()}
 
       {/* ── Tabs ── */}
       <div className="flex gap-1 p-1 bg-gray-100 dark:bg-zinc-800/60 rounded-2xl">
