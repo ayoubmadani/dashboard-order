@@ -13,7 +13,8 @@ const Login = () => {
     const navigate = useNavigate();
 
     // حالات الحقول والتحميل
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    // إضافة حساب منتهٍ من القائمة: البريد يُملأ تلقائياً
+    const [formData, setFormData] = useState({ email: new URLSearchParams(window.location.search).get('email') || '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -30,7 +31,8 @@ const Login = () => {
                 // التوجيه للرئيسية
                 navigate(`/auth/callback?token=${response.data.access_token}`);
             } else {
-                navigate(`/auth/otp?email=${formData.email}`)
+                // إضافة حساب: صفحة الرمز تبقى مفتوحة رغم وجود حساب حالي
+                navigate(`/auth/otp?email=${formData.email}${new URLSearchParams(window.location.search).get('add') === '1' ? '&add=1' : ''}`)
             }
         } catch (err) {
             // عرض رسالة الخطأ القادمة من NestJS

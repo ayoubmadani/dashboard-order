@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-    Home, Settings, BarChart3, Menu, X, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
+    Home, Settings, BarChart3, Menu, X, Plus, Store, Box, Layers, ShoppingCart, Truck, PhoneCall,
     LogOut, Sun, Moon, Palette, Wallet, Code2, Globe, MessageSquareText,
     LayoutTemplate, Languages, ChevronsUpDown, ChevronDown, Check, Sparkles, Search, Users, Boxes,
   ShoppingBasket,
@@ -10,7 +10,8 @@ import {
   Puzzle,
 } from 'lucide-react';
 import axios from 'axios';
-import { getAccessToken, removeAccessToken } from '../services/access-token';
+import { getAccessToken, removeAccessToken, setAccessToken } from '../services/access-token';
+import { readAccounts, writeAccounts, upsertAccount, removeAccount, markExpired, setAccountStore, nextAccount, canAddAccount, tokenUserId, MAX_ACCOUNTS } from '../utils/accounts';
 import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
 import TrialOffer from '../components/TrialOffer';
@@ -118,6 +119,10 @@ export default function LayoutDashboard() {
     const [selectedProject, setSelectedProject] = useState(null);
     const [invitationsCount, setInvitationsCount] = useState(0);
     const [user, setUser] = useState({ name: '...', initial: '..', email: '' });
+    // عدة حسابات على هذا المتصفح (كما في التطبيق)
+    const [accounts, setAccounts] = useState(() => readAccounts());
+    const currentAccountId = tokenUserId(getAccessToken());
+    const saveAccounts = (list) => { writeAccounts(list); setAccounts(list); };
 
     const userMenuRef = useRef(null);
     const langMenuRef = useRef(null);
@@ -177,8 +182,13 @@ export default function LayoutDashboard() {
                     ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
                     : '??';
                 setUser({ name, initial: initials, email: response.data.email || '' });
+                // الحساب الحالي يُحفظ (أو يُحدَّث) في قائمة الحسابات
+                const id = tokenUserId(token);
+                if (id) saveAccounts(upsertAccount(readAccounts(), { id, name, email: response.data.email || '', token, storeId: localStorage.getItem('storeId') }));
             } catch (error) {
                 if (error.response?.status === 401) {
+                    const id = tokenUserId(token);
+                    if (id) saveAccounts(markExpired(readAccounts(), id));
                     removeAccessToken();
                     clearPlanCache();
                     navigate('/auth/login');
@@ -202,7 +212,27 @@ export default function LayoutDashboard() {
         setSidebarOpen(false);
     }, [location.pathname]);
 
+    // تبديل الحساب: رمزه يصبح الحالي، ومتجره المختار يعود، ثم إعادة تحميل اللوحة
+    const switchAccount = (acc) => {
+        if (acc.expired) { navigate(`/auth/login?add=1&email=${encodeURIComponent(acc.email || '')}`); return; }
+        let list = readAccounts();
+        if (currentAccountId) list = setAccountStore(list, currentAccountId, localStorage.getItem('storeId'));
+        writeAccounts(list);
+        setAccessToken(acc.token);
+        if (acc.storeId) localStorage.setItem('storeId', acc.storeId); else localStorage.removeItem('storeId');
+        clearPlanCache();
+        window.location.assign('/dashboard');
+    };
+    const forgetAccount = (acc) => {
+        if (window.confirm(t('user_menu.remove_confirm', { email: acc.email }))) saveAccounts(removeAccount(readAccounts(), acc.id));
+    };
+
+    // الخروج: الحساب الحالي يُزال من هذا المتصفح، وننتقل للحساب التالي إن وُجد
     const handleLogout = () => {
+        const list = currentAccountId ? removeAccount(readAccounts(), currentAccountId) : readAccounts();
+        writeAccounts(list);
+        const next = nextAccount(list, currentAccountId);
+        if (next) { switchAccount(next); return; }
         removeAccessToken();
         clearPlanCache();
         navigate('/auth/login');
@@ -415,6 +445,37 @@ export default function LayoutDashboard() {
                                 <div className="px-4 py-3 border-b border-gray-100 dark:border-white/5">
                                     <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name}</p>
                                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                </div>
+                                {/* الحسابات الأخرى على هذا المتصفح + إضافة حساب */}
+                                <div className="p-1 border-b border-gray-100 dark:border-white/5">
+                                    {accounts.filter((a) => a.id !== currentAccountId).map((a) => (
+                                        <div key={a.id} className="flex items-center gap-1">
+                                            <button onClick={() => switchAccount(a)}
+                                                className="flex-1 min-w-0 flex items-center gap-2.5 px-3 py-2 text-start hover:bg-gray-50 dark:hover:bg-white/5 rounded-lg">
+                                                <span className="w-7 h-7 shrink-0 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300 grid place-items-center text-xs font-bold">
+                                                    {(a.name || a.email || '?').trim().charAt(0).toUpperCase()}
+                                                </span>
+                                                <span className="min-w-0">
+                                                    <span className="block text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{a.name || a.email}</span>
+                                                    <span className="block text-[11px] text-gray-500 truncate" dir="ltr">{a.email}</span>
+                                                    {a.expired && <span className="block text-[11px] font-semibold text-amber-600">{t('user_menu.relogin')}</span>}
+                                                </span>
+                                            </button>
+                                            <button onClick={() => forgetAccount(a)} title={t('user_menu.remove')} aria-label={t('user_menu.remove')}
+                                                className="w-7 h-7 shrink-0 grid place-items-center rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {canAddAccount(accounts) ? (
+                                        <button onClick={() => { setUserMenuOpen(false); navigate('/auth/login?add=1'); }}
+                                            className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg">
+                                            <span className="w-7 h-7 rounded-full grid place-items-center border border-dashed border-current"><Plus className="w-3.5 h-3.5" /></span>
+                                            {t('user_menu.add_account')}
+                                        </button>
+                                    ) : (
+                                        <p className="px-3 py-2 text-[11px] text-gray-400">{t('user_menu.accounts_limit', { n: MAX_ACCOUNTS })}</p>
+                                    )}
                                 </div>
                                 <div className="p-1">
                                     <button

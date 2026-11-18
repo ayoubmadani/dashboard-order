@@ -45,7 +45,12 @@
   "user_menu": {
     "role": "مدير",
     "settings": "الإعدادات",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "add_account": "إضافة حساب",
+    "remove": "إزالة من هذا المتصفح",
+    "remove_confirm": "إزالة الحساب {{email}} من هذا المتصفح؟",
+    "relogin": "انتهت الجلسة — سجّل الدخول",
+    "accounts_limit": "الحد {{n}} حسابات"
   },
   "language": {
     "label": "اللغة",

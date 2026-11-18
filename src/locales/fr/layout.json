@@ -45,7 +45,12 @@
   "user_menu": {
     "role": "Admin",
     "settings": "Paramètres",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "add_account": "Ajouter un compte",
+    "remove": "Retirer de ce navigateur",
+    "remove_confirm": "Retirer le compte {{email}} de ce navigateur ?",
+    "relogin": "Session expirée — reconnectez-vous",
+    "accounts_limit": "Maximum {{n}} comptes"
   },
   "language": {
     "label": "Langue",

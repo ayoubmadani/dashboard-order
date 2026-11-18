@@ -45,7 +45,12 @@
   "user_menu": {
     "role": "Admin",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "add_account": "Add account",
+    "remove": "Remove from this browser",
+    "remove_confirm": "Remove {{email}} from this browser?",
+    "relogin": "Session expired — sign in again",
+    "accounts_limit": "Up to {{n}} accounts"
   },
   "language": {
     "label": "Language",
