@@ -46,7 +46,7 @@ const CreateStore = () => {
     wilaya: '',
     address: '', // إضافة الحقل هنا كقيم فارغة افتراضياً
     logo: null,
-    primaryColor: '#000000',
+    primaryColor: '#4f46e5',
     secondaryColor: '#f59e0b',
     niche: null,
     heroImage: null,
@@ -689,54 +689,7 @@ const CreateStore = () => {
             </div>
           </div>
 
-          {/* Colors Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className={labelClass}>{t('form.primary_color')}</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  name="primaryColor"
-                  value={formData.primaryColor}
-                  onChange={handleInputChange}
-                  className="h-12 w-16 rounded-xl cursor-pointer border-0 p-1 bg-gray-50 dark:bg-zinc-800"
-                />
-                <input
-                  type="text"
-                  value={formData.primaryColor}
-                  readOnly
-                  className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
-                />
-                <div
-                  className="w-12 h-12 rounded-xl border border-gray-200 dark:border-zinc-700 flex-shrink-0"
-                  style={{ backgroundColor: formData.primaryColor }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className={labelClass}>{t('form.secondary_color')}</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  name="secondaryColor"
-                  value={formData.secondaryColor}
-                  onChange={handleInputChange}
-                  className="h-12 w-16 rounded-xl cursor-pointer border-0 p-1 bg-gray-50 dark:bg-zinc-800"
-                />
-                <input
-                  type="text"
-                  value={formData.secondaryColor}
-                  readOnly
-                  className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white"
-                />
-                <div
-                  className="w-12 h-12 rounded-xl border border-gray-200 dark:border-zinc-700 flex-shrink-0"
-                  style={{ backgroundColor: formData.secondaryColor }}
-                />
-              </div>
-            </div>
-          </div>
+          {/* الألوان تُختار من إطار الثيم المفعّل (صفحة الثيمات)، لا عند الإنشاء */}
         </div>
 
         {/* ── Hero Section ── */}

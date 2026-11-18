@@ -250,8 +250,6 @@ const CurrentStore = () => {
             : null,
         },
         design: {
-          primaryColor: formData.primaryColor,
-          secondaryColor: formData.secondaryColor,
           logoUrl: formData.logo,
           faviconUrl: formData.favicon,
         },
@@ -556,21 +554,6 @@ const CurrentStore = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  { name: 'primaryColor', label: t('form.primary_color') },
-                  { name: 'secondaryColor', label: t('form.secondary_color') },
-                ].map(({ name, label }) => (
-                  <div key={name}>
-                    <label className={labelClass}>{label}</label>
-                    <div className="flex items-center gap-3">
-                      <input type="color" name={name} value={formData[name]} onChange={handleInputChange} className="h-12 w-16 rounded-xl cursor-pointer border-0 p-1 bg-gray-50 dark:bg-zinc-800" />
-                      <input type="text" value={formData[name]} readOnly className="flex-1 px-4 py-3 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl font-mono text-sm text-gray-900 dark:text-white" />
-                      <div className="w-12 h-12 rounded-xl border border-gray-200 dark:border-zinc-700 shrink-0" style={{ backgroundColor: formData[name] }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
