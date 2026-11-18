@@ -92,7 +92,7 @@ export default function ActiveThemePanel({ theme, themeName, store, storeId, hea
     } finally { setSaving(false); }
   };
 
-  const link = { logo: `/dashboard/settings/stores/edit/${storeId}`, hero: `/dashboard/settings/stores/edit/${storeId}`, products: '/dashboard/products', categories: '/dashboard/categories' };
+  const link = { logo: `/dashboard/settings/stores/edit/${storeId}`, hero: `/dashboard/settings/stores/edit/${storeId}`, products: '/dashboard/products', categories: '/dashboard/category' };
 
   return (
     <section className="rounded-2xl border border-indigo-200/70 dark:border-indigo-500/20 bg-gradient-to-br from-indigo-50/70 to-white dark:from-indigo-500/5 dark:to-zinc-900 p-5 space-y-5">
