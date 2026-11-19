@@ -42,6 +42,8 @@ const UpdateStore = () => {
     email: '',
     wilaya: 'Algiers',
     logo: null,
+    showStoreName: false,
+    nameBeforeLogo: false,
     primaryColor: '#000000',
     secondaryColor: '#f59e0b',
     niche: '87e5264c-627c-44ea-92e5-7363cf6efc3b',
@@ -116,6 +118,8 @@ const UpdateStore = () => {
           email: store.contact?.email || '',
           wilaya: store.contact?.wilaya || 'Algiers',
           logo: store.design?.logoUrl || null,
+          showStoreName: !!store.design?.showStoreName,
+          nameBeforeLogo: !!store.design?.nameBeforeLogo,
           primaryColor: store.design?.primaryColor || '#000000',
           secondaryColor: store.design?.secondaryColor || '#f59e0b',
           niche: store.niche?.id,
@@ -232,6 +236,8 @@ const UpdateStore = () => {
         design: {
           logoUrl: formData.logo,
           faviconUrl: formData.favicon,
+          showStoreName: !!formData.showStoreName,
+          nameBeforeLogo: !!formData.nameBeforeLogo,
         },
         topBar: {
           enabled: formData.showTopBar,
@@ -692,6 +698,31 @@ const UpdateStore = () => {
                   <span className="text-xs text-gray-400 dark:text-zinc-500">32×32 px</span>
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* طريقة عرض الشعار في المتجر: الشعار فقط، أو مع اسم المتجر (وأيهما أولاً) */}
+          <div className="mb-6">
+            <label className={labelClass}>{t('form.logo_display', 'طريقة عرض الشعار')}</label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                ['logo', t('form.logo_only', 'الشعار فقط'), false, false],
+                ['logo_name', t('form.logo_then_name', 'الشعار ثم الاسم'), true, false],
+                ['name_logo', t('form.name_then_logo', 'الاسم ثم الشعار'), true, true],
+              ].map(([key, label, show, first]) => {
+                const on = !!formData.showStoreName === show && (!show || !!formData.nameBeforeLogo === first);
+                return (
+                  <button key={key} type="button" aria-pressed={on}
+                    onClick={() => setFormData((f) => ({ ...f, showStoreName: show, nameBeforeLogo: first }))}
+                    className={`flex items-center justify-center gap-2 h-14 px-3 rounded-xl border-2 text-sm font-bold transition-colors ${on ? 'border-indigo-500 bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300' : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-indigo-300'}`}>
+                    <span className={`flex items-center gap-1.5 ${first ? 'flex-row-reverse' : ''}`}>
+                      {logoPreview ? <img src={logoPreview} alt="" className="w-6 h-6 rounded object-contain bg-white" /> : <ImageIcon size={16} />}
+                      {show && <span className="text-xs truncate max-w-[80px]">{formData.name || t('form.store_name_short', 'الاسم')}</span>}
+                    </span>
+                    <span className="text-[11px] font-semibold opacity-70">{label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

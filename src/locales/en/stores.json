@@ -121,8 +121,15 @@
   "form": {
     "country_label": "Country",
     "country_hint": "The store uses the first shipping account of this country — create it first in Shipping prices.",
-    "divisions": {"base": "58 provinces", "69": "69 provinces"},
-    "countries": {"DZ": "Algeria", "TN": "Tunisia", "MA": "Morocco"},
+    "divisions": {
+      "base": "58 provinces",
+      "69": "69 provinces"
+    },
+    "countries": {
+      "DZ": "Algeria",
+      "TN": "Tunisia",
+      "MA": "Morocco"
+    },
     "basic_info": "Basic Store Information",
     "name_label": "Store Name",
     "name_placeholder": "Example: Fashion Store",
@@ -178,7 +185,12 @@
       "address_invalid": "Invalid address",
       "DOMAIN_ALREADY_EXISTS": "This domain is already taken, please choose another name"
     },
-    "favicon_upload": "Upload Favicon"
+    "favicon_upload": "Upload Favicon",
+    "logo_display": "How the logo shows",
+    "logo_only": "Logo only",
+    "logo_then_name": "Logo then name",
+    "name_then_logo": "Name then logo",
+    "store_name_short": "Name"
   },
   "niches": {
     "fashion": "Fashion",
