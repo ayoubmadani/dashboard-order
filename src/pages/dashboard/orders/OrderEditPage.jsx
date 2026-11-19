@@ -21,6 +21,7 @@ import { X } from 'lucide-react';
 import { Search } from 'lucide-react';
 
 import { lineName } from './lineName';
+import VariantChips from './VariantChips';
 export const StatusEnum = {
   PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
   CONFIRMED: 'confirmed', SHIPPING: 'shipping', CANCELLED: 'cancelled',
@@ -640,7 +641,7 @@ export default function OrderEditPage({ isNew = false }) {
           </div>
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">{item.product?.name || lineName(item) || t('edit.product_unknown')}</h3>
-            {item.external?.options && <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{item.external.options}</span>}
+            <VariantChips item={item} />
             <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">{Number(item.finalPrice || 0).toLocaleString()} <small className="text-[10px] font-bold">DA</small></span>
           </div>
           <button type="button" onClick={() => handleDeleteItem(item.id)} aria-label={t('edit.delete_item', 'حذف')}
@@ -1088,9 +1089,7 @@ export default function OrderEditPage({ isNew = false }) {
                                   <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
                                     {item.product?.name || lineName(item) || item.productName || t('edit.product_unknown')}
                                   </h3>
-                                  {item.external?.options && (
-                                    <span className="block mt-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">{item.external.options}</span>
-                                  )}
+                                  <VariantChips item={item} size="xs" />
                                   {item.addons?.length > 0 && (
                                     <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
                                       + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
