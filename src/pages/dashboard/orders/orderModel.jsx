@@ -11,6 +11,7 @@ import axios from 'axios';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
 
+import { lineName } from './lineName';
 export const StatusEnum = {
   PENDING: 'pending', APPL1: 'appl1', APPL2: 'appl2', APPL3: 'appl3',
   CONFIRMED: 'confirmed', SHIPPING: 'shipping', CANCELLED: 'cancelled',
@@ -278,7 +279,10 @@ export default function OrderModal({ isOpen, onClose, cartData, onRefresh, readO
                 const line = (item) => (
                 <div key={item.id} className="om-item-line">
                   <span className="om-item-line-name">
-                    {item.quantity}× {item.product?.name || item.title || item.productName || t('modal.product_unknown')}
+                    {item.quantity}× {item.product?.name || lineName(item) || item.productName || t('modal.product_unknown')}
+                    {item.external?.options && (
+                      <span style={{ display: 'block', fontSize: '0.75em', fontWeight: 600, opacity: 0.8 }}>{item.external.options}</span>
+                    )}
                     {item.addons?.length > 0 && (
                       <span style={{ display: 'block', fontSize: '0.75em', opacity: 0.7 }}>
                         + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
