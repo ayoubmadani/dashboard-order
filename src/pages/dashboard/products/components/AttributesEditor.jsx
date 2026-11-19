@@ -116,7 +116,8 @@ function AttributeCard({ attr, images, errors, t, onChange, onRemove, onPickLibr
                       placeholder={t('attributes.value_name')} className={`${small} flex-1 min-w-0`} />
                   </>
                 )}
-                {mode !== 'image' && linkButton(v)}
+                {/* every option (text, colour, picture) can be linked to a product picture: choosing it shows that picture */}
+                {linkButton(v)}
                 <button type="button" onClick={() => onChange(removeValue(attr, v.id))} className="p-1.5 text-gray-400 hover:text-rose-500"><X size={15} /></button>
               </div>
               {err(`variant_${v.id}`) && <p className="ps-7 text-[11px] text-rose-500 font-medium">{err(`variant_${v.id}`)}</p>}
