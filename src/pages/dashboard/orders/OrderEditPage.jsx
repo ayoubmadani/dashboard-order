@@ -1075,7 +1075,7 @@ export default function OrderEditPage({ isNew = false }) {
                           <div className="flex gap-4 mb-5">
                             <div className="relative w-15 h-15 flex-shrink-0 rounded-xl overflow-hidden bg-gray-100 ring-1 ring-gray-200/50">
                               <img
-                                src={item.product?.imagesProduct?.[0]?.imageUrl}
+                                src={item.product?.imagesProduct?.[0]?.imageUrl || item.external?.image}
                                 alt=""
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               />
@@ -1083,17 +1083,20 @@ export default function OrderEditPage({ isNew = false }) {
   
                             <div className="flex-1 flex flex-col justify-between py-0.5">
                               <div className="flex justify-between items-center">
-                                <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
-                                  {item.product?.name || lineName(item) || item.productName || t('edit.product_unknown')}
+                                {/* the name is clamped to 2 lines: options and add-ons go below it, never inside (they'd be cut off) */}
+                                <div className="min-w-0">
+                                  <h3 className="font-bold text-gray-900 dark:text-zinc-100 text-sm leading-tight line-clamp-2">
+                                    {item.product?.name || lineName(item) || item.productName || t('edit.product_unknown')}
+                                  </h3>
                                   {item.external?.options && (
-                                    <span className="block mt-0.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">{item.external.options}</span>
+                                    <span className="block mt-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">{item.external.options}</span>
                                   )}
                                   {item.addons?.length > 0 && (
                                     <span className="block mt-0.5 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
                                       + {item.addons.map(a => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}${Number(a.price) ? ` (${Number(a.price).toLocaleString()} DA)` : ''}`).join('، ')}
                                     </span>
                                   )}
-                                </h3>
+                                </div>
                                 <button
                                   onClick={() => handleDeleteItem(item.id)}
                                   className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-full transition-all"
