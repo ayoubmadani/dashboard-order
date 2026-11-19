@@ -556,7 +556,9 @@ export default function OrderEditPage({ isNew = false }) {
     const groups = getVariantAttributeGroups(variants);
     const missing = groups.some((g) => !cur.find((a) => attrKey(a) === g.key));
     const colorPart = cur.find((a) => a.displayMode === 'color');
-    const text = cur.map((a) => (a.displayMode === 'color' ? (a.label || '') : a.value)).filter(Boolean).join(' · ');
+    // image-type option: its value is a picture URL — show the picture (and its name if any), never the URL as text
+    const imagePart = cur.find((a) => a.displayMode === 'image');
+    const text = cur.map((a) => (a.displayMode === 'color' || a.displayMode === 'image' ? (a.label || '') : a.value)).filter(Boolean).join(' · ');
     const added = (pieceAddons || []).filter((a) => !a.separate);
     return (
       <div key={rowKey} className="border-t border-gray-100 dark:border-zinc-800">
@@ -565,6 +567,7 @@ export default function OrderEditPage({ isNew = false }) {
           <div className="flex-1 min-w-0 flex flex-wrap items-center gap-2 text-sm">
             {missing && <span className="font-bold text-amber-600 dark:text-amber-400">⚠ {t('edit.choose_options', 'اختر الخيارات')}</span>}
             {colorPart && <span className="w-3 h-3 rounded-full border border-gray-300 dark:border-zinc-600" style={{ background: colorPart.value }} />}
+            {imagePart && <img src={imagePart.value} alt="" className="w-7 h-7 rounded-md object-cover ring-1 ring-gray-200 dark:ring-zinc-700" />}
             {text && <span className="font-semibold text-gray-900 dark:text-white">{text}</span>}
             {added.length > 0 && <span className="px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 text-[11px] font-bold">+ {added.map((a) => `${a.name}${Number(a.qty) > 1 ? ` ×${a.qty}` : ''}`).join('، ')}</span>}
           </div>
