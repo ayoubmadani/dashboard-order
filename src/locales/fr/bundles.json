@@ -53,5 +53,6 @@
   "title_ph": "Ex : Offres de l'Aïd",
   "err_title": "Saisissez le titre",
   "on_home": "Sur l'accueil",
-  "banner": "Image du pack"
+  "banner": "Image du pack",
+  "products_count": "{{count}} produits"
 }

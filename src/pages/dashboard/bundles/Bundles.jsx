@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
-  Gift, Plus, Pencil, Trash2, Copy, ExternalLink, Loader2, X, Search, ImagePlus, ArrowUp, ArrowDown, Check, EyeOff,
+  Gift, Plus, Pencil, Trash2, Copy, ExternalLink, Loader2, X, Search, ImagePlus, ArrowUp, ArrowDown, Check,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -367,45 +367,54 @@ export default function Bundles() {
           <button type="button" onClick={() => setEditing('new')} className="h-11 px-4 rounded-xl bg-indigo-600 text-white font-bold inline-flex items-center gap-2"><Plus className="w-4 h-4" />{t('new')}</button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 divide-y divide-gray-100 dark:divide-zinc-800 overflow-hidden">
           {list.map((b) => (
-            <article key={b.id} className={`rounded-2xl border bg-white dark:bg-zinc-900 overflow-hidden flex flex-col ${b.isActive ? 'border-gray-200 dark:border-zinc-800' : 'border-dashed border-gray-300 dark:border-zinc-700 opacity-75'}`}>
-              <div className="relative bg-gray-100 dark:bg-zinc-800" style={{ aspectRatio: '16 / 8' }}>
-                {b.imageUrl || b.mobileImageUrl ? <img src={b.imageUrl || b.mobileImageUrl} alt="" className="w-full h-full object-cover" /> : <span className="flex w-full h-full items-center justify-center text-gray-300"><ImagePlus className="w-8 h-8" /></span>}
-                <span className="absolute top-2 start-2 px-2.5 py-0.5 rounded-full bg-red-700 text-white text-xs font-bold">-{b.discountPercent}%</span>
-                <div className="absolute top-2 end-2 flex gap-1">
-                  {!b.showOnHome && <span className="px-2 py-0.5 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center gap-1"><EyeOff className="w-3 h-3" />{t('not_on_home')}</span>}
-                  {!b.available && <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">{t('unavailable')}</span>}
+            <article key={b.id} className={`flex flex-col md:flex-row md:items-center gap-3 md:gap-4 p-3 md:p-4 ${b.isActive ? '' : 'opacity-60'}`}>
+              {/* الصورة + الاسم + المنتجات */}
+              <div className="flex items-center gap-3 min-w-0 md:flex-1">
+                <div className="relative w-28 shrink-0 rounded-xl overflow-hidden bg-gray-100 dark:bg-zinc-800" style={{ aspectRatio: '16 / 9' }}>
+                  {b.imageUrl || b.mobileImageUrl
+                    ? <img src={b.imageUrl || b.mobileImageUrl} alt="" className="w-full h-full object-cover" />
+                    : <span className="flex w-full h-full items-center justify-center text-gray-300"><ImagePlus className="w-5 h-5" /></span>}
+                  <span className="absolute top-1 start-1 px-1.5 py-px rounded-md bg-red-700 text-white text-[10px] font-bold">-{b.discountPercent}%</span>
+                </div>
+                <div className="min-w-0 space-y-1.5">
+                  <h3 className="font-black text-gray-900 dark:text-white truncate">{b.name}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex -space-x-1.5 rtl:space-x-reverse">
+                      {b.items.slice(0, 5).map((it) => (
+                        it.imageUrl
+                          ? <img key={it.productId} src={it.imageUrl} alt={it.name} title={it.name} className="w-7 h-7 rounded-md object-cover border-2 border-white dark:border-zinc-900 bg-white" />
+                          : <span key={it.productId} title={it.name} className="w-7 h-7 rounded-md bg-gray-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900" />
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500">{t('products_count', { count: b.items.length })}</span>
+                    {!b.available && <span className="px-1.5 py-px rounded-md bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 text-[10px] font-bold">{t('unavailable')}</span>}
+                  </div>
                 </div>
               </div>
-              <div className="p-3 space-y-2 flex-1">
-                <h3 className="font-black text-gray-900 dark:text-white truncate">{b.name}</h3>
-                <div className="flex -space-x-2 rtl:space-x-reverse">
-                  {b.items.slice(0, 6).map((it) => (
-                    it.imageUrl
-                      ? <img key={it.productId} src={it.imageUrl} alt={it.name} title={it.name} className="w-9 h-9 rounded-lg object-cover border-2 border-white dark:border-zinc-900" />
-                      : <span key={it.productId} title={it.name} className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900" />
-                  ))}
-                </div>
-                <div className="flex items-baseline gap-2 text-sm">
-                  <s className="text-gray-400">{money(b.original)}</s>
-                  <b className="text-indigo-600 dark:text-indigo-400">{money(b.price)}</b>
-                  <span className="text-xs text-emerald-600 font-bold">{t('save_short')} {money(b.saving)}</span>
-                </div>
+
+              {/* السعر */}
+              <div className="flex md:flex-col items-baseline md:items-end gap-2 md:gap-0.5 md:w-36 shrink-0">
+                <b className="text-indigo-600 dark:text-indigo-400">{money(b.price)}</b>
+                <s className="text-xs text-gray-400">{money(b.original)}</s>
+                <span className="text-[11px] text-emerald-600 font-bold">{t('save_short')} {money(b.saving)}</span>
               </div>
-              <div className="flex items-center gap-1 p-2 border-t border-gray-100 dark:border-zinc-800">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-2 me-auto">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-600 dark:text-zinc-300">
-                    <input type="checkbox" checked={b.isActive} onChange={() => toggle(b)} className="w-4 h-4 accent-indigo-600" />{t('active')}
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-600 dark:text-zinc-300">
-                    <input type="checkbox" checked={b.showOnHome} onChange={() => toggle(b, 'showOnHome')} className="w-4 h-4 accent-indigo-600" />{t('on_home')}
-                  </label>
+
+              {/* المفاتيح + الأزرار */}
+              <div className="flex items-center gap-2 flex-wrap md:flex-nowrap shrink-0">
+                {[['isActive', t('active')], ['showOnHome', t('on_home')]].map(([k, text]) => (
+                  <button key={k} type="button" role="switch" aria-checked={!!b[k]} onClick={() => toggle(b, k)}
+                    className={`h-8 px-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border ${b[k] ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20' : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'}`}>
+                    <span className={`w-2 h-2 rounded-full ${b[k] ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-zinc-600'}`} />{text}
+                  </button>
+                ))}
+                <div className="flex items-center ms-auto md:ms-2">
+                  {linkOf(b) && <a href={linkOf(b)} target="_blank" rel="noreferrer" aria-label={t('open')} title={t('open')} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800"><ExternalLink className="w-4 h-4" /></a>}
+                  {linkOf(b) && <button type="button" onClick={() => copy(b)} aria-label={t('copy_link')} title={t('copy_link')} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800"><Copy className="w-4 h-4" /></button>}
+                  <button type="button" onClick={() => setEditing(b)} aria-label={t('edit')} title={t('edit')} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800"><Pencil className="w-4 h-4" /></button>
+                  <button type="button" onClick={() => remove(b)} aria-label={t('delete')} title={t('delete')} className="p-2 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10"><Trash2 className="w-4 h-4" /></button>
                 </div>
-                {linkOf(b) && <a href={linkOf(b)} target="_blank" rel="noreferrer" aria-label={t('open')} className="p-2 rounded-lg text-gray-500"><ExternalLink className="w-4 h-4" /></a>}
-                {linkOf(b) && <button type="button" onClick={() => copy(b)} aria-label={t('copy_link')} className="p-2 rounded-lg text-gray-500"><Copy className="w-4 h-4" /></button>}
-                <button type="button" onClick={() => setEditing(b)} aria-label={t('edit')} className="p-2 rounded-lg text-gray-500"><Pencil className="w-4 h-4" /></button>
-                <button type="button" onClick={() => remove(b)} aria-label={t('delete')} className="p-2 rounded-lg text-rose-500"><Trash2 className="w-4 h-4" /></button>
               </div>
             </article>
           ))}

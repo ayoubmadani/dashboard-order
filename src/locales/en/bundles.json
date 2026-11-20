@@ -53,5 +53,6 @@
   "title_ph": "e.g. Eid deals",
   "err_title": "Enter the title",
   "on_home": "On home",
-  "banner": "Bundle image"
+  "banner": "Bundle image",
+  "products_count": "{{count}} products"
 }
