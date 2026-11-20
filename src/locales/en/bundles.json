@@ -22,9 +22,7 @@
   "bundle_price": "Bundle price",
   "saving": "Customer saves",
   "price_note": "At the product price — if the customer picks a size with another price, the discount applies to that price",
-  "banner_desktop": "Desktop banner (wide)",
-  "banner_mobile": "Phone (tall)",
-  "banner_hint": "The phone image is optional — without it everyone sees the desktop image",
+  "banner_hint": "One wide image — shown on the home page and the bundle page",
   "active": "Active",
   "show_on_home": "Show on the home page",
   "hidden_home_hint": "The bundle page still works from its link (for ads) without showing on the home page",
@@ -54,5 +52,6 @@
   "title_none": "No title",
   "title_ph": "e.g. Eid deals",
   "err_title": "Enter the title",
-  "on_home": "On home"
+  "on_home": "On home",
+  "banner": "Bundle image"
 }

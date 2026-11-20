@@ -44,7 +44,7 @@ function BannerPick({ value, onChange, tall, title, hint }) {
       </button>
       {hint && <p className="text-[11px] text-gray-400">{hint}</p>}
       {value && <button type="button" onClick={() => onChange(null)} className="text-xs text-rose-500">✕</button>}
-      <ModelImages isOpen={open} close={() => setOpen(false)} initialFolder="hero"
+      <ModelImages isOpen={open} close={() => setOpen(false)} initialFolder="bundle"
         onSelectImage={(img) => { onChange(img?.url || img?.imageUrl || null); setOpen(false); }} />
     </div>
   );
@@ -130,8 +130,7 @@ function BundleEditor({ storeId, bundle, onClose, onSaved }) {
     subtitle: bundle?.subtitle || '',
     discountPercent: bundle?.discountPercent ?? 10,
     products: (bundle?.items || []).map((i) => ({ id: i.productId, name: i.name, price: i.price, imageUrl: i.imageUrl })),
-    imageUrl: bundle?.imageUrl || null,
-    mobileImageUrl: bundle?.mobileImageUrl || null,
+    imageUrl: bundle?.imageUrl || bundle?.mobileImageUrl || null,
     isActive: bundle?.isActive ?? true,
     showOnHome: bundle?.showOnHome ?? true,
     startsAt: toLocalInput(bundle?.startsAt),
@@ -155,7 +154,7 @@ function BundleEditor({ storeId, bundle, onClose, onSaved }) {
       discountPercent: Math.round(Number(f.discountPercent)),
       productIds: f.products.map((p) => p.id),
       imageUrl: f.imageUrl,
-      mobileImageUrl: f.mobileImageUrl,
+      mobileImageUrl: null, // صورة واحدة للطقم
       isActive: f.isActive,
       showOnHome: f.showOnHome,
       startsAt: f.startsAt ? new Date(f.startsAt).toISOString() : null,
@@ -215,11 +214,7 @@ function BundleEditor({ storeId, bundle, onClose, onSaved }) {
             </div>
           )}
 
-          <div className="grid grid-cols-[2fr_1fr] gap-3 items-start">
-            <BannerPick value={f.imageUrl} onChange={set('imageUrl')} title={t('banner_desktop')} />
-            <BannerPick value={f.mobileImageUrl} onChange={set('mobileImageUrl')} tall title={t('banner_mobile')} />
-          </div>
-          <p className="text-[11px] text-gray-400 -mt-3">{t('banner_hint')}</p>
+          <BannerPick value={f.imageUrl} onChange={set('imageUrl')} title={t('banner')} hint={t('banner_hint')} />
 
           <div className="space-y-2">
             {[['isActive', t('active')], ['showOnHome', t('show_on_home')]].map(([k, text]) => (

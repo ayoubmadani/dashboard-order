@@ -43,6 +43,10 @@
       "name": "Hero",
       "description": "Main banner images"
     },
+    "bundle": {
+      "name": "Bundles",
+      "description": "Bundle banners"
+    },
     "logo": {
       "name": "Logos",
       "description": "Site and brand logos"

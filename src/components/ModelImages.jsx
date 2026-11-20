@@ -134,6 +134,12 @@ const foldersConfig = {
     gridCols: 'grid-cols-1',
     mobileGridCols: 'grid-cols-1',
   },
+  bundle: {
+    icon: 'M20 12v8a1 1 0 01-1 1H5a1 1 0 01-1-1v-8m16 0H4m16 0a1 1 0 001-1V9a1 1 0 00-1-1H4a1 1 0 00-1 1v2a1 1 0 001 1m8-4v13M12 8H8.5a2.5 2.5 0 110-5C11 3 12 8 12 8zm0 0h3.5a2.5 2.5 0 100-5C13 3 12 8 12 8z',
+    color: '#e11d48', aspectRatio: 'aspect-video',
+    gridCols: 'grid-cols-1 sm:grid-cols-2',
+    mobileGridCols: 'grid-cols-1',
+  },
   logo: {
     icon: 'M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z',
     color: '#10b981', aspectRatio: 'aspect-square',

@@ -22,9 +22,7 @@
   "bundle_price": "Prix du pack",
   "saving": "Le client économise",
   "price_note": "Au prix du produit — si le client choisit une taille à un autre prix, la remise s'applique à ce prix",
-  "banner_desktop": "Bannière ordinateur (large)",
-  "banner_mobile": "Mobile (verticale)",
-  "banner_hint": "L'image mobile est facultative — sans elle, l'image ordinateur s'affiche partout",
+  "banner_hint": "Une seule image large — affichée sur l'accueil et la page du pack",
   "active": "Actif",
   "show_on_home": "Afficher sur l'accueil",
   "hidden_home_hint": "La page du pack reste accessible par son lien (publicités) sans apparaître sur l'accueil",
@@ -54,5 +52,6 @@
   "title_none": "Sans titre",
   "title_ph": "Ex : Offres de l'Aïd",
   "err_title": "Saisissez le titre",
-  "on_home": "Sur l'accueil"
+  "on_home": "Sur l'accueil",
+  "banner": "Image du pack"
 }

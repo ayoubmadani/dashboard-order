@@ -43,6 +43,10 @@
       "name": "Hero",
       "description": "Images de bannières principales"
     },
+    "bundle": {
+      "name": "Packs",
+      "description": "Bannières des packs"
+    },
     "logo": {
       "name": "Logos",
       "description": "Logos du site et de la marque"
