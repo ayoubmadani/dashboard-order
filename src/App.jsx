@@ -32,6 +32,7 @@ import Theme from './pages/dashboard/theme/Theme';
 import CustomTheme from './pages/dashboard/theme/CustomTheme';
 import Wallet from './pages/dashboard/wallet/wallet';
 import Inventory from './pages/dashboard/inventory/Inventory';
+import Bundles from './pages/dashboard/bundles/Bundles';
 import Abandoned from './pages/dashboard/orders/Abandoned';
 import Meta from './pages/dashboard/meta/Meta';
 import Pixels from './pages/dashboard/pixels/pixels';
@@ -115,6 +116,7 @@ const App = () => {
 
             <Route path='Wallet' element={<Wallet />} />
             <Route path='inventory' element={<Inventory />} />
+            <Route path='bundles' element={<Bundles />} />
             {FEATURES.metaAds && <Route path='meta' element={<Meta />} />}
 
 

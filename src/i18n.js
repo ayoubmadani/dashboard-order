@@ -40,6 +40,7 @@ import arAbtest from './locales/ar/abtest.json';
 import arTeam from './locales/ar/team.json';
 import arWallet from './locales/ar/wallet.json';
 import arInventory from './locales/ar/inventory.json';
+import arBundles from './locales/ar/bundles.json';
 import arMeta from './locales/ar/meta.json';
 import arLayout from './locales/ar/layout.json';
 import arPixel from './locales/ar/pixel.json';
@@ -86,6 +87,7 @@ import enAbtest from './locales/en/abtest.json';
 import enTeam from './locales/en/team.json';
 import enWallet from './locales/en/wallet.json';
 import enInventory from './locales/en/inventory.json';
+import enBundles from './locales/en/bundles.json';
 import enMeta from './locales/en/meta.json';
 import enLayout from './locales/en/layout.json';
 import enPixel from './locales/en/pixel.json';
@@ -138,6 +140,7 @@ import frAbtest from './locales/fr/abtest.json';
 import frTeam from './locales/fr/team.json';
 import frWallet from './locales/fr/wallet.json';
 import frInventory from './locales/fr/inventory.json';
+import frBundles from './locales/fr/bundles.json';
 import frMeta from './locales/fr/meta.json';
 import frLayout from './locales/fr/layout.json';
 import frPixel from './locales/fr/pixel.json';
@@ -192,6 +195,7 @@ const resources = {
       team: arTeam,
       wallet: arWallet,
       inventory: arInventory,
+      bundles: arBundles,
       meta: arMeta,
       layout: arLayout,
       Pixels: arPixel,
@@ -239,6 +243,7 @@ const resources = {
       team: enTeam,
       wallet: enWallet,
       inventory: enInventory,
+      bundles: enBundles,
       meta: enMeta,
       layout: enLayout,
       Pixels: enPixel,
@@ -286,6 +291,7 @@ const resources = {
       team: frTeam,
       wallet: frWallet,
       inventory: frInventory,
+      bundles: frBundles,
       meta: frMeta,
       layout: frLayout,
       Pixels: frPixel,

@@ -8,6 +8,7 @@ import {
   ShoppingBasket,
   Megaphone,
   Puzzle,
+  Gift,
 } from 'lucide-react';
 import axios from 'axios';
 import { getAccessToken, removeAccessToken, setAccessToken } from '../services/access-token';
@@ -255,6 +256,7 @@ export default function LayoutDashboard() {
                 ...(FEATURES.metaAds ? [{ name: t('nav.meta', 'إعلانات Meta'), href: '/dashboard/meta', icon: Megaphone, perm: 'product.crud' }] : []),
                 { name: t('nav.categories', 'التصنيفات'), href: '/dashboard/category', icon: Layers, perm: 'category.crud' },
                 { name: t('nav.products', 'المنتجات'), href: '/dashboard/products', icon: Box, perm: 'product.crud' },
+                { name: t('nav.bundles', 'الأطقم'), href: '/dashboard/bundles', icon: Gift, perm: 'product.crud' },
                 { name: t('nav.inventory', 'المخزون'), href: '/dashboard/inventory', icon: Boxes, perm: 'product.crud' },
                 { name: t('nav.editor', 'محرر الصفحات'), href: '/dashboard/landing-pages', icon: LayoutTemplate, owner: true },
                 // «الدعوات» تبويب داخل الفريق: يظهر لغير المالك ما دامت عنده دعوة معلّقة
