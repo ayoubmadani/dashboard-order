@@ -53,5 +53,6 @@
   "title_custom": "Titre personnalisé",
   "title_none": "Sans titre",
   "title_ph": "Ex : Offres de l'Aïd",
-  "err_title": "Saisissez le titre"
+  "err_title": "Saisissez le titre",
+  "on_home": "Sur l'accueil"
 }

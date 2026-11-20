@@ -38,7 +38,8 @@ function BannerPick({ value, onChange, tall, title, hint }) {
     <div className="space-y-1.5">
       <p className={label}>{title}</p>
       <button type="button" onClick={() => setOpen(true)}
-        className={`relative w-full ${tall ? 'aspect-[4/5]' : 'aspect-[16/8]'} rounded-xl border-2 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 overflow-hidden flex items-center justify-center text-gray-400`}>
+        style={{ aspectRatio: tall ? '4 / 5' : '16 / 8' }}
+        className={`relative w-full rounded-xl border-2 border-dashed border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-950 overflow-hidden flex items-center justify-center text-gray-400`}>
         {value ? <img src={value} alt="" className="w-full h-full object-cover" /> : <ImagePlus className="w-6 h-6" />}
       </button>
       {hint && <p className="text-[11px] text-gray-400">{hint}</p>}
@@ -320,14 +321,14 @@ export default function Bundles() {
   }, [storeId, fetchList]);
   useEffect(() => {
     if (!storeId) return;
-    axios.get(`${baseURL}/stores/${storeId}`, auth()).then((r) => setStore(r.data)).catch(() => setStore({}));
+    axios.get(`${baseURL}/stores/${storeId}`, auth()).then((r) => setStore(r.data?.data ?? r.data)).catch(() => setStore({}));
   }, [storeId]);
 
   const linkOf = useMemo(() => (b) => (store?.subdomain ? `https://${store.subdomain}.mdstore.top/bundle/${b.slug}` : ''), [store]);
 
-  const toggle = async (b) => {
+  const toggle = async (b, key = 'isActive') => {
     try {
-      await axios.patch(`${baseURL}/stores/${storeId}/bundles/${b.id}`, { isActive: !b.isActive }, auth());
+      await axios.patch(`${baseURL}/stores/${storeId}/bundles/${b.id}`, { [key]: !b[key] }, auth());
       load();
     } catch (e) { toast.error(errMsg(e, t('save_failed'))); }
   };
@@ -374,7 +375,7 @@ export default function Bundles() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((b) => (
             <article key={b.id} className={`rounded-2xl border bg-white dark:bg-zinc-900 overflow-hidden flex flex-col ${b.isActive ? 'border-gray-200 dark:border-zinc-800' : 'border-dashed border-gray-300 dark:border-zinc-700 opacity-75'}`}>
-              <div className="relative aspect-[16/8] bg-gray-100 dark:bg-zinc-800">
+              <div className="relative bg-gray-100 dark:bg-zinc-800" style={{ aspectRatio: '16 / 8' }}>
                 {b.imageUrl || b.mobileImageUrl ? <img src={b.imageUrl || b.mobileImageUrl} alt="" className="w-full h-full object-cover" /> : <span className="flex w-full h-full items-center justify-center text-gray-300"><ImagePlus className="w-8 h-8" /></span>}
                 <span className="absolute top-2 start-2 px-2.5 py-0.5 rounded-full bg-red-700 text-white text-xs font-bold">-{b.discountPercent}%</span>
                 <div className="absolute top-2 end-2 flex gap-1">
@@ -398,9 +399,14 @@ export default function Bundles() {
                 </div>
               </div>
               <div className="flex items-center gap-1 p-2 border-t border-gray-100 dark:border-zinc-800">
-                <label className="flex items-center gap-2 px-2 me-auto cursor-pointer text-xs font-bold text-gray-600 dark:text-zinc-300">
-                  <input type="checkbox" checked={b.isActive} onChange={() => toggle(b)} className="w-4 h-4 accent-indigo-600" />{t('active')}
-                </label>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-2 me-auto">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-600 dark:text-zinc-300">
+                    <input type="checkbox" checked={b.isActive} onChange={() => toggle(b)} className="w-4 h-4 accent-indigo-600" />{t('active')}
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-gray-600 dark:text-zinc-300">
+                    <input type="checkbox" checked={b.showOnHome} onChange={() => toggle(b, 'showOnHome')} className="w-4 h-4 accent-indigo-600" />{t('on_home')}
+                  </label>
+                </div>
                 {linkOf(b) && <a href={linkOf(b)} target="_blank" rel="noreferrer" aria-label={t('open')} className="p-2 rounded-lg text-gray-500"><ExternalLink className="w-4 h-4" /></a>}
                 {linkOf(b) && <button type="button" onClick={() => copy(b)} aria-label={t('copy_link')} className="p-2 rounded-lg text-gray-500"><Copy className="w-4 h-4" /></button>}
                 <button type="button" onClick={() => setEditing(b)} aria-label={t('edit')} className="p-2 rounded-lg text-gray-500"><Pencil className="w-4 h-4" /></button>

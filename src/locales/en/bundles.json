@@ -53,5 +53,6 @@
   "title_custom": "Custom title",
   "title_none": "No title",
   "title_ph": "e.g. Eid deals",
-  "err_title": "Enter the title"
+  "err_title": "Enter the title",
+  "on_home": "On home"
 }
