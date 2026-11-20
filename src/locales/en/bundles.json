@@ -47,12 +47,10 @@
   "deleted": "Bundle deleted",
   "confirm_delete": "Delete the bundle “{{name}}”?",
   "slider_title": "Section title on the home page",
-  "title_default": "Default (“Bundle deals”)",
-  "title_custom": "Custom title",
-  "title_none": "No title",
-  "title_ph": "e.g. Eid deals",
-  "err_title": "Enter the title",
   "on_home": "On home",
   "banner": "Bundle image",
-  "products_count": "{{count}} products"
+  "products_count": "{{count}} products",
+  "title_empty_ph": "No title — leave empty",
+  "title_hint": "Leave it empty and save to show the section without a title",
+  "title_removed": "Saved — section without a title"
 }

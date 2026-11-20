@@ -47,12 +47,10 @@
   "deleted": "Pack supprimé",
   "confirm_delete": "Supprimer le pack « {{name}} » ?",
   "slider_title": "Titre de la section sur l'accueil",
-  "title_default": "Par défaut (« Nos packs »)",
-  "title_custom": "Titre personnalisé",
-  "title_none": "Sans titre",
-  "title_ph": "Ex : Offres de l'Aïd",
-  "err_title": "Saisissez le titre",
   "on_home": "Sur l'accueil",
   "banner": "Image du pack",
-  "products_count": "{{count}} produits"
+  "products_count": "{{count}} produits",
+  "title_empty_ph": "Sans titre — laissez vide",
+  "title_hint": "Laissez vide et enregistrez pour afficher la section sans titre",
+  "title_removed": "Enregistré — section sans titre"
 }

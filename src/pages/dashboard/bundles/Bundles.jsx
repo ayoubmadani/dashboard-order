@@ -249,45 +249,41 @@ function BundleEditor({ storeId, bundle, onClose, onSaved }) {
   );
 }
 
-/* ── عنوان السلايدر في الرئيسية ── */
-function SliderTitle({ storeId, value, onSaved }) {
+/* ── عنوان قسم الأطقم في الرئيسية: خانة + حفظ — فارغة = بلا عنوان ── */
+// العنوان الافتراضي بلغة المتجر (ما يظهر في المتجر ما دام التاجر لم يحفظ عنواناً)
+const DEFAULT_TITLE = { ar: 'عروض الأطقم', fr: 'Nos packs', en: 'Bundle deals' };
+
+function SliderTitle({ storeId, value, language, onSaved }) {
   const { t } = useTranslation('translation', { keyPrefix: 'bundles' });
-  const initialMode = value === null || value === undefined ? 'default' : value === '' ? 'none' : 'custom';
-  const [mode, setMode] = useState(initialMode);
-  const [text, setText] = useState(value || '');
+  const [text, setText] = useState(value === null || value === undefined ? (DEFAULT_TITLE[language] || DEFAULT_TITLE.ar) : value);
   const [saving, setSaving] = useState(false);
 
-  const save = async () => {
-    const bundlesTitle = mode === 'default' ? null : mode === 'none' ? '' : text.trim();
-    if (mode === 'custom' && !bundlesTitle) { toast.error(t('err_title')); return; }
+  const save = async (e) => {
+    e.preventDefault();
+    const bundlesTitle = text.trim(); // '' = القسم بلا عنوان
     setSaving(true);
     try {
       await axios.patch(`${baseURL}/stores/${storeId}`, { design: { bundlesTitle } }, auth());
-      toast.success(t('saved'));
+      toast.success(bundlesTitle ? t('saved') : t('title_removed'));
       onSaved(bundlesTitle);
-    } catch (e) {
-      toast.error(errMsg(e, t('save_failed')));
+    } catch (err) {
+      toast.error(errMsg(err, t('save_failed')));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 space-y-3 bg-white dark:bg-zinc-900">
-      <p className="text-sm font-black text-gray-900 dark:text-white">{t('slider_title')}</p>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t('slider_title')}>
-        {['default', 'custom', 'none'].map((m) => (
-          <button key={m} type="button" role="radio" aria-checked={mode === m} onClick={() => setMode(m)}
-            className={`px-3 h-9 rounded-xl text-xs font-bold border ${mode === m ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300'}`}>
-            {t(`title_${m}`)}
-          </button>
-        ))}
+    <form onSubmit={save} className="rounded-2xl border border-gray-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900">
+      <label htmlFor="bn-section-title" className={label}>{t('slider_title')}</label>
+      <div className="flex gap-2">
+        <input id="bn-section-title" value={text} onChange={(e) => setText(e.target.value)} maxLength={60} placeholder={t('title_empty_ph')} className={`${input} flex-1`} />
+        <button type="submit" disabled={saving} className="h-11 px-5 rounded-xl bg-indigo-600 text-white text-sm font-bold disabled:opacity-60 flex items-center gap-2 shrink-0">
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />}{t('save')}
+        </button>
       </div>
-      {mode === 'custom' && <input value={text} onChange={(e) => setText(e.target.value)} maxLength={60} placeholder={t('title_ph')} className={input} />}
-      <button type="button" onClick={save} disabled={saving} className="h-10 px-4 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold disabled:opacity-60 flex items-center gap-2">
-        {saving && <Loader2 className="w-4 h-4 animate-spin" />}{t('save')}
-      </button>
-    </div>
+      <p className="text-[11px] text-gray-400 mt-1.5">{t('title_hint')}</p>
+    </form>
   );
 }
 
@@ -357,6 +353,9 @@ export default function Bundles() {
         </button>
       </div>
 
+      {store && <SliderTitle key={String(store?.design?.bundlesTitle)} storeId={storeId} value={store?.design?.bundlesTitle} language={store?.language}
+        onSaved={(v) => setStore((s) => ({ ...s, design: { ...(s?.design || {}), bundlesTitle: v } }))} />}
+
       {list === null ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>
       ) : list.length === 0 ? (
@@ -421,8 +420,6 @@ export default function Bundles() {
         </div>
       )}
 
-      {store && <SliderTitle key={String(store?.design?.bundlesTitle)} storeId={storeId} value={store?.design?.bundlesTitle}
-        onSaved={(v) => setStore((s) => ({ ...s, design: { ...(s?.design || {}), bundlesTitle: v } }))} />}
 
       {editing && (
         <BundleEditor storeId={storeId} bundle={editing === 'new' ? null : editing}
