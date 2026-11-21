@@ -52,5 +52,7 @@
   "products_count": "{{count}} produits",
   "title_empty_ph": "Sans titre — laissez vide",
   "title_hint": "Laissez vide et enregistrez pour afficher la section sans titre",
-  "title_removed": "Enregistré — section sans titre"
+  "title_removed": "Enregistré — section sans titre",
+  "theme_unsupported_title": "Le thème actuel n'affiche pas encore les packs sur l'accueil",
+  "theme_unsupported_desc": "Les packs sont enregistrés et le lien de chaque pack fonctionne (publicités), mais ils n'apparaissent pas sur l'accueil tant que ce thème ne les prend pas en charge ou que vous ne choisissez pas un thème compatible."
 }

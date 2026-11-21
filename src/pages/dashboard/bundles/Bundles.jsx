@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { toast, Toaster } from 'sonner';
 import {
-  Gift, Plus, Pencil, Trash2, Copy, ExternalLink, Loader2, X, Search, ImagePlus, ArrowUp, ArrowDown, Check,
+  Gift, Plus, Pencil, Trash2, Copy, ExternalLink, Loader2, X, Search, ImagePlus, ArrowUp, ArrowDown, Check, AlertTriangle,
 } from 'lucide-react';
 import { baseURL } from '../../../constents/const.';
 import { getAccessToken } from '../../../services/access-token';
@@ -315,6 +315,23 @@ export default function Bundles() {
     axios.get(`${baseURL}/stores/${storeId}`, auth()).then((r) => setStore(r.data?.data ?? r.data)).catch(() => setStore({}));
   }, [storeId]);
 
+  // هل يعرض ثيم المتجر الأطقم في الرئيسية؟ (ملف الثيم يستعمل useBundleOrder) — null = لم يُعرف بعد
+  const [themeSupports, setThemeSupports] = useState(null);
+  useEffect(() => {
+    const sub = store?.subdomain;
+    if (!sub) return undefined;
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await axios.get(`${baseURL}/stores/domain/${sub}`);
+        const slug = (data?.data ?? data)?.theme?.slug || 'default';
+        const code = await (await fetch(`https://${sub}.mdstore.top/api/themes/${slug}`)).text();
+        if (alive) setThemeSupports(code.includes('useBundleOrder'));
+      } catch { /* لا تنبيه إن تعذّر الفحص */ }
+    })();
+    return () => { alive = false; };
+  }, [store?.subdomain]);
+
   const linkOf = useMemo(() => (b) => (store?.subdomain ? `https://${store.subdomain}.mdstore.top/bundle/${b.slug}` : ''), [store]);
 
   const toggle = async (b, key = 'isActive') => {
@@ -352,6 +369,16 @@ export default function Bundles() {
           <Plus className="w-4 h-4" />{t('new')}
         </button>
       </div>
+
+      {themeSupports === false && (
+        <div role="status" className="flex items-start gap-3 rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-300">
+          <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-bold">{t('theme_unsupported_title')}</p>
+            <p className="text-xs leading-relaxed opacity-90">{t('theme_unsupported_desc')}</p>
+          </div>
+        </div>
+      )}
 
       {store && <SliderTitle key={String(store?.design?.bundlesTitle)} storeId={storeId} value={store?.design?.bundlesTitle} language={store?.language}
         onSaved={(v) => setStore((s) => ({ ...s, design: { ...(s?.design || {}), bundlesTitle: v } }))} />}

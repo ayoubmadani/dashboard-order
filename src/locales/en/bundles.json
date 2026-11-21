@@ -52,5 +52,7 @@
   "products_count": "{{count}} products",
   "title_empty_ph": "No title — leave empty",
   "title_hint": "Leave it empty and save to show the section without a title",
-  "title_removed": "Saved — section without a title"
+  "title_removed": "Saved — section without a title",
+  "theme_unsupported_title": "Your current theme doesn't show bundles on the home page yet",
+  "theme_unsupported_desc": "Bundles are saved and each bundle's page link works (for ads), but they won't appear on the home page until this theme supports them or you pick a theme that does."
 }
