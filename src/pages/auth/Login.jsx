@@ -6,6 +6,7 @@ import CustomBtnGoogleProvider from '../../components/custom-btn-google-provider
 import axios from 'axios'; // تأكد من تثبيته
 import { setAccessToken } from "../../services/access-token";
 import { baseURL } from "../../constents/const.";
+import { bannedMessage } from "../../components/BanNotice";
 
 const Login = () => {
     const { t, i18n } = useTranslation();
@@ -16,7 +17,11 @@ const Login = () => {
     // إضافة حساب منتهٍ من القائمة: البريد يُملأ تلقائياً
     const [formData, setFormData] = useState({ email: new URLSearchParams(window.location.search).get('email') || '', password: '' });
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    // حُظر أثناء الجلسة: السبب محفوظ قبل الخروج
+    const [error, setError] = useState(() => {
+        try { const b = sessionStorage.getItem('accountBanned'); if (b) { sessionStorage.removeItem('accountBanned'); return bannedMessage(JSON.parse(b), i18n.language); } } catch { /* */ }
+        return '';
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -36,7 +41,8 @@ const Login = () => {
             }
         } catch (err) {
             // عرض رسالة الخطأ القادمة من NestJS
-            setError(err.response?.data?.message || 'Login failed');
+            const d = err.response?.data;
+            setError(d?.message === 'ACCOUNT_BANNED' ? bannedMessage(d, i18n.language) : (d?.message || 'Login failed'));
         } finally {
             setLoading(false);
         }

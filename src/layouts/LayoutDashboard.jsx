@@ -16,6 +16,7 @@ import { readAccounts, writeAccounts, upsertAccount, removeAccount, markExpired,
 import { clearPlanCache } from '../services/plan';
 import { baseURL } from '../constents/const.';
 import TrialOffer from '../components/TrialOffer';
+import BanNotice from '../components/BanNotice';
 import { can, isOwner, ACCESS_LOSS_CODES } from '../services/storeAccess';
 import { showTeamInNav } from '../utils/teamTabs';
 import { saveSelectedStore } from '../services/selectedStore';
@@ -337,6 +338,13 @@ export default function LayoutDashboard() {
     // فقدان الوصول لمتجر مشترك (خطة المالك، تعليق، مجموعة معطّلة، إزالة): العودة لقائمة المتاجر
     useEffect(() => {
         const id = axios.interceptors.response.use(undefined, (error) => {
+            // الحساب حُظر أثناء الجلسة: خروج، وصفحة الدخول تعرض السبب
+            if (error?.response?.status === 403 && error.response.data?.message === 'ACCOUNT_BANNED') {
+                sessionStorage.setItem('accountBanned', JSON.stringify(error.response.data));
+                removeAccessToken();
+                window.location.href = '/auth/login';
+                return Promise.reject(error);
+            }
             const code = error?.response?.status === 403 ? error.response.data?.code : null;
             if (code && ACCESS_LOSS_CODES.includes(code)) {
                 sessionStorage.setItem('storeAccessLost', code);
@@ -502,6 +510,7 @@ export default function LayoutDashboard() {
 
                 <main className="flex-1 p-4 lg:p-8">
                     <div className="max-w-7xl mx-auto">
+                        <BanNotice />
                         <Outlet context={{ myStores, fetchStores, selectedProject, setSelectedProject, user, refreshInvitations, invitationsCount }} />
                         <TrialOffer />
                     </div>
