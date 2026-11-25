@@ -33,7 +33,6 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
   const [dzd, setDzd] = useState('');
   const usdt = Number(dzd) > 0 ? Math.ceil((Number(dzd) / config.rate) * 100) / 100 : null;
   // via يأتي من تبويبات النافذة: Binance Pay (UID) أو عنوان BEP20 على شبكة BSC
-  const [copiedAddr, setCopiedAddr] = useState(false);
   const bsc = config.addresses?.BSC || null;
   // QR: رابط استلام Binance Pay، أو عنوان BSC في تبويبه
   const qrValue = via === 'bsc' ? bsc : config.payLink || null;
@@ -142,24 +141,9 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
           {t('open_binance')}
         </a>
       )}
-      {/* BSC: صفحة سحب USDT في Binance (يلصق العنوان ويختار شبكة BSC) */}
+      {/* BSC: لا رابط (Binance لا تفتح شاشة السحب من رابط خارجي) — التاجر يمسح الرمز من شاشة السحب */}
       {via === 'bsc' && (
-        <a
-          href="https://www.binance.com/my/wallet/account/main/withdrawal/crypto/USDT"
-          target="_blank"
-          rel="noreferrer"
-          // على الهاتف قد يفتح تطبيق Binance ويرفض الرابط — العنوان يُنسخ أولاً ليلصقه في صفحة السحب
-          onClick={() => { try { if (bsc) { navigator.clipboard.writeText(bsc); setCopiedAddr(true); setTimeout(() => setCopiedAddr(false), 6000); } } catch { /* */ } }}
-          className="w-full flex items-center justify-center gap-1.5 py-3 rounded-xl bg-[#FCD535] hover:bg-[#F0C419] text-gray-900 text-sm font-bold transition-colors"
-        >
-          <ExternalLink className="w-4 h-4" />
-          {t('open_withdraw')}
-        </a>
-      )}
-      {via === 'bsc' && copiedAddr && (
-        <p role="status" className="flex items-start gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 leading-relaxed">
-          <Check className="w-4 h-4 shrink-0" />{t('address_copied')}
-        </p>
+        <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 bg-[#FCD535]/15 border border-[#FCD535]/40 rounded-xl px-3 py-2.5 leading-relaxed">{t('scan_steps')}</p>
       )}
       {/* رقم المعاملة */}
       <div className="space-y-1.5">

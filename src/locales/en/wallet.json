@@ -61,6 +61,6 @@
     "bsc_coin": "Coin",
     "pay_method": "Method",
     "open_withdraw": "Copy address & open Binance",
-    "address_copied": "Address copied — in Binance: Wallet → Withdraw → USDT, paste it and pick BSC"
+    "scan_steps": "In Binance: Withdraw → USDT → tap the scan icon next to the address and scan the code above, then pick BSC (BEP20)."
   }
 }

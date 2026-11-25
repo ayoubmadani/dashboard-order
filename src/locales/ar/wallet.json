@@ -61,6 +61,6 @@
     "bsc_coin": "العملة",
     "pay_method": "الطريقة",
     "open_withdraw": "انسخ العنوان وافتح Binance",
-    "address_copied": "نُسخ العنوان — في Binance: Wallet ← Withdraw ← USDT، الصقه واختر شبكة BSC"
+    "scan_steps": "في Binance: Withdraw ← USDT ← اضغط أيقونة المسح بجانب العنوان وامسح الرمز أعلاه، ثم اختر شبكة BSC (BEP20)."
   }
 }
