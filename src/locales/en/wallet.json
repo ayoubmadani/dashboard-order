@@ -60,6 +60,7 @@
     "bsc_network": "Network",
     "bsc_coin": "Coin",
     "pay_method": "Method",
-    "open_withdraw": "Withdraw USDT from Binance"
+    "open_withdraw": "Copy address & open Binance",
+    "address_copied": "Address copied — in Binance: Wallet → Withdraw → USDT, paste it and pick BSC"
   }
 }

@@ -60,6 +60,7 @@
     "bsc_network": "الشبكة",
     "bsc_coin": "العملة",
     "pay_method": "الطريقة",
-    "open_withdraw": "اسحب USDT من Binance"
+    "open_withdraw": "انسخ العنوان وافتح Binance",
+    "address_copied": "نُسخ العنوان — في Binance: Wallet ← Withdraw ← USDT، الصقه واختر شبكة BSC"
   }
 }
