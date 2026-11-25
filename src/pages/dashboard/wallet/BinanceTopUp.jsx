@@ -147,6 +147,8 @@ export default function BinanceTopUp({ config, onPaid, via = 'pay' }) {
           href="https://www.binance.com/my/wallet/account/main/withdrawal/crypto/USDT"
           target="_blank"
           rel="noreferrer"
+          // على الهاتف قد يفتح تطبيق Binance ويرفض الرابط — العنوان يُنسخ أولاً ليلصقه في صفحة السحب
+          onClick={() => { try { if (bsc) navigator.clipboard.writeText(bsc); } catch { /* */ } }}
           className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
         >
           <ExternalLink className="w-4 h-4" />
