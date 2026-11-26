@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import useConfirmationEnabled from '../../../hooks/useConfirmationEnabled';
 import { useTranslation } from 'react-i18next';
 import {
   PhoneCall, Search, Bookmark, BookmarkCheck, Trash2, MapPin, Phone, Loader2, Info, Zap,
@@ -40,7 +42,7 @@ function CompanyCard({ company, t, children, stats }) {
   );
 }
 
-export default function Confirmation() {
+function ConfirmationPage() {
   const { t } = useTranslation('translation', { keyPrefix: 'confirmation' });
   const storeId = localStorage.getItem('storeId');
   const headers = { Authorization: `Bearer ${getAccessToken()}` };
@@ -425,4 +427,12 @@ export default function Confirmation() {
       )}
     </div>
   );
+}
+
+// شركات التأكيد تجريبية: الصفحة للأدمن وللحسابات التجريبية فقط (يقرره الـ API) — غيرهم يُحوَّل للطلبات
+export default function Confirmation() {
+  const enabled = useConfirmationEnabled();
+  if (enabled === null) return null;
+  if (!enabled) return <Navigate to="/dashboard/orders" replace />;
+  return <ConfirmationPage />;
 }

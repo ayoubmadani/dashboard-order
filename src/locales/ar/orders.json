@@ -51,7 +51,10 @@
     "customer_hidden": "بيانات الزبون مخفية",
     "customer_hidden_hint": "فوق حصة خطتك — اكشف الطلب بدفع ثمنه",
     "test_order": "تجربة",
-    "test_order_hint": "طلب تجربة — لا يُحسب في حصة خطتك"
+    "test_order_hint": "طلب تجربة — لا يُحسب في حصة خطتك",
+    "bulk_delete": "حذف ({{count}})",
+    "bulk_delete_done": "تم حذف {{count}} طلب",
+    "bulk_delete_failed": "تعذّر حذف {{count}} طلب"
   },
   "edit": {
     "locked_title": "هذه الطلبية عند شركة التأكيد {{name}}",
@@ -143,7 +146,9 @@
     "cancel": "إلغاء",
     "confirm": "تأكيد الحذف",
     "deleting": "جاري الحذف...",
-    "failed": "فشل في حذف الطلب، حاول مرة أخرى"
+    "failed": "فشل في حذف الطلب، حاول مرة أخرى",
+    "title_many": "حذف {{count}} طلب",
+    "and_more": "+ {{count}} طلبات أخرى"
   },
   "modal": {
     "title": "تعديل الطلب #{{id}}",
@@ -213,7 +218,10 @@
     "failed": "فشل",
     "button_select_all": "توصيل جماعي ({{count}})",
     "button_ship_selected": "توصيل {{count}} طلب",
-    "clear_selection": "إلغاء التحديد"
+    "clear_selection": "إلغاء التحديد",
+    "button_upload": "رفع لشركة التوصيل ({{count}})",
+    "confirm_first": "سيتم تأكيد {{count}} طلب ثم رفعها لشركة التوصيل. متابعة؟",
+    "confirm_failed": "تعذّر تأكيد {{count}} طلب"
   },
   "abandoned": {
     "title": "الطلبات المتروكة",

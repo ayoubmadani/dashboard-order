@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import useConfirmationEnabled from '../hooks/useConfirmationEnabled';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -110,6 +111,8 @@ const SidebarContent = ({ t, navGroups, pathname, selectedProject, storesCount, 
 /* ───────── Layout ───────── */
 export default function LayoutDashboard() {
     const { t, i18n } = useTranslation('translation', { keyPrefix: 'layout' });
+    // شركات التأكيد تجريبية: تظهر للأدمن وللحسابات التجريبية فقط (يقرره الـ API)
+    const confirmationOn = useConfirmationEnabled();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -270,7 +273,7 @@ export default function LayoutDashboard() {
                 { name: t('nav.orders', 'الطلبات'), href: '/dashboard/orders', icon: ShoppingCart, perm: 'order.view' },
                 { name: t('nav.plugins', 'الإضافات'), href: '/dashboard/plugins', icon: Puzzle, owner: true },
                 { name: t('nav.abandoned', 'طلبات متروكة'), href: '/dashboard/orders/abandoned', icon: ShoppingBasket, perm: 'order.view' },
-                { name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall, owner: true },
+                ...(confirmationOn ? [{ name: t('nav.confirmation', 'التأكيد'), href: '/dashboard/confirmation', icon: PhoneCall, owner: true }] : []),
                 { name: t('nav.shipping', 'الشحن'), href: '/dashboard/shipping', icon: Truck, owner: true },
                 { name: t('nav.wallet', 'المحفظة'), href: '/dashboard/wallet', icon: Wallet },
             ],

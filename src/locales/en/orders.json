@@ -51,7 +51,10 @@
     "customer_hidden": "Customer hidden",
     "customer_hidden_hint": "Over your plan quota — show the order by paying for it",
     "test_order": "Test",
-    "test_order_hint": "Test order — not counted in your plan quota"
+    "test_order_hint": "Test order — not counted in your plan quota",
+    "bulk_delete": "Delete ({{count}})",
+    "bulk_delete_done": "{{count}} order(s) deleted",
+    "bulk_delete_failed": "Couldn't delete {{count}} order(s)"
   },
   "edit": {
     "locked_title": "This order is at the confirmation company {{name}}",
@@ -143,7 +146,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm Delete",
     "deleting": "Deleting...",
-    "failed": "Failed to delete order, try again"
+    "failed": "Failed to delete order, try again",
+    "title_many": "Delete {{count}} orders",
+    "and_more": "+ {{count}} more orders"
   },
   "modal": {
     "title": "Edit Order #{{id}}",
@@ -213,7 +218,10 @@
     "failed": "Failed",
     "button_select_all": "Bulk Deliver ({{count}})",
     "button_ship_selected": "Deliver {{count}} orders",
-    "clear_selection": "Clear Selection"
+    "clear_selection": "Clear Selection",
+    "button_upload": "Upload to courier ({{count}})",
+    "confirm_first": "{{count}} order(s) will be confirmed, then uploaded to the courier. Continue?",
+    "confirm_failed": "Couldn't confirm {{count}} order(s)"
   },
   "abandoned": {
     "title": "Abandoned orders",

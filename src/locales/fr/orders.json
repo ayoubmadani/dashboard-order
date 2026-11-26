@@ -51,7 +51,10 @@
     "customer_hidden": "Client masqué",
     "customer_hidden_hint": "Hors quota — affichez la commande en la payant",
     "test_order": "Test",
-    "test_order_hint": "Commande test — non comptée dans le quota"
+    "test_order_hint": "Commande test — non comptée dans le quota",
+    "bulk_delete": "Supprimer ({{count}})",
+    "bulk_delete_done": "{{count}} commande(s) supprimée(s)",
+    "bulk_delete_failed": "Impossible de supprimer {{count}} commande(s)"
   },
   "edit": {
     "locked_title": "Cette commande est chez la société de confirmation {{name}}",
@@ -143,7 +146,9 @@
     "cancel": "Annuler",
     "confirm": "Confirmer la suppression",
     "deleting": "Suppression en cours...",
-    "failed": "Échec de la suppression, réessayez"
+    "failed": "Échec de la suppression, réessayez",
+    "title_many": "Supprimer {{count}} commandes",
+    "and_more": "+ {{count}} autres commandes"
   },
   "modal": {
     "title": "Modifier la commande #{{id}}",
@@ -213,7 +218,10 @@
     "failed": "Échoué",
     "button_select_all": "Livraison groupée ({{count}})",
     "button_ship_selected": "Livrer {{count}} commandes",
-    "clear_selection": "Annuler la sélection"
+    "clear_selection": "Annuler la sélection",
+    "button_upload": "Envoyer au livreur ({{count}})",
+    "confirm_first": "{{count}} commande(s) seront confirmées puis envoyées au livreur. Continuer ?",
+    "confirm_failed": "Impossible de confirmer {{count}} commande(s)"
   },
   "abandoned": {
     "title": "Commandes abandonnées",

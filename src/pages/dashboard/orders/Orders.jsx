@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import useConfirmationEnabled from '../../../hooks/useConfirmationEnabled';
 import { SourceBadge, SourceSelect, SourcesModal } from './notes/OrderSources';
 import OrderQuotaCard from '../settings/components/OrderQuotaCard';
 import { ReasonModal } from './notes/OrderNotes';
@@ -393,8 +394,11 @@ function ShipResultModal({ result, onClose }) {
 /* ════════════════════════════════════════════════════
    Delete Confirm Modal
 ════════════════════════════════════════════════════ */
-function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
+function DeleteConfirmModal({ order, orders, onConfirm, onCancel, deleting }) {
   const { t } = useTranslation('translation', { keyPrefix: 'orders' });
+  // حذف جماعي: orders (أكثر من طلب) — نفس النافذة بملخص
+  const many = orders?.length > 1 ? orders : null;
+  order = order ?? orders?.[0];
   if (!order) return null;
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -407,10 +411,33 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
               <Trash2 size={24} className="text-rose-500" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('delete_modal.title')}</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                {many ? t('delete_modal.title_many', { count: many.length, defaultValue: 'حذف {{count}} طلب' }) : t('delete_modal.title')}
+              </h3>
               <p className="text-xs text-gray-400 mt-0.5">{t('delete_modal.irreversible')}</p>
             </div>
           </div>
+          {many ? (
+            <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 space-y-2 border border-gray-100 dark:border-zinc-700 text-sm">
+              {many.slice(0, 4).map(o => (
+                <div key={o.id} className="flex justify-between items-center gap-3">
+                  <span className="font-bold text-gray-800 dark:text-white truncate">{o.customerName || '—'}</span>
+                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">{money(o.totalPrice)} DA</span>
+                </div>
+              ))}
+              {many.length > 4 && (
+                <p className="text-xs text-gray-400 dark:text-zinc-500">
+                  {t('delete_modal.and_more', { count: many.length - 4, defaultValue: '+ {{count}} طلبات أخرى' })}
+                </p>
+              )}
+              <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-zinc-700">
+                <span className="text-xs text-gray-400 dark:text-zinc-500 font-medium">{t('delete_modal.total')}</span>
+                <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+                  {money(many.reduce((sum, o) => sum + Number(o.totalPrice || 0), 0))} DA
+                </span>
+              </div>
+            </div>
+          ) : (
           <div className="bg-gray-50 dark:bg-zinc-800 rounded-xl p-4 space-y-2.5 border border-gray-100 dark:border-zinc-700 text-sm">
             {[
               { label: t('delete_modal.customer'), value: order.customerName },
@@ -427,6 +454,7 @@ function DeleteConfirmModal({ order, onConfirm, onCancel, deleting }) {
               <span className="text-base font-black text-emerald-600 dark:text-emerald-400">{money(order.totalPrice)} DA</span>
             </div>
           </div>
+          )}
           <div className="flex gap-3">
             <button onClick={onCancel} disabled={deleting} className="flex-1 py-2.5 rounded-xl border-2 border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all disabled:opacity-50">{t('delete_modal.cancel')}</button>
             <button onClick={onConfirm} disabled={deleting} className="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm transition-all shadow-lg shadow-rose-100 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2">
@@ -713,6 +741,7 @@ export default function Orders() {
 
   // إعادة رسم كل دقيقة حتى يبقى "منذ X دقيقة" دقيقاً
   const { t: tc } = useTranslation('translation', { keyPrefix: 'confirmation' });
+  const confirmationOn = useConfirmationEnabled();
   const [sendIds, setSendIds] = useState(null);
   const [recalling, setRecalling] = useState(false);
   const [printing, setPrinting] = useState(false);
@@ -737,6 +766,7 @@ export default function Orders() {
   const [total, setTotal] = useState(0);
 
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false); // حذف المحددة (نفس نافذة الحذف)
   const [deleting, setDeleting] = useState(false);
   const [shipResult, setShipResult] = useState(null);
 
@@ -801,8 +831,6 @@ export default function Orders() {
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
-  // منتج رقمي لا يُشحن — لا يدخل قائمة "الطلبات القابلة للشحن" إطلاقاً
-  const confirmedOrders = orders.filter(c => c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital);
   // كل ما يمكن تحديده: جاهز للشحن، ينتظر التأكيد (إرسال/استرجاع)، أو ألغته شركة التأكيد (استرجاع)
   // طلب مخفي (حصة الخطة): لا يُحدَّد ولا تتغير حالته ولا يُشحن حتى يُكشف
   const isSelectable = (c) => canManage && !c.customerHidden && ((c.status === 'confirmed' && !c.shippingTrackingId && !c.isDigital)
@@ -814,10 +842,10 @@ export default function Orders() {
   const someSelected = selectedIds.size > 0;
 
   useEffect(() => {
-    const anyModal = isOpen || !!deleteTarget || !!shipResult || showBulkPicker || !!bulkShipOrders;
+    const anyModal = isOpen || !!deleteTarget || bulkDeleteOpen || !!shipResult || showBulkPicker || !!bulkShipOrders;
     document.body.style.overflow = anyModal ? 'hidden' : 'auto';
     return () => { document.body.style.overflow = 'auto'; };
-  }, [isOpen, deleteTarget, shipResult, showBulkPicker, bulkShipOrders]);
+  }, [isOpen, deleteTarget, bulkDeleteOpen, shipResult, showBulkPicker, bulkShipOrders]);
 
   const toggleSelect = (id) =>
     setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
@@ -880,13 +908,71 @@ export default function Orders() {
     }
   };
 
-  const startBulkShip = () => {
-    if (!selectedIds.size) return;
-    setBulkShipOrders(confirmedOrders.filter(o => selectedIds.has(o.id)));
+  /* ── رفع المحددة لشركة التوصيل: المؤكدة مباشرة، والتي تنتظر التأكيد تُؤكَّد أولاً (بعد سؤال التاجر) ── */
+  // شركة التوصيل تقبل المؤكدة فقط — «معلق/محاولة/مؤجل» تُؤكَّد ثم تُرفع (ليست عند شركة تأكيد)
+  const confirmThenShip = selectedOrders.filter(o =>
+    QUEUE_STATUSES.includes(o.status) && !o.shippingTrackingId && !o.isDigital && !o.confirmationCompanyId && !o.customerHidden);
+  const uploadCount = shipSelected.length + confirmThenShip.length;
+  const [preparingUpload, setPreparingUpload] = useState(false);
+  const uploadSelected = async () => {
+    if (!uploadCount) return;
+    let confirmedNow = [];
+    if (confirmThenShip.length) {
+      if (!window.confirm(t('bulk_ship.confirm_first', {
+        count: confirmThenShip.length,
+        defaultValue: 'سيتم تأكيد {{count}} طلب ثم رفعها لشركة التوصيل. متابعة؟',
+      }))) return;
+      setPreparingUpload(true);
+      try {
+        const results = await Promise.allSettled(confirmThenShip.map(cart => axios.patch(
+          `${baseURL}/orders/${cart.id}`, statusDtos(cart, 'confirmed'), { headers: { Authorization: `Bearer ${token}` } },
+        )));
+        confirmedNow = confirmThenShip.filter((_, i) => results[i].status === 'fulfilled');
+        const failed = results.length - confirmedNow.length;
+        if (failed) pushToast(t('bulk_ship.confirm_failed', { count: failed, defaultValue: 'تعذّر تأكيد {{count}} طلب' }), 'error');
+        const ids = new Set(confirmedNow.map(o => o.id));
+        setOrders(p => p.map(o => (ids.has(o.id) ? { ...o, status: 'confirmed' } : o)));
+      } finally { setPreparingUpload(false); }
+    }
+    const list = [...shipSelected, ...confirmedNow.map(o => ({ ...o, status: 'confirmed' }))];
+    if (!list.length) return;
+    setBulkShipOrders(list);
     setShowBulkPicker(true);
   };
 
-  /* تغيير الحالة بضغطة وحدة — نفس payload المستعمل في OrderModal */
+  /* ── حذف المحددة (ليست عند شركة تأكيد) ── */
+  const deleteSelected = selectedOrders.filter(o => !o.confirmationCompanyId);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const deleteSelectedOrders = async () => {
+    if (!deleteSelected.length) return;
+    setBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(deleteSelected.map(o =>
+        axios.delete(`${baseURL}/orders/${o.id}`, { headers: { Authorization: `Bearer ${token}` } })));
+      const done = new Set(deleteSelected.filter((_, i) => results[i].status === 'fulfilled').map(o => o.id));
+      setOrders(p => p.filter(o => !done.has(o.id)));
+      setTotal(x => Math.max(0, x - done.size));
+      setSelectedIds(sel => { const n = new Set(sel); done.forEach(id => n.delete(id)); return n; });
+      setQuotaKey((k) => k + 1);
+      if (done.size) pushToast(t('list.bulk_delete_done', { count: done.size, defaultValue: 'تم حذف {{count}} طلب' }));
+      if (done.size < deleteSelected.length) {
+        pushToast(t('list.bulk_delete_failed', { count: deleteSelected.length - done.size, defaultValue: 'تعذّر حذف {{count}} طلب' }), 'error');
+      }
+    } finally { setBulkDeleting(false); setBulkDeleteOpen(false); }
+  };
+
+  /* payload تغيير الحالة — نفس المستعمل في OrderModal */
+  const statusDtos = (cart, status) => (cart.items || []).map(item => ({
+    status,
+    productId: item.productId || item.product?.id,
+    quantity: item.quantity,
+    variantDetailId: item.variantDetailId ?? null,
+    offerId: item.offerId ?? null,
+    finalPrice: item.finalPrice,
+    totalPrice: (item.finalPrice || 0) * (item.quantity || 1),
+  }));
+
+  /* تغيير الحالة بضغطة وحدة */
   const quickStatus = async (cart, status) => {
     setOpenStatusId(null);
     if (status === cart.status) return;
@@ -894,16 +980,7 @@ export default function Orders() {
     setStatusBusyId(cart.id);
     setOrders(p => p.map(o => o.id === cart.id ? { ...o, status } : o));
     try {
-      const dtos = (cart.items || []).map(item => ({
-        status,
-        productId: item.productId || item.product?.id,
-        quantity: item.quantity,
-        variantDetailId: item.variantDetailId ?? null,
-        offerId: item.offerId ?? null,
-        finalPrice: item.finalPrice,
-        totalPrice: (item.finalPrice || 0) * (item.quantity || 1),
-      }));
-      await axios.patch(`${baseURL}/orders/${cart.id}`, dtos, {
+      await axios.patch(`${baseURL}/orders/${cart.id}`, statusDtos(cart, status), {
         headers: { Authorization: `Bearer ${token}` },
       });
       pushToast(`${cart.customerName || ''} → ${statusLabel(t, status, cart.isDigital)}`);
@@ -1000,6 +1077,10 @@ export default function Orders() {
 
       <ShipResultModal result={shipResult} onClose={() => setShipResult(null)} />
       <DeleteConfirmModal order={deleteTarget} onConfirm={handleDeleteConfirm} onCancel={() => setDeleteTarget(null)} deleting={deleting} />
+      {bulkDeleteOpen && (
+        <DeleteConfirmModal orders={deleteSelected} onConfirm={deleteSelectedOrders}
+          onCancel={() => !bulkDeleting && setBulkDeleteOpen(false)} deleting={bulkDeleting} />
+      )}
 
       {/* ═══ شريط أدوات ثابت: البحث + الفلاتر ديما تحت العين ═══ */}
       <div className="sticky top-0 z-30 bg-white/95 dark:bg-zinc-900/95 backdrop-blur border-b border-gray-200 dark:border-zinc-800">
@@ -1394,7 +1475,7 @@ export default function Orders() {
             <button onClick={clearSelection} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-white/10 dark:hover:bg-black/10 transition-colors shrink-0">
               <X size={15} />
             </button>
-            {sendSelected.length > 0 && (
+            {confirmationOn && sendSelected.length > 0 && (
               <button onClick={() => setSendIds(sendSelected.map(o => o.id))}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-bold transition-all shadow-lg shadow-indigo-500/20 shrink-0">
                 <PhoneCall size={14} /> {tc('send_button', { count: sendSelected.length })}
@@ -1418,10 +1499,18 @@ export default function Orders() {
                 {printing ? <Loader2 size={14} className="animate-spin" /> : <Printer size={14} />} {t('labels.print_selected', { count: labelSelected.length })}
               </button>
             )}
-            {shipSelected.length > 0 && (
-              <button onClick={startBulkShip}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 shrink-0">
-                <Send size={14} /> {t('bulk_ship.button_ship_selected', { count: shipSelected.length })}
+            {canManage && uploadCount > 0 && (
+              <button onClick={uploadSelected} disabled={preparingUpload}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-sm font-bold transition-all shadow-lg shadow-cyan-500/20 shrink-0 disabled:opacity-50">
+                {preparingUpload ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                {t('bulk_ship.button_upload', { count: uploadCount, defaultValue: 'رفع لشركة التوصيل ({{count}})' })}
+              </button>
+            )}
+            {canManage && deleteSelected.length > 0 && (
+              <button onClick={() => setBulkDeleteOpen(true)} disabled={bulkDeleting}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-all shrink-0 disabled:opacity-50">
+                {bulkDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                {t('list.bulk_delete', { count: deleteSelected.length, defaultValue: 'حذف ({{count}})' })}
               </button>
             )}
           </div>
